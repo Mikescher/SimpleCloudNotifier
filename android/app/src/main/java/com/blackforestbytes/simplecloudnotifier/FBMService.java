@@ -35,16 +35,17 @@ public class FBMService extends FirebaseMessagingService
 
         // TODO(developer): Handle FCM messages here.
         // Not getting messages here? See why this may be: https://goo.gl/39bRNJ
-        Log.i("FB::MessageReceived<1>", "From: " + remoteMessage.getFrom());
+        Log.i("FB::MessageReceived", "From: " + remoteMessage.getFrom());
 
         // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
-            Log.i("FB::MessageReceived<3>", "Payload: " + remoteMessage.getData());
+            Log.i("FB::MessageReceived", "Payload: " + remoteMessage.getData());
         }
 
         // Check if message contains a notification payload.
         if (remoteMessage.getNotification() != null) {
-            Log.i("FB::MessageReceived<2>", "Payload: " + remoteMessage.getNotification().getBody());
+            Log.i("FB::MessageReceived", "Notify_Title: " + remoteMessage.getNotification().getTitle());
+            Log.i("FB::MessageReceived", "Notify_Body: " + remoteMessage.getNotification().getBody());
         }
 
         // Also if you intend on generating your own notifications as a result of a received FCM
