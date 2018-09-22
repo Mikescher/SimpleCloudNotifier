@@ -44,6 +44,7 @@ $payload = json_encode(
 	[
 		'title' => $message,
 		'body' => $content,
+		'timestamp' => time(),
 	]
 ]);
 $header=
@@ -61,12 +62,8 @@ catch (Exception $e)
 	die(json_encode(['success' => false, 'message' => 'Exception: ' . $e->getMessage()]));
 }
 
-var_dump($httpresult);
-
-
 $stmt = $pdo->prepare('UPDATE users SET timestamp_accessed=NOW(), messages_sent=messages_sent+1 WHERE user_id = :uid');
 $stmt->execute(['uid' => $user_id]);
 
-
-echo (json_encode(['success' => true, 'message' => 'Message sent']));
+echo (json_encode(['success' => true, 'message' => 'Message sent', 'response' => $httpresult]));
 return 0;
