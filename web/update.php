@@ -2,14 +2,16 @@
 
 include_once 'model.php';
 
+$INPUT = array_merge($_GET, $_POST);
 
-if (!isset($_GET['user_id']))  die(json_encode(['success' => false, 'message' => 'Missing parameter [[user_id]]']));
-if (!isset($_GET['user_key'])) die(json_encode(['success' => false, 'message' => 'Missing parameter [[user_key]]']));
-if (!isset($_GET['message']))  die(json_encode(['success' => false, 'message' => 'Missing parameter [[message]]']));
 
-$user_id   = $_GET['user_id'];
-$user_key  = $_GET['token'];
-$fcm_token = isset($_GET['token']) ? $_GET['token'] : null;
+if (!isset($INPUT['user_id']))  die(json_encode(['success' => false, 'message' => 'Missing parameter [[user_id]]']));
+if (!isset($INPUT['user_key'])) die(json_encode(['success' => false, 'message' => 'Missing parameter [[user_key]]']));
+if (!isset($INPUT['message']))  die(json_encode(['success' => false, 'message' => 'Missing parameter [[message]]']));
+
+$user_id   = $INPUT['user_id'];
+$user_key  = $INPUT['token'];
+$fcm_token = isset($INPUT['token']) ? $INPUT['token'] : null;
 
 //----------------------
 

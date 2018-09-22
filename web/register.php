@@ -2,9 +2,11 @@
 
 include_once 'model.php';
 
-if (!isset($_GET['fcm_token'])) die(json_encode(['success' => false, 'message' => 'Missing parameter [[fcm_token]]']));
+$INPUT = array_merge($_GET, $_POST);
 
-$fcmtoken  = $_GET['fcm_token'];
+if (!isset($INPUT['fcm_token'])) die(json_encode(['success' => false, 'message' => 'Missing parameter [[fcm_token]]']));
+
+$fcmtoken  = $INPUT['fcm_token'];
 $user_key = generateRandomAuthKey();
 
 $pdo = getDatabase();
