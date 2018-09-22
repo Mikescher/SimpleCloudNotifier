@@ -55,6 +55,7 @@ function send()
 					'?ok=' + 1 +
 					'&message_count=' + resp.messagecount +
 					'&quota=' + resp.quota +
+					'&quota_max=' + resp.quota_max +
 					'&preset_user_id=' + uid.value +
 					'&preset_user_key=' + key.value;
 			}

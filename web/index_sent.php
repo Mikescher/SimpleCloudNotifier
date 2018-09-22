@@ -21,7 +21,7 @@
                     <div class="section">
                         <h3 class="doc">Message sent</h3>
                         <p class="doc">Message succesfully sent<br>
-                            <?php echo isset($_GET['quota'])?$_GET['quota']:'ERR';?>/100 remaining</p>
+                            <?php echo isset($_GET['quota'])?$_GET['quota']:'ERR';?>/<?php echo isset($_GET['quota_max'])?$_GET['quota_max']:'ERR';?> remaining</p>
                     </div>
                 </a>
 
