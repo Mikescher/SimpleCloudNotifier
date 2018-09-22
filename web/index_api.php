@@ -3,6 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<link rel="stylesheet" href="/css/mini-default.min.css">
+    <!--<link rel="stylesheet" href="/css/mini-nord.min.css">-->
+    <!--<link rel="stylesheet" href="/css/mini-dark.min.css">-->
 	<link rel="stylesheet" href="/css/style.css">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
@@ -20,14 +22,14 @@
         <pre>curl                                     \
     --data "user_id={userid}"            \
     --data "user_key={userkey}"          \
-    --data "message={message_title}"     \
+    --data "title={message_title}"       \
     --data "content={message_content}"   \
     https://simplecloudnotifier.blackforestbytes.com/send.php</pre>
     <p>The <code>content</code> parameter is optional, you can also send message with only a title</p>
         <pre>curl                                     \
     --data "user_id={userid}"            \
     --data "user_key={userkey}"          \
-    --data "message={message_title}"     \
+    --data "title={message_title}"       \
     https://simplecloudnotifier.blackforestbytes.com/send.php</pre>
     </form>
 

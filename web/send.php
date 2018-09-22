@@ -2,19 +2,31 @@
 
 include_once 'model.php';
 
+//------------------------------------------------------------------
+sleep(1);
+//------------------------------------------------------------------
+
 $INPUT = array_merge($_GET, $_POST);
 
-if (!isset($INPUT['user_id']))       die(json_encode(['success' => false, 'errhighlight' => 101, 'message' => 'Missing parameter [[user_id]]']));
-if (!isset($INPUT['user_key']))      die(json_encode(['success' => false, 'errhighlight' => 102, 'message' => 'Missing parameter [[user_token]]']));
-if (!isset($INPUT['message_title'])) die(json_encode(['success' => false, 'errhighlight' => 103, 'message' => 'Missing parameter [[message_title]]']));
+if (!isset($INPUT['user_id']))  die(json_encode(['success' => false, 'errhighlight' => 101, 'message' => 'Missing parameter [[user_id]]']));
+if (!isset($INPUT['user_key'])) die(json_encode(['success' => false, 'errhighlight' => 102, 'message' => 'Missing parameter [[user_token]]']));
+if (!isset($INPUT['title']))    die(json_encode(['success' => false, 'errhighlight' => 103, 'message' => 'Missing parameter [[title]]']));
+
+//------------------------------------------------------------------
 
 $user_id  = $INPUT['user_id'];
 $user_key = $INPUT['user_key'];
-$message  = $INPUT['message_title'];
-$content  = file_get_contents('php://input');
+$message  = $INPUT['title'];
+$content  = $INPUT['content'];
 if ($content === null || $content === false) $content = '';
 
-//----------------------
+//------------------------------------------------------------------
+
+if (strlen(trim($message)) == 0)   die(json_encode(['success' => false, 'errhighlight' => 103, 'message' => 'No title specified']));
+if (strlen($message) > 120)   die(json_encode(['success' => false, 'errhighlight' => 103, 'message' => 'Title too long (120 characters)']));
+if (strlen($content) > 10000) die(json_encode(['success' => false, 'errhighlight' => 104, 'message' => 'Content too long (10000 characters)']));
+
+//------------------------------------------------------------------
 
 $pdo = getDatabase();
 
@@ -31,6 +43,7 @@ if ($data['user_key'] !== $user_key) die(json_encode(['success' => false, 'errhi
 
 $fcm = $data['fcm_token'];
 
+//------------------------------------------------------------------
 
 $url = "https://fcm.googleapis.com/fcm/send";
 $payload = json_encode(
