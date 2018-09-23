@@ -1,8 +1,10 @@
-package com.blackforestbytes.simplecloudnotifier;
+package com.blackforestbytes.simplecloudnotifier.model;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+
+import com.blackforestbytes.simplecloudnotifier.view.MessageAdapter;
+import com.blackforestbytes.simplecloudnotifier.SCNApp;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;

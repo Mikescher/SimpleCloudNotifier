@@ -1,4 +1,4 @@
-package com.blackforestbytes.simplecloudnotifier;
+package com.blackforestbytes.simplecloudnotifier.model;
 
 import android.annotation.SuppressLint;
 

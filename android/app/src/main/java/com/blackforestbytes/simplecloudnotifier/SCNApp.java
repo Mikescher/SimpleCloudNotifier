@@ -4,6 +4,8 @@ import android.app.Application;
 import android.content.Context;
 import android.widget.Toast;
 
+import com.blackforestbytes.simplecloudnotifier.view.MainActivity;
+
 import java.lang.ref.WeakReference;
 
 public class SCNApp extends Application

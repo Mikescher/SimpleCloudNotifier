@@ -1,8 +1,10 @@
-package com.blackforestbytes.simplecloudnotifier;
+package com.blackforestbytes.simplecloudnotifier.service;
 
 import android.util.Log;
 import android.widget.Toast;
 
+import com.blackforestbytes.simplecloudnotifier.SCNApp;
+import com.blackforestbytes.simplecloudnotifier.model.CMessageList;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 

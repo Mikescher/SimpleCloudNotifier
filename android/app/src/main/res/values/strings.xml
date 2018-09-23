@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">SimpleCloudNotifier</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="ic_img_user_desc">Icon User</string>
+    <string name="str_userid">User ID</string>
+    <string name="str_userkey">Auth Key</string>
+    <string name="str_quota">Quota</string>
+    <string name="str_copy">Copy to clipboard</string>
+    <string name="ic_img_key_desc">Icon Key</string>
+    <string name="ic_img_fuel_desc">Icon Fuel</string>
+    <string name="str_qr_code">QR Code</string>
+    <string name="str_reset_account">Reset Account</string>
 </resources>
