@@ -15,8 +15,11 @@ import com.blackforestbytes.simplecloudnotifier.model.CMessageList;
 
 public class MessageAdapter extends RecyclerView.Adapter
 {
-    public MessageAdapter()
+    private final View vNoElements;
+
+    public MessageAdapter(View noElementsView)
     {
+        vNoElements = noElementsView;
         CMessageList.inst().register(this);
     }
 
@@ -40,6 +43,18 @@ public class MessageAdapter extends RecyclerView.Adapter
     public int getItemCount()
     {
         return CMessageList.inst().size();
+    }
+
+    public void customNotifyItemInserted(int idx)
+    {
+        notifyItemInserted(idx);
+        vNoElements.setVisibility(getItemCount()>0 ? View.VISIBLE : View.GONE);
+    }
+
+    public void customNotifyDataSetChanged()
+    {
+        notifyDataSetChanged();
+        vNoElements.setVisibility(getItemCount()>0 ? View.VISIBLE : View.GONE);
     }
 
     private class MessagePresenter extends RecyclerView.ViewHolder implements View.OnClickListener

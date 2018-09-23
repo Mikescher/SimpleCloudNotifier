@@ -6,6 +6,10 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 
 public class TabAdapter extends FragmentStatePagerAdapter {
 
+    public NotificationsFragment tab1 = new NotificationsFragment();
+    public AccountFragment       tab2 = new AccountFragment();
+    public SettingsFragment      tab3 = new SettingsFragment();
+
     public TabAdapter(FragmentManager fm)
     {
         super(fm);
@@ -16,13 +20,25 @@ public class TabAdapter extends FragmentStatePagerAdapter {
 
         switch (position) {
             case 0:
-                return new NotificationsFragment();
+                return tab1;
             case 1:
-                return new AccountFragment();
+                return tab2;
             case 2:
-                return new SettingsFragment();
+                return tab3;
             default:
                 return null;
+        }
+    }
+
+    @Override
+    public CharSequence getPageTitle(int position)
+    {
+        switch (position)
+        {
+            case 0:  return "Notifications";
+            case 1:  return "Account";
+            case 2:  return "Settings";
+            default: return null;
         }
     }
 

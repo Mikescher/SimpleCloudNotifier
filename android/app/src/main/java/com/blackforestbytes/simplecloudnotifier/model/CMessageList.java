@@ -65,7 +65,7 @@ public class CMessageList
                 {
                     MessageAdapter a = ref.get();
                     if (a == null) continue;
-                    a.notifyItemInserted(count);
+                    a.customNotifyItemInserted(count);
                 }
                 CleanUpListener();
             }

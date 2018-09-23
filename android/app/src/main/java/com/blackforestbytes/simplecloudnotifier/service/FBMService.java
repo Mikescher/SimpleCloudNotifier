@@ -5,6 +5,7 @@ import android.widget.Toast;
 
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
 import com.blackforestbytes.simplecloudnotifier.model.CMessageList;
+import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -14,6 +15,7 @@ public class FBMService extends FirebaseMessagingService
     public void onNewToken(String token)
     {
         Log.i("Firebase::NewToken", token);
+        SCNSettings.inst().setServerToken(token, null);
     }
 
     @Override

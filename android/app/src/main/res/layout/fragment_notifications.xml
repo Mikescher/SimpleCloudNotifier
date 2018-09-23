@@ -12,4 +12,11 @@
         android:clipToPadding="false"
         android:scrollbars="vertical" />
 
+    <TextView
+        android:id="@+id/tvNoElements"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:text="@string/no_notifications"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </FrameLayout>

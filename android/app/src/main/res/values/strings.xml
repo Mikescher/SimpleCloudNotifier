@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SimpleCloudNotifier</string>
+    <string name="app_name">Simple Cloud Notifier</string>
 
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="ic_img_user_desc">Icon User</string>
@@ -11,4 +11,7 @@
     <string name="ic_img_fuel_desc">Icon Fuel</string>
     <string name="str_qr_code">QR Code</string>
     <string name="str_reset_account">Reset Account</string>
+    <string name="no_notifications">No notifications</string>
+    <string name="str_not_connected">not connected</string>
+    <string name="str_reload">reload</string>
 </resources>

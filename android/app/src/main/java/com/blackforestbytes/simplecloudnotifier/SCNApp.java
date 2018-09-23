@@ -4,7 +4,9 @@ import android.app.Application;
 import android.content.Context;
 import android.widget.Toast;
 
+import com.blackforestbytes.simplecloudnotifier.view.AccountFragment;
 import com.blackforestbytes.simplecloudnotifier.view.MainActivity;
+import com.blackforestbytes.simplecloudnotifier.view.TabAdapter;
 
 import java.lang.ref.WeakReference;
 
@@ -28,11 +30,7 @@ public class SCNApp extends Application
         final MainActivity a = mainActivity.get();
         if (a != null)
         {
-            a.runOnUiThread(new Runnable() {
-                public void run() {
-                    Toast.makeText(a, msg, duration).show();
-                }
-            });
+            a.runOnUiThread(() -> Toast.makeText(a, msg, duration).show());
         }
     }
 
@@ -41,6 +39,23 @@ public class SCNApp extends Application
         final MainActivity a = mainActivity.get();
         if (a != null) {a.runOnUiThread(r); return true;}
         return false;
+    }
+
+    public static void refreshAccountTab()
+    {
+        runOnUiThread(() ->
+        {
+            MainActivity a = mainActivity.get();
+            if (a == null) return;
+
+            TabAdapter ta = a.adpTabs;
+            if (ta == null) return;
+
+            AccountFragment tf = ta.tab2;
+            if (tf == null) return;
+
+            tf.updateUI();
+        });
     }
 
     public static void register(MainActivity a)

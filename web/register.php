@@ -15,5 +15,14 @@ $stmt = $pdo->prepare('INSERT INTO users (user_key, fcm_token, timestamp_accesse
 $stmt->execute(['key' => $user_key, 'token' => $fcmtoken]);
 $user_id = $pdo->lastInsertId('user_id');
 
-echo json_encode(['success' => true, 'user_id' => $user_id, 'user_key' => $user_key, 'message' => 'new user registered']);
+echo json_encode(
+[
+	'success' => true,
+	'user_id' => $user_id,
+	'user_key' => $user_key,
+	'quota'    => 0,
+	'quota_max'=> 100,
+	'message' => 'New user registered'
+]);
+
 return 0;

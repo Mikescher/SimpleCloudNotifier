@@ -1,197 +1,238 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".view.AccountFragment"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context=".view.AccountFragment">
 
-    <ImageView
-        android:id="@+id/ic_img_user"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_margin="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="92dp"
-        android:contentDescription="@string/ic_img_user_desc"
-        android:src="@drawable/ic_user"
-        android:tint="#888"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/lblUserID"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:text="@string/str_userid"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/ic_img_user"
-        app:layout_constraintTop_toTopOf="@+id/ic_img_user" />
+        <ImageView
+            android:id="@+id/ic_img_user"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="92dp"
+            android:contentDescription="@string/ic_img_user_desc"
+            android:src="@drawable/ic_user"
+            android:tint="#888"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <HorizontalScrollView
-        android:id="@+id/svUserID"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="4dp"
-        app:layout_constraintEnd_toStartOf="@+id/btnCopyUserID"
-        app:layout_constraintStart_toEndOf="@+id/ic_img_user"
-        app:layout_constraintTop_toBottomOf="@+id/lblUserID">
         <TextView
-            android:id="@+id/tvUserID"
+            android:id="@+id/lblUserID"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:text="@string/str_userid"
+            app:layout_constraintEnd_toStartOf="@+id/btnRefresh"
+            app:layout_constraintStart_toEndOf="@+id/ic_img_user"
+            app:layout_constraintTop_toTopOf="@+id/ic_img_user" />
+
+        <HorizontalScrollView
+            android:id="@+id/svUserID"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="4dp"
+            app:layout_constraintEnd_toStartOf="@+id/btnCopyUserID"
+            app:layout_constraintStart_toEndOf="@+id/ic_img_user"
+            app:layout_constraintTop_toBottomOf="@+id/lblUserID">
+
+            <TextView
+                android:id="@+id/tvUserID"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:layout_editor_absoluteX="8dp" />
+        </HorizontalScrollView>
+
+        <ImageButton
+            android:id="@+id/btnCopyUserID"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginEnd="8dp"
+            android:background="@null"
+            android:contentDescription="@string/str_copy"
+            android:padding="2dp"
+            android:scaleType="fitXY"
+            android:src="?android:attr/actionModeCopyDrawable"
+            app:layout_constraintBottom_toBottomOf="@+id/svUserID"
+            app:layout_constraintEnd_toStartOf="@+id/btnRefresh"
+            app:layout_constraintTop_toTopOf="@+id/svUserID" />
+
+        <ImageButton
+            android:id="@+id/btnRefresh"
+            android:layout_width="42dp"
+            android:layout_height="0dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginEnd="16dp"
+            android:background="@null"
+            android:contentDescription="@string/str_reload"
+            android:padding="2dp"
+            android:src="@drawable/ic_refresh"
+            android:tint="#666"
+            app:layout_constraintBottom_toBottomOf="@+id/btnCopyUserID"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/lblUserID" />
+
+        <ImageView
+            android:id="@+id/ic_img_key"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="92dp"
+            android:contentDescription="@string/ic_img_key_desc"
+            android:src="@drawable/ic_key"
+            android:tint="#888"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ic_img_user" />
+
+        <TextView
+            android:id="@+id/lblUserKey"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:text="@string/str_userkey"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/ic_img_key"
+            app:layout_constraintTop_toTopOf="@+id/ic_img_key" />
+
+        <HorizontalScrollView
+            android:id="@+id/svUserKey"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="4dp"
+            app:layout_constraintEnd_toStartOf="@+id/btnCopyUserKey"
+            app:layout_constraintStart_toEndOf="@+id/ic_img_key"
+            app:layout_constraintTop_toBottomOf="@+id/lblUserKey">
+
+            <TextView
+                android:id="@+id/tvUserKey"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:layout_editor_absoluteX="8dp" />
+        </HorizontalScrollView>
+
+        <ImageButton
+            android:id="@+id/btnCopyUserKey"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginEnd="8dp"
+            android:background="@null"
+            android:contentDescription="@string/str_copy"
+            android:padding="2dp"
+            android:scaleType="fitXY"
+            android:src="?android:attr/actionModeCopyDrawable"
+            app:layout_constraintBottom_toBottomOf="@+id/svUserKey"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/svUserKey" />
+
+        <ImageView
+            android:id="@+id/ic_img_quota"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="92dp"
+            android:contentDescription="@string/ic_img_fuel_desc"
+            android:src="@drawable/ic_fuel"
+            android:tint="#888"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ic_img_key" />
+
+        <TextView
+            android:id="@+id/lblQuota"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:text="@string/str_quota"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/ic_img_quota"
+            app:layout_constraintTop_toTopOf="@+id/ic_img_quota" />
+
+        <HorizontalScrollView
+            android:id="@+id/svQuota"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="4dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/ic_img_quota"
+            app:layout_constraintTop_toBottomOf="@+id/lblQuota">
+
+            <TextView
+                android:id="@+id/tvQuota"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:layout_editor_absoluteX="8dp" />
+        </HorizontalScrollView>
+
+
+        <ImageButton
+            android:id="@+id/btnQR"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            android:background="@null"
+            android:contentDescription="@string/str_qr_code"
+            android:scaleType="fitCenter"
+            android:src="@drawable/qr_default"
+            app:layout_constraintBottom_toTopOf="@+id/btnAccountReset"
+            app:layout_constraintTop_toBottomOf="@+id/ic_img_quota" />
+
+        <Button
+            android:id="@+id/btnAccountReset"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/str_reset_account"
+            app:layout_constraintBottom_toTopOf="@+id/btnClearLocalStorage" />
+
+        <Button
+            android:id="@+id/btnClearLocalStorage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Clear Messages"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:layout_editor_absoluteY="352dp" />
+
+    </android.support.constraint.ConstraintLayout>
+
+    <RelativeLayout
+        android:id="@+id/loadingPanel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#DD000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <ProgressBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:layout_editor_absoluteX="8dp" />
-    </HorizontalScrollView>
+            android:indeterminate="true"
+            android:indeterminateTint="#FFF"
+            tools:ignore="UnusedAttribute" />
+    </RelativeLayout>
 
-    <ImageButton
-        android:id="@+id/btnCopyUserID"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginEnd="8dp"
-        android:background="@null"
-        android:padding="2dp"
-        android:scaleType="fitXY"
-        android:src="?android:attr/actionModeCopyDrawable"
-        app:layout_constraintBottom_toBottomOf="@+id/svUserID"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/svUserID"
-        android:contentDescription="@string/str_copy" />
-
-    <ImageView
-        android:id="@+id/ic_img_key"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_margin="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="92dp"
-        android:contentDescription="@string/ic_img_key_desc"
-        android:src="@drawable/ic_key"
-        android:tint="#888"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ic_img_user" />
-
-    <TextView
-        android:id="@+id/lblUserKey"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:text="@string/str_userkey"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/ic_img_key"
-        app:layout_constraintTop_toTopOf="@+id/ic_img_key" />
-
-    <HorizontalScrollView
-        android:id="@+id/svUserKey"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="4dp"
-        app:layout_constraintEnd_toStartOf="@+id/btnCopyUserKey"
-        app:layout_constraintStart_toEndOf="@+id/ic_img_key"
-        app:layout_constraintTop_toBottomOf="@+id/lblUserKey">
-        <TextView
-            android:id="@+id/tvUserKey"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:layout_editor_absoluteX="8dp" />
-    </HorizontalScrollView>
-
-    <ImageButton
-        android:id="@+id/btnCopyUserKey"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginEnd="8dp"
-        android:background="@null"
-        android:padding="2dp"
-        android:scaleType="fitXY"
-        android:src="?android:attr/actionModeCopyDrawable"
-        app:layout_constraintBottom_toBottomOf="@+id/svUserKey"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/svUserKey"
-        android:contentDescription="@string/str_copy" />
-
-    <ImageView
-        android:id="@+id/ic_img_quota"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_margin="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="92dp"
-        android:contentDescription="@string/ic_img_fuel_desc"
-        android:src="@drawable/ic_fuel"
-        android:tint="#888"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ic_img_key" />
-
-    <TextView
-        android:id="@+id/lblQuota"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:text="@string/str_quota"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/ic_img_quota"
-        app:layout_constraintTop_toTopOf="@+id/ic_img_quota" />
-
-    <HorizontalScrollView
-        android:id="@+id/svQuota"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="4dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/ic_img_quota"
-        app:layout_constraintTop_toBottomOf="@+id/lblQuota">
-        <TextView
-            android:id="@+id/tvQuota"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:layout_editor_absoluteX="8dp" />
-    </HorizontalScrollView>
-
-
-    <ImageButton
-        android:id="@+id/btnQR"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="8dp"
-        android:background="@null"
-        android:contentDescription="@string/str_qr_code"
-        android:scaleType="center"
-        android:src="@drawable/qr_default"
-        app:layout_constraintTop_toBottomOf="@+id/ic_img_quota"
-        app:layout_constraintBottom_toTopOf="@+id/btnAccountReset" />
-
-    <Button
-        android:id="@+id/btnAccountReset"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/str_reset_account"
-        app:layout_constraintBottom_toTopOf="@+id/btnClearLocalStorage" />
-
-    <Button
-        android:id="@+id/btnClearLocalStorage"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Clear Messages"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteY="352dp"
-        app:layout_constraintBottom_toBottomOf="parent" />
-
-
-</android.support.constraint.ConstraintLayout>
+</RelativeLayout>

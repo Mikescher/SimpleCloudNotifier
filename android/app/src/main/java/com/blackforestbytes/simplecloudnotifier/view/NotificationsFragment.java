@@ -27,7 +27,7 @@ public class NotificationsFragment extends Fragment
 
         RecyclerView rvMessages = v.findViewById(R.id.rvMessages);
         rvMessages.setLayoutManager(new LinearLayoutManager(this.getContext(), RecyclerView.VERTICAL, true));
-        rvMessages.setAdapter(new MessageAdapter());
+        rvMessages.setAdapter(new MessageAdapter(v.findViewById(R.id.tvNoElements)));
 
         return v;
     }
