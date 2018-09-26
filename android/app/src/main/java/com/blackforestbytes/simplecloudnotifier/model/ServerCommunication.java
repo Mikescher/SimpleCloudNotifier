@@ -21,8 +21,7 @@ import okhttp3.ResponseBody;
 
 public class ServerCommunication
 {
-    //public static final String BASE_URL = "https://simplecloudnotifier.blackforestbytes.com/";
-    public static final String BASE_URL = "http://10.0.2.2:1010/";
+    public static final String BASE_URL = "https://simplecloudnotifier.blackforestbytes.com/";
 
     private static final OkHttpClient client = new OkHttpClient();
 

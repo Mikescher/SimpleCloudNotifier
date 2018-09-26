@@ -9,7 +9,7 @@ if (!isset($INPUT['user_id']))  die(json_encode(['success' => false, 'errid'=>10
 if (!isset($INPUT['user_key'])) die(json_encode(['success' => false, 'errid'=>102, 'message' => 'Missing parameter [[user_key]]']));
 
 $user_id   = $INPUT['user_id'];
-$user_key  = $INPUT['token'];
+$user_key  = $INPUT['user_key'];
 
 //----------------------
 

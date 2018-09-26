@@ -44,7 +44,7 @@ if ($data['user_key'] !== $user_key) die(json_encode(['success' => false, 'errhi
 $fcm = $data['fcm_token'];
 
 $new_quota = $data['quota_today'] + 1;
-if ($data['quota_day'] === null || $data['quota_day'] !== date("Y-m-d")) $new_quota=0;
+if ($data['quota_day'] === null || $data['quota_day'] !== date("Y-m-d")) $new_quota=1;
 if ($new_quota > $data['quota_max']) die(json_encode(['success' => false, 'errhighlight' => -1, 'message' => 'Daily quota reached ('.$data['quota_max'].')']));
 
 //------------------------------------------------------------------
@@ -54,6 +54,7 @@ $payload = json_encode(
 [
 	'to' => $fcm,
 	//'dry_run' => true,
+	'android' => [ 'priority' => 'high' ],
 	'notification' =>
 	[
 		'title' => $message,
