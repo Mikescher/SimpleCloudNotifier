@@ -55,11 +55,11 @@ $payload = json_encode(
 	'to' => $fcm,
 	//'dry_run' => true,
 	'android' => [ 'priority' => 'high' ],
-	'notification' =>
-	[
-		'title' => $message,
-		'body' => $content,
-	],
+	//'notification' =>
+	//[
+	//	'title' => $message,
+	//	'body' => $content,
+	//],
 	'data' =>
 	[
 		'title' => $message,

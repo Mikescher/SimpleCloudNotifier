@@ -21,6 +21,8 @@ public class MessageAdapter extends RecyclerView.Adapter
     {
         vNoElements = noElementsView;
         CMessageList.inst().register(this);
+
+        vNoElements.setVisibility(getItemCount()>0 ? View.GONE : View.VISIBLE);
     }
 
     @NonNull
@@ -48,13 +50,13 @@ public class MessageAdapter extends RecyclerView.Adapter
     public void customNotifyItemInserted(int idx)
     {
         notifyItemInserted(idx);
-        vNoElements.setVisibility(getItemCount()>0 ? View.VISIBLE : View.GONE);
+        vNoElements.setVisibility(getItemCount()>0 ? View.GONE : View.VISIBLE);
     }
 
     public void customNotifyDataSetChanged()
     {
         notifyDataSetChanged();
-        vNoElements.setVisibility(getItemCount()>0 ? View.VISIBLE : View.GONE);
+        vNoElements.setVisibility(getItemCount()>0 ? View.GONE : View.VISIBLE);
     }
 
     private class MessagePresenter extends RecyclerView.ViewHolder implements View.OnClickListener
@@ -82,11 +84,10 @@ public class MessageAdapter extends RecyclerView.Adapter
             data = msg;
         }
 
-
         @Override
         public void onClick(View v)
         {
-            SCNApp.showToast(data.Title, Toast.LENGTH_LONG);
+            //SCNApp.showToast(data.Title, Toast.LENGTH_LONG);
         }
     }
 }

@@ -66,8 +66,7 @@ public class AccountFragment extends Fragment
 
         v.findViewById(R.id.btnClearLocalStorage).setOnClickListener(cv ->
         {
-            CMessageList.inst().Messages.clear();
-            CMessageList.inst().fullSave();
+            CMessageList.inst().clear();
             SCNApp.showToast("Notifications cleared", 1000);
         });
 
@@ -95,6 +94,7 @@ public class AccountFragment extends Fragment
     @SuppressLint("DefaultLocale")
     public void updateUI(View v)
     {
+        if (v == null) return;
         TextView tvUserID  = v.findViewById(R.id.tvUserID);
         TextView tvUserKey = v.findViewById(R.id.tvUserKey);
         TextView tvQuota   = v.findViewById(R.id.tvQuota);

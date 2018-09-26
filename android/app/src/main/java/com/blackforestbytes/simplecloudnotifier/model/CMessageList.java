@@ -42,33 +42,32 @@ public class CMessageList
         }
     }
 
-    public void add(final long time, final String title, final String content)
+    public CMessage add(final long time, final String title, final String content)
     {
-        boolean run = SCNApp.runOnUiThread(new Runnable() {
-            @Override
-            public void run()
+        CMessage msg = new CMessage(time, title, content);
+
+        boolean run = SCNApp.runOnUiThread(() ->
+        {
+            SharedPreferences sharedPref = SCNApp.getContext().getSharedPreferences("CMessageList", Context.MODE_PRIVATE);
+            int count = sharedPref.getInt("message_count", 0);
+
+            SharedPreferences.Editor e = sharedPref.edit();
+
+            Messages.add(msg);
+            e.putInt("message_count", count+1);
+            e.putLong("message["+count+"].timestamp", time);
+            e.putString("message["+count+"].title", title);
+            e.putString("message["+count+"].content", content);
+
+            e.apply();
+
+            for (WeakReference<MessageAdapter> ref : _listener)
             {
-                SharedPreferences sharedPref = SCNApp.getContext().getSharedPreferences("CMessageList", Context.MODE_PRIVATE);
-                int count = sharedPref.getInt("message_count", 0);
-
-                SharedPreferences.Editor e = sharedPref.edit();
-
-                Messages.add(new CMessage(time, title, content));
-                e.putInt("message_count", count+1);
-                e.putLong("message["+count+"].timestamp", time);
-                e.putString("message["+count+"].title", title);
-                e.putString("message["+count+"].content", content);
-
-                e.apply();
-
-                for (WeakReference<MessageAdapter> ref : _listener)
-                {
-                    MessageAdapter a = ref.get();
-                    if (a == null) continue;
-                    a.customNotifyItemInserted(count);
-                }
-                CleanUpListener();
+                MessageAdapter a = ref.get();
+                if (a == null) continue;
+                a.customNotifyItemInserted(count);
             }
+            CleanUpListener();
         });
 
         if (!run)
@@ -76,6 +75,22 @@ public class CMessageList
             Messages.add(new CMessage(time, title, content));
             fullSave();
         }
+
+        return msg;
+    }
+
+    public void clear()
+    {
+        Messages.clear();
+        fullSave();
+
+        for (WeakReference<MessageAdapter> ref : _listener)
+        {
+            MessageAdapter a = ref.get();
+            if (a == null) continue;
+            a.customNotifyDataSetChanged();
+        }
+        CleanUpListener();
     }
 
     public void fullSave()
