@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
+    <title>Simple Cloud Notifications</title>
 	<link rel="stylesheet" href="/css/mini-default.min.css">
 	<!--<link rel="stylesheet" href="/css/mini-nord.min.css">-->
 	<!--<link rel="stylesheet" href="/css/mini-dark.min.css">-->
