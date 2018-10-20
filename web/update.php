@@ -20,7 +20,7 @@ $stmt = $pdo->prepare('SELECT user_id, user_key, quota_today, quota_max, quota_d
 $stmt->execute(['uid' => $user_id]);
 
 $datas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-if (count($datas)<=0) die(json_encode(['success' => false, 'message' => 'No User found']));
+if (count($datas)<=0) die(json_encode(['success' => false, 'message' => 'User not found']));
 $data = $datas[0];
 
 if ($data === null) die(json_encode(['success' => false, 'message' => 'User not found']));

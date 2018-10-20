@@ -1,10 +1,8 @@
 package com.blackforestbytes.simplecloudnotifier.model;
 
-import android.os.Build;
 import android.util.Log;
 import android.view.View;
 
-import com.blackforestbytes.simplecloudnotifier.BuildConfig;
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
 
 import org.json.JSONObject;

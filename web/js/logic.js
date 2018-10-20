@@ -12,17 +12,20 @@ function send()
 	let key = document.getElementById("ukey");
 	let msg = document.getElementById("msg");
 	let txt = document.getElementById("txt");
+	let pio = document.getElementById("prio");
 
 	uid.classList.remove('input-invalid');
 	key.classList.remove('input-invalid');
 	msg.classList.remove('input-invalid');
 	txt.classList.remove('input-invalid');
+	pio.classList.remove('input-invalid');
 
 	let data = new FormData();
 	data.append('user_id', uid.value);
 	data.append('user_key', key.value);
 	data.append('title', msg.value);
 	data.append('content', txt.value);
+	data.append('priority', pio.value);
 
 	let xhr = new XMLHttpRequest();
 	xhr.open('POST', '/send.php', true);
@@ -40,6 +43,7 @@ function send()
 				if (resp.errhighlight === 102) key.classList.add('input-invalid');
 				if (resp.errhighlight === 103) msg.classList.add('input-invalid');
 				if (resp.errhighlight === 104) txt.classList.add('input-invalid');
+				if (resp.errhighlight === 105) pio.classList.add('input-invalid');
 
 				Toastify({
 					text: resp.message,

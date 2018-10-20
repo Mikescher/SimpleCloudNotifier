@@ -20,10 +20,11 @@
         <pre>curl                                          \
     --data "user_id={userid}"                 \
     --data "user_key={userkey}"               \
+    --data "priority={0|1|2}"                 \
     --data "title={message_title}"            \
     --data "content={message_content}"        \
     https://scn.blackforestbytes.com/send.php</pre>
-    <p>The <code>content</code> parameter is optional, you can also send message with only a title</p>
+    <p>The <code>content</code> and <code>priority</code> parameters are optional, you can also send message with only a title and the default priority</p>
         <pre>curl                                          \
     --data "user_id={userid}"                 \
     --data "user_key={userkey}"               \

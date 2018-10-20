@@ -14,4 +14,5 @@
     <string name="no_notifications">No notifications</string>
     <string name="str_not_connected">not connected</string>
     <string name="str_reload">reload</string>
+    <string name="desc_priority_icon">Priority icon</string>
 </resources>

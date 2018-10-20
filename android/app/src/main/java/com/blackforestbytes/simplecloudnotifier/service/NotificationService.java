@@ -12,7 +12,6 @@ import android.support.v4.app.NotificationCompat;
 import com.blackforestbytes.simplecloudnotifier.R;
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
 import com.blackforestbytes.simplecloudnotifier.model.CMessage;
-import com.blackforestbytes.simplecloudnotifier.model.CMessageList;
 import com.blackforestbytes.simplecloudnotifier.view.MainActivity;
 
 public class NotificationService

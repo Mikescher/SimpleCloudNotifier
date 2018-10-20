@@ -4,7 +4,7 @@
 	<meta charset="utf-8">
     <title>Simple Cloud Notifications</title>
 	<link rel="stylesheet" href="/css/toastify.min.css"/>
-	<link rel="stylesheet" href="/css/mini-default.min.css">
+	<link rel="stylesheet" href="/css/mini-default.min.css">            <!-- https://minicss.org/ -->
 	<!--<link rel="stylesheet" href="/css/mini-nord.min.css">-->
 	<!--<link rel="stylesheet" href="/css/mini-dark.min.css">-->
 	<link rel="stylesheet" href="/css/style.css">
@@ -27,6 +27,17 @@
 			<div class="col-sm-12 col-md-3"><label for="ukey" class="doc">Authentification Key</label></div>
 			<div class="col-sm-12 col-md"><input placeholder="Key" id="ukey" class="doc" <?php echo (isset($_GET['preset_user_key']) ? (' value="'.$_GET['preset_user_key'].'" '):(''));?> type="text" maxlength="64"></div>
 		</div>
+
+        <div class="row responsive-label">
+            <div class="col-sm-12 col-md-3"><label for="prio" class="doc">Priority</label></div>
+            <div class="col-sm-12 col-md">
+                <select id="prio" class="doc" type="text" style="width:100%;">
+                    <option value="0"  <?php echo (( isset($_GET['preset_priority'])&&$_GET['preset_priority']==='0') ? 'selected':'');?>>Low</option>
+                    <option value="1"  <?php echo ((!isset($_GET['preset_priority'])||$_GET['preset_priority']==='1') ? 'selected':'');?>>Normal</option>
+                    <option value="2"  <?php echo (( isset($_GET['preset_priority'])&&$_GET['preset_priority']==='2') ? 'selected':'');?>>High</option>
+                </select>
+            </div>
+        </div>
 
 		<div class="row responsive-label">
 			<div class="col-sm-12 col-md-3"><label for="msg" class="doc">Message Title</label></div>

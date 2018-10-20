@@ -12,6 +12,7 @@ public class CMessage
     public final long Timestamp ;
     public final String Title;
     public final String Content;
+    public final PriorityEnum Priority;
 
     private static final SimpleDateFormat _format;
     static
@@ -20,11 +21,12 @@ public class CMessage
         _format.setTimeZone(TimeZone.getDefault());
     }
 
-    public CMessage(long t, String mt, String mc)
+    public CMessage(long t, String mt, String mc, PriorityEnum p)
     {
         Timestamp = t;
         Title = mt;
         Content = mc;
+        Priority = p;
     }
 
     @SuppressLint("SimpleDateFormat")

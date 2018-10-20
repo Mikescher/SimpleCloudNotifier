@@ -17,10 +17,12 @@ if (!isset($INPUT['title']))    die(json_encode(['success' => false, 'errhighlig
 $user_id  = $INPUT['user_id'];
 $user_key = $INPUT['user_key'];
 $message  = $INPUT['title'];
-$content  = $INPUT['content'];
-if ($content === null || $content === false) $content = '';
+$content  = isset($INPUT['content'])  ? $INPUT['content']  : '';
+$priority = isset($INPUT['priority']) ? $INPUT['priority'] : '1';
 
 //------------------------------------------------------------------
+
+if ($priority !== '0' && $priority !== '1' && $priority !== '2') die(json_encode(['success' => false, 'errhighlight' => 105, 'message' => 'Invalid priority']));
 
 if (strlen(trim($message)) == 0) die(json_encode(['success' => false, 'errhighlight' => 103, 'message' => 'No title specified']));
 if (strlen($message) > 120)      die(json_encode(['success' => false, 'errhighlight' => 103, 'message' => 'Title too long (120 characters)']));
@@ -34,7 +36,7 @@ $stmt = $pdo->prepare('SELECT user_id, user_key, fcm_token, messages_sent, quota
 $stmt->execute(['uid' => $user_id]);
 
 $datas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-if (count($datas)<=0) die(json_encode(['success' => false, 'errhighlight' => 101, 'message' => 'No User found']));
+if (count($datas)<=0) die(json_encode(['success' => false, 'errhighlight' => 101, 'message' => 'User not found']));
 $data = $datas[0];
 
 if ($data === null) die(json_encode(['success' => false, 'errhighlight' => 101, 'message' => 'User not found']));
@@ -64,6 +66,7 @@ $payload = json_encode(
 	[
 		'title' => $message,
 		'body' => $content,
+		'priority' => $priority,
 		'timestamp' => time(),
 	]
 ]);

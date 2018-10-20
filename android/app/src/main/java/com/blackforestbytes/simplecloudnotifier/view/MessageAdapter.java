@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -64,6 +65,7 @@ public class MessageAdapter extends RecyclerView.Adapter
         private TextView tvTimestamp;
         private TextView tvTitle;
         private TextView tvMessage;
+        private ImageView ivPriority;
 
         private CMessage data;
 
@@ -71,8 +73,9 @@ public class MessageAdapter extends RecyclerView.Adapter
         {
             super(itemView);
             tvTimestamp = itemView.findViewById(R.id.tvTimestamp);
-            tvTitle = itemView.findViewById(R.id.tvTitle);
-            tvMessage = itemView.findViewById(R.id.tvMessage);
+            tvTitle     = itemView.findViewById(R.id.tvTitle);
+            tvMessage   = itemView.findViewById(R.id.tvMessage);
+            ivPriority  = itemView.findViewById(R.id.ivPriority);
             itemView.setOnClickListener(this);
         }
 
@@ -81,6 +84,22 @@ public class MessageAdapter extends RecyclerView.Adapter
             tvTimestamp.setText(msg.formatTimestamp());
             tvTitle.setText(msg.Title);
             tvMessage.setText(msg.Content);
+
+            switch (msg.Priority)
+            {
+                case LOW:
+                    ivPriority.setVisibility(View.VISIBLE);
+                    ivPriority.setImageResource(R.drawable.priority_low);
+                    break;
+                case NORMAL:
+                    ivPriority.setVisibility(View.GONE);
+                    break;
+                case HIGH:
+                    ivPriority.setVisibility(View.VISIBLE);
+                    ivPriority.setImageResource(R.drawable.priority_high);
+                    break;
+            }
+
             data = msg;
         }
 

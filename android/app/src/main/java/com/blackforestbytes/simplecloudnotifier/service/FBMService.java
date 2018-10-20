@@ -12,6 +12,7 @@ import com.blackforestbytes.simplecloudnotifier.R;
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
 import com.blackforestbytes.simplecloudnotifier.model.CMessage;
 import com.blackforestbytes.simplecloudnotifier.model.CMessageList;
+import com.blackforestbytes.simplecloudnotifier.model.PriorityEnum;
 import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
 import com.blackforestbytes.simplecloudnotifier.view.MainActivity;
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -36,11 +37,12 @@ public class FBMService extends FirebaseMessagingService
             if (remoteMessage.getNotification() != null) Log.i("FB::MessageReceived", "Notify_Title: " + remoteMessage.getNotification().getTitle());
             if (remoteMessage.getNotification() != null) Log.i("FB::MessageReceived", "Notify_Body: " + remoteMessage.getNotification().getBody());
 
-            long time = Long.parseLong(remoteMessage.getData().get("timestamp"));
-            String title = remoteMessage.getData().get("title");
-            String content = remoteMessage.getData().get("body");
+            long time         = Long.parseLong(remoteMessage.getData().get("timestamp"));
+            String title      = remoteMessage.getData().get("title");
+            String content    = remoteMessage.getData().get("body");
+            PriorityEnum prio = PriorityEnum.parseAPI(remoteMessage.getData().get("priority"));
 
-            CMessage msg = CMessageList.inst().add(time, title, content);
+            CMessage msg = CMessageList.inst().add(time, title, content, prio);
 
 
             if (SCNApp.isBackground())

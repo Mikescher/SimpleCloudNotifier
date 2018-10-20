@@ -34,17 +34,18 @@ public class CMessageList
         int count = sharedPref.getInt("message_count", 0);
         for (int i=0; i < count; i++)
         {
-            long time      = sharedPref.getLong("message["+i+"].timestamp", 0);
-            String title   = sharedPref.getString("message["+i+"].title", "");
-            String content = sharedPref.getString("message["+i+"].content", "");
+            long time         = sharedPref.getLong("message["+i+"].timestamp", 0);
+            String title      = sharedPref.getString("message["+i+"].title", "");
+            String content    = sharedPref.getString("message["+i+"].content", "");
+            PriorityEnum prio = PriorityEnum.parseAPI(sharedPref.getInt("message["+i+"].priority", 1));
 
-            Messages.add(new CMessage(time, title, content));
+            Messages.add(new CMessage(time, title, content, prio));
         }
     }
 
-    public CMessage add(final long time, final String title, final String content)
+    public CMessage add(final long time, final String title, final String content, final PriorityEnum pe)
     {
-        CMessage msg = new CMessage(time, title, content);
+        CMessage msg = new CMessage(time, title, content, pe);
 
         boolean run = SCNApp.runOnUiThread(() ->
         {
@@ -58,6 +59,7 @@ public class CMessageList
             e.putLong("message["+count+"].timestamp", time);
             e.putString("message["+count+"].title", title);
             e.putString("message["+count+"].content", content);
+            e.putInt("message["+count+"].priority", pe.ID);
 
             e.apply();
 
@@ -72,7 +74,7 @@ public class CMessageList
 
         if (!run)
         {
-            Messages.add(new CMessage(time, title, content));
+            Messages.add(new CMessage(time, title, content, pe));
             fullSave();
         }
 
@@ -107,6 +109,7 @@ public class CMessageList
             e.putLong("message["+i+"].timestamp", Messages.get(i).Timestamp);
             e.putString("message["+i+"].title", Messages.get(i).Title);
             e.putString("message["+i+"].content", Messages.get(i).Content);
+            e.putInt("message["+i+"].priority", Messages.get(i).Priority.ID);
         }
 
         e.apply();
