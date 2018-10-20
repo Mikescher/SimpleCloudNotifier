@@ -21,6 +21,9 @@ public class SCNApp extends Application implements LifecycleObserver
     private static SCNApp instance;
     private static WeakReference<MainActivity> mainActivity;
 
+    public static final boolean DEBUG   = BuildConfig.DEBUG || !BuildConfig.VERSION_NAME.endsWith(".0");
+    public static final boolean RELEASE = !DEBUG;
+
     private static boolean isBackground = true;
 
     public SCNApp()

@@ -2,12 +2,23 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 28
+
+    def versionPropsFile = file('version.properties')
+    def vNumber
+    def vName
+    if (versionPropsFile.canRead()) {
+        Properties versionProps = new Properties()
+        new FileInputStream(versionPropsFile).withCloseable { stream -> versionProps.load(stream) }
+        vNumber = versionProps['VERSION_CODE'].toInteger()
+        vName = versionProps['VERSION_NAME'].toString()
+    } else throw new FileNotFoundException("Could not read version.properties!")
+
     defaultConfig {
         applicationId "com.blackforestbytes.simplecloudnotifier"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 2
-        versionName "0.2"
+        versionCode vNumber
+        versionName vName
     }
     buildTypes {
         release {
@@ -34,8 +45,8 @@ dependencies {
     implementation 'com.takisoft.fix:preference-v7:28.0.0.0'
     implementation 'com.takisoft.fix:preference-v7-extras:28.0.0.0'
 
-    implementation 'com.google.firebase:firebase-core:16.0.3'
-    implementation 'com.google.firebase:firebase-messaging:17.3.2'
+    implementation 'com.google.firebase:firebase-core:16.0.4'
+    implementation 'com.google.firebase:firebase-messaging:17.3.3'
 
     implementation "android.arch.lifecycle:extensions:1.1.1"
 
@@ -44,3 +55,56 @@ dependencies {
 }
 
 apply plugin: 'com.google.gms.google-services'
+
+task updateVersion << {
+    def lastTag = ['git', 'describe', "--abbrev=0", "--tags"].execute().text.trim()
+
+    def versionPropsFile = file('version.properties')
+    if (!versionPropsFile.canRead()) throw new FileNotFoundException("Could not read version.properties!")
+    Properties versionProps = new Properties()
+    new FileInputStream(versionPropsFile).withCloseable { fis -> versionProps.load(fis) }
+
+    def matcher = lastTag =~ /^v([0-9]+)\.([0-9]+)\.([0-9]+)$/
+
+    if (!matcher.matches()) throw new Exception("Last Tag ('" + lastTag + "') has invalid format :(")
+
+    def vName = (matcher[0][1] as Integer) + "." + (matcher[0][2] as Integer) + "." + (matcher[0][3] as Integer)
+    def vCode = versionProps['VERSION_CODE'] as Integer
+
+    if (new File(".do_publish_beta_release").exists()) new File(".do_publish_beta_release").delete()
+    if (new File(".do_publish_prod_release").exists()) new File(".do_publish_prod_release").delete()
+
+    if (vName == versionProps['VERSION_NAME'].toString()) {
+        println "This version was already built - skip deployment"
+    } else if (vName.endsWith(".0")) {
+        println ""
+        println "====================================================================="
+        println "====================================================================="
+        println "(!) This is a new PRODUCTION release - create deployment trigger file"
+        println "====================================================================="
+        println "====================================================================="
+        println ""
+
+        vCode++
+        new File(".do_publish_prod_release").createNewFile()
+
+        versionProps['VERSION_NAME'] = vName.toString()
+        versionProps['VERSION_CODE'] = vCode.toString()
+
+        versionPropsFile.newWriter().withCloseable { w -> versionProps.store(w, null) }
+    } else {
+        println ""
+        println "==============================================================="
+        println "(!) This is a new beta release - create deployment trigger file"
+        println "==============================================================="
+        println ""
+
+        vCode++
+        new File(".do_publish_beta_release").createNewFile()
+
+        versionProps['VERSION_NAME'] = vName.toString()
+        versionProps['VERSION_CODE'] = vCode.toString()
+
+        versionPropsFile.newWriter().withCloseable { w -> versionProps.store(w, null) }
+    }
+}
