@@ -1,5 +1,6 @@
 package com.blackforestbytes.simplecloudnotifier.view;
 
+import android.net.Uri;
 import android.os.Bundle;
 
 import com.blackforestbytes.simplecloudnotifier.R;
@@ -9,12 +10,15 @@ import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
 import com.blackforestbytes.simplecloudnotifier.service.NotificationService;
 import com.google.android.material.tabs.TabLayout;
 
+import org.jetbrains.annotations.NotNull;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
+import xyz.aprildown.ultimatemusicpicker.MusicPickerListener;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends AppCompatActivity implements MusicPickerListener
 {
     public TabAdapter adpTabs;
 
@@ -49,5 +53,15 @@ public class MainActivity extends AppCompatActivity
         super.onStop();
 
         CMessageList.inst().fullSave();
+    }
+
+    @Override
+    public void onMusicPick(@NotNull Uri uri, @NotNull String s) {
+
+    }
+
+    @Override
+    public void onPickCanceled() {
+
     }
 }

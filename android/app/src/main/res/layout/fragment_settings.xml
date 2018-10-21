@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="12dp">
@@ -32,7 +32,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
                     android:layout_width="match_parent"
@@ -48,7 +48,7 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -57,7 +57,7 @@
                     android:layout_marginTop="2dp"
                     android:background="#c0c0c0"/>
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
                     android:layout_width="match_parent"
@@ -86,12 +86,12 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
             </LinearLayout>
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="12dp">
@@ -109,7 +109,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
                     android:layout_width="match_parent"
@@ -125,7 +125,7 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -134,7 +134,7 @@
                     android:layout_marginTop="2dp"
                     android:background="#c0c0c0"/>
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
@@ -166,7 +166,7 @@
                             tools:ignore="HardcodedText" />
                     </LinearLayout>
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -175,7 +175,7 @@
                     android:layout_marginTop="2dp"
                     android:background="#c0c0c0"/>
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
                     android:layout_width="match_parent"
@@ -191,7 +191,7 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -200,7 +200,7 @@
                     android:layout_marginTop="2dp"
                     android:background="#c0c0c0"/>
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
                     android:layout_width="match_parent"
@@ -216,7 +216,7 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -225,7 +225,7 @@
                     android:layout_marginTop="2dp"
                     android:background="#c0c0c0"/>
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
                     android:layout_width="match_parent"
@@ -257,7 +257,7 @@
                         tools:ignore="ContentDescription" />
 
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -266,7 +266,7 @@
                     android:layout_marginTop="2dp"
                     android:background="#c0c0c0"/>
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
                     android:layout_width="match_parent"
@@ -282,13 +282,13 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
             </LinearLayout>
 
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="12dp">
@@ -306,7 +306,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
                     android:layout_width="match_parent"
@@ -322,7 +322,7 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -331,7 +331,7 @@
                     android:layout_marginTop="2dp"
                     android:background="#c0c0c0"/>
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
@@ -363,7 +363,7 @@
                             tools:ignore="HardcodedText" />
                     </LinearLayout>
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -372,7 +372,7 @@
                     android:layout_marginTop="2dp"
                     android:background="#c0c0c0"/>
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
                     android:layout_width="match_parent"
@@ -388,7 +388,7 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -397,7 +397,7 @@
                     android:layout_marginTop="2dp"
                     android:background="#c0c0c0"/>
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
                     android:layout_width="match_parent"
@@ -413,7 +413,7 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -422,7 +422,7 @@
                     android:layout_marginTop="2dp"
                     android:background="#c0c0c0"/>
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
                     android:layout_width="match_parent"
@@ -454,7 +454,7 @@
                         tools:ignore="ContentDescription" />
 
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -463,7 +463,7 @@
                     android:layout_marginTop="2dp"
                     android:background="#c0c0c0"/>
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
                     android:layout_width="match_parent"
@@ -479,13 +479,13 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
             </LinearLayout>
 
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="12dp">
@@ -503,7 +503,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
                     android:layout_width="match_parent"
@@ -519,7 +519,7 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -528,7 +528,7 @@
                     android:layout_marginTop="2dp"
                     android:background="#c0c0c0"/>
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
@@ -560,7 +560,7 @@
                             tools:ignore="HardcodedText" />
                     </LinearLayout>
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -569,7 +569,7 @@
                     android:layout_marginTop="2dp"
                     android:background="#c0c0c0"/>
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
                     android:layout_width="match_parent"
@@ -585,7 +585,7 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -594,7 +594,7 @@
                     android:layout_marginTop="2dp"
                     android:background="#c0c0c0"/>
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
                     android:layout_width="match_parent"
@@ -610,7 +610,7 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -619,7 +619,7 @@
                     android:layout_marginTop="2dp"
                     android:background="#c0c0c0"/>
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
                     android:layout_width="match_parent"
@@ -651,7 +651,7 @@
                         tools:ignore="ContentDescription" />
 
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -660,7 +660,7 @@
                     android:layout_marginTop="2dp"
                     android:background="#c0c0c0"/>
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
                     android:layout_width="match_parent"
@@ -676,11 +676,11 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
             </LinearLayout>
 
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
     </LinearLayout>
 

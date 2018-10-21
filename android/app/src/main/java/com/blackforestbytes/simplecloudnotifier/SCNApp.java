@@ -37,6 +37,11 @@ public class SCNApp extends Application implements LifecycleObserver
         return instance;
     }
 
+    public static MainActivity getMainActivity()
+    {
+        return mainActivity.get();
+    }
+
     public static boolean isBackground()
     {
         return isBackground;

@@ -1,6 +1,7 @@
 package com.blackforestbytes.simplecloudnotifier.view;
 
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +14,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.blackforestbytes.simplecloudnotifier.R;
+import com.blackforestbytes.simplecloudnotifier.SCNApp;
 import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
 
 import androidx.annotation.NonNull;
@@ -119,8 +121,10 @@ public class SettingsFragment extends Fragment
     {
         SCNSettings s = SCNSettings.inst();
 
-        s.Enabled = prefAppEnabled.isChecked();
+        s.Enabled        = prefAppEnabled.isChecked();
+        s.LocalCacheSize = prefLocalCacheSize.getSelectedItemPosition()>=0 ? SCNSettings.CHOOSABLE_CACHE_SIZES[prefLocalCacheSize.getSelectedItemPosition()] : 100;
 
+        s.save();
     }
 
     private int getCacheSizeIndex(int value)
@@ -142,6 +146,6 @@ public class SettingsFragment extends Fragment
             .notification()
             .alarm()
             .music()
-            .goWithActivity(this, 0, MainActivity.class);
+            .goWithDialog(SCNApp.getMainActivity().getSupportFragmentManager());
     }
 }

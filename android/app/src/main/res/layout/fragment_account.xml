@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".view.AccountFragment">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -216,7 +216,7 @@
             app:layout_constraintStart_toStartOf="parent"
             tools:layout_editor_absoluteY="352dp" />
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <RelativeLayout
         android:id="@+id/loadingPanel"
