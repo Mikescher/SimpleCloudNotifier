@@ -32,7 +32,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
-
                 <android.support.constraint.ConstraintLayout
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
@@ -143,6 +142,7 @@
                     android:minHeight="48dp">
 
                     <LinearLayout
+                        android:id="@+id/prevMsgLowRingtone"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
@@ -339,6 +339,7 @@
                     android:minHeight="48dp">
 
                     <LinearLayout
+                        android:id="@+id/prevMsgNormRingtone"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
@@ -535,6 +536,7 @@
                     android:minHeight="48dp">
 
                     <LinearLayout
+                        android:id="@+id/prevMsgHighRingtone"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"

@@ -1,20 +1,13 @@
 package com.blackforestbytes.simplecloudnotifier.service;
 
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.blackforestbytes.simplecloudnotifier.R;
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
 import com.blackforestbytes.simplecloudnotifier.model.CMessage;
 import com.blackforestbytes.simplecloudnotifier.model.CMessageList;
 import com.blackforestbytes.simplecloudnotifier.model.PriorityEnum;
 import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
-import com.blackforestbytes.simplecloudnotifier.view.MainActivity;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 

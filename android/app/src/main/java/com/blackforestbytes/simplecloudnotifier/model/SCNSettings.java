@@ -22,6 +22,12 @@ public class SCNSettings
         }
     }
 
+    // ------------------------------------------------------------
+
+    public final static Integer[] CHOOSABLE_CACHE_SIZES = new Integer[]{20, 50, 100, 200, 500, 1000, 2000, 5000};
+
+    // ------------------------------------------------------------
+
     public int    quota_curr;
     public int    quota_max;
     public int    user_id;
@@ -29,6 +35,17 @@ public class SCNSettings
 
     public String fcm_token_local;
     public String fcm_token_server;
+
+    // ------------------------------------------------------------
+
+    public boolean Enabled = true;
+    public int LocalCacheSize = 500;
+
+    public final NotificationSettings PriorityLow  = new NotificationSettings();
+    public final NotificationSettings PriorityNorm = new NotificationSettings();
+    public final NotificationSettings PriorityHigh = new NotificationSettings();
+
+    // ------------------------------------------------------------
 
     public SCNSettings()
     {
@@ -40,6 +57,30 @@ public class SCNSettings
         user_key         = sharedPref.getString("user_key", "");
         fcm_token_local  = sharedPref.getString("fcm_token_local", "");
         fcm_token_server = sharedPref.getString("fcm_token_server", "");
+
+        Enabled                     = sharedPref.getBoolean("app_enabled",  Enabled);
+        LocalCacheSize              = sharedPref.getInt("local_cache_size", LocalCacheSize);
+
+        PriorityLow.EnableLED       = sharedPref.getBoolean("priority_low:enabled_led",       PriorityLow.EnableLED);
+        PriorityLow.EnableSound     = sharedPref.getBoolean("priority_low:enabled_sound",     PriorityLow.EnableSound);
+        PriorityLow.EnableVibration = sharedPref.getBoolean("priority_low:enabled_vibration", PriorityLow.EnableVibration);
+        PriorityLow.RepeatSound     = sharedPref.getBoolean("priority_low:repeat_sound",      PriorityLow.RepeatSound);
+        PriorityLow.SoundSource     = sharedPref.getString( "priority_low:sound_source",      PriorityLow.SoundSource);
+        PriorityLow.LEDColor        = sharedPref.getInt(    "priority_low:led_color",         PriorityLow.LEDColor);
+
+        PriorityNorm.EnableLED       = sharedPref.getBoolean("priority_norm:enabled_led",       PriorityNorm.EnableLED);
+        PriorityNorm.EnableSound     = sharedPref.getBoolean("priority_norm:enabled_sound",     PriorityNorm.EnableSound);
+        PriorityNorm.EnableVibration = sharedPref.getBoolean("priority_norm:enabled_vibration", PriorityNorm.EnableVibration);
+        PriorityNorm.RepeatSound     = sharedPref.getBoolean("priority_norm:repeat_sound",      PriorityNorm.RepeatSound);
+        PriorityNorm.SoundSource     = sharedPref.getString( "priority_norm:sound_source",      PriorityNorm.SoundSource);
+        PriorityNorm.LEDColor        = sharedPref.getInt(    "priority_norm:led_color",         PriorityNorm.LEDColor);
+
+        PriorityHigh.EnableLED       = sharedPref.getBoolean("priority_high:enabled_led",       PriorityHigh.EnableLED);
+        PriorityHigh.EnableSound     = sharedPref.getBoolean("priority_high:enabled_sound",     PriorityHigh.EnableSound);
+        PriorityHigh.EnableVibration = sharedPref.getBoolean("priority_high:enabled_vibration", PriorityHigh.EnableVibration);
+        PriorityHigh.RepeatSound     = sharedPref.getBoolean("priority_high:repeat_sound",      PriorityHigh.RepeatSound);
+        PriorityHigh.SoundSource     = sharedPref.getString( "priority_high:sound_source",      PriorityHigh.SoundSource);
+        PriorityHigh.LEDColor        = sharedPref.getInt(    "priority_high:led_color",         PriorityHigh.LEDColor);
     }
 
     public void save()
@@ -47,12 +88,36 @@ public class SCNSettings
         SharedPreferences sharedPref = SCNApp.getContext().getSharedPreferences("Config", Context.MODE_PRIVATE);
         SharedPreferences.Editor e = sharedPref.edit();
 
-        e.putInt("quota_curr", quota_curr);
-        e.putInt("quota_max", quota_max);
-        e.putInt("user_id", user_id);
-        e.putString("user_key", user_key);
-        e.putString("fcm_token_local", fcm_token_local);
+        e.putInt(   "quota_curr",       quota_curr);
+        e.putInt(   "quota_max",        quota_max);
+        e.putInt(   "user_id",          user_id);
+        e.putString("user_key",         user_key);
+        e.putString("fcm_token_local",  fcm_token_local);
         e.putString("fcm_token_server", fcm_token_server);
+
+        e.putBoolean("app_enabled",                    Enabled);
+        e.putInt(    "local_cache_size",               LocalCacheSize);
+
+        e.putBoolean("priority_low:enabled_led",       PriorityLow.EnableLED);
+        e.putBoolean("priority_low:enabled_sound",     PriorityLow.EnableSound);
+        e.putBoolean("priority_low:enabled_vibration", PriorityLow.EnableVibration);
+        e.putBoolean("priority_low:repeat_sound",      PriorityLow.RepeatSound);
+        e.putString( "priority_low:sound_source",      PriorityLow.SoundSource);
+        e.putInt(    "priority_low:led_color",         PriorityLow.LEDColor);
+
+        e.putBoolean("priority_norm:enabled_led",       PriorityNorm.EnableLED);
+        e.putBoolean("priority_norm:enabled_sound",     PriorityNorm.EnableSound);
+        e.putBoolean("priority_norm:enabled_vibration", PriorityNorm.EnableVibration);
+        e.putBoolean("priority_norm:repeat_sound",      PriorityNorm.RepeatSound);
+        e.putString( "priority_norm:sound_source",      PriorityNorm.SoundSource);
+        e.putInt(    "priority_norm:led_color",         PriorityNorm.LEDColor);
+
+        e.putBoolean("priority_high:enabled_led",       PriorityHigh.EnableLED);
+        e.putBoolean("priority_high:enabled_sound",     PriorityHigh.EnableSound);
+        e.putBoolean("priority_high:enabled_vibration", PriorityHigh.EnableVibration);
+        e.putBoolean("priority_high:repeat_sound",      PriorityHigh.RepeatSound);
+        e.putString( "priority_high:sound_source",      PriorityHigh.SoundSource);
+        e.putInt(    "priority_high:led_color",         PriorityHigh.LEDColor);
 
         e.apply();
     }

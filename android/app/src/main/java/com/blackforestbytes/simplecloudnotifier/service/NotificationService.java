@@ -7,12 +7,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
-import android.support.v4.app.NotificationCompat;
 
 import com.blackforestbytes.simplecloudnotifier.R;
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
 import com.blackforestbytes.simplecloudnotifier.model.CMessage;
 import com.blackforestbytes.simplecloudnotifier.view.MainActivity;
+
+import androidx.core.app.NotificationCompat;
 
 public class NotificationService
 {

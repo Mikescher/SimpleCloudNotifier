@@ -35,23 +35,21 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'com.android.support:support-v4:28.0.0'
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.android.support:cardview-v7:28.0.0'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
-    implementation 'com.android.support:recyclerview-v7:28.0.0'
-    implementation 'com.android.support:design:28.0.0'
-
-    implementation 'com.takisoft.fix:preference-v7:28.0.0.0'
-    implementation 'com.takisoft.fix:preference-v7-extras:28.0.0.0'
+    //implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.recyclerview:recyclerview:1.0.0'
+    implementation 'com.google.android.material:material:1.0.0'
 
     implementation 'com.google.firebase:firebase-core:16.0.4'
-    implementation 'com.google.firebase:firebase-messaging:17.3.3'
+    implementation 'com.google.firebase:firebase-messaging:17.3.4'
 
     implementation "android.arch.lifecycle:extensions:1.1.1"
 
     implementation 'com.squareup.okhttp3:okhttp:3.10.0'
     implementation 'com.github.kenglxn.QRGen:android:2.5.0'
+    implementation "com.github.DeweyReed:UltimateMusicPicker:2.0.0"
 }
 
 apply plugin: 'com.google.gms.google-services'

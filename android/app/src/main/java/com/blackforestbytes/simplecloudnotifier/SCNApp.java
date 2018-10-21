@@ -1,20 +1,19 @@
 package com.blackforestbytes.simplecloudnotifier;
 
 import android.app.Application;
-import android.arch.lifecycle.Lifecycle;
-import android.arch.lifecycle.LifecycleObserver;
-import android.arch.lifecycle.OnLifecycleEvent;
-import android.arch.lifecycle.ProcessLifecycleOwner;
 import android.content.Context;
 import android.widget.Toast;
 
-import com.blackforestbytes.simplecloudnotifier.model.CMessageList;
-import com.blackforestbytes.simplecloudnotifier.service.NotificationService;
 import com.blackforestbytes.simplecloudnotifier.view.AccountFragment;
 import com.blackforestbytes.simplecloudnotifier.view.MainActivity;
 import com.blackforestbytes.simplecloudnotifier.view.TabAdapter;
 
 import java.lang.ref.WeakReference;
+
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.ProcessLifecycleOwner;
 
 public class SCNApp extends Application implements LifecycleObserver
 {
