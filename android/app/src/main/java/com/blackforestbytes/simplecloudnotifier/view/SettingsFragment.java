@@ -1,7 +1,6 @@
 package com.blackforestbytes.simplecloudnotifier.view;
 
 import android.media.AudioManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -101,7 +100,9 @@ public class SettingsFragment extends Fragment
             prefAppEnabled.setChecked(s.Enabled);
             prefAppEnabled.setOnCheckedChangeListener((a,b) -> onUpdate());
 
-            prefLocalCacheSize.setAdapter(new ArrayAdapter<>(v.getContext(), android.R.layout.simple_spinner_item, SCNSettings.CHOOSABLE_CACHE_SIZES));
+            ArrayAdapter<Integer> plcsa = new ArrayAdapter<>(v.getContext(), android.R.layout.simple_spinner_item, SCNSettings.CHOOSABLE_CACHE_SIZES);
+            plcsa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            prefLocalCacheSize.setAdapter(plcsa);
             prefLocalCacheSize.setSelection(getCacheSizeIndex(s.LocalCacheSize));
             prefLocalCacheSize.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
             {

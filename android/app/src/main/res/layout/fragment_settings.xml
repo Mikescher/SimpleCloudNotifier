@@ -25,7 +25,7 @@
                 android:layout_height="wrap_content">
 
                 <TextView
-                    android:background="#bdc3c7"
+                    android:background="@color/colorHeader"
                     android:textSize="16sp"
                     android:padding="4dp"
                     android:text="@string/str_common_settings"
@@ -88,7 +88,33 @@
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginBottom="2dp"
+                    android:layout_marginTop="2dp"
+                    android:background="#c0c0c0"/>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp">
+
+                    <Button
+                        android:id="@+id/prefUpgradeAccount"
+                        android:text="Upgrade account"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
             </LinearLayout>
+
         </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView
@@ -102,7 +128,7 @@
                 android:layout_height="wrap_content">
 
                 <TextView
-                    android:background="#bdc3c7"
+                    android:background="@color/colorHeader"
                     android:textSize="16sp"
                     android:padding="4dp"
                     android:text="@string/str_header_prio0"
@@ -299,7 +325,7 @@
                 android:layout_height="wrap_content">
 
                 <TextView
-                    android:background="#bdc3c7"
+                    android:background="@color/colorHeader"
                     android:textSize="16sp"
                     android:padding="4dp"
                     android:text="@string/str_header_prio1"
@@ -496,7 +522,7 @@
                 android:layout_height="wrap_content">
 
                 <TextView
-                    android:background="#bdc3c7"
+                    android:background="@color/colorHeader"
                     android:textSize="16sp"
                     android:padding="4dp"
                     android:text="@string/str_header_prio2"
