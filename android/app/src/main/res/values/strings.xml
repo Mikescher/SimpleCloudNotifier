@@ -15,4 +15,16 @@
     <string name="str_not_connected">not connected</string>
     <string name="str_reload">reload</string>
     <string name="desc_priority_icon">Priority icon</string>
+    <string name="str_common_settings">Common Settings</string>
+    <string name="str_enabled">Enabled</string>
+    <string name="str_localcachesize">Remember the last x notifications locally</string>
+    <string name="str_header_prio0">Notifications (low priority)</string>
+    <string name="str_header_prio1">Notifications (normal priority)</string>
+    <string name="str_header_prio2">Notifications (high priority)</string>
+    <string name="str_msg_enablesound">Enable notification sound</string>
+    <string name="str_notificationsound">Notification sound</string>
+    <string name="str_repeatnotificationsound">Repeat notification sound</string>
+    <string name="str_enable_led">Enable notification light</string>
+    <string name="str_ledcolor">Notification light color</string>
+    <string name="str_enable_vibration">Enable notification vibration</string>
 </resources>
