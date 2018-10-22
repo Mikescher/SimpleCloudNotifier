@@ -55,6 +55,9 @@ public class CMessageList
             SharedPreferences.Editor e = sharedPref.edit();
 
             Messages.add(msg);
+
+            while (Messages.size()>SCNSettings.inst().LocalCacheSize) Messages.remove(0);
+
             e.putInt("message_count", count+1);
             e.putLong("message["+count+"].timestamp", time);
             e.putString("message["+count+"].title", title);

@@ -1,5 +1,6 @@
 package com.blackforestbytes.simplecloudnotifier.view;
 
+import android.app.NotificationManager;
 import android.content.Context;
 import android.media.AudioManager;
 import android.net.Uri;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 
 import com.blackforestbytes.simplecloudnotifier.R;
 import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
+import com.blackforestbytes.simplecloudnotifier.service.NotificationService;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -190,6 +192,7 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
     {
         SCNSettings.inst().save();
         updateUI();
+        NotificationService.inst().updateChannels();
     }
 
     private void onUpgradeAccount()

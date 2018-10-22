@@ -25,6 +25,8 @@ public class FBMService extends FirebaseMessagingService
     {
         try
         {
+            if (!SCNSettings.inst().Enabled) return;
+
             Log.i("FB::MessageReceived", "From: " + remoteMessage.getFrom());
             Log.i("FB::MessageReceived", "Payload: " + remoteMessage.getData());
             if (remoteMessage.getNotification() != null) Log.i("FB::MessageReceived", "Notify_Title: " + remoteMessage.getNotification().getTitle());
@@ -40,11 +42,11 @@ public class FBMService extends FirebaseMessagingService
 
             if (SCNApp.isBackground())
             {
-                NotificationService.inst().show(msg);
+                NotificationService.inst().showBackground(msg);
             }
             else
             {
-                SCNApp.showToast("Message recieved: " + title, Toast.LENGTH_LONG);
+                NotificationService.inst().showForeground(msg);
             }
         }
         catch (Exception e)
