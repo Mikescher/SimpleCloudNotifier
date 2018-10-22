@@ -170,7 +170,7 @@
                     android:minHeight="48dp">
 
                     <LinearLayout
-                        android:id="@+id/prefMsgLowRingtone"
+                        android:id="@+id/prefMsgLowRingtone_container"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
@@ -185,7 +185,7 @@
                             android:textColor="#000" />
 
                         <TextView
-                            android:id="@+id/tvMsgLowRingtone_value"
+                            android:id="@+id/prefMsgLowRingtone_value"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:minWidth="64dp"
@@ -368,7 +368,7 @@
                     android:minHeight="48dp">
 
                     <LinearLayout
-                        android:id="@+id/prefMsgNormRingtone"
+                        android:id="@+id/prefMsgNormRingtone_container"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
@@ -383,7 +383,7 @@
                             android:textColor="#000" />
 
                         <TextView
-                            android:id="@+id/tvMsgNormRingtone_value"
+                            android:id="@+id/prefMsgNormRingtone_value"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:minWidth="64dp"
@@ -566,7 +566,7 @@
                     android:minHeight="48dp">
 
                     <LinearLayout
-                        android:id="@+id/prefMsgHighRingtone"
+                        android:id="@+id/prefMsgHighRingtone_container"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
@@ -581,7 +581,7 @@
                             android:textColor="#000" />
 
                         <TextView
-                            android:id="@+id/tvMsgHighRingtone_value"
+                            android:id="@+id/prefMsgHighRingtone_value"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:minWidth="64dp"

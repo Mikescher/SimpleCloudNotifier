@@ -33,8 +33,8 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
     private Button    prefUpgradeAccount;
 
     private Switch    prefMsgLowEnableSound;
-    private TextView  tvMsgLowRingtone_value;
-    private View      prefMsgLowRingtone;
+    private TextView  prefMsgLowRingtone_value;
+    private View      prefMsgLowRingtone_container;
     private Switch    prefMsgLowRepeatSound;
     private Switch    prefMsgLowEnableLED;
     private View      prefMsgLowLedColor_container;
@@ -42,8 +42,8 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
     private Switch    prefMsgLowEnableVibrations;
 
     private Switch    prefMsgNormEnableSound;
-    private TextView  tvMsgNormRingtone_value;
-    private View      prefMsgNormRingtone;
+    private TextView  prefMsgNormRingtone_value;
+    private View      prefMsgNormRingtone_container;
     private Switch    prefMsgNormRepeatSound;
     private Switch    prefMsgNormEnableLED;
     private View      prefMsgNormLedColor_container;
@@ -51,8 +51,8 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
     private Switch    prefMsgNormEnableVibrations;
 
     private Switch    prefMsgHighEnableSound;
-    private TextView  tvMsgHighRingtone_value;
-    private View      prefMsgHighRingtone;
+    private TextView  prefMsgHighRingtone_value;
+    private View      prefMsgHighRingtone_container;
     private Switch    prefMsgHighRepeatSound;
     private Switch    prefMsgHighEnableLED;
     private View      prefMsgHighLedColor_container;
@@ -85,8 +85,8 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         prefUpgradeAccount            = v.findViewById(R.id.prefUpgradeAccount);
 
         prefMsgLowEnableSound         = v.findViewById(R.id.prefMsgLowEnableSound);
-        tvMsgLowRingtone_value        = v.findViewById(R.id.tvMsgLowRingtone_value);
-        prefMsgLowRingtone            = v.findViewById(R.id.prefMsgLowRingtone);
+        prefMsgLowRingtone_value      = v.findViewById(R.id.prefMsgLowRingtone_value);
+        prefMsgLowRingtone_container  = v.findViewById(R.id.prefMsgLowRingtone_container);
         prefMsgLowRepeatSound         = v.findViewById(R.id.prefMsgLowRepeatSound);
         prefMsgLowEnableLED           = v.findViewById(R.id.prefMsgLowEnableLED);
         prefMsgLowLedColor_value      = v.findViewById(R.id.prefMsgLowLedColor_value);
@@ -94,8 +94,8 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         prefMsgLowEnableVibrations    = v.findViewById(R.id.prefMsgLowEnableVibrations);
 
         prefMsgNormEnableSound        = v.findViewById(R.id.prefMsgNormEnableSound);
-        tvMsgNormRingtone_value       = v.findViewById(R.id.tvMsgNormRingtone_value);
-        prefMsgNormRingtone           = v.findViewById(R.id.prefMsgNormRingtone);
+        prefMsgNormRingtone_value     = v.findViewById(R.id.prefMsgNormRingtone_value);
+        prefMsgNormRingtone_container = v.findViewById(R.id.prefMsgNormRingtone_container);
         prefMsgNormRepeatSound        = v.findViewById(R.id.prefMsgNormRepeatSound);
         prefMsgNormEnableLED          = v.findViewById(R.id.prefMsgNormEnableLED);
         prefMsgNormLedColor_value     = v.findViewById(R.id.prefMsgNormLedColor_value);
@@ -103,8 +103,8 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         prefMsgNormEnableVibrations   = v.findViewById(R.id.prefMsgNormEnableVibrations);
 
         prefMsgHighEnableSound        = v.findViewById(R.id.prefMsgHighEnableSound);
-        tvMsgHighRingtone_value       = v.findViewById(R.id.tvMsgHighRingtone_value);
-        prefMsgHighRingtone           = v.findViewById(R.id.prefMsgHighRingtone);
+        prefMsgHighRingtone_value     = v.findViewById(R.id.prefMsgHighRingtone_value);
+        prefMsgHighRingtone_container = v.findViewById(R.id.prefMsgHighRingtone_container);
         prefMsgHighRepeatSound        = v.findViewById(R.id.prefMsgHighRepeatSound);
         prefMsgHighEnableLED          = v.findViewById(R.id.prefMsgHighEnableLED);
         prefMsgHighLedColor_value     = v.findViewById(R.id.prefMsgHighLedColor_value);
@@ -118,19 +118,33 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         Context c = getContext();
         if (c == null) return;
 
-        prefAppEnabled.setChecked(s.Enabled);
+        if (prefAppEnabled.isChecked() != s.Enabled) prefAppEnabled.setChecked(s.Enabled);
 
         ArrayAdapter<Integer> plcsa = new ArrayAdapter<>(c, android.R.layout.simple_spinner_item, SCNSettings.CHOOSABLE_CACHE_SIZES);
         plcsa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         prefLocalCacheSize.setAdapter(plcsa);
         prefLocalCacheSize.setSelection(getCacheSizeIndex(s.LocalCacheSize));
 
-        prefMsgLowEnableSound.setChecked(s.PriorityLow.EnableSound);
-        tvMsgLowRingtone_value.setText(s.PriorityLow.SoundName);
-        prefMsgLowRepeatSound.setChecked(s.PriorityLow.RepeatSound);
-        prefMsgLowEnableLED.setChecked(s.PriorityLow.EnableLED);
+        if (prefMsgLowEnableSound.isChecked() != s.PriorityLow.EnableSound) prefMsgLowEnableSound.setChecked(s.PriorityLow.EnableSound);
+        if (!prefMsgLowRingtone_value.getText().equals(s.PriorityLow.SoundName)) prefMsgLowRingtone_value.setText(s.PriorityLow.SoundName);
+        if (prefMsgLowRepeatSound.isChecked() != s.PriorityLow.RepeatSound) prefMsgLowRepeatSound.setChecked(s.PriorityLow.RepeatSound);
+        if (prefMsgLowEnableLED.isChecked() != s.PriorityLow.EnableLED) prefMsgLowEnableLED.setChecked(s.PriorityLow.EnableLED);
         prefMsgLowLedColor_value.setColorFilter(s.PriorityLow.LEDColor);
-        prefMsgLowEnableVibrations.setChecked(s.PriorityLow.EnableVibration);
+        if (prefMsgLowEnableVibrations.isChecked() != s.PriorityLow.EnableVibration) prefMsgLowEnableVibrations.setChecked(s.PriorityLow.EnableVibration);
+
+        if (prefMsgNormEnableSound.isChecked() != s.PriorityNorm.EnableSound) prefMsgNormEnableSound.setChecked(s.PriorityNorm.EnableSound);
+        if (!prefMsgNormRingtone_value.getText().equals(s.PriorityNorm.SoundName)) prefMsgNormRingtone_value.setText(s.PriorityNorm.SoundName);
+        if (prefMsgNormRepeatSound.isChecked() != s.PriorityNorm.RepeatSound) prefMsgNormRepeatSound.setChecked(s.PriorityNorm.RepeatSound);
+        if (prefMsgNormEnableLED.isChecked() != s.PriorityNorm.EnableLED) prefMsgNormEnableLED.setChecked(s.PriorityNorm.EnableLED);
+        prefMsgNormLedColor_value.setColorFilter(s.PriorityNorm.LEDColor);
+        if (prefMsgNormEnableVibrations.isChecked() != s.PriorityNorm.EnableVibration) prefMsgNormEnableVibrations.setChecked(s.PriorityNorm.EnableVibration);
+
+        if (prefMsgHighEnableSound.isChecked() != s.PriorityHigh.EnableSound) prefMsgHighEnableSound.setChecked(s.PriorityHigh.EnableSound);
+        if (!prefMsgHighRingtone_value.getText().equals(s.PriorityHigh.SoundName)) prefMsgHighRingtone_value.setText(s.PriorityHigh.SoundName);
+        if (prefMsgHighRepeatSound.isChecked() != s.PriorityHigh.RepeatSound) prefMsgHighRepeatSound.setChecked(s.PriorityHigh.RepeatSound);
+        if (prefMsgHighEnableLED.isChecked() != s.PriorityHigh.EnableLED) prefMsgHighEnableLED.setChecked(s.PriorityHigh.EnableLED);
+        prefMsgHighLedColor_value.setColorFilter(s.PriorityHigh.LEDColor);
+        if (prefMsgHighEnableVibrations.isChecked() != s.PriorityHigh.EnableVibration) prefMsgHighEnableVibrations.setChecked(s.PriorityHigh.EnableVibration);
     }
 
     private void initListener()
@@ -151,11 +165,25 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         prefUpgradeAccount.setOnClickListener(a -> onUpgradeAccount());
 
         prefMsgLowEnableSound.setOnCheckedChangeListener((a,b) -> { s.PriorityLow.EnableSound=b; saveAndUpdate(); });
-        prefMsgLowRingtone.setOnClickListener(a -> chooseRingtoneLow());
+        prefMsgLowRingtone_container.setOnClickListener(a -> chooseRingtoneLow());
         prefMsgLowRepeatSound.setOnCheckedChangeListener((a,b) -> { s.PriorityLow.RepeatSound=b; saveAndUpdate(); });
         prefMsgLowEnableLED.setOnCheckedChangeListener((a,b) -> { s.PriorityLow.EnableLED=b; saveAndUpdate(); });
         prefMsgLowLedColor_container.setOnClickListener(a -> chooseLEDColorLow());
         prefMsgLowEnableVibrations.setOnCheckedChangeListener((a,b) -> { s.PriorityLow.EnableVibration=b; saveAndUpdate(); });
+
+        prefMsgNormEnableSound.setOnCheckedChangeListener((a,b) -> { s.PriorityNorm.EnableSound=b; saveAndUpdate(); });
+        prefMsgNormRingtone_container.setOnClickListener(a -> chooseRingtoneNorm());
+        prefMsgNormRepeatSound.setOnCheckedChangeListener((a,b) -> { s.PriorityNorm.RepeatSound=b; saveAndUpdate(); });
+        prefMsgNormEnableLED.setOnCheckedChangeListener((a,b) -> { s.PriorityNorm.EnableLED=b; saveAndUpdate(); });
+        prefMsgNormLedColor_container.setOnClickListener(a -> chooseLEDColorNorm());
+        prefMsgNormEnableVibrations.setOnCheckedChangeListener((a,b) -> { s.PriorityNorm.EnableVibration=b; saveAndUpdate(); });
+
+        prefMsgHighEnableSound.setOnCheckedChangeListener((a,b) -> { s.PriorityHigh.EnableSound=b; saveAndUpdate(); });
+        prefMsgHighRingtone_container.setOnClickListener(a -> chooseRingtoneHigh());
+        prefMsgHighRepeatSound.setOnCheckedChangeListener((a,b) -> { s.PriorityHigh.RepeatSound=b; saveAndUpdate(); });
+        prefMsgHighEnableLED.setOnCheckedChangeListener((a,b) -> { s.PriorityHigh.EnableLED=b; saveAndUpdate(); });
+        prefMsgHighLedColor_container.setOnClickListener(a -> chooseLEDColorHigh());
+        prefMsgHighEnableVibrations.setOnCheckedChangeListener((a,b) -> { s.PriorityHigh.EnableVibration=b; saveAndUpdate(); });
     }
 
     private void saveAndUpdate()
@@ -181,43 +209,46 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
     private void chooseRingtoneLow()
     {
         musicPickerSwitch = 1;
-        new UltimateMusicPicker()
-                .windowTitle("Choose notification sound")
-                .removeSilent()
-                .streamType(AudioManager.STREAM_ALARM)
-                .ringtone()
-                .notification()
-                .alarm()
-                .music()
-                .goWithDialog(getChildFragmentManager());
+        UltimateMusicPicker ump = new UltimateMusicPicker();
+        ump.windowTitle("Choose notification sound");
+        ump.removeSilent();
+        ump.streamType(AudioManager.STREAM_ALARM);
+        ump.ringtone();
+        ump.notification();
+        ump.alarm();
+        ump.music();
+        if (!SCNSettings.inst().PriorityLow.SoundSource.isEmpty())ump.selectUri(Uri.parse(SCNSettings.inst().PriorityLow.SoundSource));
+        ump.goWithDialog(getChildFragmentManager());
     }
 
     private void chooseRingtoneNorm()
     {
         musicPickerSwitch = 2;
-        new UltimateMusicPicker()
-                .windowTitle("Choose notification sound")
-                .removeSilent()
-                .streamType(AudioManager.STREAM_ALARM)
-                .ringtone()
-                .notification()
-                .alarm()
-                .music()
-                .goWithDialog(getChildFragmentManager());
+        UltimateMusicPicker ump = new UltimateMusicPicker();
+        ump.windowTitle("Choose notification sound");
+        ump.removeSilent();
+        ump.streamType(AudioManager.STREAM_ALARM);
+        ump.ringtone();
+        ump.notification();
+        ump.alarm();
+        ump.music();
+        if (!SCNSettings.inst().PriorityNorm.SoundSource.isEmpty())ump.defaultUri(Uri.parse(SCNSettings.inst().PriorityNorm.SoundSource));
+        ump.goWithDialog(getChildFragmentManager());
     }
 
     private void chooseRingtoneHigh()
     {
         musicPickerSwitch = 3;
-        new UltimateMusicPicker()
-                .windowTitle("Choose notification sound")
-                .removeSilent()
-                .streamType(AudioManager.STREAM_ALARM)
-                .ringtone()
-                .notification()
-                .alarm()
-                .music()
-                .goWithDialog(getChildFragmentManager());
+        UltimateMusicPicker ump = new UltimateMusicPicker();
+        ump.windowTitle("Choose notification sound");
+        ump.removeSilent();
+        ump.streamType(AudioManager.STREAM_ALARM);
+        ump.ringtone();
+        ump.notification();
+        ump.alarm();
+        ump.music();
+        if (!SCNSettings.inst().PriorityHigh.SoundSource.isEmpty())ump.defaultUri(Uri.parse(SCNSettings.inst().PriorityHigh.SoundSource));
+        ump.goWithDialog(getChildFragmentManager());
     }
 
     private void chooseLEDColorLow()
@@ -235,6 +266,52 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
                     @Override
                     public void onColorPicked(int color) {
                         SCNSettings.inst().PriorityLow.LEDColor = color;
+                        saveAndUpdate();
+                    }
+
+                    @Override
+                    public void onColor(int color, boolean fromUser) { }
+                });
+    }
+
+    private void chooseLEDColorNorm()
+    {
+        new ColorPickerPopup.Builder(getContext())
+                .initialColor(SCNSettings.inst().PriorityNorm.LEDColor) // Set initial color
+                .enableBrightness(true) // Enable brightness slider or not
+                .okTitle("Choose")
+                .cancelTitle("Cancel")
+                .showIndicator(true)
+                .showValue(false)
+                .build()
+                .show(getView(), new ColorPickerPopup.ColorPickerObserver()
+                {
+                    @Override
+                    public void onColorPicked(int color) {
+                        SCNSettings.inst().PriorityNorm.LEDColor = color;
+                        saveAndUpdate();
+                    }
+
+                    @Override
+                    public void onColor(int color, boolean fromUser) { }
+                });
+    }
+
+    private void chooseLEDColorHigh()
+    {
+        new ColorPickerPopup.Builder(getContext())
+                .initialColor(SCNSettings.inst().PriorityHigh.LEDColor) // Set initial color
+                .enableBrightness(true) // Enable brightness slider or not
+                .okTitle("Choose")
+                .cancelTitle("Cancel")
+                .showIndicator(true)
+                .showValue(false)
+                .build()
+                .show(getView(), new ColorPickerPopup.ColorPickerObserver()
+                {
+                    @Override
+                    public void onColorPicked(int color) {
+                        SCNSettings.inst().PriorityHigh.LEDColor = color;
                         saveAndUpdate();
                     }
 

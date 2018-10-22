@@ -105,6 +105,7 @@ public class SCNSettings
         e.putBoolean("priority_low:enabled_sound",      PriorityLow.EnableSound);
         e.putBoolean("priority_low:enabled_vibration",  PriorityLow.EnableVibration);
         e.putBoolean("priority_low:repeat_sound",       PriorityLow.RepeatSound);
+        e.putString( "priority_low:sound_name",         PriorityLow.SoundName);
         e.putString( "priority_low:sound_source",       PriorityLow.SoundSource);
         e.putInt(    "priority_low:led_color",          PriorityLow.LEDColor);
 
@@ -112,6 +113,7 @@ public class SCNSettings
         e.putBoolean("priority_norm:enabled_sound",     PriorityNorm.EnableSound);
         e.putBoolean("priority_norm:enabled_vibration", PriorityNorm.EnableVibration);
         e.putBoolean("priority_norm:repeat_sound",      PriorityNorm.RepeatSound);
+        e.putString( "priority_norm:sound_name",        PriorityNorm.SoundName);
         e.putString( "priority_norm:sound_source",      PriorityNorm.SoundSource);
         e.putInt(    "priority_norm:led_color",         PriorityNorm.LEDColor);
 
@@ -119,6 +121,7 @@ public class SCNSettings
         e.putBoolean("priority_high:enabled_sound",     PriorityHigh.EnableSound);
         e.putBoolean("priority_high:enabled_vibration", PriorityHigh.EnableVibration);
         e.putBoolean("priority_high:repeat_sound",      PriorityHigh.RepeatSound);
+        e.putString( "priority_high:sound_name",        PriorityHigh.SoundName);
         e.putString( "priority_high:sound_source",      PriorityHigh.SoundSource);
         e.putInt(    "priority_high:led_color",         PriorityHigh.LEDColor);
 
