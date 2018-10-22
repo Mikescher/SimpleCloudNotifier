@@ -16,9 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
-import xyz.aprildown.ultimatemusicpicker.MusicPickerListener;
 
-public class MainActivity extends AppCompatActivity implements MusicPickerListener
+public class MainActivity extends AppCompatActivity
 {
     public TabAdapter adpTabs;
 
@@ -53,15 +52,5 @@ public class MainActivity extends AppCompatActivity implements MusicPickerListen
         super.onStop();
 
         CMessageList.inst().fullSave();
-    }
-
-    @Override
-    public void onMusicPick(@NotNull Uri uri, @NotNull String s) {
-
-    }
-
-    @Override
-    public void onPickCanceled() {
-
     }
 }

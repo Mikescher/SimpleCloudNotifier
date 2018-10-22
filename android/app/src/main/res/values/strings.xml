@@ -27,4 +27,5 @@
     <string name="str_enable_led">Enable notification light</string>
     <string name="str_ledcolor">Notification light color</string>
     <string name="str_enable_vibration">Enable notification vibration</string>
+    <string name="str_upgrade_account">Upgrade account</string>
 </resources>
