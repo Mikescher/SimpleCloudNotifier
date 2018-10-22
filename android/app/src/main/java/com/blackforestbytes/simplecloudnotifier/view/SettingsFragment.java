@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import top.defaults.colorpicker.ColorPickerPopup;
 import xyz.aprildown.ultimatemusicpicker.MusicPickerListener;
 import xyz.aprildown.ultimatemusicpicker.UltimateMusicPicker;
 
@@ -221,7 +222,25 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
 
     private void chooseLEDColorLow()
     {
-        //
+        new ColorPickerPopup.Builder(getContext())
+                .initialColor(SCNSettings.inst().PriorityLow.LEDColor) // Set initial color
+                .enableBrightness(true) // Enable brightness slider or not
+                .okTitle("Choose")
+                .cancelTitle("Cancel")
+                .showIndicator(true)
+                .showValue(false)
+                .build()
+                .show(getView(), new ColorPickerPopup.ColorPickerObserver()
+                {
+                    @Override
+                    public void onColorPicked(int color) {
+                        SCNSettings.inst().PriorityLow.LEDColor = color;
+                        saveAndUpdate();
+                    }
+
+                    @Override
+                    public void onColor(int color, boolean fromUser) { }
+                });
     }
 
     @Override
