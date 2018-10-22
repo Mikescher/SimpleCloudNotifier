@@ -3,20 +3,49 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:ads="http://schemas.android.com/apk/res-auto"
     tools:context=".view.NotificationsFragment">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvMessages"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:clipToPadding="false"
-        android:scrollbars="vertical" />
+        android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/tvNoElements"
-        android:textAlignment="center"
-        android:gravity="center"
-        android:text="@string/no_notifications"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        <RelativeLayout
+            android:id="@+id/pnlMessages"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/adBanner"
+            android:layout_width="match_parent"
+            android:layout_height="0dp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvMessages"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:scrollbars="vertical" />
+
+            <TextView
+                android:id="@+id/tvNoElements"
+                android:textAlignment="center"
+                android:gravity="center"
+                android:text="@string/no_notifications"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </RelativeLayout>
+
+
+        <com.google.android.gms.ads.doubleclick.PublisherAdView
+            android:id="@+id/adBanner"
+            app:layout_constraintTop_toBottomOf="@+id/pnlMessages"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            ads:adSize="SMART_BANNER"
+            ads:adUnitId="ca-app-pub-3320562328966175/5524654300" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 </FrameLayout>

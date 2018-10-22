@@ -6,6 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.blackforestbytes.simplecloudnotifier.R;
+import com.google.android.gms.ads.doubleclick.PublisherAdRequest;
+import com.google.android.gms.ads.doubleclick.PublisherAdView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -28,6 +30,11 @@ public class NotificationsFragment extends Fragment
         rvMessages.setLayoutManager(new LinearLayoutManager(this.getContext(), RecyclerView.VERTICAL, true));
         rvMessages.setAdapter(new MessageAdapter(v.findViewById(R.id.tvNoElements)));
 
+        PublisherAdView mPublisherAdView = v.findViewById(R.id.adBanner);
+        PublisherAdRequest adRequest = new PublisherAdRequest.Builder().build();
+        mPublisherAdView.loadAd(adRequest);
+
         return v;
     }
+
 }

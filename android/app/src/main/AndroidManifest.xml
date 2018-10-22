@@ -24,6 +24,8 @@
 
         <meta-data android:name="com.google.firebase.messaging.default_notification_icon"  android:resource="@drawable/icon" />
         <meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@color/colorAccent" />
+        <meta-data android:name="com.google.android.gms.ads.AD_MANAGER_APP"                android:value="true"/>
+        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID"                android:value="ca-app-pub-3320562328966175~7579972005"/>
 
         <service android:name=".service.FBMService" android:exported="false">
             <intent-filter>

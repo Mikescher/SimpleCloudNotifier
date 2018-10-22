@@ -19,7 +19,7 @@ import okhttp3.ResponseBody;
 
 public class ServerCommunication
 {
-    public static final String BASE_URL = SCNApp.LOCAL_DEBUG ? "http://localhost:1010/" : "https://scn.blackforestbytes.com/";
+    public static final String BASE_URL = /*SCNApp.LOCAL_DEBUG ? "http://localhost:1010/" : */"https://scn.blackforestbytes.com/";
 
     private static final OkHttpClient client = new OkHttpClient();
 
