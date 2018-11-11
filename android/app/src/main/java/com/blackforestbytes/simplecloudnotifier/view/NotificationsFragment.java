@@ -6,6 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.blackforestbytes.simplecloudnotifier.R;
+import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
+import com.blackforestbytes.simplecloudnotifier.service.IABService;
 import com.google.android.gms.ads.doubleclick.PublisherAdRequest;
 import com.google.android.gms.ads.doubleclick.PublisherAdView;
 
@@ -16,6 +18,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class NotificationsFragment extends Fragment
 {
+    private PublisherAdView adView;
+
     public NotificationsFragment()
     {
         // Required empty public constructor
@@ -30,11 +34,17 @@ public class NotificationsFragment extends Fragment
         rvMessages.setLayoutManager(new LinearLayoutManager(this.getContext(), RecyclerView.VERTICAL, true));
         rvMessages.setAdapter(new MessageAdapter(v.findViewById(R.id.tvNoElements)));
 
-        PublisherAdView mPublisherAdView = v.findViewById(R.id.adBanner);
+        adView = v.findViewById(R.id.adBanner);
         PublisherAdRequest adRequest = new PublisherAdRequest.Builder().build();
-        mPublisherAdView.loadAd(adRequest);
+        adView.loadAd(adRequest);
+
+        adView.setVisibility(SCNSettings.inst().promode_local ? View.GONE : View.VISIBLE);
 
         return v;
     }
 
+    public void updateProState()
+    {
+        adView.setVisibility(IABService.inst().getPurchaseCached(IABService.IAB_PRO_MODE) != null ? View.GONE : View.VISIBLE);
+    }
 }

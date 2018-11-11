@@ -16,7 +16,7 @@ $fcm_token = isset($INPUT['fcm_token']) ? $INPUT['fcm_token'] : null;
 
 $pdo = getDatabase();
 
-$stmt = $pdo->prepare('SELECT user_id, user_key, quota_today, quota_max, quota_day FROM users WHERE user_id = :uid LIMIT 1');
+$stmt = $pdo->prepare('SELECT user_id, user_key, quota_today, quota_day, is_pro FROM users WHERE user_id = :uid LIMIT 1');
 $stmt->execute(['uid' => $user_id]);
 
 $datas = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -28,7 +28,7 @@ if ($data['user_id'] !== (int)$user_id) die(json_encode(['success' => false, 'me
 if ($data['user_key'] !== $user_key) die(json_encode(['success' => false, 'message' => 'Authentification failed']));
 
 $quota = $data['quota_today'];
-$quota_max = $data['quota_max'];
+$is_pro = $data['is_pro'];
 
 $new_userkey = generateRandomAuthKey();
 
@@ -39,12 +39,13 @@ if ($fcm_token === null)
 
 	echo json_encode(
 	[
-		'success' => true,
-		'user_id' => $user_id,
+		'success'  => true,
+		'user_id'  => $user_id,
 		'user_key' => $new_userkey,
 		'quota'    => $quota,
-		'quota_max'=> $quota_max,
-		'message' => 'user updated'
+		'quota_max'=> Statics::quota_max($data['is_pro']),
+		'is_pro'   => $is_pro,
+		'message'  => 'user updated'
 	]);
 	return 0;
 }
@@ -59,7 +60,8 @@ else
 		'user_id' => $user_id,
 		'user_key' => $new_userkey,
 		'quota'    => $quota,
-		'quota_max'=> $quota_max,
+		'quota_max'=> Statics::quota_max($data['is_pro']),
+		'is_pro'   => $is_pro,
 		'message' => 'user updated'
 	]);
 	return 0;

@@ -181,3 +181,4 @@ $RECYCLE.BIN/
 #################
 
 config.php
+.verify_accesstoken

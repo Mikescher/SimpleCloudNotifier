@@ -28,4 +28,6 @@
     <string name="str_ledcolor">Notification light color</string>
     <string name="str_enable_vibration">Enable notification vibration</string>
     <string name="str_upgrade_account">Upgrade account</string>
+    <string name="str_promode">Thank you for supporting the app and using the pro mode</string>
+    <string name="str_promode_info">Increase your daily quota, remove the ad banner and support the developer (that\'s me)</string>
 </resources>

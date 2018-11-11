@@ -32,7 +32,7 @@ if (strlen($content) > 10000)    die(json_encode(['success' => false, 'errhighli
 
 $pdo = getDatabase();
 
-$stmt = $pdo->prepare('SELECT user_id, user_key, fcm_token, messages_sent, quota_today, quota_max, quota_day FROM users WHERE user_id = :uid LIMIT 1');
+$stmt = $pdo->prepare('SELECT user_id, user_key, fcm_token, messages_sent, quota_today, is_pro, quota_day FROM users WHERE user_id = :uid LIMIT 1');
 $stmt->execute(['uid' => $user_id]);
 
 $datas = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -47,7 +47,7 @@ $fcm = $data['fcm_token'];
 
 $new_quota = $data['quota_today'] + 1;
 if ($data['quota_day'] === null || $data['quota_day'] !== date("Y-m-d")) $new_quota=1;
-if ($new_quota > $data['quota_max']) die(json_encode(['success' => false, 'errhighlight' => -1, 'message' => 'Daily quota reached ('.$data['quota_max'].')']));
+if ($new_quota > Statics::quota_max($data['is_pro'])) die(json_encode(['success' => false, 'errhighlight' => -1, 'message' => 'Daily quota reached ('.Statics::quota_max($data['is_pro']).')']));
 
 //------------------------------------------------------------------
 
@@ -90,11 +90,12 @@ $stmt->execute(['uid' => $user_id, 'q' => $new_quota]);
 
 echo (json_encode(
 [
-	'success' => true,
-	'message' => 'Message sent',
-	'response' => $httpresult,
+	'success'      => true,
+	'message'      => 'Message sent',
+	'response'     => $httpresult,
 	'messagecount' => $data['messages_sent']+1,
-	'quota'=>$new_quota,
-	'quota_max'=>$data['quota_max'],
+	'quota'        => $new_quota,
+	'is_pro'       => $data['is_pro'],
+	'quota_max'    => Statics::quota_max($data['is_pro']),
 ]));
 return 0;

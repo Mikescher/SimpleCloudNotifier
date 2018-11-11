@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.widget.Toast;
 
+import com.android.billingclient.api.BillingClient;
 import com.blackforestbytes.simplecloudnotifier.view.AccountFragment;
 import com.blackforestbytes.simplecloudnotifier.view.MainActivity;
 import com.blackforestbytes.simplecloudnotifier.view.TabAdapter;

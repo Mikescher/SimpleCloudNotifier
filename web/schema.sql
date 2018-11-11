@@ -9,7 +9,9 @@ CREATE TABLE `users`
 
 	`quota_today`        INT(11)      NOT NULL   DEFAULT '0',
 	`quota_day`          DATE             NULL   DEFAULT NULL,
-	`quota_max`          INT(11)      NOT NULL   DEFAULT '100',
+
+	`is_pro`             BIT          NOT NULL   DEFAULT 0,
+	`pro_token`          VARCHAR(256)     NULL   DEFAULT NULL,
 
 	PRIMARY KEY (`user_id`)
 );

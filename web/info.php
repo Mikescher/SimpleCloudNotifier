@@ -15,7 +15,7 @@ $user_key  = $INPUT['user_key'];
 
 $pdo = getDatabase();
 
-$stmt = $pdo->prepare('SELECT user_id, user_key, quota_today, quota_max, quota_day FROM users WHERE user_id = :uid LIMIT 1');
+$stmt = $pdo->prepare('SELECT user_id, user_key, quota_today, is_pro, quota_day FROM users WHERE user_id = :uid LIMIT 1');
 $stmt->execute(['uid' => $user_id]);
 
 $datas = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -27,16 +27,17 @@ if ($data['user_id'] !== (int)$user_id) die(json_encode(['success' => false, 'er
 if ($data['user_key'] !== $user_key) die(json_encode(['success' => false, 'errid'=>204, 'message' => 'Authentification failed']));
 
 $quota = $data['quota_today'];
-$quota_max = $data['quota_max'];
+$is_pro = $data['is_pro'];
 
 if ($data['quota_day'] === null || $data['quota_day'] !== date("Y-m-d")) $quota=0;
 
 echo json_encode(
 [
-	'success'  => true,
-	'user_id'  => $user_id,
-	'quota'    => $quota,
-	'quota_max'=> $quota_max,
-	'message'  => 'ok'
+	'success'   => true,
+	'user_id'   => $user_id,
+	'quota'     => $quota,
+	'quota_max' => Statics::quota_max($is_pro),
+	'is_pro'    => $is_pro,
+	'message'   => 'ok'
 ]);
 return 0;

@@ -1,6 +1,5 @@
 package com.blackforestbytes.simplecloudnotifier.view;
 
-import android.app.NotificationManager;
 import android.content.Context;
 import android.media.AudioManager;
 import android.net.Uri;
@@ -16,8 +15,10 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.android.billingclient.api.Purchase;
 import com.blackforestbytes.simplecloudnotifier.R;
 import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
+import com.blackforestbytes.simplecloudnotifier.service.IABService;
 import com.blackforestbytes.simplecloudnotifier.service.NotificationService;
 
 import org.jetbrains.annotations.NotNull;
@@ -33,6 +34,8 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
     private Switch    prefAppEnabled;
     private Spinner   prefLocalCacheSize;
     private Button    prefUpgradeAccount;
+    private TextView  prefUpgradeAccount_msg;
+    private TextView  prefUpgradeAccount_info;
 
     private Switch    prefMsgLowEnableSound;
     private TextView  prefMsgLowRingtone_value;
@@ -85,6 +88,8 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         prefAppEnabled                = v.findViewById(R.id.prefAppEnabled);
         prefLocalCacheSize            = v.findViewById(R.id.prefLocalCacheSize);
         prefUpgradeAccount            = v.findViewById(R.id.prefUpgradeAccount);
+        prefUpgradeAccount_msg        = v.findViewById(R.id.prefUpgradeAccount2);
+        prefUpgradeAccount_info       = v.findViewById(R.id.prefUpgradeAccount_info);
 
         prefMsgLowEnableSound         = v.findViewById(R.id.prefMsgLowEnableSound);
         prefMsgLowRingtone_value      = v.findViewById(R.id.prefMsgLowRingtone_value);
@@ -121,6 +126,10 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         if (c == null) return;
 
         if (prefAppEnabled.isChecked() != s.Enabled) prefAppEnabled.setChecked(s.Enabled);
+
+        prefUpgradeAccount.setVisibility(     SCNSettings.inst().promode_local ? View.GONE    : View.VISIBLE);
+        prefUpgradeAccount_info.setVisibility(SCNSettings.inst().promode_local ? View.GONE    : View.VISIBLE);
+        prefUpgradeAccount_msg.setVisibility( SCNSettings.inst().promode_local ? View.VISIBLE : View.GONE   );
 
         ArrayAdapter<Integer> plcsa = new ArrayAdapter<>(c, android.R.layout.simple_spinner_item, SCNSettings.CHOOSABLE_CACHE_SIZES);
         plcsa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -197,7 +206,16 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
 
     private void onUpgradeAccount()
     {
-        //TODO
+        IABService.inst().purchase(getActivity(), IABService.IAB_PRO_MODE);
+    }
+
+    public void updateProState()
+    {
+        Purchase p = IABService.inst().getPurchaseCached(IABService.IAB_PRO_MODE);
+
+        prefUpgradeAccount.setVisibility(     p != null ? View.GONE    : View.VISIBLE);
+        prefUpgradeAccount_info.setVisibility(p != null ? View.GONE    : View.VISIBLE);
+        prefUpgradeAccount_msg.setVisibility( p != null ? View.VISIBLE : View.GONE   );
     }
 
     private int getCacheSizeIndex(int value)

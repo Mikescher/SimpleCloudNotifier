@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -25,12 +26,12 @@ public class ServerCommunication
 
     private ServerCommunication(){ throw new Error("no."); }
 
-    public static void register(String token, View loader)
+    public static void register(String token, View loader, boolean pro, String pro_token)
     {
         try
         {
             Request request = new Request.Builder()
-                    .url(BASE_URL + "register.php?fcm_token="+token)
+                    .url(BASE_URL + "register.php?fcm_token=" + token + "&pro=" + pro + "&pro_token=" + URLEncoder.encode(pro_token, "utf-8"))
                     .build();
 
             client.newCall(request).enqueue(new Callback()
@@ -67,6 +68,7 @@ public class ServerCommunication
                         SCNSettings.inst().fcm_token_server = token;
                         SCNSettings.inst().quota_curr       = json.getInt("quota");
                         SCNSettings.inst().quota_max        = json.getInt("quota_max");
+                        SCNSettings.inst().promode_server   = json.getBoolean("is_pro");
                         SCNSettings.inst().save();
 
                         SCNApp.refreshAccountTab();
@@ -132,6 +134,7 @@ public class ServerCommunication
                         SCNSettings.inst().fcm_token_server = token;
                         SCNSettings.inst().quota_curr       = json.getInt("quota");
                         SCNSettings.inst().quota_max        = json.getInt("quota_max");
+                        SCNSettings.inst().promode_server   = json.getBoolean("is_pro");
                         SCNSettings.inst().save();
 
                         SCNApp.refreshAccountTab();
@@ -187,10 +190,11 @@ public class ServerCommunication
                             return;
                         }
 
-                        SCNSettings.inst().user_id = json.getInt("user_id");
-                        SCNSettings.inst().user_key = json.getString("user_key");
-                        SCNSettings.inst().quota_curr = json.getInt("quota");
-                        SCNSettings.inst().quota_max = json.getInt("quota_max");
+                        SCNSettings.inst().user_id          = json.getInt("user_id");
+                        SCNSettings.inst().user_key         = json.getString("user_key");
+                        SCNSettings.inst().quota_curr       = json.getInt("quota");
+                        SCNSettings.inst().quota_max        = json.getInt("quota_max");
+                        SCNSettings.inst().promode_server   = json.getBoolean("is_pro");
                         SCNSettings.inst().save();
 
                         SCNApp.refreshAccountTab();
@@ -247,9 +251,10 @@ public class ServerCommunication
                             return;
                         }
 
-                        SCNSettings.inst().user_id = json.getInt("user_id");
-                        SCNSettings.inst().quota_curr = json.getInt("quota");
-                        SCNSettings.inst().quota_max = json.getInt("quota_max");
+                        SCNSettings.inst().user_id        = json.getInt("user_id");
+                        SCNSettings.inst().quota_curr     = json.getInt("quota");
+                        SCNSettings.inst().quota_max      = json.getInt("quota_max");
+                        SCNSettings.inst().promode_server = json.getBoolean("is_pro");
                         SCNSettings.inst().save();
 
                         SCNApp.refreshAccountTab();
@@ -270,4 +275,63 @@ public class ServerCommunication
             SCNApp.showToast("Communication with server failed", 4000);
         }
     }
+
+    public static void upgrade(int id, String key, View loader, boolean pro, String pro_token)
+    {
+        try
+        {
+            SCNApp.runOnUiThread(() -> { if (loader != null) loader.setVisibility(View.GONE); });
+
+            Request request = new Request.Builder()
+                    .url(BASE_URL + "upgrade.php?user_id=" + id + "&user_key=" + key + "&pro=" + pro + "&pro_token=" + URLEncoder.encode(pro_token, "utf-8"))
+                    .build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    e.printStackTrace();
+                    SCNApp.showToast("Communication with server failed", 4000);
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) {
+                    try (ResponseBody responseBody = response.body()) {
+                        if (!response.isSuccessful())
+                            throw new IOException("Unexpected code " + response);
+                        if (responseBody == null) throw new IOException("No response");
+
+                        String r = responseBody.string();
+                        Log.d("Server::Response", r);
+
+                        JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
+
+                        if (!json.getBoolean("success")) {
+                            SCNApp.showToast(json.getString("message"), 4000);
+                            return;
+                        }
+
+                        SCNSettings.inst().user_id          = json.getInt("user_id");
+                        SCNSettings.inst().user_key         = json.getString("user_key");
+                        SCNSettings.inst().quota_curr       = json.getInt("quota");
+                        SCNSettings.inst().quota_max        = json.getInt("quota_max");
+                        SCNSettings.inst().promode_server   = json.getBoolean("is_pro");
+                        SCNSettings.inst().save();
+
+                        SCNApp.refreshAccountTab();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        SCNApp.showToast("Communication with server failed", 4000);
+                    } finally {
+                        SCNApp.runOnUiThread(() -> { if (loader != null) loader.setVisibility(View.GONE); });
+                    }
+                }
+            });
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            SCNApp.showToast("Communication with server failed", 4000);
+        }
+    }
+
 }

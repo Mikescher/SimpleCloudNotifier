@@ -6,7 +6,9 @@ import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.View;
 
+import com.android.billingclient.api.Purchase;
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
+import com.blackforestbytes.simplecloudnotifier.service.IABService;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 public class SCNSettings
@@ -36,6 +38,10 @@ public class SCNSettings
     public String fcm_token_local;
     public String fcm_token_server;
 
+    public String  promode_token;
+    public boolean promode_local;
+    public boolean promode_server;
+
     // ------------------------------------------------------------
 
     public boolean Enabled = true;
@@ -57,6 +63,9 @@ public class SCNSettings
         user_key         = sharedPref.getString("user_key",         "");
         fcm_token_local  = sharedPref.getString("fcm_token_local",  "");
         fcm_token_server = sharedPref.getString("fcm_token_server", "");
+        promode_local    = sharedPref.getBoolean("promode_local",   false);
+        promode_server   = sharedPref.getBoolean("promode_server",  false);
+        promode_token    = sharedPref.getString("promode_token",    "");
 
         Enabled                     = sharedPref.getBoolean("app_enabled",  Enabled);
         LocalCacheSize              = sharedPref.getInt("local_cache_size", LocalCacheSize);
@@ -151,10 +160,12 @@ public class SCNSettings
         {
             fcm_token_local = token;
             save();
-            ServerCommunication.register(fcm_token_local, loader);
+            ServerCommunication.register(fcm_token_local, loader, promode_local, promode_token);
+            updateProState(loader);
         }
     }
 
+    // called at app start
     public void work(Activity a)
     {
         FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(a, instanceIdResult ->
@@ -166,8 +177,11 @@ public class SCNSettings
         {
             if (isConnected()) ServerCommunication.info(user_id, user_key, null);
         });
+
+        updateProState(null);
     }
 
+    // reset account key
     public void reset(View loader)
     {
         if (!isConnected()) return;
@@ -175,23 +189,50 @@ public class SCNSettings
         ServerCommunication.update(user_id, user_key, loader);
     }
 
+    // refresh account data
     public void refresh(View loader, Activity a)
     {
         if (isConnected())
         {
             ServerCommunication.info(user_id, user_key, loader);
+            if (promode_server != promode_local)
+            {
+                updateProState(loader);
+            }
         }
         else
         {
+            // get token then register
             FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(a, instanceIdResult ->
             {
                 String newToken = instanceIdResult.getToken();
                 Log.e("FB::GetInstanceId", newToken);
-                SCNSettings.inst().setServerToken(newToken, loader);
+                SCNSettings.inst().setServerToken(newToken, loader); // does register in here
             }).addOnCompleteListener(r ->
             {
-                if (isConnected()) ServerCommunication.info(user_id, user_key, null);
+                if (isConnected()) ServerCommunication.info(user_id, user_key, null); // info again for safety
             });
         }
+    }
+
+    public void updateProState(View loader)
+    {
+        Purchase purch = IABService.inst().getPurchaseCached(IABService.IAB_PRO_MODE);
+        boolean promode_real = (purch != null);
+
+        if (promode_real != promode_local || promode_real != promode_server)
+        {
+            promode_local = promode_real;
+
+            promode_token = promode_real ? purch.getPurchaseToken() : "";
+            updateProStateOnServer(loader);
+        }
+    }
+
+    public void updateProStateOnServer(View loader)
+    {
+        if (!isConnected()) return;
+
+        ServerCommunication.upgrade(user_id, user_key, loader, promode_local, promode_token);
     }
 }

@@ -1,16 +1,14 @@
 package com.blackforestbytes.simplecloudnotifier.view;
 
-import android.net.Uri;
 import android.os.Bundle;
 
 import com.blackforestbytes.simplecloudnotifier.R;
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
 import com.blackforestbytes.simplecloudnotifier.model.CMessageList;
 import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
+import com.blackforestbytes.simplecloudnotifier.service.IABService;
 import com.blackforestbytes.simplecloudnotifier.service.NotificationService;
 import com.google.android.material.tabs.TabLayout;
-
-import org.jetbrains.annotations.NotNull;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -42,7 +40,7 @@ public class MainActivity extends AppCompatActivity
         tabLayout.setupWithViewPager(viewPager);
 
         SCNApp.register(this);
-
+        IABService.startup(this);
         SCNSettings.inst().work(this);
     }
 
@@ -51,6 +49,16 @@ public class MainActivity extends AppCompatActivity
     {
         super.onStop();
 
+        SCNSettings.inst().save();
         CMessageList.inst().fullSave();
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+
+        CMessageList.inst().fullSave();
+        IABService.inst().destroy();
     }
 }
