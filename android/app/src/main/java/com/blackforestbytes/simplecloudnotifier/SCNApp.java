@@ -97,3 +97,33 @@ public class SCNApp extends Application implements LifecycleObserver
         isBackground = false;
     }
 }
+
+/*
+ ==TODO==
+
+ - Pro mode
+    - no ads
+    - more quota
+    - restore pro mode
+    - send pro state to server
+
+ - prevent duplicate-send
+    - send custom msg-id in API
+    - prevent second ack on same msg-id
+
+ - more in-depth API doc on website (?)
+
+ - perhaps response codes in api (?)
+
+ - test notification channels
+
+ - publish (+ HN post ?)
+
+ - Use for mscom server errrors
+ - Use for bfb server errors
+ - Use for transmission state
+    - Message on connnection lost (seperate process - resend until succ)
+    - Message on connnection regained
+    - Message on seed-count changed
+
+*/

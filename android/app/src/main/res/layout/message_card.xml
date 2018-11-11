@@ -63,6 +63,7 @@
 
             <ImageView
                 android:id="@+id/ivPriority"
+                android:tint="#BBB"
                 android:visibility="gone"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
