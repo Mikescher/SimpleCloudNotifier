@@ -123,7 +123,7 @@ function sendPOST($url, $body, $header)
 
 	if ($response->code != 200) throw new Exception("Repsponse code: " . $response->code);
 
-	return $response->body;
+	return $response->raw_body;
 }
 
 function verifyOrderToken($tok)
@@ -136,26 +136,25 @@ function verifyOrderToken($tok)
 		$product  = getConfig()['verify_api']['product_id'];
 		$acctoken = getConfig()['verify_api']['accesstoken'];
 
-		if ($acctoken == '') $acctoken = refreshVerifyToken();
+		if ($acctoken == '' || $acctoken == null || $acctoken == false) $acctoken = refreshVerifyToken();
 
 		$url = 	'https://www.googleapis.com/androidpublisher/v3/applications/'.$package.'/purchases/products/'.$product.'/tokens/'.$tok.'?access_token='.$acctoken;
+		$response = $builder = \Httpful\Request::get($url)->send();
+		$obj = json_decode($response->raw_body, true);
 
-		$json = sendPOST($url, "", []);
-		$obj = json_decode($json);
-
-		if ($obj === null || $obj === false)
+		if ($response->code != 401 && ($obj === null || $obj === false))
 		{
 			reportError('verify-token returned NULL');
 			return false;
 		}
 
-		if (isset($obj['error']) && isset($obj['error']['code']) && $obj['error']['code'] == 401) // "Invalid Credentials" -- refresh acces_token
+		if ($response->code == 401 || isset($obj['error']) && isset($obj['error']['code']) && $obj['error']['code'] == 401) // "Invalid Credentials" -- refresh acces_token
 		{
 			$acctoken = refreshVerifyToken();
 
 			$url = 	'https://www.googleapis.com/androidpublisher/v3/applications/'.$package.'/purchases/products/'.$product.'/tokens/'.$tok.'?access_token='.$acctoken;
-			$json = sendPOST($url, "", []);
-			$obj = json_decode($json);
+			$response = $builder = \Httpful\Request::get($url)->send();
+			$obj = json_decode($response->raw_body, true);
 
 			if ($obj === null || $obj === false)
 			{
@@ -185,10 +184,10 @@ function refreshVerifyToken()
 			'&client_secret='.getConfig()['verify_api']['clientsecret'];
 
 	$json = sendPOST($url, "", []);
-	$obj = json_decode($json);
+	$obj = json_decode($json, true);
 	file_put_contents('.verify_accesstoken', $obj['access_token']);
 
-	return $obj->access_token;
+	return $obj['access_token'];
 }
 
 function api_return($http_code, $message)
@@ -207,7 +206,7 @@ function try_json($str, $path)
 {
 	try
 	{
-		$o = json_decode($str);
+		$o = json_decode($str, true);
 		foreach ($path as $p) $o = $o[$p];
 		return $o;
 	}
@@ -216,3 +215,15 @@ function try_json($str, $path)
 		return null;
 	}
 }
+
+//#################################################################################################################
+
+if (getConfig()['global']['prod']) {
+	ini_set('display_errors', 0);
+	ini_set('log_errors', 1);
+} else {
+	error_reporting(E_STRICT);
+	ini_set('display_errors', 1);
+}
+
+//#################################################################################################################
