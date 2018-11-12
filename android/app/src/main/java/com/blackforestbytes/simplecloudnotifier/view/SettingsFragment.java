@@ -201,7 +201,6 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
     {
         SCNSettings.inst().save();
         updateUI();
-        NotificationService.inst().updateChannels();
     }
 
     private void onUpgradeAccount()

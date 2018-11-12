@@ -48,9 +48,9 @@ public class SCNSettings
     public boolean Enabled = true;
     public int LocalCacheSize = 500;
 
-    public final NotificationSettings PriorityLow  = new NotificationSettings();
-    public final NotificationSettings PriorityNorm = new NotificationSettings();
-    public final NotificationSettings PriorityHigh = new NotificationSettings();
+    public final NotificationSettings PriorityLow  = new NotificationSettings(PriorityEnum.LOW);
+    public final NotificationSettings PriorityNorm = new NotificationSettings(PriorityEnum.NORMAL);
+    public final NotificationSettings PriorityHigh = new NotificationSettings(PriorityEnum.HIGH);
 
     // ------------------------------------------------------------
 

@@ -118,6 +118,8 @@ public class SCNApp extends Application implements LifecycleObserver
 
 [X]  - verify recieve
 
+[ ]  - Android O repeat sound
+
 [ ]  - test notification channels
 
 [ ] - publish (+ HN post ?)
