@@ -8,6 +8,7 @@ import android.view.View;
 
 import com.android.billingclient.api.Purchase;
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
+import com.blackforestbytes.simplecloudnotifier.lib.string.Str;
 import com.blackforestbytes.simplecloudnotifier.service.IABService;
 import com.google.firebase.iid.FirebaseInstanceId;
 
@@ -195,10 +196,10 @@ public class SCNSettings
         if (isConnected())
         {
             ServerCommunication.info(user_id, user_key, loader);
-            if (promode_server != promode_local)
-            {
-                updateProState(loader);
-            }
+
+            if (promode_server != promode_local) updateProState(loader);
+
+            if (!Str.equals(fcm_token_local, fcm_token_server)) work(a);
         }
         else
         {

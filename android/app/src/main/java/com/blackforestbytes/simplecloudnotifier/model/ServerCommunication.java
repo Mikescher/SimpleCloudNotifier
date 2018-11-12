@@ -276,6 +276,7 @@ public class ServerCommunication
                         SCNSettings.inst().quota_curr     = json_int(json, "quota");
                         SCNSettings.inst().quota_max      = json_int(json, "quota_max");
                         SCNSettings.inst().promode_server = json_bool(json, "is_pro");
+                        if (!json_bool(json, "fcm_token_set")) SCNSettings.inst().fcm_token_server = "";
                         SCNSettings.inst().save();
 
                         SCNApp.refreshAccountTab();

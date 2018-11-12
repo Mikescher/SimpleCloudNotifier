@@ -101,6 +101,10 @@
                     <td data-label="Explanation">The user has exceeded its daily quota - wait 24 hours or upgrade your account</td>
                 </tr>
                 <tr>
+                    <td data-label="Statuscode">412 (Precondition Failed)</td>
+                    <td data-label="Explanation">There is no device connected with this account - open the app and press the refresh button in the account tab</td>
+                </tr>
+                <tr>
                     <td data-label="Statuscode">500 (Internal Server Error)</td>
                     <td data-label="Explanation">There was an internal error while sending your data - try again later</td>
                 </tr>

@@ -54,6 +54,11 @@ try
 	if ($data['quota_day'] === null || $data['quota_day'] !== date("Y-m-d")) $new_quota=1;
 	if ($new_quota > Statics::quota_max($data['is_pro'])) api_return(403, json_encode(['success' => false, 'error' => 2101, 'errhighlight' => -1, 'message' => 'Daily quota reached ('.Statics::quota_max($data['is_pro']).')']));
 
+	if ($fcm == null || $fcm == '' ||  $fcm == false)
+	{
+		api_return(412, json_encode(['success' => false, 'error' => 1401, 'errhighlight' => -1, 'message' => 'No device linked with this account']));
+	}
+
 //------------------------------------------------------------------
 
 	if ($usrmsgid != null)

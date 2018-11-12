@@ -116,6 +116,8 @@ public class SCNApp extends Application implements LifecycleObserver
 
 [X]  - perhaps response codes in api (?)
 
+[ ]  - verify recieve
+
 [ ]  - test notification channels
 
 [ ] - publish (+ HN post ?)

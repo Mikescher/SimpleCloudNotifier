@@ -34,6 +34,8 @@ $new_userkey = generateRandomAuthKey();
 
 if ($fcm_token === null)
 {
+	// only gen new user_secret
+
 	$stmt = $pdo->prepare('UPDATE users SET timestamp_accessed=NOW(), user_key=:at WHERE user_id = :uid');
 	$stmt->execute(['uid' => $user_id, 'at' => $new_userkey]);
 
@@ -51,8 +53,13 @@ if ($fcm_token === null)
 }
 else
 {
+	// update fcm and gen new user_secret
+
 	$stmt = $pdo->prepare('UPDATE users SET timestamp_accessed=NOW(), fcm_token=:ft, user_key=:at WHERE user_id = :uid');
 	$stmt->execute(['uid' => $user_id, 'ft' => $fcm_token, 'at' => $new_userkey]);
+
+	$stmt = $pdo->prepare('UPDATE users SET fcm_token=NULL WHERE user_id <> :uid AND fcm_token=:ft');
+	$stmt->execute(['uid' => $user_id, 'ft' => $fcm_token]);
 
 	echo json_encode(
 	[
