@@ -4,7 +4,9 @@ import android.util.Log;
 import android.view.View;
 
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
+import com.blackforestbytes.simplecloudnotifier.lib.string.Str;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
@@ -57,18 +59,18 @@ public class ServerCommunication
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
 
-                        if (!json.getBoolean("success"))
+                        if (!json_bool(json, "success"))
                         {
-                            SCNApp.showToast(json.getString("message"), 4000);
+                            SCNApp.showToast(json_str(json, "message"), 4000);
                             return;
                         }
 
-                        SCNSettings.inst().user_id          = json.getInt("user_id");
-                        SCNSettings.inst().user_key         = json.getString("user_key");
+                        SCNSettings.inst().user_id          = json_int(json, "user_id");
+                        SCNSettings.inst().user_key         = json_str(json, "user_key");
                         SCNSettings.inst().fcm_token_server = token;
-                        SCNSettings.inst().quota_curr       = json.getInt("quota");
-                        SCNSettings.inst().quota_max        = json.getInt("quota_max");
-                        SCNSettings.inst().promode_server   = json.getBoolean("is_pro");
+                        SCNSettings.inst().quota_curr       = json_int(json, "quota");
+                        SCNSettings.inst().quota_max        = json_int(json, "quota_max");
+                        SCNSettings.inst().promode_server   = json_bool(json, "is_pro");
                         SCNSettings.inst().save();
 
                         SCNApp.refreshAccountTab();
@@ -123,18 +125,18 @@ public class ServerCommunication
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
 
-                        if (!json.getBoolean("success"))
+                        if (!json_bool(json, "success"))
                         {
-                            SCNApp.showToast(json.getString("message"), 4000);
+                            SCNApp.showToast(json_str(json, "message"), 4000);
                             return;
                         }
 
-                        SCNSettings.inst().user_id          = json.getInt("user_id");
-                        SCNSettings.inst().user_key         = json.getString("user_key");
+                        SCNSettings.inst().user_id          = json_int(json, "user_id");
+                        SCNSettings.inst().user_key         = json_str(json, "user_key");
                         SCNSettings.inst().fcm_token_server = token;
-                        SCNSettings.inst().quota_curr       = json.getInt("quota");
-                        SCNSettings.inst().quota_max        = json.getInt("quota_max");
-                        SCNSettings.inst().promode_server   = json.getBoolean("is_pro");
+                        SCNSettings.inst().quota_curr       = json_int(json, "quota");
+                        SCNSettings.inst().quota_max        = json_int(json, "quota_max");
+                        SCNSettings.inst().promode_server   = json_bool(json, "is_pro");
                         SCNSettings.inst().save();
 
                         SCNApp.refreshAccountTab();
@@ -185,16 +187,16 @@ public class ServerCommunication
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
 
-                        if (!json.getBoolean("success")) {
-                            SCNApp.showToast(json.getString("message"), 4000);
+                        if (!json_bool(json, "success")) {
+                            SCNApp.showToast(json_str(json, "message"), 4000);
                             return;
                         }
 
-                        SCNSettings.inst().user_id          = json.getInt("user_id");
-                        SCNSettings.inst().user_key         = json.getString("user_key");
-                        SCNSettings.inst().quota_curr       = json.getInt("quota");
-                        SCNSettings.inst().quota_max        = json.getInt("quota_max");
-                        SCNSettings.inst().promode_server   = json.getBoolean("is_pro");
+                        SCNSettings.inst().user_id          = json_int(json, "user_id");
+                        SCNSettings.inst().user_key         = json_str(json, "user_key");
+                        SCNSettings.inst().quota_curr       = json_int(json, "quota");
+                        SCNSettings.inst().quota_max        = json_int(json, "quota_max");
+                        SCNSettings.inst().promode_server   = json_bool(json, "is_pro");
                         SCNSettings.inst().save();
 
                         SCNApp.refreshAccountTab();
@@ -246,9 +248,9 @@ public class ServerCommunication
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
 
-                        if (!json.getBoolean("success"))
+                        if (!json_bool(json, "success"))
                         {
-                            SCNApp.showToast(json.getString("message"), 4000);
+                            SCNApp.showToast(json_str(json, "message"), 4000);
 
                             int errid = json.optInt("errid", 0);
 
@@ -270,10 +272,10 @@ public class ServerCommunication
                             return;
                         }
 
-                        SCNSettings.inst().user_id        = json.getInt("user_id");
-                        SCNSettings.inst().quota_curr     = json.getInt("quota");
-                        SCNSettings.inst().quota_max      = json.getInt("quota_max");
-                        SCNSettings.inst().promode_server = json.getBoolean("is_pro");
+                        SCNSettings.inst().user_id        = json_int(json, "user_id");
+                        SCNSettings.inst().quota_curr     = json_int(json, "quota");
+                        SCNSettings.inst().quota_max      = json_int(json, "quota_max");
+                        SCNSettings.inst().promode_server = json_bool(json, "is_pro");
                         SCNSettings.inst().save();
 
                         SCNApp.refreshAccountTab();
@@ -324,16 +326,16 @@ public class ServerCommunication
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
 
-                        if (!json.getBoolean("success")) {
-                            SCNApp.showToast(json.getString("message"), 4000);
+                        if (!json_bool(json, "success")) {
+                            SCNApp.showToast(json_str(json, "message"), 4000);
                             return;
                         }
 
-                        SCNSettings.inst().user_id          = json.getInt("user_id");
-                        SCNSettings.inst().user_key         = json.getString("user_key");
-                        SCNSettings.inst().quota_curr       = json.getInt("quota");
-                        SCNSettings.inst().quota_max        = json.getInt("quota_max");
-                        SCNSettings.inst().promode_server   = json.getBoolean("is_pro");
+                        SCNSettings.inst().user_id          = json_int(json, "user_id");
+                        SCNSettings.inst().user_key         = json_str(json, "user_key");
+                        SCNSettings.inst().quota_curr       = json_int(json, "quota");
+                        SCNSettings.inst().quota_max        = json_int(json, "quota_max");
+                        SCNSettings.inst().promode_server   = json_bool(json, "is_pro");
                         SCNSettings.inst().save();
 
                         SCNApp.refreshAccountTab();
@@ -351,6 +353,26 @@ public class ServerCommunication
             e.printStackTrace();
             SCNApp.showToast("Communication with server failed", 4000);
         }
+    }
+
+    private static boolean json_bool(JSONObject o, String key) throws JSONException
+    {
+        Object v = o.get(key);
+        if (v instanceof Integer) return ((int)v) != 0;
+        if (v instanceof Boolean) return ((boolean)v);
+        if (v instanceof String) return !Str.equals(((String)v), "0") && !Str.equals(((String)v), "false");
+
+        return o.getBoolean(key);
+    }
+
+    private static int json_int(JSONObject o, String key) throws JSONException
+    {
+        return o.getInt(key);
+    }
+
+    private static String json_str(JSONObject o, String key) throws JSONException
+    {
+        return o.getString(key);
     }
 
 }

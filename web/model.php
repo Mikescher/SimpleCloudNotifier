@@ -201,6 +201,7 @@ function api_return($http_code, $message)
 /**
  * @param String $str
  * @param String[] $path
+ * @return mixed|null
  */
 function try_json($str, $path)
 {

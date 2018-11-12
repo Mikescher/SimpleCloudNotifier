@@ -18,9 +18,9 @@
     <string name="str_common_settings">Common Settings</string>
     <string name="str_enabled">Enabled</string>
     <string name="str_localcachesize">Remember the last x notifications locally</string>
-    <string name="str_header_prio0">Notifications (low priority)</string>
-    <string name="str_header_prio1">Notifications (normal priority)</string>
-    <string name="str_header_prio2">Notifications (high priority)</string>
+    <string name="str_header_prio0">Notifications (priority 0)</string>
+    <string name="str_header_prio1">Notifications (priority 1)</string>
+    <string name="str_header_prio2">Notifications (priority 2)</string>
     <string name="str_msg_enablesound">Enable notification sound</string>
     <string name="str_notificationsound">Notification sound</string>
     <string name="str_repeatnotificationsound">Repeat notification sound</string>
