@@ -18,6 +18,10 @@ $pdo = getDatabase();
 if ($ispro)
 {
 	if (!verifyOrderToken($pro_token)) die(json_encode(['success' => false, 'message' => 'Purchase token could not be verified']));
+
+
+	$stmt = $pdo->prepare('UPDATE users SET is_pro=0, pro_token=NULL WHERE user_id <> :uid AND pro_token = :ptk');
+	$stmt->execute(['uid' => $user_id, 'ptk' => $pro_token]);
 }
 
 $stmt = $pdo->prepare('INSERT INTO users (user_key, fcm_token, is_pro, pro_token, timestamp_accessed) VALUES (:key, :token, :bpro, :spro, NOW())');
