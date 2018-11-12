@@ -45,6 +45,6 @@ public class NotificationsFragment extends Fragment
 
     public void updateProState()
     {
-        adView.setVisibility(IABService.inst().getPurchaseCached(IABService.IAB_PRO_MODE) != null ? View.GONE : View.VISIBLE);
+        if (adView != null) adView.setVisibility(IABService.inst().getPurchaseCached(IABService.IAB_PRO_MODE) != null ? View.GONE : View.VISIBLE);
     }
 }

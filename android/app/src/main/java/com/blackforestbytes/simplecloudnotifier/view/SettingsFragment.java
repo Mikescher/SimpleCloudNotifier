@@ -213,9 +213,9 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
     {
         Purchase p = IABService.inst().getPurchaseCached(IABService.IAB_PRO_MODE);
 
-        prefUpgradeAccount.setVisibility(     p != null ? View.GONE    : View.VISIBLE);
-        prefUpgradeAccount_info.setVisibility(p != null ? View.GONE    : View.VISIBLE);
-        prefUpgradeAccount_msg.setVisibility( p != null ? View.VISIBLE : View.GONE   );
+        if (prefUpgradeAccount != null)      prefUpgradeAccount.setVisibility(     p != null ? View.GONE    : View.VISIBLE);
+        if (prefUpgradeAccount_info != null) prefUpgradeAccount_info.setVisibility(p != null ? View.GONE    : View.VISIBLE);
+        if (prefUpgradeAccount_msg != null)  prefUpgradeAccount_msg.setVisibility( p != null ? View.VISIBLE : View.GONE   );
     }
 
     private int getCacheSizeIndex(int value)
