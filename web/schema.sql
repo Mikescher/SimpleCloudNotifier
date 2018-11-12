@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users`
 (
 	`user_id`            INT(11)         NOT NULL   AUTO_INCREMENT,
@@ -16,6 +17,7 @@ CREATE TABLE `users`
 	PRIMARY KEY (`user_id`)
 );
 
+DROP TABLE IF EXISTS `messages`;
 CREATE TABLE `messages`
 (
 	`scn_message_id`     INT(11)         NOT NULL   AUTO_INCREMENT,
@@ -31,4 +33,4 @@ CREATE TABLE `messages`
 	`usr_message_id`     VARCHAR(256)        NULL,
 
 	PRIMARY KEY (`scn_message_id`)
-)
+);

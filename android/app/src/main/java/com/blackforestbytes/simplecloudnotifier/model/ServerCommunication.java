@@ -246,8 +246,27 @@ public class ServerCommunication
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
 
-                        if (!json.getBoolean("success")) {
+                        if (!json.getBoolean("success"))
+                        {
                             SCNApp.showToast(json.getString("message"), 4000);
+
+                            int errid = json.optInt("errid", 0);
+
+                            if (errid == 201 || errid == 202 || errid == 203 || errid == 204)
+                            {
+                                // user not found or auth failed
+
+                                SCNSettings.inst().user_id          = -1;
+                                SCNSettings.inst().user_key         = "";
+                                SCNSettings.inst().quota_curr       = 0;
+                                SCNSettings.inst().quota_max        = 0;
+                                SCNSettings.inst().promode_server   = false;
+                                SCNSettings.inst().fcm_token_server = "";
+                                SCNSettings.inst().save();
+
+                                SCNApp.refreshAccountTab();
+                            }
+
                             return;
                         }
 
