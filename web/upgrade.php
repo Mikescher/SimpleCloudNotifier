@@ -46,15 +46,14 @@ if ($ispro)
 	$stmt->execute(['uid' => $user_id, 'ptk' => $pro_token]);
 
 	echo json_encode(
-		[
-			'success'  => true,
-			'user_id'  => $user_id,
-			'user_key' => $new_userkey,
-			'quota'    => $data['quota_today'],
-			'quota_max'=> Statics::quota_max(true),
-			'is_pro'   => true,
-			'message'  => 'user updated'
-		]);
+	[
+		'success'  => true,
+		'user_id'  => $user_id,
+		'quota'    => $data['quota_today'],
+		'quota_max'=> Statics::quota_max(true),
+		'is_pro'   => true,
+		'message'  => 'user updated'
+	]);
 	return 0;
 }
 else
@@ -65,14 +64,13 @@ else
 	$stmt->execute(['uid' => $user_id]);
 
 	echo json_encode(
-		[
-			'success'  => true,
-			'user_id'  => $user_id,
-			'user_key' => $new_userkey,
-			'quota'    => $data['quota_today'],
-			'quota_max'=> Statics::quota_max(false),
-			'is_pro'   => false,
-			'message'  => 'user updated'
-		]);
+	[
+		'success'  => true,
+		'user_id'  => $user_id,
+		'quota'    => $data['quota_today'],
+		'quota_max'=> Statics::quota_max(false),
+		'is_pro'   => false,
+		'message'  => 'user updated'
+	]);
 	return 0;
 }

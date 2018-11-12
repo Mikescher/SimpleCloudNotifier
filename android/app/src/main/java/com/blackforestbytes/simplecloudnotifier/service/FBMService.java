@@ -50,7 +50,7 @@ public class FBMService extends FirebaseMessagingService
                 NotificationService.inst().showForeground(msg);
             }
 
-            ServerCommunication.ack(msg);
+            ServerCommunication.ack(SCNSettings.inst().user_id, SCNSettings.inst().user_key, msg);
         }
         catch (Exception e)
         {

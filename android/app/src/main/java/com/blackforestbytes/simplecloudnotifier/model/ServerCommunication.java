@@ -333,7 +333,6 @@ public class ServerCommunication
                         }
 
                         SCNSettings.inst().user_id          = json_int(json, "user_id");
-                        SCNSettings.inst().user_key         = json_str(json, "user_key");
                         SCNSettings.inst().quota_curr       = json_int(json, "quota");
                         SCNSettings.inst().quota_max        = json_int(json, "quota_max");
                         SCNSettings.inst().promode_server   = json_bool(json, "is_pro");
