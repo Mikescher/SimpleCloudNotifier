@@ -50,7 +50,7 @@ if ($ispro)
 			'success'  => true,
 			'user_id'  => $user_id,
 			'user_key' => $new_userkey,
-			'quota'    => $data['quota'],
+			'quota'    => $data['quota_today'],
 			'quota_max'=> Statics::quota_max(true),
 			'is_pro'   => true,
 			'message'  => 'user updated'
@@ -69,7 +69,7 @@ else
 			'success'  => true,
 			'user_id'  => $user_id,
 			'user_key' => $new_userkey,
-			'quota'    => $data['quota'],
+			'quota'    => $data['quota_today'],
 			'quota_max'=> Statics::quota_max(false),
 			'is_pro'   => false,
 			'message'  => 'user updated'
