@@ -1,8 +1,10 @@
 package com.blackforestbytes.simplecloudnotifier.view;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,6 +23,7 @@ import net.glxn.qrgen.android.QRCode;
 import net.glxn.qrgen.core.image.ImageType;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
@@ -55,15 +58,47 @@ public class AccountFragment extends Fragment
 
         v.findViewById(R.id.btnAccountReset).setOnClickListener(cv ->
         {
-            View lpnl = v.findViewById(R.id.loadingPanel);
-            lpnl.setVisibility(View.VISIBLE);
-            SCNSettings.inst().reset(lpnl);
+            Activity a = getActivity();
+            if (a == null) return;
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(a);
+
+            builder.setTitle("Confirm");
+            builder.setMessage("Reset account key?");
+
+            builder.setPositiveButton("YES", (dialog, which) -> {
+                View lpnl = v.findViewById(R.id.loadingPanel);
+                lpnl.setVisibility(View.VISIBLE);
+                SCNSettings.inst().reset(lpnl);
+                dialog.dismiss();
+            });
+
+            builder.setNegativeButton("NO", (dialog, which) -> dialog.dismiss());
+
+            AlertDialog alert = builder.create();
+            alert.show();
         });
 
         v.findViewById(R.id.btnClearLocalStorage).setOnClickListener(cv ->
         {
-            CMessageList.inst().clear();
-            SCNApp.showToast("Notifications cleared", 1000);
+            Activity a = getActivity();
+            if (a == null) return;
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(a);
+
+            builder.setTitle("Confirm");
+            builder.setMessage("Clear local messages?");
+
+            builder.setPositiveButton("YES", (dialog, which) -> {
+                CMessageList.inst().clear();
+                SCNApp.showToast("Notifications cleared", 1000);
+                dialog.dismiss();
+            });
+
+            builder.setNegativeButton("NO", (dialog, which) -> dialog.dismiss());
+
+            AlertDialog alert = builder.create();
+            alert.show();
         });
 
         v.findViewById(R.id.btnQR).setOnClickListener(cv ->
