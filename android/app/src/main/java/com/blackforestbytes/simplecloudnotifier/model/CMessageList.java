@@ -38,14 +38,15 @@ public class CMessageList
             String title      = sharedPref.getString("message["+i+"].title", "");
             String content    = sharedPref.getString("message["+i+"].content", "");
             PriorityEnum prio = PriorityEnum.parseAPI(sharedPref.getInt("message["+i+"].priority", 1));
+            long scnid        = sharedPref.getLong("message["+i+"].scnid", 0);
 
-            Messages.add(new CMessage(time, title, content, prio));
+            Messages.add(new CMessage(scnid, time, title, content, prio));
         }
     }
 
-    public CMessage add(final long time, final String title, final String content, final PriorityEnum pe)
+    public CMessage add(final long scnid, final long time, final String title, final String content, final PriorityEnum pe)
     {
-        CMessage msg = new CMessage(time, title, content, pe);
+        CMessage msg = new CMessage(scnid, time, title, content, pe);
 
         boolean run = SCNApp.runOnUiThread(() ->
         {
@@ -58,11 +59,12 @@ public class CMessageList
 
             while (Messages.size()>SCNSettings.inst().LocalCacheSize) Messages.remove(0);
 
-            e.putInt("message_count", count+1);
-            e.putLong("message["+count+"].timestamp", time);
-            e.putString("message["+count+"].title", title);
-            e.putString("message["+count+"].content", content);
-            e.putInt("message["+count+"].priority", pe.ID);
+            e.putInt(   "message_count",                count+1);
+            e.putLong(  "message["+count+"].timestamp", time);
+            e.putString("message["+count+"].title",     title);
+            e.putString("message["+count+"].content",   content);
+            e.putInt(   "message["+count+"].priority",  pe.ID);
+            e.putLong(  "message["+count+"].scnid",     scnid);
 
             e.apply();
 
@@ -77,7 +79,7 @@ public class CMessageList
 
         if (!run)
         {
-            Messages.add(new CMessage(time, title, content, pe));
+            Messages.add(new CMessage(scnid, time, title, content, pe));
             fullSave();
         }
 
@@ -109,10 +111,11 @@ public class CMessageList
 
         for (int i = 0; i < Messages.size(); i++)
         {
-            e.putLong("message["+i+"].timestamp", Messages.get(i).Timestamp);
-            e.putString("message["+i+"].title", Messages.get(i).Title);
-            e.putString("message["+i+"].content", Messages.get(i).Content);
-            e.putInt("message["+i+"].priority", Messages.get(i).Priority.ID);
+            e.putLong(  "message["+i+"].timestamp", Messages.get(i).Timestamp);
+            e.putString("message["+i+"].title",     Messages.get(i).Title);
+            e.putString("message["+i+"].content",   Messages.get(i).Content);
+            e.putInt(   "message["+i+"].priority",  Messages.get(i).Priority.ID);
+            e.putLong(  "message["+i+"].scnid",     Messages.get(i).SCN_ID);
         }
 
         e.apply();

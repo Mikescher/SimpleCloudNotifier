@@ -41,7 +41,7 @@ public class ServerCommunication
                 @Override
                 public void onFailure(Call call, IOException e)
                 {
-                    e.printStackTrace();
+                    Log.e("SC:register", e.toString());
                     SCNApp.showToast("Communication with server failed", 4000);
                     SCNApp.runOnUiThread(() -> { if (loader!=null)loader.setVisibility(View.GONE); });
                 }
@@ -77,7 +77,7 @@ public class ServerCommunication
                     }
                     catch (Exception e)
                     {
-                        e.printStackTrace();
+                        Log.e("SC:register", e.toString());
                         SCNApp.showToast("Communication with server failed", 4000);
                     }
                     finally
@@ -89,7 +89,7 @@ public class ServerCommunication
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Log.e("SC:register", e.toString());
             SCNApp.showToast("Communication with server failed", 4000);
         }
     }
@@ -107,7 +107,7 @@ public class ServerCommunication
                 @Override
                 public void onFailure(Call call, IOException e)
                 {
-                    e.printStackTrace();
+                    Log.e("SC:update_1", e.toString());
                     SCNApp.showToast("Communication with server failed", 4000);
                     SCNApp.runOnUiThread(() -> { if (loader!=null)loader.setVisibility(View.GONE); });
                 }
@@ -143,7 +143,7 @@ public class ServerCommunication
                     }
                     catch (Exception e)
                     {
-                        e.printStackTrace();
+                        Log.e("SC:update_1", e.toString());
                         SCNApp.showToast("Communication with server failed", 4000);
                     }
                     finally
@@ -155,7 +155,7 @@ public class ServerCommunication
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Log.e("SC:update_1", e.toString());
             SCNApp.showToast("Communication with server failed", 4000);
         }
     }
@@ -171,7 +171,7 @@ public class ServerCommunication
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    e.printStackTrace();
+                    Log.e("SC:update_2", e.toString());
                     SCNApp.showToast("Communication with server failed", 4000);
                 }
 
@@ -201,7 +201,7 @@ public class ServerCommunication
 
                         SCNApp.refreshAccountTab();
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Log.e("SC:update_2", e.toString());
                         SCNApp.showToast("Communication with server failed", 4000);
                     } finally {
                         SCNApp.runOnUiThread(() -> {
@@ -213,7 +213,7 @@ public class ServerCommunication
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Log.e("SC:update_2", e.toString());
             SCNApp.showToast("Communication with server failed", 4000);
         }
     }
@@ -229,7 +229,7 @@ public class ServerCommunication
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    e.printStackTrace();
+                    Log.e("SC:info", e.toString());
                     SCNApp.showToast("Communication with server failed", 4000);
                     SCNApp.runOnUiThread(() -> {
                         if (loader != null) loader.setVisibility(View.GONE);
@@ -281,7 +281,7 @@ public class ServerCommunication
 
                         SCNApp.refreshAccountTab();
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Log.e("SC:info", e.toString());
                         SCNApp.showToast("Communication with server failed", 4000);
                     } finally {
                         SCNApp.runOnUiThread(() -> {
@@ -293,7 +293,7 @@ public class ServerCommunication
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Log.e("SC:info", e.toString());
             SCNApp.showToast("Communication with server failed", 4000);
         }
     }
@@ -311,7 +311,7 @@ public class ServerCommunication
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    e.printStackTrace();
+                    Log.e("SC:upgrade", e.toString());
                     SCNApp.showToast("Communication with server failed", 4000);
                 }
 
@@ -341,7 +341,7 @@ public class ServerCommunication
 
                         SCNApp.refreshAccountTab();
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Log.e("SC:upgrade", e.toString());
                         SCNApp.showToast("Communication with server failed", 4000);
                     } finally {
                         SCNApp.runOnUiThread(() -> { if (loader != null) loader.setVisibility(View.GONE); });
@@ -353,6 +353,32 @@ public class ServerCommunication
         {
             e.printStackTrace();
             SCNApp.showToast("Communication with server failed", 4000);
+        }
+    }
+
+    public static void ack(int id, String key, CMessage msg)
+    {
+        try
+        {
+            Request request = new Request.Builder()
+                    .url(BASE_URL + "ack.php?user_id=" + id + "&user_key=" + key + "&scn_msg_id=" + msg.SCN_ID)
+                    .build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    Log.e("SC:ack", e.toString());
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) {
+                    // ????
+                }
+            });
+        }
+        catch (Exception e)
+        {
+            Log.e("SC:ack", e.toString());
         }
     }
 
@@ -375,5 +401,4 @@ public class ServerCommunication
     {
         return o.getString(key);
     }
-
 }

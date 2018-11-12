@@ -29,9 +29,10 @@ try
 
 	if ($priority !== '0' && $priority !== '1' && $priority !== '2') api_return(400, json_encode(['success' => false, 'error' => 1104, 'errhighlight' => 105, 'message' => 'Invalid priority']));
 
-	if (strlen(trim($message)) == 0) api_return(400, json_encode(['success' => false, 'error' => 1201, 'errhighlight' => 103, 'message' => 'No title specified']));
-	if (strlen($message) > 120)      api_return(400, json_encode(['success' => false, 'error' => 1202, 'errhighlight' => 103, 'message' => 'Title too long (120 characters)']));
-	if (strlen($content) > 10000)    api_return(400, json_encode(['success' => false, 'error' => 1203, 'errhighlight' => 104, 'message' => 'Content too long (10000 characters)']));
+	if (strlen(trim($message)) == 0)                 api_return(400, json_encode(['success' => false, 'error' => 1201, 'errhighlight' => 103, 'message' => 'No title specified']));
+	if (strlen($message) > 120)                      api_return(400, json_encode(['success' => false, 'error' => 1202, 'errhighlight' => 103, 'message' => 'Title too long (120 characters)']));
+	if (strlen($content) > 10000)                    api_return(400, json_encode(['success' => false, 'error' => 1203, 'errhighlight' => 104, 'message' => 'Content too long (10000 characters)']));
+	if ($usrmsgid != null && strlen($usrmsgid) > 64) api_return(400, json_encode(['success' => false, 'error' => 1204, 'errhighlight' => -1,  'message' => 'MessageID too long (64 characters)']));
 
 //------------------------------------------------------------------
 
@@ -84,6 +85,22 @@ try
 
 //------------------------------------------------------------------
 
+	$pdo->beginTransaction();
+
+
+	$stmt = $pdo->prepare('INSERT INTO messages (sender_user_id, title, content, priority, fcm_message_id, usr_message_id) VALUES (:suid, :t, :c, :p, :fmid, :umid)');
+	$stmt->execute(
+	[
+		'suid' => $user_id,
+		't'    => $message,
+		'c'    => $content,
+		'p'    => $priority,
+		'fmid' => null,
+		'umid' => $usrmsgid,
+	]);
+
+	$scn_msg_id = $pdo->lastInsertId();
+
 	$url = "https://fcm.googleapis.com/fcm/send";
 	$payload = json_encode(
 	[
@@ -102,6 +119,7 @@ try
 				'priority'   => $priority,
 				'timestamp'  => time(),
 				'usr_msg_id' => $usrmsgid,
+				'scn_msg_id' => $scn_msg_id,
 			]
 	]);
 	$header=
@@ -117,28 +135,24 @@ try
 		if (try_json($httpresult, ['success']) != 1)
 		{
 			reportError("FCM communication failed (success_1 <> true)\n\n".$httpresult);
+			$pdo->rollBack();
 			api_return(500, json_encode(['success' => false, 'error' => 9902, 'errhighlight' => -1, 'message' => 'Communication with firebase service failed.']));
 		}
 	}
 	catch (Exception $e)
 	{
 		reportError("FCM communication failed", $e);
+		$pdo->rollBack();
 		api_return(500, json_encode(['success' => false, 'error' => 9901, 'errhighlight' => -1, 'message' => 'Communication with firebase service failed.'."\n\n".'Exception: ' . $e->getMessage()]));
 	}
 
 	$stmt = $pdo->prepare('UPDATE users SET timestamp_accessed=NOW(), messages_sent=messages_sent+1, quota_today=:q, quota_day=NOW() WHERE user_id = :uid');
 	$stmt->execute(['uid' => $user_id, 'q' => $new_quota]);
 
-	$stmt = $pdo->prepare('INSERT INTO messages (sender_user_id, title, content, priority, fcn_message_id, usr_message_id) VALUES (:suid, :t, :c, :p, :fmid, :umid)');
-	$stmt->execute(
-	[
-		'suid' => $user_id,
-		't'    => $message,
-		'c'    => $content,
-		'p'    => $priority,
-		'fmid' => try_json($httpresult, ['results', 0, 'message_id']),
-		'umid' => $usrmsgid,
-	]);
+	$stmt = $pdo->prepare('UPDATE messages SET fcm_message_id=:fmid WHERE scn_message_id=:smid');
+	$stmt->execute([ 'fmid' => try_json($httpresult, ['results', 0, 'message_id']), 'smid' => $scn_msg_id ]);
+
+	$pdo->commit();
 
 	api_return(200, json_encode(
 	[
@@ -150,10 +164,12 @@ try
 		'quota'         => $new_quota,
 		'is_pro'        => $data['is_pro'],
 		'quota_max'     => Statics::quota_max($data['is_pro']),
+		'scn_msg_id'    => $scn_msg_id,
 	]));
 }
 catch (Exception $mex)
 {
 	reportError("Root try-catch triggered", $mex);
+	if ($pdo->inTransaction()) $pdo->rollBack();
 	api_return(500, json_encode(['success' => false, 'error' => 9903, 'errhighlight' => -1, 'message' => 'PHP script threw exception.'."\n\n".'Exception: ' . $e->getMessage()]));
 }

@@ -9,7 +9,8 @@ import java.util.TimeZone;
 
 public class CMessage
 {
-    public final long Timestamp ;
+    public final long SCN_ID;
+    public final long Timestamp;
     public final String Title;
     public final String Content;
     public final PriorityEnum Priority;
@@ -21,8 +22,9 @@ public class CMessage
         _format.setTimeZone(TimeZone.getDefault());
     }
 
-    public CMessage(long t, String mt, String mc, PriorityEnum p)
+    public CMessage(long id, long t, String mt, String mc, PriorityEnum p)
     {
+        SCN_ID = id;
         Timestamp = t;
         Title = mt;
         Content = mc;

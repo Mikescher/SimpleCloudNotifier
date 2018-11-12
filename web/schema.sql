@@ -24,12 +24,13 @@ CREATE TABLE `messages`
 	`sender_user_id`     INT(11)         NOT NULL,
 
 	`timestamp`          DATETIME        NOT NULL   DEFAULT CURRENT_TIMESTAMP,
+	`ack`                BIT             NOT NULL   DEFAULT 0,
 
 	`title`              VARCHAR(256)    NOT NULL,
 	`content`            VARCHAR(12288)      NULL,
 	`priority`           INT(11)         NOT NULL,
 
-	`fcn_message_id`     VARCHAR(256)        NULL,
+	`fcm_message_id`     VARCHAR(256)        NULL,
 	`usr_message_id`     VARCHAR(256)        NULL,
 
 	PRIMARY KEY (`scn_message_id`)

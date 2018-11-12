@@ -8,6 +8,7 @@ import com.blackforestbytes.simplecloudnotifier.model.CMessage;
 import com.blackforestbytes.simplecloudnotifier.model.CMessageList;
 import com.blackforestbytes.simplecloudnotifier.model.PriorityEnum;
 import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
+import com.blackforestbytes.simplecloudnotifier.model.ServerCommunication;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -36,9 +37,9 @@ public class FBMService extends FirebaseMessagingService
             String title      = remoteMessage.getData().get("title");
             String content    = remoteMessage.getData().get("body");
             PriorityEnum prio = PriorityEnum.parseAPI(remoteMessage.getData().get("priority"));
+            long scn_id       = Long.parseLong(remoteMessage.getData().get("scn_msg_id"));
 
-            CMessage msg = CMessageList.inst().add(time, title, content, prio);
-
+            CMessage msg = CMessageList.inst().add(scn_id, time, title, content, prio);
 
             if (SCNApp.isBackground())
             {
@@ -48,6 +49,8 @@ public class FBMService extends FirebaseMessagingService
             {
                 NotificationService.inst().showForeground(msg);
             }
+
+            ServerCommunication.ack(msg);
         }
         catch (Exception e)
         {
