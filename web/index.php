@@ -16,7 +16,7 @@
 		<a href="https://play.google.com/store/apps/details?id=com.blackforestbytes.simplecloudnotifier" class="button bordered" id="tl_link"><span class="icn-google-play"></span></a>
 		<a href="/index_api.php" class="button bordered" id="tr_link">API</a>
 
-		<h1>Simple Cloud Notifier</h1>
+        <a href="/" class="linkcaption"><h1>Simple Cloud Notifier</h1></a>
 
 		<div class="row responsive-label">
 			<div class="col-sm-12 col-md-3"><label for="uid" class="doc">UserID</label></div>
@@ -46,7 +46,7 @@
 
 		<div class="row responsive-label">
 			<div class="col-sm-12 col-md-3"><label for="txt" class="doc">Message Content</label></div>
-			<div class="col-sm-12 col-md"><textarea id="txt" class="doc" <?php echo (isset($_GET['preset_content']) ? (' value="'.$_GET['preset_content'].'" '):(''));?> rows="5"></textarea></div>
+			<div class="col-sm-12 col-md"><textarea id="txt" class="doc" <?php echo (isset($_GET['preset_content']) ? (' value="'.$_GET['preset_content'].'" '):(''));?> rows="8"></textarea></div>
 		</div>
 
 		<div class="row">

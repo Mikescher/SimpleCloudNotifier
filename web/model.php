@@ -17,8 +17,14 @@ function getConfig()
 	return Statics::$CFG = require "config.php";
 }
 
-function reportError($msg)
+/**
+ * @param String $msg
+ * @param Exception $e
+ */
+function reportError($msg, $e = null)
 {
+	if ($e != null) $msg = ($msg."\n\n[[EXCEPTION]]\n" . $e . "\n" . $e->getMessage() . "\n" . $e->getTraceAsString());
+
 	$subject = "SCN_Server has encountered an Error at " . date("Y-m-d H:i:s") . "] ";
 
 	$content = "";
@@ -34,7 +40,17 @@ function reportError($msg)
 	$content .= '$_POST:'                . "\n" . print_r($_POST, true)               . "\n";
 	$content .= '$_FILES:'               . "\n" . print_r($_FILES, true)              . "\n";
 
-	if (getConfig()['error_reporting']['send-mail'])sendMail($subject, $content, getConfig()['error_reporting']['email-error-target'], getConfig()['error_reporting']['email-error-sender']);
+	if (getConfig()['error_reporting']['send-mail']) sendMail($subject, $content, getConfig()['error_reporting']['email-error-target'], getConfig()['error_reporting']['email-error-sender']);
+}
+
+/**
+ * @param string $subject
+ * @param string $content
+ * @param string $to
+ * @param string $from
+ */
+function sendMail($subject, $content, $to, $from) {
+	mail($to, $subject, $content, 'From: ' . $from);
 }
 
 /**
@@ -93,6 +109,7 @@ function generateRandomAuthKey()
  * @param $header
  * @return array|object|string
  * @throws \Httpful\Exception\ConnectionErrorException
+ * @throws Exception
  */
 function sendPOST($url, $body, $header)
 {
@@ -153,7 +170,7 @@ function verifyOrderToken($tok)
 	}
 	catch (Exception $e)
 	{
-		reportError("VerifyOrder token threw exception: " . $e . "\n" . $e->getMessage() . "\n" . $e->getTraceAsString());
+		reportError("VerifyOrder token threw exception", $e);
 		return false;
 	}
 }
@@ -172,4 +189,11 @@ function refreshVerifyToken()
 	file_put_contents('.verify_accesstoken', $obj['access_token']);
 
 	return $obj->access_token;
+}
+
+function api_return($http_code, $message)
+{
+	http_response_code($http_code);
+	echo $message;
+	die();
 }

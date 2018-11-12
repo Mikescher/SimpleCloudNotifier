@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
     <title>Simple Cloud Notifications</title>
-	<link rel="stylesheet" href="/css/mini-default.min.css">
+	<link rel="stylesheet" href="/css/mini-default.min.css">  <!-- https://minicss.org/docs -->
 	<!--<link rel="stylesheet" href="/css/mini-nord.min.css">-->
 	<!--<link rel="stylesheet" href="/css/mini-dark.min.css">-->
 	<link rel="stylesheet" href="/css/style.css">
@@ -12,7 +12,7 @@
 <body>
 
 
-	<form id="mainpnl">
+	<div id="mainpnl">
 
         <div class="fullcenterflex">
 
@@ -42,9 +42,9 @@
         <a href="https://play.google.com/store/apps/details?id=com.blackforestbytes.simplecloudnotifier" class="button bordered" id="tl_link"><span class="icn-google-play"></span></a>
         <a href="/index.php" class="button bordered" id="tr_link">Send</a>
 
-        <h1>Simple Cloud Notifier</h1>
+        <a href="/" class="linkcaption"><h1>Simple Cloud Notifier</h1></a>
 
-    </form>
+    </div>
 
 	<div id="copyinfo">
 		<a href="https://www.blackforestbytes.com">&#169; blackforestbytes</a>
