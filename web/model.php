@@ -197,3 +197,21 @@ function api_return($http_code, $message)
 	echo $message;
 	die();
 }
+
+/**
+ * @param String $str
+ * @param String[] $path
+ */
+function try_json($str, $path)
+{
+	try
+	{
+		$o = json_decode($str);
+		foreach ($path as $p) $o = $o[$p];
+		return $o;
+	}
+	catch (Exception $e)
+	{
+		return null;
+	}
+}

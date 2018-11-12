@@ -23,6 +23,7 @@ try
 	$message  = $INPUT['title'];
 	$content  = isset($INPUT['content'])  ? $INPUT['content']  : '';
 	$priority = isset($INPUT['priority']) ? $INPUT['priority'] : '1';
+	$usrmsgid = isset($INPUT['msg_id'])   ? $INPUT['msg_id'] : null;
 
 //------------------------------------------------------------------
 
@@ -55,6 +56,29 @@ try
 
 //------------------------------------------------------------------
 
+	if ($usrmsgid != null)
+	{
+		$stmt = $pdo->prepare('SELECT scn_message_id FROM messages WHERE sender_user_id=:uid AND usr_message_id IS NOT NULL AND usr_message_id=:umid LIMIT 1');
+		$stmt->execute(['uid' => $user_id, 'umid' => $usrmsgid]);
+
+		if (count($stmt->fetchAll(PDO::FETCH_ASSOC))>0)
+		{
+			api_return(200, json_encode(
+			[
+				'success'       => true,
+				'message'       => 'Message already sent',
+				'suppress_send' => true,
+				'response'      => '',
+				'messagecount'  => $data['messages_sent']+1,
+				'quota'         => $data['quota_today'],
+				'is_pro'        => $data['is_pro'],
+				'quota_max'     => Statics::quota_max($data['is_pro']),
+			]));
+		}
+	}
+
+//------------------------------------------------------------------
+
 	$url = "https://fcm.googleapis.com/fcm/send";
 	$payload = json_encode(
 	[
@@ -68,10 +92,11 @@ try
 		//],
 		'data' =>
 			[
-				'title' => $message,
-				'body' => $content,
-				'priority' => $priority,
-				'timestamp' => time(),
+				'title'      => $message,
+				'body'       => $content,
+				'priority'   => $priority,
+				'timestamp'  => time(),
+				'usr_msg_id' => $usrmsgid,
 			]
 	]);
 	$header=
@@ -83,6 +108,12 @@ try
 	try
 	{
 		$httpresult = sendPOST($url, $payload, $header);
+
+		if (try_json($httpresult, ['success']) != 1)
+		{
+			reportError("FCM communication failed (success_1 <> true)\n\n".$httpresult);
+			api_return(403, json_encode(['success' => false, 'error' => 9902, 'errhighlight' => -1, 'message' => 'Communication with firebase service failed.']));
+		}
 	}
 	catch (Exception $e)
 	{
@@ -93,15 +124,27 @@ try
 	$stmt = $pdo->prepare('UPDATE users SET timestamp_accessed=NOW(), messages_sent=messages_sent+1, quota_today=:q, quota_day=NOW() WHERE user_id = :uid');
 	$stmt->execute(['uid' => $user_id, 'q' => $new_quota]);
 
+	$stmt = $pdo->prepare('INSERT INTO messages (sender_user_id, title, content, priority, fcn_message_id, usr_message_id) VALUES (:suid, :t, :c, :p, :fmid, :umid)');
+	$stmt->execute(
+	[
+		'suid' => $user_id,
+		't'    => $message,
+		'c'    => $content,
+		'p'    => $priority,
+		'fmid' => try_json($httpresult, ['results', 'message_id']),
+		'umid' => $usrmsgid,
+	]);
+
 	api_return(200, json_encode(
 	[
-		'success'      => true,
-		'message'      => 'Message sent',
-		'response'     => $httpresult,
-		'messagecount' => $data['messages_sent']+1,
-		'quota'        => $new_quota,
-		'is_pro'       => $data['is_pro'],
-		'quota_max'    => Statics::quota_max($data['is_pro']),
+		'success'       => true,
+		'message'       => 'Message sent',
+		'suppress_send' => false,
+		'response'      => $httpresult,
+		'messagecount'  => $data['messages_sent']+1,
+		'quota'         => $new_quota,
+		'is_pro'        => $data['is_pro'],
+		'quota_max'     => Statics::quota_max($data['is_pro']),
 	]));
 }
 catch (Exception $mex)
