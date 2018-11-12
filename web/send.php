@@ -112,13 +112,13 @@ try
 		if (try_json($httpresult, ['success']) != 1)
 		{
 			reportError("FCM communication failed (success_1 <> true)\n\n".$httpresult);
-			api_return(403, json_encode(['success' => false, 'error' => 9902, 'errhighlight' => -1, 'message' => 'Communication with firebase service failed.']));
+			api_return(500, json_encode(['success' => false, 'error' => 9902, 'errhighlight' => -1, 'message' => 'Communication with firebase service failed.']));
 		}
 	}
 	catch (Exception $e)
 	{
 		reportError("FCM communication failed", $e);
-		api_return(403, json_encode(['success' => false, 'error' => 9901, 'errhighlight' => -1, 'message' => 'Communication with firebase service failed.'."\n\n".'Exception: ' . $e->getMessage()]));
+		api_return(500, json_encode(['success' => false, 'error' => 9901, 'errhighlight' => -1, 'message' => 'Communication with firebase service failed.'."\n\n".'Exception: ' . $e->getMessage()]));
 	}
 
 	$stmt = $pdo->prepare('UPDATE users SET timestamp_accessed=NOW(), messages_sent=messages_sent+1, quota_today=:q, quota_day=NOW() WHERE user_id = :uid');
@@ -131,7 +131,7 @@ try
 		't'    => $message,
 		'c'    => $content,
 		'p'    => $priority,
-		'fmid' => try_json($httpresult, ['results', 'message_id']),
+		'fmid' => try_json($httpresult, ['results', 0, 'message_id']),
 		'umid' => $usrmsgid,
 	]);
 
@@ -150,4 +150,5 @@ try
 catch (Exception $mex)
 {
 	reportError("Root try-catch triggered", $mex);
+	api_return(500, json_encode(['success' => false, 'error' => 9903, 'errhighlight' => -1, 'message' => 'PHP script threw exception.'."\n\n".'Exception: ' . $e->getMessage()]));
 }

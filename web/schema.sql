@@ -29,7 +29,7 @@ CREATE TABLE `messages`
 	`content`            VARCHAR(12288)      NULL,
 	`priority`           INT(11)         NOT NULL,
 
-	`fcn_message_id`     VARCHAR(256)    NOT NULL,
+	`fcn_message_id`     VARCHAR(256)        NULL,
 	`usr_message_id`     VARCHAR(256)        NULL,
 
 	PRIMARY KEY (`scn_message_id`)
