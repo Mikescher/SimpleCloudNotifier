@@ -193,6 +193,11 @@ input::-webkit-inner-spin-button {
     pointer-events: none;
 }
 
+.fullcenterflex .card
+{
+    pointer-events: auto;
+}
+
 a.card,
 a.card:active,
 a.card:visited,
