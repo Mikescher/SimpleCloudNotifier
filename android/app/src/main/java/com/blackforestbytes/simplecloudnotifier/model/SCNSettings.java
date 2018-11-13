@@ -71,29 +71,35 @@ public class SCNSettings
         Enabled                     = sharedPref.getBoolean("app_enabled",  Enabled);
         LocalCacheSize              = sharedPref.getInt("local_cache_size", LocalCacheSize);
 
-        PriorityLow.EnableLED        = sharedPref.getBoolean("priority_low:enabled_led",       PriorityLow.EnableLED);
-        PriorityLow.EnableSound      = sharedPref.getBoolean("priority_low:enabled_sound",     PriorityLow.EnableSound);
-        PriorityLow.EnableVibration  = sharedPref.getBoolean("priority_low:enabled_vibration", PriorityLow.EnableVibration);
-        PriorityLow.RepeatSound      = sharedPref.getBoolean("priority_low:repeat_sound",      PriorityLow.RepeatSound);
-        PriorityLow.SoundName        = sharedPref.getString( "priority_low:sound_name",        PriorityLow.SoundName);
-        PriorityLow.SoundSource      = sharedPref.getString( "priority_low:sound_source",      PriorityLow.SoundSource);
-        PriorityLow.LEDColor         = sharedPref.getInt(    "priority_low:led_color",         PriorityLow.LEDColor);
+        PriorityLow.EnableLED         = sharedPref.getBoolean("priority_low:enabled_led",         PriorityLow.EnableLED);
+        PriorityLow.EnableSound       = sharedPref.getBoolean("priority_low:enabled_sound",       PriorityLow.EnableSound);
+        PriorityLow.EnableVibration   = sharedPref.getBoolean("priority_low:enabled_vibration",   PriorityLow.EnableVibration);
+        PriorityLow.RepeatSound       = sharedPref.getBoolean("priority_low:repeat_sound",        PriorityLow.RepeatSound);
+        PriorityLow.SoundName         = sharedPref.getString( "priority_low:sound_name",          PriorityLow.SoundName);
+        PriorityLow.SoundSource       = sharedPref.getString( "priority_low:sound_source",        PriorityLow.SoundSource);
+        PriorityLow.LEDColor          = sharedPref.getInt(    "priority_low:led_color",           PriorityLow.LEDColor);
+        PriorityLow.ForceVolume       = sharedPref.getBoolean("priority_low:force_volume",        PriorityLow.ForceVolume);
+        PriorityLow.ForceVolumeValue  = sharedPref.getInt(    "priority_low:force_volume_value",  PriorityLow.ForceVolumeValue);
 
-        PriorityNorm.EnableLED       = sharedPref.getBoolean("priority_norm:enabled_led",       PriorityNorm.EnableLED);
-        PriorityNorm.EnableSound     = sharedPref.getBoolean("priority_norm:enabled_sound",     PriorityNorm.EnableSound);
-        PriorityNorm.EnableVibration = sharedPref.getBoolean("priority_norm:enabled_vibration", PriorityNorm.EnableVibration);
-        PriorityNorm.RepeatSound     = sharedPref.getBoolean("priority_norm:repeat_sound",      PriorityNorm.RepeatSound);
-        PriorityNorm.SoundName       = sharedPref.getString( "priority_norm:sound_name",        PriorityNorm.SoundName);
-        PriorityNorm.SoundSource     = sharedPref.getString( "priority_norm:sound_source",      PriorityNorm.SoundSource);
-        PriorityNorm.LEDColor        = sharedPref.getInt(    "priority_norm:led_color",         PriorityNorm.LEDColor);
+        PriorityNorm.EnableLED        = sharedPref.getBoolean("priority_norm:enabled_led",        PriorityNorm.EnableLED);
+        PriorityNorm.EnableSound      = sharedPref.getBoolean("priority_norm:enabled_sound",      PriorityNorm.EnableSound);
+        PriorityNorm.EnableVibration  = sharedPref.getBoolean("priority_norm:enabled_vibration",  PriorityNorm.EnableVibration);
+        PriorityNorm.RepeatSound      = sharedPref.getBoolean("priority_norm:repeat_sound",       PriorityNorm.RepeatSound);
+        PriorityNorm.SoundName        = sharedPref.getString( "priority_norm:sound_name",         PriorityNorm.SoundName);
+        PriorityNorm.SoundSource      = sharedPref.getString( "priority_norm:sound_source",       PriorityNorm.SoundSource);
+        PriorityNorm.LEDColor         = sharedPref.getInt(    "priority_norm:led_color",          PriorityNorm.LEDColor);
+        PriorityNorm.ForceVolume      = sharedPref.getBoolean("priority_norm:force_volume",       PriorityNorm.ForceVolume);
+        PriorityNorm.ForceVolumeValue = sharedPref.getInt(    "priority_norm:force_volume_value", PriorityNorm.ForceVolumeValue);
 
-        PriorityHigh.EnableLED       = sharedPref.getBoolean("priority_high:enabled_led",       PriorityHigh.EnableLED);
-        PriorityHigh.EnableSound     = sharedPref.getBoolean("priority_high:enabled_sound",     PriorityHigh.EnableSound);
-        PriorityHigh.EnableVibration = sharedPref.getBoolean("priority_high:enabled_vibration", PriorityHigh.EnableVibration);
-        PriorityHigh.RepeatSound     = sharedPref.getBoolean("priority_high:repeat_sound",      PriorityHigh.RepeatSound);
-        PriorityHigh.SoundName       = sharedPref.getString( "priority_high:sound_name",        PriorityHigh.SoundName);
-        PriorityHigh.SoundSource     = sharedPref.getString( "priority_high:sound_source",      PriorityHigh.SoundSource);
-        PriorityHigh.LEDColor        = sharedPref.getInt(    "priority_high:led_color",         PriorityHigh.LEDColor);
+        PriorityHigh.EnableLED        = sharedPref.getBoolean("priority_high:enabled_led",        PriorityHigh.EnableLED);
+        PriorityHigh.EnableSound      = sharedPref.getBoolean("priority_high:enabled_sound",      PriorityHigh.EnableSound);
+        PriorityHigh.EnableVibration  = sharedPref.getBoolean("priority_high:enabled_vibration",  PriorityHigh.EnableVibration);
+        PriorityHigh.RepeatSound      = sharedPref.getBoolean("priority_high:repeat_sound",       PriorityHigh.RepeatSound);
+        PriorityHigh.SoundName        = sharedPref.getString( "priority_high:sound_name",         PriorityHigh.SoundName);
+        PriorityHigh.SoundSource      = sharedPref.getString( "priority_high:sound_source",       PriorityHigh.SoundSource);
+        PriorityHigh.LEDColor         = sharedPref.getInt(    "priority_high:led_color",          PriorityHigh.LEDColor);
+        PriorityHigh.ForceVolume      = sharedPref.getBoolean("priority_high:force_volume",       PriorityHigh.ForceVolume);
+        PriorityHigh.ForceVolumeValue = sharedPref.getInt(    "priority_high:force_volume_value", PriorityHigh.ForceVolumeValue);
     }
 
     public void save()
@@ -101,39 +107,45 @@ public class SCNSettings
         SharedPreferences sharedPref = SCNApp.getContext().getSharedPreferences("Config", Context.MODE_PRIVATE);
         SharedPreferences.Editor e = sharedPref.edit();
 
-        e.putInt(    "quota_curr",                      quota_curr);
-        e.putInt(    "quota_max",                       quota_max);
-        e.putInt(    "user_id",                         user_id);
-        e.putString( "user_key",                        user_key);
-        e.putString( "fcm_token_local",                 fcm_token_local);
-        e.putString( "fcm_token_server",                fcm_token_server);
+        e.putInt(    "quota_curr",                       quota_curr);
+        e.putInt(    "quota_max",                        quota_max);
+        e.putInt(    "user_id",                          user_id);
+        e.putString( "user_key",                         user_key);
+        e.putString( "fcm_token_local",                  fcm_token_local);
+        e.putString( "fcm_token_server",                 fcm_token_server);
 
-        e.putBoolean("app_enabled",                     Enabled);
-        e.putInt(    "local_cache_size",                LocalCacheSize);
+        e.putBoolean("app_enabled",                      Enabled);
+        e.putInt(    "local_cache_size",                 LocalCacheSize);
 
-        e.putBoolean("priority_low:enabled_led",        PriorityLow.EnableLED);
-        e.putBoolean("priority_low:enabled_sound",      PriorityLow.EnableSound);
-        e.putBoolean("priority_low:enabled_vibration",  PriorityLow.EnableVibration);
-        e.putBoolean("priority_low:repeat_sound",       PriorityLow.RepeatSound);
-        e.putString( "priority_low:sound_name",         PriorityLow.SoundName);
-        e.putString( "priority_low:sound_source",       PriorityLow.SoundSource);
-        e.putInt(    "priority_low:led_color",          PriorityLow.LEDColor);
+        e.putBoolean("priority_low:enabled_led",         PriorityLow.EnableLED);
+        e.putBoolean("priority_low:enabled_sound",       PriorityLow.EnableSound);
+        e.putBoolean("priority_low:enabled_vibration",   PriorityLow.EnableVibration);
+        e.putBoolean("priority_low:repeat_sound",        PriorityLow.RepeatSound);
+        e.putString( "priority_low:sound_name",          PriorityLow.SoundName);
+        e.putString( "priority_low:sound_source",        PriorityLow.SoundSource);
+        e.putInt(    "priority_low:led_color",           PriorityLow.LEDColor);
+        e.putBoolean("priority_low:force_volume",        PriorityLow.ForceVolume);
+        e.putInt(    "priority_low:force_volume_value",  PriorityLow.ForceVolumeValue);
 
-        e.putBoolean("priority_norm:enabled_led",       PriorityNorm.EnableLED);
-        e.putBoolean("priority_norm:enabled_sound",     PriorityNorm.EnableSound);
-        e.putBoolean("priority_norm:enabled_vibration", PriorityNorm.EnableVibration);
-        e.putBoolean("priority_norm:repeat_sound",      PriorityNorm.RepeatSound);
-        e.putString( "priority_norm:sound_name",        PriorityNorm.SoundName);
-        e.putString( "priority_norm:sound_source",      PriorityNorm.SoundSource);
-        e.putInt(    "priority_norm:led_color",         PriorityNorm.LEDColor);
+        e.putBoolean("priority_norm:enabled_led",        PriorityNorm.EnableLED);
+        e.putBoolean("priority_norm:enabled_sound",      PriorityNorm.EnableSound);
+        e.putBoolean("priority_norm:enabled_vibration",  PriorityNorm.EnableVibration);
+        e.putBoolean("priority_norm:repeat_sound",       PriorityNorm.RepeatSound);
+        e.putString( "priority_norm:sound_name",         PriorityNorm.SoundName);
+        e.putString( "priority_norm:sound_source",       PriorityNorm.SoundSource);
+        e.putInt(    "priority_norm:led_color",          PriorityNorm.LEDColor);
+        e.putBoolean("priority_norm:force_volume",       PriorityNorm.ForceVolume);
+        e.putInt(    "priority_norm:force_volume_value", PriorityNorm.ForceVolumeValue);
 
-        e.putBoolean("priority_high:enabled_led",       PriorityHigh.EnableLED);
-        e.putBoolean("priority_high:enabled_sound",     PriorityHigh.EnableSound);
-        e.putBoolean("priority_high:enabled_vibration", PriorityHigh.EnableVibration);
-        e.putBoolean("priority_high:repeat_sound",      PriorityHigh.RepeatSound);
-        e.putString( "priority_high:sound_name",        PriorityHigh.SoundName);
-        e.putString( "priority_high:sound_source",      PriorityHigh.SoundSource);
-        e.putInt(    "priority_high:led_color",         PriorityHigh.LEDColor);
+        e.putBoolean("priority_high:enabled_led",        PriorityHigh.EnableLED);
+        e.putBoolean("priority_high:enabled_sound",      PriorityHigh.EnableSound);
+        e.putBoolean("priority_high:enabled_vibration",  PriorityHigh.EnableVibration);
+        e.putBoolean("priority_high:repeat_sound",       PriorityHigh.RepeatSound);
+        e.putString( "priority_high:sound_name",         PriorityHigh.SoundName);
+        e.putString( "priority_high:sound_source",       PriorityHigh.SoundSource);
+        e.putInt(    "priority_high:led_color",          PriorityHigh.LEDColor);
+        e.putBoolean("priority_high:force_volume",       PriorityHigh.ForceVolume);
+        e.putInt(    "priority_high:force_volume_value", PriorityHigh.ForceVolumeValue);
 
         e.apply();
     }

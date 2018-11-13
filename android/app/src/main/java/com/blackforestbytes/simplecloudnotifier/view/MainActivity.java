@@ -39,6 +39,22 @@ public class MainActivity extends AppCompatActivity
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
         tabLayout.setupWithViewPager(viewPager);
 
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) { /* */ }
+
+            @Override
+            public void onPageSelected(int position)
+            {
+                if (position != 2) adpTabs.tab3.onViewpagerHide();
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
         SCNApp.register(this);
         IABService.startup(this);
         SCNSettings.inst().work(this);

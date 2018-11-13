@@ -6,10 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.media.AudioAttributes;
 import android.media.AudioManager;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.VibrationEffect;
@@ -18,12 +15,15 @@ import android.widget.Toast;
 
 import com.blackforestbytes.simplecloudnotifier.R;
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
+import com.blackforestbytes.simplecloudnotifier.lib.string.Str;
 import com.blackforestbytes.simplecloudnotifier.model.CMessage;
 import com.blackforestbytes.simplecloudnotifier.model.NotificationSettings;
 import com.blackforestbytes.simplecloudnotifier.model.PriorityEnum;
 import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
+import com.blackforestbytes.simplecloudnotifier.model.SoundService;
 import com.blackforestbytes.simplecloudnotifier.view.MainActivity;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
 public class NotificationService
@@ -43,10 +43,10 @@ public class NotificationService
 
     private NotificationService()
     {
-        updateChannels();
+        createChannels();
     }
 
-    public void updateChannels()
+    private void createChannels()
     {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
 
@@ -79,13 +79,7 @@ public class NotificationService
                 case HIGH:   ns = SCNSettings.inst().PriorityHigh; break;
             }
 
-            if (ns.EnableSound && !ns.SoundSource.isEmpty())
-            {
-                Ringtone rt = RingtoneManager.getRingtone(SCNApp.getContext(), Uri.parse(ns.SoundSource));
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) rt.setLooping(false);
-                rt.play();
-                new Thread(() -> { try { Thread.sleep(5*1000); } catch (InterruptedException e) { /* */ } rt.stop(); }).start();
-            }
+            SoundService.playForegroundNoLooping(ns.EnableSound, ns.SoundSource, ns.ForceVolume, ns.ForceVolumeValue);
 
             if (ns.EnableVibration)
             {
@@ -119,74 +113,100 @@ public class NotificationService
         {
             // old
 
-            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ctxt, CHANNEL_ID);
-            mBuilder.setSmallIcon(R.drawable.ic_bfb);
-            mBuilder.setContentTitle(msg.Title);
-            mBuilder.setContentText(msg.Content);
-            mBuilder.setShowWhen(true);
-            mBuilder.setWhen(msg.Timestamp * 1000);
-            mBuilder.setAutoCancel(true);
-
-            if (msg.Priority == PriorityEnum.LOW)    mBuilder.setPriority(NotificationCompat.PRIORITY_LOW);
-            if (msg.Priority == PriorityEnum.NORMAL) mBuilder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
-            if (msg.Priority == PriorityEnum.HIGH)   mBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
-            if (ns.EnableVibration) mBuilder.setVibrate(new long[]{500});
-            if (ns.EnableLED) mBuilder.setLights(ns.LEDColor, 500, 500);
-
-            if (ns.EnableSound && !ns.SoundSource.isEmpty()) mBuilder.setSound(Uri.parse(ns.SoundSource), AudioManager.STREAM_NOTIFICATION);
-
-            Intent intent = new Intent(ctxt, MainActivity.class);
-            PendingIntent pi = PendingIntent.getActivity(ctxt, 0, intent, 0);
-            mBuilder.setContentIntent(pi);
-            NotificationManager mNotificationManager = (NotificationManager) ctxt.getSystemService(Context.NOTIFICATION_SERVICE);
-
-            Notification n = mBuilder.build();
-            if (ns.EnableSound && !ns.SoundSource.isEmpty() && ns.RepeatSound) n.flags |= Notification.FLAG_INSISTENT;
-
-            if (mNotificationManager != null) mNotificationManager.notify(0, n);
+            showBackground_old(msg, ctxt, ns);
         }
         else
         {
             // new
 
-            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ctxt, CHANNEL_ID);
-            mBuilder.setSmallIcon(R.drawable.ic_bfb);
-            mBuilder.setContentTitle(msg.Title);
-            mBuilder.setContentText(msg.Content);
-            mBuilder.setShowWhen(true);
-            mBuilder.setWhen(msg.Timestamp * 1000);
-            mBuilder.setAutoCancel(true);
-            
-            if (ns.EnableLED) mBuilder.setLights(ns.LEDColor, 500, 500);
-
-            if (msg.Priority == PriorityEnum.LOW)    mBuilder.setPriority(NotificationCompat.PRIORITY_LOW);
-            if (msg.Priority == PriorityEnum.NORMAL) mBuilder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
-            if (msg.Priority == PriorityEnum.HIGH)   mBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
-
-            Intent intent = new Intent(ctxt, MainActivity.class);
-            PendingIntent pi = PendingIntent.getActivity(ctxt, 0, intent, 0);
-            mBuilder.setContentIntent(pi);
-            NotificationManager mNotificationManager = (NotificationManager) ctxt.getSystemService(Context.NOTIFICATION_SERVICE);
-            if (mNotificationManager == null) return;
-
-            Notification n = mBuilder.build();
-            n.flags |= Notification.FLAG_AUTO_CANCEL;
-
-            mNotificationManager.notify(0, n);
-
-            if (ns.EnableSound && !ns.SoundSource.isEmpty())
-            {
-                Ringtone rt = RingtoneManager.getRingtone(SCNApp.getContext(), Uri.parse(ns.SoundSource));
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) rt.setLooping(false);
-                rt.play();
-                new Thread(() -> { try { Thread.sleep(5*1000); } catch (InterruptedException e) { /* */ } rt.stop(); }).start();
-            }
-
-            if (ns.EnableVibration)
-            {
-                Vibrator v = (Vibrator) SCNApp.getContext().getSystemService(Context.VIBRATOR_SERVICE);
-                v.vibrate(VibrationEffect.createOneShot(1500, VibrationEffect.DEFAULT_AMPLITUDE));
-            }
+            showBackground_new(msg, ctxt, ns);
         }
     }
+
+    private void showBackground_old(CMessage msg, Context ctxt, NotificationSettings ns) {
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ctxt, CHANNEL_ID);
+        mBuilder.setSmallIcon(R.drawable.ic_bfb);
+        mBuilder.setContentTitle(msg.Title);
+        mBuilder.setContentText(msg.Content);
+        mBuilder.setShowWhen(true);
+        mBuilder.setWhen(msg.Timestamp * 1000);
+        mBuilder.setAutoCancel(true);
+
+        if (msg.Priority == PriorityEnum.LOW)    mBuilder.setPriority(NotificationCompat.PRIORITY_LOW);
+        if (msg.Priority == PriorityEnum.NORMAL) mBuilder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        if (msg.Priority == PriorityEnum.HIGH)   mBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
+        if (ns.EnableVibration) mBuilder.setVibrate(new long[]{500});
+        if (ns.EnableLED) mBuilder.setLights(ns.LEDColor, 500, 500);
+
+        if (ns.EnableSound && !ns.SoundSource.isEmpty()) mBuilder.setSound(Uri.parse(ns.SoundSource), AudioManager.STREAM_NOTIFICATION);
+
+        Intent intent = new Intent(ctxt, MainActivity.class);
+        PendingIntent pi = PendingIntent.getActivity(ctxt, 0, intent, 0);
+        mBuilder.setContentIntent(pi);
+        NotificationManager mNotificationManager = (NotificationManager) ctxt.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        Notification n = mBuilder.build();
+        if (ns.EnableSound && !ns.SoundSource.isEmpty() && ns.RepeatSound) n.flags |= Notification.FLAG_INSISTENT;
+
+        if (mNotificationManager != null) mNotificationManager.notify(0, n);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void showBackground_new(CMessage msg, Context ctxt, NotificationSettings ns) {
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ctxt, CHANNEL_ID);
+        mBuilder.setSmallIcon(R.drawable.ic_bfb);
+        mBuilder.setContentTitle(msg.Title);
+        mBuilder.setContentText(msg.Content);
+        mBuilder.setShowWhen(true);
+        mBuilder.setWhen(msg.Timestamp * 1000);
+        mBuilder.setAutoCancel(true);
+
+        if (ns.EnableLED) mBuilder.setLights(ns.LEDColor, 500, 500);
+
+        if (msg.Priority == PriorityEnum.LOW)    mBuilder.setPriority(NotificationCompat.PRIORITY_LOW);
+        if (msg.Priority == PriorityEnum.NORMAL) mBuilder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        if (msg.Priority == PriorityEnum.HIGH)   mBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
+
+        if (ns.ForceVolume)
+        {
+            AudioManager aman = (AudioManager) SCNApp.getContext().getSystemService(Context.AUDIO_SERVICE);
+            int maxVolume = aman.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
+            aman.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(maxVolume * (ns.ForceVolumeValue / 100.0)), 0);
+        }
+
+        Intent intent = new Intent(ctxt, MainActivity.class);
+        PendingIntent pi = PendingIntent.getActivity(ctxt, 0, intent, 0);
+        mBuilder.setContentIntent(pi);
+        NotificationManager mNotificationManager = (NotificationManager) ctxt.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (mNotificationManager == null) return;
+
+        Notification n = mBuilder.build();
+        n.flags |= Notification.FLAG_AUTO_CANCEL;
+
+        mNotificationManager.notify(0, n);
+
+        if (ns.EnableSound && !Str.isNullOrWhitespace(ns.SoundSource))
+        {
+            if (ns.RepeatSound)
+            {
+                //TODO
+            }
+            else
+            {
+                SoundService.playForegroundNoLooping(ns.EnableSound, ns.SoundSource, ns.ForceVolume, ns.ForceVolumeValue);
+            }
+        }
+
+        if (ns.EnableVibration)
+        {
+            Vibrator v = (Vibrator) SCNApp.getContext().getSystemService(Context.VIBRATOR_SERVICE);
+            v.vibrate(VibrationEffect.createOneShot(1500, VibrationEffect.DEFAULT_AMPLITUDE));
+        }
+
+        if (ns.EnableLED)
+        {
+            //TODO
+        }
+    }
+
 }

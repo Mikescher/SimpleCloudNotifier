@@ -11,6 +11,9 @@ public class NotificationSettings
     public String SoundSource;
     public boolean RepeatSound;
 
+    public boolean ForceVolume;
+    public int ForceVolumeValue;
+
     public boolean EnableLED;
     public int LEDColor;
 
@@ -18,12 +21,14 @@ public class NotificationSettings
 
     public NotificationSettings(PriorityEnum p)
     {
-        EnableSound     = (p == PriorityEnum.HIGH);
-        SoundName       = (p == PriorityEnum.HIGH) ? "Default" : "";
-        SoundSource     = (p == PriorityEnum.HIGH) ? RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION).toString() : Uri.EMPTY.toString();
-        RepeatSound     = false;
-        EnableLED       = (p == PriorityEnum.HIGH) || (p == PriorityEnum.NORMAL);
-        LEDColor        = Color.BLUE;
-        EnableVibration = (p == PriorityEnum.HIGH) || (p == PriorityEnum.NORMAL);
+        EnableSound      = (p == PriorityEnum.HIGH);
+        SoundName        = "Default";
+        SoundSource      = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION).toString();
+        RepeatSound      = false;
+        EnableLED        = (p == PriorityEnum.HIGH) || (p == PriorityEnum.NORMAL);
+        LEDColor         = Color.BLUE;
+        EnableVibration  = (p == PriorityEnum.HIGH) || (p == PriorityEnum.NORMAL);
+        ForceVolume      = false;
+        ForceVolumeValue = 50;
     }
 }

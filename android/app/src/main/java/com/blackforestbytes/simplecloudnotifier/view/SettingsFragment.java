@@ -1,8 +1,13 @@
 package com.blackforestbytes.simplecloudnotifier.view;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,15 +16,19 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 
 import com.android.billingclient.api.Purchase;
 import com.blackforestbytes.simplecloudnotifier.R;
+import com.blackforestbytes.simplecloudnotifier.SCNApp;
+import com.blackforestbytes.simplecloudnotifier.lib.android.ThreadUtils;
+import com.blackforestbytes.simplecloudnotifier.lib.lambda.FI;
+import com.blackforestbytes.simplecloudnotifier.lib.string.Str;
 import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
 import com.blackforestbytes.simplecloudnotifier.service.IABService;
-import com.blackforestbytes.simplecloudnotifier.service.NotificationService;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -45,6 +54,9 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
     private View      prefMsgLowLedColor_container;
     private ImageView prefMsgLowLedColor_value;
     private Switch    prefMsgLowEnableVibrations;
+    private Switch    prefMsgLowForceVolume;
+    private SeekBar   prefMsgLowVolume;
+    private ImageView prefMsgLowVolumeTest;
 
     private Switch    prefMsgNormEnableSound;
     private TextView  prefMsgNormRingtone_value;
@@ -54,6 +66,9 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
     private View      prefMsgNormLedColor_container;
     private ImageView prefMsgNormLedColor_value;
     private Switch    prefMsgNormEnableVibrations;
+    private Switch    prefMsgNormForceVolume;
+    private SeekBar   prefMsgNormVolume;
+    private ImageView prefMsgNormVolumeTest;
 
     private Switch    prefMsgHighEnableSound;
     private TextView  prefMsgHighRingtone_value;
@@ -63,8 +78,13 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
     private View      prefMsgHighLedColor_container;
     private ImageView prefMsgHighLedColor_value;
     private Switch    prefMsgHighEnableVibrations;
+    private Switch    prefMsgHighForceVolume;
+    private SeekBar   prefMsgHighVolume;
+    private ImageView prefMsgHighVolumeTest;
 
     private int musicPickerSwitch = -1;
+
+    private MediaPlayer[] mPlayers = new MediaPlayer[3];
 
     public SettingsFragment()
     {
@@ -99,6 +119,9 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         prefMsgLowLedColor_value      = v.findViewById(R.id.prefMsgLowLedColor_value);
         prefMsgLowLedColor_container  = v.findViewById(R.id.prefMsgLowLedColor_container);
         prefMsgLowEnableVibrations    = v.findViewById(R.id.prefMsgLowEnableVibrations);
+        prefMsgLowForceVolume         = v.findViewById(R.id.prefMsgLowForceVolume);
+        prefMsgLowVolume              = v.findViewById(R.id.prefMsgLowVolume);
+        prefMsgLowVolumeTest          = v.findViewById(R.id.btnLowVolumeTest);
 
         prefMsgNormEnableSound        = v.findViewById(R.id.prefMsgNormEnableSound);
         prefMsgNormRingtone_value     = v.findViewById(R.id.prefMsgNormRingtone_value);
@@ -108,6 +131,9 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         prefMsgNormLedColor_value     = v.findViewById(R.id.prefMsgNormLedColor_value);
         prefMsgNormLedColor_container = v.findViewById(R.id.prefMsgNormLedColor_container);
         prefMsgNormEnableVibrations   = v.findViewById(R.id.prefMsgNormEnableVibrations);
+        prefMsgNormForceVolume         = v.findViewById(R.id.prefMsgNormForceVolume);
+        prefMsgNormVolume              = v.findViewById(R.id.prefMsgNormVolume);
+        prefMsgNormVolumeTest          = v.findViewById(R.id.btnNormVolumeTest);
 
         prefMsgHighEnableSound        = v.findViewById(R.id.prefMsgHighEnableSound);
         prefMsgHighRingtone_value     = v.findViewById(R.id.prefMsgHighRingtone_value);
@@ -117,6 +143,9 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         prefMsgHighLedColor_value     = v.findViewById(R.id.prefMsgHighLedColor_value);
         prefMsgHighLedColor_container = v.findViewById(R.id.prefMsgHighLedColor_container);
         prefMsgHighEnableVibrations   = v.findViewById(R.id.prefMsgHighEnableVibrations);
+        prefMsgHighForceVolume         = v.findViewById(R.id.prefMsgHighForceVolume);
+        prefMsgHighVolume              = v.findViewById(R.id.prefMsgHighVolume);
+        prefMsgHighVolumeTest          = v.findViewById(R.id.btnHighVolumeTest);
     }
 
     private void updateUI()
@@ -142,6 +171,12 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         if (prefMsgLowEnableLED.isChecked() != s.PriorityLow.EnableLED) prefMsgLowEnableLED.setChecked(s.PriorityLow.EnableLED);
         prefMsgLowLedColor_value.setColorFilter(s.PriorityLow.LEDColor);
         if (prefMsgLowEnableVibrations.isChecked() != s.PriorityLow.EnableVibration) prefMsgLowEnableVibrations.setChecked(s.PriorityLow.EnableVibration);
+        if (prefMsgLowForceVolume.isChecked() != s.PriorityLow.ForceVolume) prefMsgLowForceVolume.setChecked(s.PriorityLow.ForceVolume);
+        if (prefMsgLowVolume.getMax() != 100) prefMsgLowVolume.setMax(100);
+        if (prefMsgLowVolume.getProgress() != s.PriorityLow.ForceVolumeValue) prefMsgLowVolume.setProgress(s.PriorityLow.ForceVolumeValue);
+        if (prefMsgLowVolume.isEnabled() != s.PriorityLow.ForceVolume) prefMsgLowVolume.setEnabled(s.PriorityLow.ForceVolume);
+        if (prefMsgLowVolumeTest.isEnabled() != s.PriorityLow.ForceVolume) prefMsgLowVolumeTest.setEnabled(s.PriorityLow.ForceVolume);
+        if (s.PriorityLow.ForceVolume) prefMsgLowVolumeTest.setColorFilter(null); else prefMsgLowVolumeTest.setColorFilter(Color.argb(150,200,200,200));
 
         if (prefMsgNormEnableSound.isChecked() != s.PriorityNorm.EnableSound) prefMsgNormEnableSound.setChecked(s.PriorityNorm.EnableSound);
         if (!prefMsgNormRingtone_value.getText().equals(s.PriorityNorm.SoundName)) prefMsgNormRingtone_value.setText(s.PriorityNorm.SoundName);
@@ -149,6 +184,12 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         if (prefMsgNormEnableLED.isChecked() != s.PriorityNorm.EnableLED) prefMsgNormEnableLED.setChecked(s.PriorityNorm.EnableLED);
         prefMsgNormLedColor_value.setColorFilter(s.PriorityNorm.LEDColor);
         if (prefMsgNormEnableVibrations.isChecked() != s.PriorityNorm.EnableVibration) prefMsgNormEnableVibrations.setChecked(s.PriorityNorm.EnableVibration);
+        if (prefMsgNormForceVolume.isChecked() != s.PriorityNorm.ForceVolume) prefMsgNormForceVolume.setChecked(s.PriorityNorm.ForceVolume);
+        if (prefMsgNormVolume.getMax() != 100) prefMsgNormVolume.setMax(100);
+        if (prefMsgNormVolume.getProgress() != s.PriorityNorm.ForceVolumeValue) prefMsgNormVolume.setProgress(s.PriorityNorm.ForceVolumeValue);
+        if (prefMsgNormVolume.isEnabled() != s.PriorityNorm.ForceVolume) prefMsgNormVolume.setEnabled(s.PriorityNorm.ForceVolume);
+        if (prefMsgNormVolumeTest.isEnabled() != s.PriorityNorm.ForceVolume) prefMsgNormVolumeTest.setEnabled(s.PriorityNorm.ForceVolume);
+        if (s.PriorityNorm.ForceVolume) prefMsgNormVolumeTest.setColorFilter(null); else prefMsgNormVolumeTest.setColorFilter(Color.argb(150,200,200,200));
 
         if (prefMsgHighEnableSound.isChecked() != s.PriorityHigh.EnableSound) prefMsgHighEnableSound.setChecked(s.PriorityHigh.EnableSound);
         if (!prefMsgHighRingtone_value.getText().equals(s.PriorityHigh.SoundName)) prefMsgHighRingtone_value.setText(s.PriorityHigh.SoundName);
@@ -156,6 +197,12 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         if (prefMsgHighEnableLED.isChecked() != s.PriorityHigh.EnableLED) prefMsgHighEnableLED.setChecked(s.PriorityHigh.EnableLED);
         prefMsgHighLedColor_value.setColorFilter(s.PriorityHigh.LEDColor);
         if (prefMsgHighEnableVibrations.isChecked() != s.PriorityHigh.EnableVibration) prefMsgHighEnableVibrations.setChecked(s.PriorityHigh.EnableVibration);
+        if (prefMsgHighForceVolume.isChecked() != s.PriorityHigh.ForceVolume) prefMsgHighForceVolume.setChecked(s.PriorityHigh.ForceVolume);
+        if (prefMsgHighVolume.getMax() != 100) prefMsgHighVolume.setMax(100);
+        if (prefMsgHighVolume.getProgress() != s.PriorityHigh.ForceVolumeValue) prefMsgHighVolume.setProgress(s.PriorityHigh.ForceVolumeValue);
+        if (prefMsgHighVolume.isEnabled() != s.PriorityHigh.ForceVolume) prefMsgHighVolume.setEnabled(s.PriorityHigh.ForceVolume);
+        if (prefMsgHighVolumeTest.isEnabled() != s.PriorityHigh.ForceVolume) prefMsgHighVolumeTest.setEnabled(s.PriorityHigh.ForceVolume);
+        if (s.PriorityHigh.ForceVolume) prefMsgHighVolumeTest.setColorFilter(null); else prefMsgHighVolumeTest.setColorFilter(Color.argb(150,200,200,200));
     }
 
     private void initListener()
@@ -181,6 +228,9 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         prefMsgLowEnableLED.setOnCheckedChangeListener((a,b) -> { s.PriorityLow.EnableLED=b; saveAndUpdate(); });
         prefMsgLowLedColor_container.setOnClickListener(a -> chooseLEDColorLow());
         prefMsgLowEnableVibrations.setOnCheckedChangeListener((a,b) -> { s.PriorityLow.EnableVibration=b; saveAndUpdate(); });
+        prefMsgLowForceVolume.setOnCheckedChangeListener((a,b) -> { s.PriorityLow.ForceVolume=b; saveAndUpdate(); });
+        prefMsgLowVolume.setOnSeekBarChangeListener(FI.SeekBarChanged((a,b,c) -> { if (c) { s.PriorityLow.ForceVolumeValue=b; saveAndUpdate(); updateVolume(0, b); } }));
+        prefMsgLowVolumeTest.setOnClickListener((v) -> { if (s.PriorityLow.ForceVolume) playTestSound(0, prefMsgLowVolumeTest, s.PriorityLow.SoundSource, s.PriorityLow.ForceVolumeValue); });
 
         prefMsgNormEnableSound.setOnCheckedChangeListener((a,b) -> { s.PriorityNorm.EnableSound=b; saveAndUpdate(); });
         prefMsgNormRingtone_container.setOnClickListener(a -> chooseRingtoneNorm());
@@ -188,6 +238,9 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         prefMsgNormEnableLED.setOnCheckedChangeListener((a,b) -> { s.PriorityNorm.EnableLED=b; saveAndUpdate(); });
         prefMsgNormLedColor_container.setOnClickListener(a -> chooseLEDColorNorm());
         prefMsgNormEnableVibrations.setOnCheckedChangeListener((a,b) -> { s.PriorityNorm.EnableVibration=b; saveAndUpdate(); });
+        prefMsgNormForceVolume.setOnCheckedChangeListener((a,b) -> { s.PriorityNorm.ForceVolume=b; saveAndUpdate(); });
+        prefMsgNormVolume.setOnSeekBarChangeListener(FI.SeekBarChanged((a,b,c) -> { if (c) { s.PriorityNorm.ForceVolumeValue=b; saveAndUpdate(); updateVolume(1, b); } }));
+        prefMsgNormVolumeTest.setOnClickListener((v) -> { if (s.PriorityNorm.ForceVolume) playTestSound(1, prefMsgNormVolumeTest, s.PriorityNorm.SoundSource, s.PriorityNorm.ForceVolumeValue); });
 
         prefMsgHighEnableSound.setOnCheckedChangeListener((a,b) -> { s.PriorityHigh.EnableSound=b; saveAndUpdate(); });
         prefMsgHighRingtone_container.setOnClickListener(a -> chooseRingtoneHigh());
@@ -195,6 +248,57 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         prefMsgHighEnableLED.setOnCheckedChangeListener((a,b) -> { s.PriorityHigh.EnableLED=b; saveAndUpdate(); });
         prefMsgHighLedColor_container.setOnClickListener(a -> chooseLEDColorHigh());
         prefMsgHighEnableVibrations.setOnCheckedChangeListener((a,b) -> { s.PriorityHigh.EnableVibration=b; saveAndUpdate(); });
+        prefMsgHighForceVolume.setOnCheckedChangeListener((a,b) -> { s.PriorityHigh.ForceVolume=b; saveAndUpdate(); });
+        prefMsgHighVolume.setOnSeekBarChangeListener(FI.SeekBarChanged((a,b,c) -> { if (c) { s.PriorityHigh.ForceVolumeValue=b; saveAndUpdate(); updateVolume(2, b); } }));
+        prefMsgHighVolumeTest.setOnClickListener((v) -> { if (s.PriorityHigh.ForceVolume) playTestSound(2, prefMsgHighVolumeTest, s.PriorityHigh.SoundSource, s.PriorityHigh.ForceVolumeValue); });
+    }
+
+    private void updateVolume(int idx, int volume)
+    {
+        if (mPlayers[idx] != null && mPlayers[idx].isPlaying())
+        {
+            AudioManager aman = (AudioManager) SCNApp.getContext().getSystemService(Context.AUDIO_SERVICE);
+            int maxVolume = aman.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            aman.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(maxVolume * (volume / 100.0)), 0);
+        }
+    }
+
+    private void stopSound(final int idx, final ImageView iv)
+    {
+        if (mPlayers[idx] != null && mPlayers[idx].isPlaying())
+        {
+            mPlayers[idx].stop();
+            mPlayers[idx].release();
+            iv.setImageResource(R.drawable.ic_play);
+            mPlayers[idx] = null;
+        }
+    }
+
+    private void playTestSound(final int idx, final ImageView iv, String src, int volume)
+    {
+        if (mPlayers[idx] != null && mPlayers[idx].isPlaying())
+        {
+            mPlayers[idx].stop();
+            mPlayers[idx].release();
+            iv.setImageResource(R.drawable.ic_play);
+            mPlayers[idx] = null;
+            return;
+        }
+
+        if (Str.isNullOrWhitespace(src)) return;
+        if (volume == 0) return;
+
+        iv.setImageResource(R.drawable.ic_pause);
+
+        AudioManager aman = (AudioManager) SCNApp.getContext().getSystemService(Context.AUDIO_SERVICE);
+        int maxVolume = aman.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        aman.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(maxVolume * (volume / 100.0)), 0);
+
+        MediaPlayer player = mPlayers[idx] = MediaPlayer.create(getActivity(), Uri.parse(src));
+        player.setLooping(false);
+        player.setOnCompletionListener(  mp -> SCNApp.runOnUiThread(() -> { mp.stop(); iv.setImageResource(R.drawable.ic_play); mPlayers[idx]=null; mp.release(); }));
+        player.setOnSeekCompleteListener(mp -> SCNApp.runOnUiThread(() -> { mp.stop(); iv.setImageResource(R.drawable.ic_play); mPlayers[idx]=null; mp.release(); }));
+        player.start();
     }
 
     private void saveAndUpdate()
@@ -354,5 +458,12 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
     public void onPickCanceled()
     {
         musicPickerSwitch = -1;
+    }
+
+    public void onViewpagerHide()
+    {
+        stopSound(0, prefMsgLowVolumeTest);
+        stopSound(1, prefMsgNormVolumeTest);
+        stopSound(2, prefMsgHighVolumeTest);
     }
 }

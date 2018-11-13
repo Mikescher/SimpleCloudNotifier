@@ -24,10 +24,13 @@
     <string name="str_msg_enablesound">Enable notification sound</string>
     <string name="str_notificationsound">Notification sound</string>
     <string name="str_repeatnotificationsound">Repeat notification sound</string>
+    <string name="str_forcevolume">Automatically set the volume</string>
     <string name="str_enable_led">Enable notification light</string>
     <string name="str_ledcolor">Notification light color</string>
     <string name="str_enable_vibration">Enable notification vibration</string>
     <string name="str_upgrade_account">Upgrade account</string>
     <string name="str_promode">Thank you for supporting the app and using the pro mode</string>
     <string name="str_promode_info">Increase your daily quota, remove the ad banner and support the developer (that\'s me)</string>
+    <string name="volume_icon">Volume icon</string>
+    <string name="play_test_sound">Play test sound</string>
 </resources>

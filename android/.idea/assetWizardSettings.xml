@@ -14,8 +14,8 @@
                         <option name="values">
                           <map>
                             <entry key="assetSourceType" value="FILE" />
-                            <entry key="outputName" value="priority_low" />
-                            <entry key="sourceFile" value="C:\Users\Mike\Downloads\Low Priority-595b40b75ba036ed117d9842.svg" />
+                            <entry key="outputName" value="ic_pause" />
+                            <entry key="sourceFile" value="C:\Users\Mike\Downloads\pause-symbol.svg" />
                           </map>
                         </option>
                       </PersistentState>
