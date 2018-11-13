@@ -13,12 +13,18 @@
     <link rel="icon" type="image/png" href="/favicon.ico"/>
 </head>
 <body>
+
+    <div id="copyinfo">
+        <a tabindex="-1" href="https://www.blackforestbytes.com">&#169; blackforestbytes</a>
+        <a tabindex="-1" href="https://www.mikescher.com">made by Mike Schw&ouml;rer</a>
+    </div>
+
 	<form id="mainpnl">
 
-		<a href="https://play.google.com/store/apps/details?id=com.blackforestbytes.simplecloudnotifier" class="button bordered" id="tl_link"><span class="icn-google-play"></span></a>
-		<a href="/index_api.php" class="button bordered" id="tr_link">API</a>
+		<a tabindex="-1" href="https://play.google.com/store/apps/details?id=com.blackforestbytes.simplecloudnotifier" class="button bordered" id="tl_link"><span class="icn-google-play"></span></a>
+		<a tabindex="-1" href="/index_api.php" class="button bordered" id="tr_link">API</a>
 
-        <a href="/" class="linkcaption"><h1>Simple Cloud Notifier</h1></a>
+        <a tabindex="-1" href="/" class="linkcaption"><h1>Simple Cloud Notifier</h1></a>
 
 		<div class="row responsive-label">
 			<div class="col-sm-12 col-md-3"><label for="uid" class="doc">UserID</label></div>
@@ -56,10 +62,6 @@
 			<div class="col-sm-12 col-md"><button type="submit" class="primary bordered" id="btnSend">Send</button></div>
 		</div>
 	</form>
-
-	<div id="copyinfo">
-		<a href="https://www.blackforestbytes.com">&#169; blackforestbytes</a>
-	</div>
 
 	<script src="/js/logic.js" type="text/javascript" ></script>
 	<script src="/js/toastify.js"></script>

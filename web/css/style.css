@@ -86,13 +86,10 @@ body
     position: fixed;
     bottom: 0;
     right: 0;
-    z-index: -999;
-}
-
-#copyinfo a:hover
-{
-    font-family: "Courier New", monospace;
-    color: #00F;
+    //z-index: -999;
+    display: flex;
+    flex-direction: column;
+    text-align: right;
 }
 
 #copyinfo a,
@@ -102,6 +99,14 @@ body
     font-family: "Courier New", monospace;
     color: #AAA;
     text-decoration: none;
+    display: block;
+    line-height: 1em;
+}
+
+#copyinfo a:hover
+{
+    font-family: "Courier New", monospace;
+    color: #0288D1;
 }
 
 #tr_link

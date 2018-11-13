@@ -12,11 +12,17 @@
     <link rel="icon" type="image/png" href="/favicon.ico"/>
 </head>
 <body>
-	<div id="mainpnl">
-        <a href="https://play.google.com/store/apps/details?id=com.blackforestbytes.simplecloudnotifier" class="button bordered" id="tl_link"><span class="icn-google-play"></span></a>
-        <a href="/index.php" class="button bordered" id="tr_link">Send</a>
 
-        <a href="/" class="linkcaption"><h1>Simple Cloud Notifier</h1></a>
+    <div id="copyinfo">
+        <a tabindex="-1" href="https://www.blackforestbytes.com">&#169; blackforestbytes</a>
+        <a tabindex="-1" href="https://www.mikescher.com">made by Mike Schw&ouml;rer</a>
+    </div>
+
+	<div id="mainpnl">
+        <a tabindex="-1" href="https://play.google.com/store/apps/details?id=com.blackforestbytes.simplecloudnotifier" class="button bordered" id="tl_link"><span class="icn-google-play"></span></a>
+        <a tabindex="-1" href="/index.php" class="button bordered" id="tr_link">Send</a>
+
+        <a tabindex="-1" href="/" class="linkcaption"><h1>Simple Cloud Notifier</h1></a>
 
         <h2>Introduction</h2>
         <div class="section">
@@ -182,11 +188,7 @@
                 Be aware that the server only saves send messages for a short amount of time. Because of that you can only use this to prevent duplicates in a short time-frame, older messages with the same ID are probably already deleted and the message will be send again.
             </p>
         </div>
-
     </div>
 
-	<div id="copyinfo">
-		<a href="https://www.blackforestbytes.com">&#169; blackforestbytes</a>
-	</div>
 </body>
 </html>

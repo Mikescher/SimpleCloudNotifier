@@ -12,11 +12,17 @@
     <link rel="icon" type="image/png" href="/favicon.ico"/>
 </head>
 <body>
-	<div id="mainpnl">
-        <a href="https://play.google.com/store/apps/details?id=com.blackforestbytes.simplecloudnotifier" class="button bordered" id="tl_link"><span class="icn-google-play"></span></a>
-        <a href="/index.php" class="button bordered" id="tr_link">Send</a>
 
-        <a href="/" class="linkcaption"><h1>Simple Cloud Notifier</h1></a>
+    <div id="copyinfo">
+        <a tabindex="-1" href="https://www.blackforestbytes.com">&#169; blackforestbytes</a>
+        <a tabindex="-1" href="https://www.mikescher.com">made by Mike Schw&ouml;rer</a>
+    </div>
+
+	<div id="mainpnl">
+        <a tabindex="-1" href="https://play.google.com/store/apps/details?id=com.blackforestbytes.simplecloudnotifier" class="button bordered" id="tl_link"><span class="icn-google-play"></span></a>
+        <a tabindex="-1" href="/index.php" class="button bordered" id="tr_link">Send</a>
+
+        <a tabindex="-1" href="/" class="linkcaption"><h1>Simple Cloud Notifier</h1></a>
 
         <p>Get your user-id and user-key from the app and send notifications to your phone by performing a POST request against <code>https://simplecloudnotifier.blackforestbytes.com/send.php</code></p>
         <pre>curl                                          \
@@ -37,9 +43,5 @@
         <a href="/index_more.php" class="button bordered tertiary" style="float: right; min-width: 100px; text-align: center">More</a>
 
     </div>
-
-	<div id="copyinfo">
-		<a href="https://www.blackforestbytes.com">&#169; blackforestbytes</a>
-	</div>
 </body>
 </html>
