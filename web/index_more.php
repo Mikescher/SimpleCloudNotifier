@@ -77,7 +77,6 @@
         "canonical_ids":0,
         "results": [{"message_id":"0:10000000000000000000000000000000d"}]
     },
-    "messagecount":623,
     "quota":17,
     "quota_max":100
 }</pre>
