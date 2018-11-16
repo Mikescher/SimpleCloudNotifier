@@ -36,6 +36,8 @@
             </intent-filter>
         </service>
 
+        <receiver android:name=".service.BroadcastReceiverService" android:exported="false" />
+
     </application>
 
 </manifest>

@@ -102,8 +102,6 @@ public class SCNApp extends Application implements LifecycleObserver
 /*
  ==TODO==
 
-[ ]  - Android O repeat sound
-[ ]  - notifications: how does WA do it??? - there you can change shit in-app
 [ ]  - test notification channels
 
 [ ]  - Delete single message (swipe right)

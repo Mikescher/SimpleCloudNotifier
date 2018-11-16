@@ -21,7 +21,6 @@ import com.blackforestbytes.simplecloudnotifier.model.CMessage;
 import com.blackforestbytes.simplecloudnotifier.model.NotificationSettings;
 import com.blackforestbytes.simplecloudnotifier.model.PriorityEnum;
 import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
-import com.blackforestbytes.simplecloudnotifier.model.SoundService;
 import com.blackforestbytes.simplecloudnotifier.view.MainActivity;
 
 import androidx.annotation.RequiresApi;
@@ -70,7 +69,7 @@ public class NotificationService
             }
         }
         {
-            NotificationChannel channel1  = notifman.getNotificationChannel(CHANNEL_P0_ID);
+            NotificationChannel channel1  = notifman.getNotificationChannel(CHANNEL_P1_ID);
             if (channel1 == null)
             {
                 channel1 = new NotificationChannel(CHANNEL_P1_ID, "Push notifications (normal priority)", NotificationManager.IMPORTANCE_DEFAULT);
@@ -82,7 +81,7 @@ public class NotificationService
             }
         }
         {
-            NotificationChannel channel2  = notifman.getNotificationChannel(CHANNEL_P0_ID);
+            NotificationChannel channel2  = notifman.getNotificationChannel(CHANNEL_P2_ID);
             if (channel2 == null)
             {
                 channel2 = new NotificationChannel(CHANNEL_P1_ID, "Push notifications (high priority)", NotificationManager.IMPORTANCE_DEFAULT);
@@ -142,14 +141,12 @@ public class NotificationService
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O)
         {
             // old
-
-            showBackground_old(msg, ctxt, ns);
+            showBackground_old(msg, ctxt, ns, msg.Priority);
         }
         else
         {
             // new
-
-            showBackground_new(msg, ctxt, ns);
+            showBackground_new(msg, ctxt, ns, msg.Priority);
         }
     }
 
@@ -222,22 +219,28 @@ public class NotificationService
         NotificationManager mNotificationManager = (NotificationManager) ctxt.getSystemService(Context.NOTIFICATION_SERVICE);
         if (mNotificationManager == null) return;
 
-        Notification n = mBuilder.build();
-        n.flags |= Notification.FLAG_AUTO_CANCEL;
-
-        mNotificationManager.notify(0, n);
-
         if (ns.EnableSound && !Str.isNullOrWhitespace(ns.SoundSource))
         {
             if (ns.RepeatSound)
             {
-                //TODO
+                Intent intnt_stop = new Intent(SCNApp.getContext(), BroadcastReceiverService.class);
+                intnt_stop.putExtra(BroadcastReceiverService.ID_KEY, BroadcastReceiverService.STOP_NOTIFICATION_SOUND);
+                PendingIntent pi_stop = PendingIntent.getBroadcast(SCNApp.getContext().getApplicationContext(), BroadcastReceiverService.STOP_NOTIFICATION_SOUND, intnt_stop, 0);
+                mBuilder.addAction(new NotificationCompat.Action(-1, "Stop", pi_stop));
+                mBuilder.setDeleteIntent(pi_stop);
+
+                SoundService.playForegroundWithLooping(ns.EnableSound, ns.SoundSource, ns.ForceVolume, ns.ForceVolumeValue);
             }
             else
             {
                 SoundService.playForegroundNoLooping(ns.EnableSound, ns.SoundSource, ns.ForceVolume, ns.ForceVolumeValue);
             }
         }
+
+        Notification n = mBuilder.build();
+        n.flags |= Notification.FLAG_AUTO_CANCEL;
+
+        mNotificationManager.notify(0, n);
 
         if (ns.EnableVibration)
         {
