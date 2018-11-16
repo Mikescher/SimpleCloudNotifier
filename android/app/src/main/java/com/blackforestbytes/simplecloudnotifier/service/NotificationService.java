@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
@@ -28,7 +29,9 @@ import androidx.core.app.NotificationCompat;
 
 public class NotificationService
 {
-    private final static String CHANNEL_ID  = "CHAN_BFB_SCN_MESSAGES";
+    private final static String CHANNEL_P0_ID  = "CHAN_BFB_SCN_MESSAGES_P0";
+    private final static String CHANNEL_P1_ID  = "CHAN_BFB_SCN_MESSAGES_P1";
+    private final static String CHANNEL_P2_ID  = "CHAN_BFB_SCN_MESSAGES_P2";
 
     private final static Object _lock = new Object();
     private static NotificationService _inst = null;
@@ -54,14 +57,41 @@ public class NotificationService
         NotificationManager notifman = ctxt.getSystemService(NotificationManager.class);
         if (notifman == null) return;
 
-        NotificationChannel channel  = notifman.getNotificationChannel(CHANNEL_ID);
-        if (channel == null)
         {
-            channel = new NotificationChannel(CHANNEL_ID, "Push notifications", NotificationManager.IMPORTANCE_DEFAULT);
-            channel.setDescription("Push notifications from the server");
-            channel.setSound(null, null);
-            channel.setVibrationPattern(null);
-            notifman.createNotificationChannel(channel);
+            NotificationChannel channel0  = notifman.getNotificationChannel(CHANNEL_P0_ID);
+            if (channel0 == null)
+            {
+                channel0 = new NotificationChannel(CHANNEL_P0_ID, "Push notifications (low priority)", NotificationManager.IMPORTANCE_DEFAULT);
+                channel0.setDescription("Push notifications from the server with low priority.\nGo to the in-app settings to configure ringtone, volume and vibrations");
+                channel0.setSound(null, null);
+                channel0.setVibrationPattern(null);
+                channel0.setLightColor(Color.BLUE);
+                notifman.createNotificationChannel(channel0);
+            }
+        }
+        {
+            NotificationChannel channel1  = notifman.getNotificationChannel(CHANNEL_P0_ID);
+            if (channel1 == null)
+            {
+                channel1 = new NotificationChannel(CHANNEL_P1_ID, "Push notifications (normal priority)", NotificationManager.IMPORTANCE_DEFAULT);
+                channel1.setDescription("Push notifications from the server with low priority.\nGo to the in-app settings to configure ringtone, volume and vibrations");
+                channel1.setSound(null, null);
+                channel1.setVibrationPattern(null);
+                channel1.setLightColor(Color.BLUE);
+                notifman.createNotificationChannel(channel1);
+            }
+        }
+        {
+            NotificationChannel channel2  = notifman.getNotificationChannel(CHANNEL_P0_ID);
+            if (channel2 == null)
+            {
+                channel2 = new NotificationChannel(CHANNEL_P1_ID, "Push notifications (high priority)", NotificationManager.IMPORTANCE_DEFAULT);
+                channel2.setDescription("Push notifications from the server with low priority.\nGo to the in-app settings to configure ringtone, volume and vibrations");
+                channel2.setSound(null, null);
+                channel2.setVibrationPattern(null);
+                channel2.setLightColor(Color.BLUE);
+                notifman.createNotificationChannel(channel2);
+            }
         }
     }
 
@@ -123,8 +153,20 @@ public class NotificationService
         }
     }
 
-    private void showBackground_old(CMessage msg, Context ctxt, NotificationSettings ns) {
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ctxt, CHANNEL_ID);
+    private String getChannel(PriorityEnum p)
+    {
+        switch (p)
+        {
+            case LOW:    return CHANNEL_P0_ID;
+            case NORMAL: return CHANNEL_P1_ID;
+            case HIGH:   return CHANNEL_P2_ID;
+
+            default:     return CHANNEL_P0_ID;
+        }
+    }
+
+    private void showBackground_old(CMessage msg, Context ctxt, NotificationSettings ns, PriorityEnum prio) {
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ctxt, getChannel(prio));
         mBuilder.setSmallIcon(R.drawable.ic_bfb);
         mBuilder.setContentTitle(msg.Title);
         mBuilder.setContentText(msg.Content);
@@ -152,8 +194,8 @@ public class NotificationService
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private void showBackground_new(CMessage msg, Context ctxt, NotificationSettings ns) {
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ctxt, CHANNEL_ID);
+    private void showBackground_new(CMessage msg, Context ctxt, NotificationSettings ns, PriorityEnum prio) {
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ctxt, getChannel(prio));
         mBuilder.setSmallIcon(R.drawable.ic_bfb);
         mBuilder.setContentTitle(msg.Title);
         mBuilder.setContentText(msg.Content);
@@ -203,10 +245,7 @@ public class NotificationService
             v.vibrate(VibrationEffect.createOneShot(1500, VibrationEffect.DEFAULT_AMPLITUDE));
         }
 
-        if (ns.EnableLED)
-        {
-            //TODO
-        }
+        //if (ns.EnableLED) {  } // no LED in Android-O -- configure via Channel
     }
 
 }
