@@ -103,7 +103,6 @@ public class SCNApp extends Application implements LifecycleObserver
  ==TODO==
 
 [ ]  - Delete single message (swipe right)
-[ ]  - scroll to newest message (armin says it doesnt)
 [ ]  - Android O repeat sound
 [ ]  - Query non-ack-ed messages in app
 [ ]  - notifications: how does WA do it??? - there you can change shit in-app

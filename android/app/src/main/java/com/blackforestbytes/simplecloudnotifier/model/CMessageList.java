@@ -73,6 +73,7 @@ public class CMessageList
                 MessageAdapter a = ref.get();
                 if (a == null) continue;
                 a.customNotifyItemInserted(count);
+                a.scrollToTop();
             }
             CleanUpListener();
         });
@@ -125,6 +126,11 @@ public class CMessageList
     {
         if (pos < 0 || pos >= Messages.size()) return null;
         return Messages.get(pos);
+    }
+
+    public CMessage tryGetFromBack(int pos)
+    {
+        return tryGet(Messages.size() - pos - 1);
     }
 
     public int size()

@@ -11,15 +11,20 @@ import com.blackforestbytes.simplecloudnotifier.model.CMessage;
 import com.blackforestbytes.simplecloudnotifier.model.CMessageList;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class MessageAdapter extends RecyclerView.Adapter
 {
     private final View vNoElements;
+    private final LinearLayoutManager manLayout;
+    private final RecyclerView viewRecycler;
 
-    public MessageAdapter(View noElementsView)
+    public MessageAdapter(View noElementsView, LinearLayoutManager layout, RecyclerView recycler)
     {
-        vNoElements = noElementsView;
+        vNoElements  = noElementsView;
+        manLayout    = layout;
+        viewRecycler = recycler;
         CMessageList.inst().register(this);
 
         vNoElements.setVisibility(getItemCount()>0 ? View.GONE : View.VISIBLE);
@@ -36,7 +41,7 @@ public class MessageAdapter extends RecyclerView.Adapter
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position)
     {
-        CMessage msg = CMessageList.inst().tryGet(position);
+        CMessage msg = CMessageList.inst().tryGetFromBack(position);
         MessagePresenter view = (MessagePresenter) holder;
         view.setMessage(msg);
     }
@@ -57,6 +62,11 @@ public class MessageAdapter extends RecyclerView.Adapter
     {
         notifyDataSetChanged();
         vNoElements.setVisibility(getItemCount()>0 ? View.GONE : View.VISIBLE);
+    }
+
+    public void scrollToTop()
+    {
+        manLayout.smoothScrollToPosition(viewRecycler, null, 0);
     }
 
     private class MessagePresenter extends RecyclerView.ViewHolder implements View.OnClickListener

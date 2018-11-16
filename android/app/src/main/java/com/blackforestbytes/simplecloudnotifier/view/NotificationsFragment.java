@@ -31,8 +31,10 @@ public class NotificationsFragment extends Fragment
         View v = inflater.inflate(R.layout.fragment_notifications, container, false);
 
         RecyclerView rvMessages = v.findViewById(R.id.rvMessages);
-        rvMessages.setLayoutManager(new LinearLayoutManager(this.getContext(), RecyclerView.VERTICAL, true));
-        rvMessages.setAdapter(new MessageAdapter(v.findViewById(R.id.tvNoElements)));
+        LinearLayoutManager lman = new LinearLayoutManager(this.getContext(), RecyclerView.VERTICAL, false);
+        rvMessages.setLayoutManager(lman);
+        rvMessages.setAdapter(new MessageAdapter(v.findViewById(R.id.tvNoElements), lman, rvMessages));
+        //lman.scrollToPosition(0);
 
         adView = v.findViewById(R.id.adBanner);
         PublisherAdRequest adRequest = new PublisherAdRequest.Builder().build();
