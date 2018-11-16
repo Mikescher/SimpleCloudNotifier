@@ -34,7 +34,7 @@ class Statics
 	public static $DB = NULL;
 	public static $CFG = NULL;
 
-	public static function quota_max($is_pro) { return $is_pro ? 1000 : 100; }
+	public static function quota_max($is_pro) { return $is_pro ? 1000 : 50; }
 }
 
 function getConfig()
