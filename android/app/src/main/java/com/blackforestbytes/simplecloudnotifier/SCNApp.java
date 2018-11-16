@@ -108,7 +108,6 @@ public class SCNApp extends Application implements LifecycleObserver
 [ ]  - Query non-ack-ed messages in app
 [ ]  - notifications: how does WA do it??? - there you can change shit in-app
 [ ]  - periodically get non-ack (option - even when not in-app)
-[ ]  - fix settings layout wrap
 
 [ ]  - test notification channels
 
