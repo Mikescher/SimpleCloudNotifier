@@ -7,4 +7,6 @@
     <color name="colorHeaderForeground">#FFFFFF</color>
 
     <color name="colorBlack">#000</color>
+
+    <color name="bg_row_background">#fa315b</color>
 </resources>

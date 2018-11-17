@@ -4,6 +4,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.blackforestbytes.simplecloudnotifier.R;
@@ -69,22 +70,40 @@ public class MessageAdapter extends RecyclerView.Adapter
         manLayout.smoothScrollToPosition(viewRecycler, null, 0);
     }
 
-    private class MessagePresenter extends RecyclerView.ViewHolder implements View.OnClickListener
+
+    public void removeItem(int position)
+    {
+        CMessageList.inst().remove(position);
+        notifyItemRemoved(position);
+    }
+
+    public void restoreItem(CMessage item, int position)
+    {
+        CMessageList.inst().insert(position, item);
+        notifyItemInserted(position);
+    }
+
+    public class MessagePresenter extends RecyclerView.ViewHolder implements View.OnClickListener
     {
         private TextView tvTimestamp;
         private TextView tvTitle;
         private TextView tvMessage;
         private ImageView ivPriority;
 
+        public RelativeLayout viewForeground;
+        public RelativeLayout viewBackground;
+
         private CMessage data;
 
         MessagePresenter(View itemView)
         {
             super(itemView);
-            tvTimestamp = itemView.findViewById(R.id.tvTimestamp);
-            tvTitle     = itemView.findViewById(R.id.tvTitle);
-            tvMessage   = itemView.findViewById(R.id.tvMessage);
-            ivPriority  = itemView.findViewById(R.id.ivPriority);
+            tvTimestamp    = itemView.findViewById(R.id.tvTimestamp);
+            tvTitle        = itemView.findViewById(R.id.tvTitle);
+            tvMessage      = itemView.findViewById(R.id.tvMessage);
+            ivPriority     = itemView.findViewById(R.id.ivPriority);
+            viewForeground = itemView.findViewById(R.id.layoutFront);
+            viewBackground = itemView.findViewById(R.id.layoutBack);
             itemView.setOnClickListener(this);
         }
 

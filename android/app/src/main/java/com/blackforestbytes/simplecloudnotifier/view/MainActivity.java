@@ -1,6 +1,7 @@
 package com.blackforestbytes.simplecloudnotifier.view;
 
 import android.os.Bundle;
+import android.widget.RelativeLayout;
 
 import com.blackforestbytes.simplecloudnotifier.R;
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
@@ -18,6 +19,7 @@ import androidx.viewpager.widget.ViewPager;
 public class MainActivity extends AppCompatActivity
 {
     public TabAdapter adpTabs;
+    public RelativeLayout layoutRoot;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -27,6 +29,8 @@ public class MainActivity extends AppCompatActivity
 
         NotificationService.inst();
         CMessageList.inst();
+
+        layoutRoot = findViewById(R.id.layoutRoot);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

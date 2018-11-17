@@ -169,4 +169,16 @@ public class CMessageList
     {
         return AllAcks.contains(Long.toHexString(id));
     }
+
+    public void remove(int index)
+    {
+        Messages.remove(index);
+        fullSave();
+    }
+
+    public void insert(int index, CMessage item)
+    {
+        Messages.add(index, item);
+        fullSave();
+    }
 }
