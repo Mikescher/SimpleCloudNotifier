@@ -86,16 +86,17 @@ public class MessageAdapter extends RecyclerView.Adapter
         manLayout.smoothScrollToPosition(viewRecycler, null, 0);
     }
 
-    public void removeItem(int position)
+    public CMessage removeItem(int position)
     {
-        CMessageList.inst().remove(position);
-        notifyItemRemoved(position);
+        CMessage i = CMessageList.inst().removeFromBack(position);
+        notifyDataSetChanged();
+        return i;
     }
 
     public void restoreItem(CMessage item, int position)
     {
         CMessageList.inst().insert(position, item);
-        notifyItemInserted(position);
+        notifyDataSetChanged();
     }
 
     public class MessagePresenter extends RecyclerView.ViewHolder implements View.OnClickListener

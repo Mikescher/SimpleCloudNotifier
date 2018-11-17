@@ -24,6 +24,11 @@ public final class CollectionHelper
 		return output;
 	}
 
+	public static <T> void sort_inplace(List<T> input, Comparator<T> comparator)
+	{
+		Collections.sort(input, comparator);
+	}
+
 	public static <T, U extends Comparable<U>> List<T> sort(List<T> input, Func1to1<T, U> mapper)
 	{
 		return sort(input, mapper, 1);

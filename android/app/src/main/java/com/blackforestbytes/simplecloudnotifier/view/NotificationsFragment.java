@@ -65,12 +65,10 @@ public class NotificationsFragment extends Fragment implements MessageAdapterTou
     {
         if (viewHolder instanceof MessageAdapter.MessagePresenter)
         {
-            final CMessage deletedItem = CMessageList.inst().tryGet(viewHolder.getAdapterPosition());
             final int deletedIndex = viewHolder.getAdapterPosition();
 
+            final CMessage deletedItem = adpMessages.removeItem(viewHolder.getAdapterPosition());
             String name = deletedItem.Title;
-
-            adpMessages.removeItem(viewHolder.getAdapterPosition());
 
             Snackbar snackbar = Snackbar.make(SCNApp.getMainActivity().layoutRoot, name + " removed", Snackbar.LENGTH_LONG);
             snackbar.setAction("UNDO", view -> adpMessages.restoreItem(deletedItem, deletedIndex));

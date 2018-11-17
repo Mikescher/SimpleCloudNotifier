@@ -3,17 +3,21 @@ package com.blackforestbytes.simplecloudnotifier.model;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.blackforestbytes.simplecloudnotifier.lib.collections.CollectionHelper;
 import com.blackforestbytes.simplecloudnotifier.lib.string.Str;
 import com.blackforestbytes.simplecloudnotifier.view.MessageAdapter;
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 public class CMessageList
 {
+    private final Object msg_lock = new Object();
+
     public ArrayList<CMessage> Messages;
     public Set<String> AllAcks;
 
@@ -32,23 +36,26 @@ public class CMessageList
 
     private CMessageList()
     {
-        Messages = new ArrayList<>();
-        AllAcks  = new HashSet<>();
-
-        SharedPreferences sharedPref = SCNApp.getContext().getSharedPreferences("CMessageList", Context.MODE_PRIVATE);
-        int count = sharedPref.getInt("message_count", 0);
-        for (int i=0; i < count; i++)
+        synchronized (msg_lock)
         {
-            long time         = sharedPref.getLong("message["+i+"].timestamp", 0);
-            String title      = sharedPref.getString("message["+i+"].title", "");
-            String content    = sharedPref.getString("message["+i+"].content", "");
-            PriorityEnum prio = PriorityEnum.parseAPI(sharedPref.getInt("message["+i+"].priority", 1));
-            long scnid        = sharedPref.getLong("message["+i+"].scnid", 0);
+            Messages = new ArrayList<>();
+            AllAcks  = new HashSet<>();
 
-            Messages.add(new CMessage(scnid, time, title, content, prio));
+            SharedPreferences sharedPref = SCNApp.getContext().getSharedPreferences("CMessageList", Context.MODE_PRIVATE);
+            int count = sharedPref.getInt("message_count", 0);
+            for (int i=0; i < count; i++)
+            {
+                long time         = sharedPref.getLong("message["+i+"].timestamp", 0);
+                String title      = sharedPref.getString("message["+i+"].title", "");
+                String content    = sharedPref.getString("message["+i+"].content", "");
+                PriorityEnum prio = PriorityEnum.parseAPI(sharedPref.getInt("message["+i+"].priority", 1));
+                long scnid        = sharedPref.getLong("message["+i+"].scnid", 0);
+
+                Messages.add(new CMessage(scnid, time, title, content, prio));
+            }
+
+            AllAcks = sharedPref.getStringSet("acks", new HashSet<>());
         }
-
-        AllAcks = sharedPref.getStringSet("acks", new HashSet<>());
     }
 
     public CMessage add(final long scnid, final long time, final String title, final String content, final PriorityEnum pe)
@@ -60,23 +67,38 @@ public class CMessageList
             SharedPreferences sharedPref = SCNApp.getContext().getSharedPreferences("CMessageList", Context.MODE_PRIVATE);
             int count = sharedPref.getInt("message_count", 0);
 
-            SharedPreferences.Editor e = sharedPref.edit();
+            synchronized (msg_lock)
+            {
+                Messages.add(msg);
+                AllAcks.add(Long.toHexString(msg.SCN_ID));
 
-            Messages.add(msg);
-            AllAcks.add(Long.toHexString(msg.SCN_ID));
+                while (Messages.size()>SCNSettings.inst().LocalCacheSize) Messages.remove(0);
+            }
 
-            while (Messages.size()>SCNSettings.inst().LocalCacheSize) Messages.remove(0);
+            if (Messages.size()>1 && Messages.get(Messages.size()-2).Timestamp < msg.Timestamp)
+            {
+                // quick save
 
-            e.putInt(   "message_count",                count+1);
-            e.putLong(  "message["+count+"].timestamp", time);
-            e.putString("message["+count+"].title",     title);
-            e.putString("message["+count+"].content",   content);
-            e.putInt(   "message["+count+"].priority",  pe.ID);
-            e.putLong(  "message["+count+"].scnid",     scnid);
+                SharedPreferences.Editor e = sharedPref.edit();
 
-            e.putStringSet("acks", AllAcks);
+                e.putInt(   "message_count",                count+1);
+                e.putLong(  "message["+count+"].timestamp", time);
+                e.putString("message["+count+"].title",     title);
+                e.putString("message["+count+"].content",   content);
+                e.putInt(   "message["+count+"].priority",  pe.ID);
+                e.putLong(  "message["+count+"].scnid",     scnid);
 
-            e.apply();
+                e.putStringSet("acks", AllAcks);
+
+                e.apply();
+            }
+            else
+            {
+                // full save
+
+                fullSave(); // does sort in here
+            }
+
 
             for (WeakReference<MessageAdapter> ref : _listener)
             {
@@ -90,9 +112,12 @@ public class CMessageList
 
         if (!run)
         {
-            Messages.add(new CMessage(scnid, time, title, content, pe));
-            AllAcks.add(Long.toHexString(msg.SCN_ID));
-            fullSave();
+            synchronized (msg_lock)
+            {
+                Messages.add(new CMessage(scnid, time, title, content, pe));
+                AllAcks.add(Long.toHexString(msg.SCN_ID));
+            }
+            fullSave(); // does sort in here
         }
 
         return msg;
@@ -114,31 +139,39 @@ public class CMessageList
 
     public void fullSave()
     {
-        SharedPreferences sharedPref = SCNApp.getContext().getSharedPreferences("CMessageList", Context.MODE_PRIVATE);
-        SharedPreferences.Editor e = sharedPref.edit();
-
-        e.clear();
-
-        e.putInt("message_count", Messages.size());
-
-        for (int i = 0; i < Messages.size(); i++)
+        synchronized (msg_lock)
         {
-            e.putLong(  "message["+i+"].timestamp", Messages.get(i).Timestamp);
-            e.putString("message["+i+"].title",     Messages.get(i).Title);
-            e.putString("message["+i+"].content",   Messages.get(i).Content);
-            e.putInt(   "message["+i+"].priority",  Messages.get(i).Priority.ID);
-            e.putLong(  "message["+i+"].scnid",     Messages.get(i).SCN_ID);
+            CollectionHelper.sort_inplace(Messages, (a,b) -> Long.compare(a.Timestamp, b.Timestamp));
+
+            SharedPreferences sharedPref = SCNApp.getContext().getSharedPreferences("CMessageList", Context.MODE_PRIVATE);
+            SharedPreferences.Editor e = sharedPref.edit();
+
+            e.clear();
+
+            e.putInt("message_count", Messages.size());
+
+            for (int i = 0; i < Messages.size(); i++)
+            {
+                e.putLong(  "message["+i+"].timestamp", Messages.get(i).Timestamp);
+                e.putString("message["+i+"].title",     Messages.get(i).Title);
+                e.putString("message["+i+"].content",   Messages.get(i).Content);
+                e.putInt(   "message["+i+"].priority",  Messages.get(i).Priority.ID);
+                e.putLong(  "message["+i+"].scnid",     Messages.get(i).SCN_ID);
+            }
+
+            e.putStringSet("acks", AllAcks);
+
+            e.apply();
         }
-
-        e.putStringSet("acks", AllAcks);
-
-        e.apply();
     }
 
     public CMessage tryGet(int pos)
     {
-        if (pos < 0 || pos >= Messages.size()) return null;
-        return Messages.get(pos);
+        synchronized (msg_lock)
+        {
+            if (pos < 0 || pos >= Messages.size()) return null;
+            return Messages.get(pos);
+        }
     }
 
     public CMessage tryGetFromBack(int pos)
@@ -148,7 +181,10 @@ public class CMessageList
 
     public int size()
     {
-        return Messages.size();
+        synchronized (msg_lock)
+        {
+            return Messages.size();
+        }
     }
 
     public void register(MessageAdapter adp)
@@ -167,18 +203,30 @@ public class CMessageList
 
     public boolean isAck(long id)
     {
-        return AllAcks.contains(Long.toHexString(id));
+        synchronized (msg_lock)
+        {
+            return AllAcks.contains(Long.toHexString(id));
+        }
     }
 
-    public void remove(int index)
+    public CMessage removeFromBack(int pos)
     {
-        Messages.remove(index);
-        fullSave();
+        CMessage r;
+        synchronized (msg_lock)
+        {
+            int index = Messages.size() - pos - 1;
+            r = Messages.remove(index);
+        }
+        fullSave(); // does sort in here
+        return r;
     }
 
     public void insert(int index, CMessage item)
     {
-        Messages.add(index, item);
-        fullSave();
+        synchronized (msg_lock)
+        {
+            Messages.add(index, item);
+        }
+        fullSave(); // does sort in here
     }
 }
