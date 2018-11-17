@@ -22,6 +22,7 @@ import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.billingclient.api.Purchase;
 import com.blackforestbytes.simplecloudnotifier.R;
@@ -216,7 +217,7 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
     {
         SCNSettings s = SCNSettings.inst();
 
-        prefAppEnabled.setOnCheckedChangeListener((a,b) -> { s.Enabled=b; saveAndUpdate(); });
+        prefAppEnabled.setOnCheckedChangeListener((a,b) -> { boolean prev=s.Enabled; s.Enabled=b; saveAndUpdate(); updateEnabled(prev, b); });
         prefEnableDeleteSwipe.setOnCheckedChangeListener((a,b) -> { s.EnableDeleteSwipe=b; saveAndUpdate(); });
 
         prefLocalCacheSize.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
@@ -259,6 +260,18 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         prefMsgHighForceVolume.setOnCheckedChangeListener((a,b) -> { s.PriorityHigh.ForceVolume=b; saveAndUpdate(); });
         prefMsgHighVolume.setOnSeekBarChangeListener(FI.SeekBarChanged((a,b,c) -> { if (c) { s.PriorityHigh.ForceVolumeValue=b; saveAndUpdate(); updateVolume(2, b); } }));
         prefMsgHighVolumeTest.setOnClickListener((v) -> { if (s.PriorityHigh.ForceVolume) playTestSound(2, prefMsgHighVolumeTest, s.PriorityHigh.SoundSource, s.PriorityHigh.ForceVolumeValue); });
+    }
+
+    private void updateEnabled(boolean prev, boolean now)
+    {
+        if (!prev && now)
+        {
+            SCNApp.showToast("SimpleCloudNotifier is now enabled", Toast.LENGTH_SHORT);
+        }
+        else if (prev && !now)
+        {
+            SCNApp.showToast("SimpleCloudNotifier is now disabled\nYou won't recieve new messages.", Toast.LENGTH_LONG);
+        }
     }
 
     private void updateVolume(int idx, int volume)
