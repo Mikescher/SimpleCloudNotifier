@@ -49,6 +49,7 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
     private Button    prefUpgradeAccount;
     private TextView  prefUpgradeAccount_msg;
     private TextView  prefUpgradeAccount_info;
+    private Switch    prefEnableDeleteSwipe;
 
     private Switch    prefMsgLowEnableSound;
     private TextView  prefMsgLowRingtone_value;
@@ -114,6 +115,7 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         prefUpgradeAccount            = v.findViewById(R.id.prefUpgradeAccount);
         prefUpgradeAccount_msg        = v.findViewById(R.id.prefUpgradeAccount2);
         prefUpgradeAccount_info       = v.findViewById(R.id.prefUpgradeAccount_info);
+        prefEnableDeleteSwipe         = v.findViewById(R.id.prefEnableDeleteSwipe);
 
         prefMsgLowEnableSound         = v.findViewById(R.id.prefMsgLowEnableSound);
         prefMsgLowRingtone_value      = v.findViewById(R.id.prefMsgLowRingtone_value);
@@ -159,6 +161,7 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         if (c == null) return;
 
         if (prefAppEnabled.isChecked() != s.Enabled) prefAppEnabled.setChecked(s.Enabled);
+        if (prefEnableDeleteSwipe.isChecked() != s.EnableDeleteSwipe) prefEnableDeleteSwipe.setChecked(s.EnableDeleteSwipe);
 
         prefUpgradeAccount.setVisibility(     SCNSettings.inst().promode_local ? View.GONE    : View.VISIBLE);
         prefUpgradeAccount_info.setVisibility(SCNSettings.inst().promode_local ? View.GONE    : View.VISIBLE);
@@ -214,6 +217,7 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         SCNSettings s = SCNSettings.inst();
 
         prefAppEnabled.setOnCheckedChangeListener((a,b) -> { s.Enabled=b; saveAndUpdate(); });
+        prefEnableDeleteSwipe.setOnCheckedChangeListener((a,b) -> { s.EnableDeleteSwipe=b; saveAndUpdate(); });
 
         prefLocalCacheSize.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
         {
@@ -324,6 +328,7 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
     {
         SCNSettings.inst().save();
         updateUI();
+        SCNApp.getMainActivity().adpTabs.tab1.touchHelper.updateEnabled();
     }
 
     private void onUpgradeAccount()

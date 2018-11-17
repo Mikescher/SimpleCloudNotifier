@@ -86,6 +86,22 @@
                     android:layout_marginTop="2dp"
                     android:background="#c0c0c0"/>
 
+                <Switch
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:id="@+id/prefEnableDeleteSwipe"
+                    android:text="@string/str_deleteswipe"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginBottom="2dp"
+                    android:layout_marginTop="2dp"
+                    android:background="#c0c0c0"/>
+
                 <LinearLayout
                     android:orientation="vertical"
                     android:layout_marginStart="4dp"

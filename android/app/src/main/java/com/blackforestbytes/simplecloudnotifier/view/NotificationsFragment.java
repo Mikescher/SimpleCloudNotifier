@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import com.blackforestbytes.simplecloudnotifier.R;
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
 import com.blackforestbytes.simplecloudnotifier.model.CMessage;
-import com.blackforestbytes.simplecloudnotifier.model.CMessageList;
 import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
 import com.blackforestbytes.simplecloudnotifier.service.IABService;
 import com.blackforestbytes.simplecloudnotifier.util.MessageAdapterTouchHelper;
@@ -28,6 +27,8 @@ public class NotificationsFragment extends Fragment implements MessageAdapterTou
     private PublisherAdView adView;
     private MessageAdapter adpMessages;
 
+    public MessageAdapterTouchHelper touchHelper;
+
     public NotificationsFragment()
     {
         // Required empty public constructor
@@ -43,7 +44,7 @@ public class NotificationsFragment extends Fragment implements MessageAdapterTou
         rvMessages.setLayoutManager(lman);
         rvMessages.setAdapter(adpMessages = new MessageAdapter(v.findViewById(R.id.tvNoElements), lman, rvMessages));
 
-        ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new MessageAdapterTouchHelper(0, ItemTouchHelper.LEFT, this);
+        ItemTouchHelper.SimpleCallback itemTouchHelperCallback = touchHelper = new MessageAdapterTouchHelper(0, ItemTouchHelper.LEFT, this);
         new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(rvMessages);
 
         adView = v.findViewById(R.id.adBanner);

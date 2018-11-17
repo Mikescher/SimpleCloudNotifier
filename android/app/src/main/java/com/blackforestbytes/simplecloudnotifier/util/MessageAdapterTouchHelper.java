@@ -3,6 +3,7 @@ package com.blackforestbytes.simplecloudnotifier.util;
 import android.graphics.Canvas;
 import android.view.View;
 
+import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
 import com.blackforestbytes.simplecloudnotifier.view.MessageAdapter;
 
 import androidx.annotation.NonNull;
@@ -13,10 +14,21 @@ public class MessageAdapterTouchHelper extends ItemTouchHelper.SimpleCallback
 {
     private MessageAdapterTouchHelperListener listener;
 
+    private int dir = 0;
+
     public MessageAdapterTouchHelper(int dragDirs, int swipeDirs, MessageAdapterTouchHelperListener listener)
     {
         super(dragDirs, swipeDirs);
+        this.dir = swipeDirs;
         this.listener = listener;
+        updateEnabled();
+    }
+
+    public void updateEnabled()
+    {
+        int sdir = SCNSettings.inst().EnableDeleteSwipe ? ItemTouchHelper.LEFT : 0;
+        if (dir == sdir) return;
+        setDefaultSwipeDirs(dir = sdir);
     }
 
     @Override

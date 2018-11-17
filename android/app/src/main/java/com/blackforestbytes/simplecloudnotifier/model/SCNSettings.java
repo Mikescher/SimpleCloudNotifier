@@ -15,14 +15,19 @@ import com.google.firebase.iid.FirebaseInstanceId;
 public class SCNSettings
 {
     private final static Object _lock = new Object();
-    private static SCNSettings _inst = null;
+    private static volatile SCNSettings _inst = null;
     public static SCNSettings inst()
     {
-        synchronized (_lock)
+        SCNSettings local = _inst;
+        if (local == null)
         {
-            if (_inst != null) return _inst;
-            return _inst = new SCNSettings();
+            synchronized (_lock)
+            {
+                local = _inst;
+                if (local == null) _inst = local = new SCNSettings();
+            }
         }
+        return local;
     }
 
     // ------------------------------------------------------------
@@ -47,6 +52,7 @@ public class SCNSettings
 
     public boolean Enabled = true;
     public int LocalCacheSize = 500;
+    public boolean EnableDeleteSwipe = true;
 
     public final NotificationSettings PriorityLow  = new NotificationSettings(PriorityEnum.LOW);
     public final NotificationSettings PriorityNorm = new NotificationSettings(PriorityEnum.NORMAL);
@@ -70,6 +76,7 @@ public class SCNSettings
 
         Enabled                     = sharedPref.getBoolean("app_enabled",  Enabled);
         LocalCacheSize              = sharedPref.getInt("local_cache_size", LocalCacheSize);
+        EnableDeleteSwipe           = sharedPref.getBoolean("do_del_swipe",  EnableDeleteSwipe);
 
         PriorityLow.EnableLED         = sharedPref.getBoolean("priority_low:enabled_led",         PriorityLow.EnableLED);
         PriorityLow.EnableSound       = sharedPref.getBoolean("priority_low:enabled_sound",       PriorityLow.EnableSound);
@@ -116,6 +123,7 @@ public class SCNSettings
 
         e.putBoolean("app_enabled",                      Enabled);
         e.putInt(    "local_cache_size",                 LocalCacheSize);
+        e.putBoolean("do_del_swipe",                     EnableDeleteSwipe);
 
         e.putBoolean("priority_low:enabled_led",         PriorityLow.EnableLED);
         e.putBoolean("priority_low:enabled_sound",       PriorityLow.EnableSound);
