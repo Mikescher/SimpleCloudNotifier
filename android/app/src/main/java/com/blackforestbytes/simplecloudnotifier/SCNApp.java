@@ -98,3 +98,5 @@ public class SCNApp extends Application implements LifecycleObserver
         isBackground = false;
     }
 }
+
+//TODO TabLayout indicator does not corretly animate when directly clicking on tabs

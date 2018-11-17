@@ -35,7 +35,7 @@ public class TabAdapter extends FragmentStatePagerAdapter {
     {
         switch (position)
         {
-            case 0:  return "Notifications";
+            case 0:  return "Messages";
             case 1:  return "Account";
             case 2:  return "Settings";
             default: return null;

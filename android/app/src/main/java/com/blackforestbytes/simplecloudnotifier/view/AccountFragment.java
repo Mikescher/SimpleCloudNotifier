@@ -93,7 +93,7 @@ public class AccountFragment extends Fragment
 
             builder.setPositiveButton("YES", (dialog, which) -> {
                 CMessageList.inst().clear();
-                SCNApp.showToast("Notifications cleared", 1000);
+                SCNApp.showToast("Messages cleared", 1000);
                 dialog.dismiss();
             });
 

@@ -11,13 +11,13 @@
     <string name="ic_img_fuel_desc">Icon Fuel</string>
     <string name="str_qr_code">QR Code</string>
     <string name="str_reset_account">Reset Account</string>
-    <string name="no_notifications">No notifications</string>
+    <string name="no_notifications">No messages</string>
     <string name="str_not_connected">not connected</string>
     <string name="str_reload">reload</string>
     <string name="desc_priority_icon">Priority icon</string>
     <string name="str_common_settings">Common Settings</string>
     <string name="str_enabled">Enabled</string>
-    <string name="str_localcachesize">Remember the last x notifications locally</string>
+    <string name="str_localcachesize">Remember the last x messages locally</string>
     <string name="str_header_prio0">Notifications (priority 0 - Low)</string>
     <string name="str_header_prio1">Notifications (priority 1 - Normal)</string>
     <string name="str_header_prio2">Notifications (priority 2 - High)</string>
