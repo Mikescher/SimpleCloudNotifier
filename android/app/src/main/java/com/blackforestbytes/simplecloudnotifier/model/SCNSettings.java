@@ -192,7 +192,7 @@ public class SCNSettings
         FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(a, instanceIdResult ->
         {
             String newToken = instanceIdResult.getToken();
-            Log.e("FB::GetInstanceId", newToken);
+            Log.d("FB::GetInstanceId", newToken);
             SCNSettings.inst().setServerToken(newToken, null);
         }).addOnCompleteListener(r ->
         {
@@ -227,7 +227,7 @@ public class SCNSettings
             FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(a, instanceIdResult ->
             {
                 String newToken = instanceIdResult.getToken();
-                Log.e("FB::GetInstanceId", newToken);
+                Log.d("FB::GetInstanceId", newToken);
                 SCNSettings.inst().setServerToken(newToken, loader); // does register in here
             }).addOnCompleteListener(r ->
             {

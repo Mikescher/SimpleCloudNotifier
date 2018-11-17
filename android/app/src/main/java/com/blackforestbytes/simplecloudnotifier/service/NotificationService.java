@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.net.Uri;
@@ -165,7 +166,8 @@ public class NotificationService
     private void showBackground_old(CMessage msg, Context ctxt, NotificationSettings ns, PriorityEnum prio)
     {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ctxt, getChannel(prio));
-        mBuilder.setSmallIcon(R.drawable.ic_bfb);
+        mBuilder.setSmallIcon(R.drawable.ic_notification_white);
+        mBuilder.setLargeIcon(BitmapFactory.decodeResource(ctxt.getResources(), R.mipmap.ic_notification_full));
         mBuilder.setContentTitle(msg.Title);
         mBuilder.setContentText(msg.Content);
         mBuilder.setShowWhen(true);
@@ -208,12 +210,16 @@ public class NotificationService
     private void showBackground_new(CMessage msg, Context ctxt, NotificationSettings ns, PriorityEnum prio)
     {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ctxt, getChannel(prio));
-        mBuilder.setSmallIcon(R.drawable.ic_bfb);
+        mBuilder.setSmallIcon(R.drawable.ic_notification_white);
+        mBuilder.setLargeIcon(BitmapFactory.decodeResource(ctxt.getResources(), R.mipmap.ic_notification_full));
         mBuilder.setContentTitle(msg.Title);
         mBuilder.setContentText(msg.Content);
         mBuilder.setShowWhen(true);
         mBuilder.setWhen(msg.Timestamp * 1000);
         mBuilder.setAutoCancel(true);
+        mBuilder.setCategory(Notification.CATEGORY_MESSAGE);
+        mBuilder.setStyle(new NotificationCompat.InboxStyle());
+        mBuilder.setGroup(prio.toString());
 
         if (ns.EnableLED) mBuilder.setLights(ns.LEDColor, 500, 500);
 

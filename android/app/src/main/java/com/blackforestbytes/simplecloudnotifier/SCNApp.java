@@ -98,15 +98,3 @@ public class SCNApp extends Application implements LifecycleObserver
         isBackground = false;
     }
 }
-
-/*
- ==TODO==
-
-[ ]  - test notification channels
-[ ]  - startup time
-[ ]  - periodically get non-ack (option - even when not in-app)
-
-[ ]  - publish (+ HN post ?)
-
-
-*/
