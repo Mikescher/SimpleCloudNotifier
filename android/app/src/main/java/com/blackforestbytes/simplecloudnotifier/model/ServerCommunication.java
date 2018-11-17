@@ -346,7 +346,7 @@ public class ServerCommunication
                         JSONArray arr = json.getJSONArray("data");
                         for (int i = 0; i < count; i++)
                         {
-                            JSONObject o = arr.getJSONObject(0);
+                            JSONObject o = arr.getJSONObject(i);
 
                             long time         = json_lng(o, "timestamp");
                             String title      = json_str(o, "title");
