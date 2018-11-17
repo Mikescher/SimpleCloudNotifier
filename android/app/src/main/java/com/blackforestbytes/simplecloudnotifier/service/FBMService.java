@@ -50,14 +50,14 @@ public class FBMService extends FirebaseMessagingService
 
     public static void recieveData(long time, String title, String content, PriorityEnum prio, long scn_id, boolean alwaysAck)
     {
-        CMessage msg = CMessageList.inst().add(scn_id, time, title, content, prio);
-
         if (CMessageList.inst().isAck(scn_id))
         {
             Log.w("FB::MessageReceived", "Recieved ack-ed message: " + scn_id);
-            if (alwaysAck) ServerCommunication.ack(SCNSettings.inst().user_id, SCNSettings.inst().user_key, msg);
+            if (alwaysAck) ServerCommunication.ack(SCNSettings.inst().user_id, SCNSettings.inst().user_key, scn_id);
             return;
         }
+
+        CMessage msg = CMessageList.inst().add(scn_id, time, title, content, prio);
 
         if (SCNApp.isBackground())
         {
@@ -68,6 +68,6 @@ public class FBMService extends FirebaseMessagingService
             NotificationService.inst().showForeground(msg);
         }
 
-        ServerCommunication.ack(SCNSettings.inst().user_id, SCNSettings.inst().user_key, msg);
+        ServerCommunication.ack(SCNSettings.inst().user_id, SCNSettings.inst().user_key, scn_id);
     }
 }

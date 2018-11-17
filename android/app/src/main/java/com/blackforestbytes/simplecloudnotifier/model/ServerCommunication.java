@@ -283,10 +283,7 @@ public class ServerCommunication
 
                         SCNApp.refreshAccountTab();
 
-                        if (json_int(json, "unack_count")>0)
-                        {
-                            ServerCommunication.requery(id, key, loader);
-                        }
+                        if (json_int(json, "unack_count")>0) ServerCommunication.requery(id, key, loader);
 
                     } catch (Exception e) {
                         Log.e("SC:info", e.toString());
@@ -432,12 +429,12 @@ public class ServerCommunication
         }
     }
 
-    public static void ack(int id, String key, CMessage msg)
+    public static void ack(int id, String key, long msg_scn_id)
     {
         try
         {
             Request request = new Request.Builder()
-                    .url(BASE_URL + "ack.php?user_id=" + id + "&user_key=" + key + "&scn_msg_id=" + msg.SCN_ID)
+                    .url(BASE_URL + "ack.php?user_id=" + id + "&user_key=" + key + "&scn_msg_id=" + msg_scn_id)
                     .build();
 
             client.newCall(request).enqueue(new Callback() {
