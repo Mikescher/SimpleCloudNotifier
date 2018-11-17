@@ -105,15 +105,8 @@ public class SCNApp extends Application implements LifecycleObserver
 [ ]  - test notification channels
 [ ]  - startup time
 [ ]  - periodically get non-ack (option - even when not in-app)
-[ ]  - expand long content on click
 
 [ ]  - publish (+ HN post ?)
 
-[ ]  - Use for mscom server errrors
-[ ]  - Use for bfb server errors
-[ ]  - Use for transmission state
-[ ]     - Message on connnection lost (seperate process - resend until succ)
-[ ]     - Message on connnection regained
-[ ]     - Message on seed-count changed
 
 */

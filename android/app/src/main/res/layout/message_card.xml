@@ -89,8 +89,8 @@
                     app:layout_constraintRight_toLeftOf="@+id/ivPriority"
                     app:layout_constraintLeft_toLeftOf="parent"
                     android:layout_margin="4sp"
-                    android:ellipsize="none"
-                    android:maxLines="32"
+                    android:ellipsize="end"
+                    android:maxLines="6"
                     android:scrollHorizontally="false"
 
                     android:text="asdasd asdasd asdasd a" />
