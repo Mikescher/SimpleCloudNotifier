@@ -2,6 +2,7 @@ package com.blackforestbytes.simplecloudnotifier.view;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.Ringtone;
@@ -9,6 +10,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +33,8 @@ import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
 import com.blackforestbytes.simplecloudnotifier.service.IABService;
 
 import org.jetbrains.annotations.NotNull;
+
+import java.io.IOException;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -258,8 +262,8 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         if (mPlayers[idx] != null && mPlayers[idx].isPlaying())
         {
             AudioManager aman = (AudioManager) SCNApp.getContext().getSystemService(Context.AUDIO_SERVICE);
-            int maxVolume = aman.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-            aman.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(maxVolume * (volume / 100.0)), 0);
+            int maxVolume = aman.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
+            aman.setStreamVolume(AudioManager.STREAM_NOTIFICATION, (int)(maxVolume * (volume / 100.0)), 0);
         }
     }
 
@@ -288,17 +292,32 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         if (Str.isNullOrWhitespace(src)) return;
         if (volume == 0) return;
 
+        Context ctxt = getContext();
+        if (ctxt == null) return;
+
         iv.setImageResource(R.drawable.ic_pause);
 
         AudioManager aman = (AudioManager) SCNApp.getContext().getSystemService(Context.AUDIO_SERVICE);
-        int maxVolume = aman.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-        aman.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(maxVolume * (volume / 100.0)), 0);
+        int maxVolume = aman.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
+        aman.setStreamVolume(AudioManager.STREAM_NOTIFICATION, (int)(maxVolume * (volume / 100.0)), 0);
 
-        MediaPlayer player = mPlayers[idx] = MediaPlayer.create(getActivity(), Uri.parse(src));
-        player.setLooping(false);
-        player.setOnCompletionListener(  mp -> SCNApp.runOnUiThread(() -> { mp.stop(); iv.setImageResource(R.drawable.ic_play); mPlayers[idx]=null; mp.release(); }));
-        player.setOnSeekCompleteListener(mp -> SCNApp.runOnUiThread(() -> { mp.stop(); iv.setImageResource(R.drawable.ic_play); mPlayers[idx]=null; mp.release(); }));
-        player.start();
+        MediaPlayer player = mPlayers[idx] = new MediaPlayer();
+        player.setAudioAttributes(new AudioAttributes.Builder().setLegacyStreamType(AudioManager.STREAM_NOTIFICATION).build());
+        player.setAudioStreamType(AudioManager.STREAM_NOTIFICATION);
+
+        try
+        {
+            player.setDataSource(ctxt, Uri.parse(src));
+            player.setLooping(false);
+            player.setOnCompletionListener(  mp -> SCNApp.runOnUiThread(() -> { mp.stop(); iv.setImageResource(R.drawable.ic_play); mPlayers[idx]=null; mp.release(); }));
+            player.setOnSeekCompleteListener(mp -> SCNApp.runOnUiThread(() -> { mp.stop(); iv.setImageResource(R.drawable.ic_play); mPlayers[idx]=null; mp.release(); }));
+            player.prepare();
+            player.start();
+        }
+        catch (IOException e)
+        {
+            Log.e("SFRAG:play", e.toString());
+        }
     }
 
     private void saveAndUpdate()
@@ -336,7 +355,7 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         UltimateMusicPicker ump = new UltimateMusicPicker();
         ump.windowTitle("Choose notification sound");
         ump.removeSilent();
-        ump.streamType(AudioManager.STREAM_ALARM);
+        ump.streamType(AudioManager.STREAM_NOTIFICATION);
         ump.ringtone();
         ump.notification();
         ump.alarm();
@@ -351,7 +370,7 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         UltimateMusicPicker ump = new UltimateMusicPicker();
         ump.windowTitle("Choose notification sound");
         ump.removeSilent();
-        ump.streamType(AudioManager.STREAM_ALARM);
+        ump.streamType(AudioManager.STREAM_NOTIFICATION);
         ump.ringtone();
         ump.notification();
         ump.alarm();
@@ -366,7 +385,7 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         UltimateMusicPicker ump = new UltimateMusicPicker();
         ump.windowTitle("Choose notification sound");
         ump.removeSilent();
-        ump.streamType(AudioManager.STREAM_ALARM);
+        ump.streamType(AudioManager.STREAM_NOTIFICATION);
         ump.ringtone();
         ump.notification();
         ump.alarm();

@@ -1,66 +1,55 @@
 package com.blackforestbytes.simplecloudnotifier.service;
 
 import android.content.Context;
+import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Build;
+import android.util.Log;
 
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
-import com.blackforestbytes.simplecloudnotifier.lib.android.ThreadUtils;
 import com.blackforestbytes.simplecloudnotifier.lib.string.Str;
+
+import java.io.IOException;
 
 public class SoundService
 {
     private static MediaPlayer mpLast = null;
 
-    public static void playForegroundNoLooping(boolean enableSound, String soundSource, boolean forceVolume, int forceVolumeValue)
+    public static void play(boolean enableSound, String soundSource, boolean forceVolume, int forceVolumeValue, boolean loop)
     {
         if (!enableSound) return;
         if (Str.isNullOrWhitespace(soundSource)) return;
 
-        stopPlaying();
+        stop();
 
         if (forceVolume)
         {
             AudioManager aman = (AudioManager) SCNApp.getContext().getSystemService(Context.AUDIO_SERVICE);
-            int maxVolume = aman.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-            aman.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(maxVolume * (forceVolumeValue / 100.0)), 0);
+            int maxVolume = aman.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
+            aman.setStreamVolume(AudioManager.STREAM_NOTIFICATION, (int)(maxVolume * (forceVolumeValue / 100.0)), 0);
         }
 
-        MediaPlayer player = MediaPlayer.create(SCNApp.getMainActivity(), Uri.parse(soundSource));
-        player.setLooping(false);
-        player.setOnCompletionListener(  mp -> { mp.stop(); mp.release(); });
-        player.setOnSeekCompleteListener(mp -> { mp.stop(); mp.release(); });
-        player.start();
-        mpLast = player;
-    }
-
-    public static void playForegroundWithLooping(boolean enableSound, String soundSource, boolean forceVolume, int forceVolumeValue)
-    {
-        if (!enableSound) return;
-        if (Str.isNullOrWhitespace(soundSource)) return;
-
-        stopPlaying();
-
-        if (forceVolume)
+        try
         {
-            AudioManager aman = (AudioManager) SCNApp.getContext().getSystemService(Context.AUDIO_SERVICE);
-            int maxVolume = aman.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-            aman.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(maxVolume * (forceVolumeValue / 100.0)), 0);
+            MediaPlayer player = new MediaPlayer();
+            player.setAudioAttributes(new AudioAttributes.Builder().setLegacyStreamType(AudioManager.STREAM_NOTIFICATION).build());
+            player.setAudioStreamType(AudioManager.STREAM_NOTIFICATION);
+            player.setDataSource(SCNApp.getContext(), Uri.parse(soundSource));
+            player.setLooping(loop);
+            player.setOnCompletionListener(  mp -> { mp.stop(); mp.release(); });
+            player.setOnSeekCompleteListener(mp -> { mp.stop(); mp.release(); });
+            player.prepare();
+            player.start();
+            mpLast = player;
         }
-
-        MediaPlayer player = MediaPlayer.create(SCNApp.getMainActivity(), Uri.parse(soundSource));
-        player.setLooping(true);
-        player.setOnCompletionListener(  mp -> { mp.stop(); mp.release(); });
-        player.setOnSeekCompleteListener(mp -> { mp.stop(); mp.release(); });
-        player.start();
-        mpLast = player;
+        catch (IOException e)
+        {
+            Log.e("Sound::play", e.toString());
+        }
     }
 
-    public static void stopPlaying()
+    public static void stop()
     {
         if (mpLast != null && mpLast.isPlaying()) { mpLast.stop(); mpLast.release(); mpLast = null; }
     }

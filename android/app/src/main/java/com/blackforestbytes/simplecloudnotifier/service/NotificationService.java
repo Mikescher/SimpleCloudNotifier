@@ -108,7 +108,7 @@ public class NotificationService
                 case HIGH:   ns = SCNSettings.inst().PriorityHigh; break;
             }
 
-            SoundService.playForegroundNoLooping(ns.EnableSound, ns.SoundSource, ns.ForceVolume, ns.ForceVolumeValue);
+            SoundService.play(ns.EnableSound, ns.SoundSource, ns.ForceVolume, ns.ForceVolumeValue, false);
 
             if (ns.EnableVibration)
             {
@@ -162,7 +162,8 @@ public class NotificationService
         }
     }
 
-    private void showBackground_old(CMessage msg, Context ctxt, NotificationSettings ns, PriorityEnum prio) {
+    private void showBackground_old(CMessage msg, Context ctxt, NotificationSettings ns, PriorityEnum prio)
+    {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ctxt, getChannel(prio));
         mBuilder.setSmallIcon(R.drawable.ic_bfb);
         mBuilder.setContentTitle(msg.Title);
@@ -177,21 +178,32 @@ public class NotificationService
         if (ns.EnableVibration) mBuilder.setVibrate(new long[]{500});
         if (ns.EnableLED) mBuilder.setLights(ns.LEDColor, 500, 500);
 
-        if (ns.EnableSound && !ns.SoundSource.isEmpty()) mBuilder.setSound(Uri.parse(ns.SoundSource), AudioManager.STREAM_NOTIFICATION);
+        if (ns.EnableSound && !ns.SoundSource.isEmpty() && !ns.RepeatSound) mBuilder.setSound(Uri.parse(ns.SoundSource), AudioManager.STREAM_NOTIFICATION);
 
         Intent intent = new Intent(ctxt, MainActivity.class);
         PendingIntent pi = PendingIntent.getActivity(ctxt, 0, intent, 0);
         mBuilder.setContentIntent(pi);
         NotificationManager mNotificationManager = (NotificationManager) ctxt.getSystemService(Context.NOTIFICATION_SERVICE);
 
+        if (ns.EnableSound && !ns.SoundSource.isEmpty() && ns.RepeatSound)
+        {
+            Intent intnt_stop = new Intent(SCNApp.getContext(), BroadcastReceiverService.class);
+            intnt_stop.putExtra(BroadcastReceiverService.ID_KEY, BroadcastReceiverService.NOTIF_STOP_SOUND);
+            PendingIntent pi_stop = PendingIntent.getBroadcast(SCNApp.getContext().getApplicationContext(), BroadcastReceiverService.NOTIF_STOP_SOUND, intnt_stop, 0);
+            mBuilder.addAction(new NotificationCompat.Action(-1, "Stop", pi_stop));
+            mBuilder.setDeleteIntent(pi_stop);
+
+            SoundService.play(ns.EnableSound, ns.SoundSource, ns.ForceVolume, ns.ForceVolumeValue, ns.RepeatSound);
+        }
+
         Notification n = mBuilder.build();
-        if (ns.EnableSound && !ns.SoundSource.isEmpty() && ns.RepeatSound) n.flags |= Notification.FLAG_INSISTENT;
 
         if (mNotificationManager != null) mNotificationManager.notify(0, n);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private void showBackground_new(CMessage msg, Context ctxt, NotificationSettings ns, PriorityEnum prio) {
+    private void showBackground_new(CMessage msg, Context ctxt, NotificationSettings ns, PriorityEnum prio)
+    {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ctxt, getChannel(prio));
         mBuilder.setSmallIcon(R.drawable.ic_bfb);
         mBuilder.setContentTitle(msg.Title);
@@ -206,15 +218,9 @@ public class NotificationService
         if (msg.Priority == PriorityEnum.NORMAL) mBuilder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
         if (msg.Priority == PriorityEnum.HIGH)   mBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
 
-        if (ns.ForceVolume)
-        {
-            AudioManager aman = (AudioManager) SCNApp.getContext().getSystemService(Context.AUDIO_SERVICE);
-            int maxVolume = aman.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
-            aman.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(maxVolume * (ns.ForceVolumeValue / 100.0)), 0);
-        }
-
-        Intent intent = new Intent(ctxt, MainActivity.class);
-        PendingIntent pi = PendingIntent.getActivity(ctxt, 0, intent, 0);
+        Intent intnt_click = new Intent(SCNApp.getContext(), BroadcastReceiverService.class);
+        intnt_click.putExtra(BroadcastReceiverService.ID_KEY, BroadcastReceiverService.NOTIF_SHOW_MAIN);
+        PendingIntent pi = PendingIntent.getBroadcast(ctxt, 0, intnt_click, 0);
         mBuilder.setContentIntent(pi);
         NotificationManager mNotificationManager = (NotificationManager) ctxt.getSystemService(Context.NOTIFICATION_SERVICE);
         if (mNotificationManager == null) return;
@@ -224,17 +230,13 @@ public class NotificationService
             if (ns.RepeatSound)
             {
                 Intent intnt_stop = new Intent(SCNApp.getContext(), BroadcastReceiverService.class);
-                intnt_stop.putExtra(BroadcastReceiverService.ID_KEY, BroadcastReceiverService.STOP_NOTIFICATION_SOUND);
-                PendingIntent pi_stop = PendingIntent.getBroadcast(SCNApp.getContext().getApplicationContext(), BroadcastReceiverService.STOP_NOTIFICATION_SOUND, intnt_stop, 0);
+                intnt_stop.putExtra(BroadcastReceiverService.ID_KEY, BroadcastReceiverService.NOTIF_STOP_SOUND);
+                PendingIntent pi_stop = PendingIntent.getBroadcast(ctxt, BroadcastReceiverService.NOTIF_STOP_SOUND, intnt_stop, 0);
                 mBuilder.addAction(new NotificationCompat.Action(-1, "Stop", pi_stop));
                 mBuilder.setDeleteIntent(pi_stop);
+            }
 
-                SoundService.playForegroundWithLooping(ns.EnableSound, ns.SoundSource, ns.ForceVolume, ns.ForceVolumeValue);
-            }
-            else
-            {
-                SoundService.playForegroundNoLooping(ns.EnableSound, ns.SoundSource, ns.ForceVolume, ns.ForceVolumeValue);
-            }
+            SoundService.play(ns.EnableSound, ns.SoundSource, ns.ForceVolume, ns.ForceVolumeValue, ns.RepeatSound);
         }
 
         Notification n = mBuilder.build();
