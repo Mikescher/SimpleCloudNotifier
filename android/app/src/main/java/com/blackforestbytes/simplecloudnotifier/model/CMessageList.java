@@ -82,7 +82,7 @@ public class CMessageList
             {
                 MessageAdapter a = ref.get();
                 if (a == null) continue;
-                a.customNotifyItemInserted(count);
+                a.customNotifyDataSetChanged();
                 a.scrollToTop();
             }
             CleanUpListener();

@@ -57,7 +57,6 @@ public class MessageAdapter extends RecyclerView.Adapter
         viewHolders.put(view, true);
     }
 
-
     @Override
     public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder)
     {

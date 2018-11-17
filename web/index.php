@@ -54,7 +54,7 @@
 
 		<div class="row responsive-label">
 			<div class="col-sm-12 col-md-3"><label for="txt" class="doc">Message Content</label></div>
-			<div class="col-sm-12 col-md"><textarea id="txt" class="doc" <?php echo (isset($_GET['preset_content']) ? (' value="'.$_GET['preset_content'].'" '):(''));?> rows="8"></textarea></div>
+			<div class="col-sm-12 col-md"><textarea id="txt" class="doc" <?php echo (isset($_GET['preset_content']) ? (' value="'.$_GET['preset_content'].'" '):(''));?> rows="8" maxlength="2048"></textarea></div>
 		</div>
 
 		<div class="row">
