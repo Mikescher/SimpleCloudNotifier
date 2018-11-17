@@ -174,8 +174,7 @@ public class NotificationService
         mBuilder.setWhen(msg.Timestamp * 1000);
         mBuilder.setAutoCancel(true);
         mBuilder.setCategory(Notification.CATEGORY_MESSAGE);
-        mBuilder.setStyle(new NotificationCompat.InboxStyle());
-        mBuilder.setGroup(prio.toString());
+        mBuilder.setGroup("com.blackforestbytes.simplecloudnotifier.notifications.group."+prio.toString());
 
         if (msg.Priority == PriorityEnum.LOW)    mBuilder.setPriority(NotificationCompat.PRIORITY_LOW);
         if (msg.Priority == PriorityEnum.NORMAL) mBuilder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -218,8 +217,7 @@ public class NotificationService
         mBuilder.setWhen(msg.Timestamp * 1000);
         mBuilder.setAutoCancel(true);
         mBuilder.setCategory(Notification.CATEGORY_MESSAGE);
-        mBuilder.setStyle(new NotificationCompat.InboxStyle());
-        mBuilder.setGroup(prio.toString());
+        mBuilder.setGroup("com.blackforestbytes.simplecloudnotifier.notifications.group."+prio.toString());
 
         if (ns.EnableLED) mBuilder.setLights(ns.LEDColor, 500, 500);
 
@@ -251,7 +249,7 @@ public class NotificationService
         Notification n = mBuilder.build();
         n.flags |= Notification.FLAG_AUTO_CANCEL;
 
-        mNotificationManager.notify(0, n);
+        mNotificationManager.notify((int)msg.SCN_ID, n);
 
         if (ns.EnableVibration)
         {
