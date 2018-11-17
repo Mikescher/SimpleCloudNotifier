@@ -42,6 +42,11 @@ body
     border-left: .25rem solid #E53935;
 }
 
+.yellow-code
+{
+    border-left: .25rem solid #FFCB05;
+}
+
 #mainpnl input,
 #mainpnl textarea
 {
@@ -235,4 +240,10 @@ table.scode_table th:nth-child(2) {
 
 .linkcaption:hover {
     text-decoration: none;
+}
+
+pre, pre span
+{
+    font-family: Menlo, Consolas, monospace;
+    background: #F9F9F9;;
 }

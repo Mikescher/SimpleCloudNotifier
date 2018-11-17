@@ -187,6 +187,95 @@
                 Be aware that the server only saves send messages for a short amount of time. Because of that you can only use this to prevent duplicates in a short time-frame, older messages with the same ID are probably already deleted and the message will be send again.
             </p>
         </div>
+
+        <h2>Bash script example</h2>
+        <div class="section">
+            <p>
+                Depending on your use case it can be useful to create a bash script that handles things like resending messages if you have connection problems or waiting if there is no quota left.<br/>
+                Here is an example how such a scrippt could look like, you can put it into <code>/usr/local/sbin</code> and call it with <code>scn_send "title" "content"</code>
+            </p>
+            <pre style="color:#000000;" class="yellow-code"><span style="color:#3f7f59; font-weight:bold;">#!/usr/bin/env bash</span>
+
+<span style="color:#3f7f59; ">#</span>
+<span style="color:#3f7f59; "># Call with   `scn_send title`</span>
+<span style="color:#3f7f59; ">#        or   `scn_send title content`</span>
+<span style="color:#3f7f59; ">#        or   `scn_send title content priority`</span>
+<span style="color:#3f7f59; ">#</span>
+<span style="color:#3f7f59; ">#</span>
+
+<span style="color:#7f0055; font-weight:bold; ">if</span> [ <span style="color:#2a00ff; ">"$#"</span> -lt 1 ]; <span style="color:#7f0055; font-weight:bold; ">then</span>
+    <span style="color:#7f0055; font-weight:bold; ">echo</span> <span style="color:#2a00ff; ">"no title supplied via parameter"</span>
+    <span style="color:#7f0055; font-weight:bold; ">exit</span> 1
+<span style="color:#7f0055; font-weight:bold; ">fi</span>
+
+<span style="color:#3f7f59; ">################################################################################</span>
+<span style="color:#3f7f59; "># INSERT YOUR DATA HERE                                                        #</span>
+<span style="color:#3f7f59; ">################################################################################</span>
+user_id=999
+user_key=<span style="color:#2a00ff; ">"????????????????????????????????????????????????????????????????"</span>
+<span style="color:#3f7f59; ">################################################################################</span>
+
+title=$1
+content=<span style="color:#2a00ff; ">""</span>
+
+<span style="color:#7f0055; font-weight:bold; ">if</span> [ <span style="color:#2a00ff; ">"$#"</span> -gt 1 ]; <span style="color:#7f0055; font-weight:bold; ">then</span>
+    content=$2
+<span style="color:#7f0055; font-weight:bold; ">fi</span>
+
+priority=1
+
+<span style="color:#7f0055; font-weight:bold; ">if</span> [ <span style="color:#2a00ff; ">"$#"</span> -gt 2 ]; <span style="color:#7f0055; font-weight:bold; ">then</span>
+    priority=$3
+<span style="color:#7f0055; font-weight:bold; ">fi</span>
+
+usr_msg_id=$(uuidgen)
+
+<span style="color:#7f0055; font-weight:bold; ">while</span> true ; <span style="color:#7f0055; font-weight:bold; ">do</span>
+
+    curlresp=$(curl -s -o <span style="color:#3f3fbf; ">/dev/null</span> -w <span style="color:#2a00ff; ">"%{http_code}"</span> <span style="color:#2a00ff; ">\</span>
+                    -d <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">user_id</span><span style="color:#2a00ff; ">=</span><span style="color:#2a00ff; ">$user_id</span><span style="color:#2a00ff; ">"</span> -d <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">user_key</span><span style="color:#2a00ff; ">=</span><span style="color:#2a00ff; ">$user_key</span><span style="color:#2a00ff; ">"</span> -d <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">title</span><span style="color:#2a00ff; ">=</span><span style="color:#2a00ff; ">$title</span><span style="color:#2a00ff; ">"</span> <span style="color:#2a00ff; ">\</span>
+                    -d <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">content</span><span style="color:#2a00ff; ">=</span><span style="color:#2a00ff; ">$content</span><span style="color:#2a00ff; ">"</span> -d <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">priority</span><span style="color:#2a00ff; ">=</span><span style="color:#2a00ff; ">$priority</span><span style="color:#2a00ff; ">"</span> -d <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">msg_id</span><span style="color:#2a00ff; ">=</span><span style="color:#2a00ff; ">$usr_msg_id</span><span style="color:#2a00ff; ">"</span> <span style="color:#2a00ff; ">\</span>
+                    https:<span style="color:#3f3fbf; ">/</span><span style="color:#3f3fbf; ">/scn.blackforestbytes.com/send.php</span>)
+
+    <span style="color:#7f0055; font-weight:bold; ">if</span> [ <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">$curlresp</span><span style="color:#2a00ff; ">"</span> == 200 ] ; <span style="color:#7f0055; font-weight:bold; ">then</span>
+        <span style="color:#7f0055; font-weight:bold; ">echo</span> <span style="color:#2a00ff; ">"Successfully send"</span>
+        <span style="color:#7f0055; font-weight:bold; ">exit</span> 0
+    <span style="color:#7f0055; font-weight:bold; ">fi</span>
+
+    <span style="color:#7f0055; font-weight:bold; ">if</span> [ <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">$curlresp</span><span style="color:#2a00ff; ">"</span> == 400 ] ; <span style="color:#7f0055; font-weight:bold; ">then</span>
+        <span style="color:#7f0055; font-weight:bold; ">echo</span> <span style="color:#2a00ff; ">"Bad request - something went wrong"</span>
+        <span style="color:#7f0055; font-weight:bold; ">exit</span> 1
+    <span style="color:#7f0055; font-weight:bold; ">fi</span>
+
+    <span style="color:#7f0055; font-weight:bold; ">if</span> [ <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">$curlresp</span><span style="color:#2a00ff; ">"</span> == 401 ] ; <span style="color:#7f0055; font-weight:bold; ">then</span>
+        <span style="color:#7f0055; font-weight:bold; ">echo</span> <span style="color:#2a00ff; ">"Unauthorized - wrong </span><span style="color:#3f3fbf; ">userid/userkey</span><span style="color:#2a00ff; ">"</span>
+        <span style="color:#7f0055; font-weight:bold; ">exit</span> 1
+    <span style="color:#7f0055; font-weight:bold; ">fi</span>
+
+    <span style="color:#7f0055; font-weight:bold; ">if</span> [ <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">$curlresp</span><span style="color:#2a00ff; ">"</span> == 403 ] ; <span style="color:#7f0055; font-weight:bold; ">then</span>
+        <span style="color:#7f0055; font-weight:bold; ">echo</span> <span style="color:#2a00ff; ">"Quota exceeded - wait one hour before re-try"</span>
+        sleep 3600
+    <span style="color:#7f0055; font-weight:bold; ">fi</span>
+
+    <span style="color:#7f0055; font-weight:bold; ">if</span> [ <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">$curlresp</span><span style="color:#2a00ff; ">"</span> == 412 ] ; <span style="color:#7f0055; font-weight:bold; ">then</span>
+        <span style="color:#7f0055; font-weight:bold; ">echo</span> <span style="color:#2a00ff; ">"Precondition Failed - No device linked"</span>
+        <span style="color:#7f0055; font-weight:bold; ">exit</span> 1
+    <span style="color:#7f0055; font-weight:bold; ">fi</span>
+
+    <span style="color:#7f0055; font-weight:bold; ">if</span> [ <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">$curlresp</span><span style="color:#2a00ff; ">"</span> == 500 ] ; <span style="color:#7f0055; font-weight:bold; ">then</span>
+        <span style="color:#7f0055; font-weight:bold; ">echo</span> <span style="color:#2a00ff; ">"Internal server error - waiting for better times"</span>
+        sleep 60
+    <span style="color:#7f0055; font-weight:bold; ">fi</span>
+
+    <span style="color:#3f7f59; "># if none of the above matched we probably hav no network ...</span>
+    <span style="color:#7f0055; font-weight:bold; ">echo</span> <span style="color:#2a00ff; ">"Send failed (response code </span><span style="color:#2a00ff; ">$curlresp</span><span style="color:#2a00ff; ">) ... try again in 5s"</span>
+    sleep 5
+<span style="color:#7f0055; font-weight:bold; ">done</span>
+</pre>
+            <p>
+                Be aware that the server only saves send messages for a short amount of time. Because of that you can only use this to prevent duplicates in a short time-frame, older messages with the same ID are probably already deleted and the message will be send again.
+            </p>
+        </div>
     </div>
 
 </body>
