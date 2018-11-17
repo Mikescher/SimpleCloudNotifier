@@ -4,6 +4,9 @@ import android.util.Log;
 import android.view.View;
 
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
+import com.blackforestbytes.simplecloudnotifier.lib.datatypes.Tuple5;
+import com.blackforestbytes.simplecloudnotifier.lib.lambda.Func1to0;
+import com.blackforestbytes.simplecloudnotifier.lib.lambda.Func5to0;
 import com.blackforestbytes.simplecloudnotifier.lib.string.Str;
 import com.blackforestbytes.simplecloudnotifier.service.FBMService;
 
@@ -57,7 +60,7 @@ public class ServerCommunication
                         if (responseBody ==  null) throw new IOException("No response");
 
                         String r = responseBody.string();
-                        Log.d("Server::Response", r);
+                        Log.d("Server::Response", request.url().toString()+"\n"+r);
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
 
@@ -123,7 +126,7 @@ public class ServerCommunication
                         if (responseBody ==  null) throw new IOException("No response");
 
                         String r = responseBody.string();
-                        Log.d("Server::Response", r);
+                        Log.d("Server::Response", request.url().toString()+"\n"+r);
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
 
@@ -185,7 +188,7 @@ public class ServerCommunication
                         if (responseBody == null) throw new IOException("No response");
 
                         String r = responseBody.string();
-                        Log.d("Server::Response", r);
+                        Log.d("Server::Response", request.url().toString()+"\n"+r);
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
 
@@ -246,7 +249,7 @@ public class ServerCommunication
                         if (responseBody == null) throw new IOException("No response");
 
                         String r = responseBody.string();
-                        Log.d("Server::Response", r);
+                        Log.d("Server::Response", request.url().toString()+"\n"+r);
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
 
@@ -329,7 +332,7 @@ public class ServerCommunication
                         if (responseBody == null) throw new IOException("No response");
 
                         String r = responseBody.string();
-                        Log.d("Server::Response", r);
+                        Log.d("Server::Response", request.url().toString()+"\n"+r);
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
 
@@ -397,7 +400,7 @@ public class ServerCommunication
                         if (responseBody == null) throw new IOException("No response");
 
                         String r = responseBody.string();
-                        Log.d("Server::Response", r);
+                        Log.d("Server::Response", request.url().toString()+"\n"+r);
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
 
@@ -452,7 +455,7 @@ public class ServerCommunication
                         if (responseBody == null) throw new IOException("No response");
 
                         String r = responseBody.string();
-                        Log.d("Server::Response", r);
+                        Log.d("Server::Response", request.url().toString()+"\n"+r);
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
 
@@ -468,6 +471,70 @@ public class ServerCommunication
         catch (Exception e)
         {
             Log.e("SC:ack", e.toString());
+        }
+    }
+
+    public static void expand(int id, String key, long scn_msg_id, View loader, Func5to0<String, String, PriorityEnum, Long, Long> okResult)
+    {
+        try
+        {
+            Request request = new Request.Builder()
+                    .url(BASE_URL + "expand.php?user_id=" + id + "&user_key=" + key + "&scn_msg_id=" + scn_msg_id)
+                    .build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    Log.e("SC:expand", e.toString());
+                    SCNApp.showToast("Communication with server failed", 4000);
+                    SCNApp.runOnUiThread(() -> {
+                        if (loader != null) loader.setVisibility(View.GONE);
+                    });
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) {
+                    try (ResponseBody responseBody = response.body()) {
+                        if (!response.isSuccessful())
+                            throw new IOException("Unexpected code " + response);
+                        if (responseBody == null) throw new IOException("No response");
+
+                        String r = responseBody.string();
+                        Log.d("Server::Response", request.url().toString()+"\n"+r);
+
+                        JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
+
+                        if (!json_bool(json, "success"))
+                        {
+                            SCNApp.showToast(json_str(json, "message"), 4000);
+                            return;
+                        }
+
+                        JSONObject o = json.getJSONObject("data");
+
+                        long time         = json_lng(o, "timestamp");
+                        String title      = json_str(o, "title");
+                        String content    = json_str(o, "body");
+                        PriorityEnum prio = PriorityEnum.parseAPI(json_int(o, "priority"));
+                        long scn_id       = json_lng(o, "scn_msg_id");
+
+                        okResult.invoke(title, content, prio, time, scn_id);
+
+                    } catch (Exception e) {
+                        Log.e("SC:expand", e.toString());
+                        SCNApp.showToast("Communication with server failed", 4000);
+                    } finally {
+                        SCNApp.runOnUiThread(() -> {
+                            if (loader != null) loader.setVisibility(View.GONE);
+                        });
+                    }
+                }
+            });
+        }
+        catch (Exception e)
+        {
+            Log.e("SC:expand", e.toString());
+            SCNApp.showToast("Communication with server failed", 4000);
         }
     }
 

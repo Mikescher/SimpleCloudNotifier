@@ -35,6 +35,14 @@ class Statics
 	public static $CFG = NULL;
 
 	public static function quota_max($is_pro) { return $is_pro ? 1000 : 50; }
+
+	public static function contentlen_max($is_pro) { return $is_pro ? 16384 : 2048; }
+}
+
+function str_limit($str, $len)
+{
+	if (strlen($str)>$len) return substr($str, 0, $len-3)."...";
+	return $str;
 }
 
 function getConfig()

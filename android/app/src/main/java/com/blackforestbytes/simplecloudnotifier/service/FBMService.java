@@ -4,6 +4,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
+import com.blackforestbytes.simplecloudnotifier.lib.datatypes.Tuple4;
+import com.blackforestbytes.simplecloudnotifier.lib.datatypes.Tuple5;
 import com.blackforestbytes.simplecloudnotifier.model.CMessage;
 import com.blackforestbytes.simplecloudnotifier.model.CMessageList;
 import com.blackforestbytes.simplecloudnotifier.model.PriorityEnum;
@@ -38,8 +40,16 @@ public class FBMService extends FirebaseMessagingService
             String content    = remoteMessage.getData().get("body");
             PriorityEnum prio = PriorityEnum.parseAPI(remoteMessage.getData().get("priority"));
             long scn_id       = Long.parseLong(remoteMessage.getData().get("scn_msg_id"));
+            boolean trimmed   = Boolean.parseBoolean(remoteMessage.getData().get("trimmed"));
 
-            recieveData(time, title, content, prio, scn_id, false);
+            if (trimmed)
+            {
+                ServerCommunication.expand(SCNSettings.inst().user_id, SCNSettings.inst().user_key, scn_id, null, (i1, i2, i3, i4, i5) -> recieveData(i4, i1, i2, i3, i5, false));
+            }
+            else
+            {
+                recieveData(time, title, content, prio, scn_id, false);
+            }
         }
         catch (Exception e)
         {
