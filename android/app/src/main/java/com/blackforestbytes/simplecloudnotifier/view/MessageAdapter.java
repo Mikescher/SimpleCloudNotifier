@@ -1,5 +1,6 @@
 package com.blackforestbytes.simplecloudnotifier.view;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -140,13 +141,16 @@ public class MessageAdapter extends RecyclerView.Adapter
                 case LOW:
                     ivPriority.setVisibility(View.VISIBLE);
                     ivPriority.setImageResource(R.drawable.priority_low);
+                    ivPriority.setColorFilter(Color.rgb(176, 176, 176));
                     break;
                 case NORMAL:
                     ivPriority.setVisibility(View.GONE);
+                    ivPriority.setColorFilter(Color.rgb(176, 176, 176));
                     break;
                 case HIGH:
                     ivPriority.setVisibility(View.VISIBLE);
                     ivPriority.setImageResource(R.drawable.priority_high);
+                    ivPriority.setColorFilter(Color.rgb(200, 0, 0));
                     break;
             }
 
