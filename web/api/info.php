@@ -30,7 +30,7 @@ if ($data['user_key'] !== $user_key) die(json_encode(['success' => false, 'errid
 
 $stmt = $pdo->prepare('SELECT COUNT(*) FROM messages WHERE ack=0 AND sender_user_id=:uid');
 $stmt->execute(['uid' => $user_id]);
-$nack_count = $stmt->fetch(PDO::FETCH_NUM);
+$nack_count = $stmt->fetch(PDO::FETCH_NUM)[0];
 
 
 $quota = $data['quota_today'];
