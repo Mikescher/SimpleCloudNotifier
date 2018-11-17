@@ -6,12 +6,14 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.blackforestbytes.simplecloudnotifier.R;
@@ -126,10 +128,11 @@ public class AccountFragment extends Fragment
     public void updateUI(View v)
     {
         if (v == null) return;
-        TextView tvUserID  = v.findViewById(R.id.tvUserID);
-        TextView tvUserKey = v.findViewById(R.id.tvUserKey);
-        TextView tvQuota   = v.findViewById(R.id.tvQuota);
-        ImageButton btnQR  = v.findViewById(R.id.btnQR);
+        TextView    tvUserID  = v.findViewById(R.id.tvUserID);
+        TextView    tvUserKey = v.findViewById(R.id.tvUserKey);
+        TextView    tvQuota   = v.findViewById(R.id.tvQuota);
+        ImageView   ivQuota   = v.findViewById(R.id.ic_img_quota);
+        ImageButton btnQR     = v.findViewById(R.id.btnQR);
 
         SCNSettings s = SCNSettings.inst();
 
@@ -139,6 +142,7 @@ public class AccountFragment extends Fragment
             tvUserKey.setText(s.user_key);
             tvQuota.setText(String.format("%d / %d", s.quota_curr, s.quota_max));
             btnQR.setImageBitmap(QRCode.from(s.createOnlineURL()).to(ImageType.PNG).withSize(512, 512).bitmap());
+            ivQuota.setColorFilter(s.quota_curr>=s.quota_max ? Color.rgb(200, 0, 0) : Color.rgb(128, 128, 128));
         }
         else
         {
@@ -146,6 +150,7 @@ public class AccountFragment extends Fragment
             tvUserKey.setText(R.string.str_not_connected);
             tvQuota.setText(R.string.str_not_connected);
             btnQR.setImageResource(R.drawable.qr_default);
+            ivQuota.setColorFilter(0x80_80_80);
         }
     }
 }
