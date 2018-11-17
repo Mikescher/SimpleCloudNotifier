@@ -33,7 +33,7 @@ try
 
 	if (strlen(trim($message)) == 0)                 api_return(400, ['success' => false, 'error' => ERR::NO_TITLE,            'errhighlight' => 103, 'message' => 'No title specified']);
 	if (strlen($message) > 120)                      api_return(400, ['success' => false, 'error' => ERR::TITLE_TOO_LONG,      'errhighlight' => 103, 'message' => 'Title too long (120 characters)']);
-	if (strlen($content) > 10000)                    api_return(400, ['success' => false, 'error' => ERR::CONTENT_TOO_LONG,    'errhighlight' => 104, 'message' => 'Content too long (10000 characters)']);
+	if (strlen($content) > 2048)                     api_return(400, ['success' => false, 'error' => ERR::CONTENT_TOO_LONG,    'errhighlight' => 104, 'message' => 'Content too long (10000 characters)']);
 	if ($usrmsgid != null && strlen($usrmsgid) > 64) api_return(400, ['success' => false, 'error' => ERR::USR_MSG_ID_TOO_LONG, 'errhighlight' => -1,  'message' => 'MessageID too long (64 characters)']);
 
 //------------------------------------------------------------------
