@@ -34,10 +34,10 @@ function send()
 		if (xhr.readyState !== 4) return;
 
 		console.log('Status: ' + xhr.status);
-		if (xhr.status === 200)
+		if (xhr.status === 200 || xhr.status === 401 || xhr.status === 403 || xhr.status === 412)
 		{
 			let resp = JSON.parse(xhr.responseText);
-			if (!resp.success)
+			if (!resp.success || xhr.status !== 200)
 			{
 				if (resp.errhighlight === 101) uid.classList.add('input-invalid');
 				if (resp.errhighlight === 102) key.classList.add('input-invalid');

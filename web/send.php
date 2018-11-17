@@ -42,7 +42,7 @@ try
 	$stmt->execute(['uid' => $user_id]);
 
 	$datas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-	if (count($datas)<=0) die(json_encode(['success' => false, 'error' => ERR::USER_NOT_FOUND, 'errhighlight' => 101, 'message' => 'User not found']));
+	if (count($datas)<=0) api_return(401, ['success' => false, 'error' => ERR::USER_NOT_FOUND, 'errhighlight' => 101, 'message' => 'User not found']);
 	$data = $datas[0];
 
 	if ($data === null)                     api_return(401, ['success' => false, 'error' => ERR::USER_NOT_FOUND,   'errhighlight' => 101, 'message' => 'User not found']);
