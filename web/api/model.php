@@ -217,10 +217,15 @@ function refreshVerifyToken()
 	return $obj['access_token'];
 }
 
+/**
+ * @param int $http_code
+ * @param array $message
+ */
 function api_return($http_code, $message)
 {
 	http_response_code($http_code);
-	echo $message;
+	header('Content-Type: application/json');
+	echo json_encode($message);
 	die();
 }
 

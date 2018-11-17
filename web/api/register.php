@@ -38,7 +38,7 @@ $stmt->execute(['uid' => $user_id, 'ft' => $fcm_token]);
 
 $pdo->commit();
 
-echo json_encode(
+api_return(200,
 [
 	'success'   => true,
 	'user_id'   => $user_id,
@@ -48,5 +48,3 @@ echo json_encode(
 	'is_pro'    => $ispro,
 	'message'   => 'New user registered'
 ]);
-
-return 0;

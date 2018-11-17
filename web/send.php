@@ -1,6 +1,6 @@
 <?php
 
-include_once 'model.php';
+include_once 'api/model.php';
 
 try
 {
@@ -9,13 +9,13 @@ try
 //sleep(1);
 //------------------------------------------------------------------
 
-	if ($_SERVER['REQUEST_METHOD'] !== 'POST') api_return(400, json_encode(['success' => false, 'error' =>  ERR::REQ_METHOD, 'errhighlight' => -1, 'message' => 'Invalid request method (must be POST)']));
+	if ($_SERVER['REQUEST_METHOD'] !== 'POST') api_return(400, ['success' => false, 'error' =>  ERR::REQ_METHOD, 'errhighlight' => -1, 'message' => 'Invalid request method (must be POST)']);
 
 	$INPUT = array_merge($_GET, $_POST);
 
-	if (!isset($INPUT['user_id']))  api_return(400, json_encode(['success' => false, 'error' => ERR::MISSING_UID,   'errhighlight' => 101, 'message' => 'Missing parameter [[user_id]]']));
-	if (!isset($INPUT['user_key'])) api_return(400, json_encode(['success' => false, 'error' => ERR::MISSING_TOK,   'errhighlight' => 102, 'message' => 'Missing parameter [[user_token]]']));
-	if (!isset($INPUT['title']))    api_return(400, json_encode(['success' => false, 'error' => ERR::MISSING_TITLE, 'errhighlight' => 103, 'message' => 'Missing parameter [[title]]']));
+	if (!isset($INPUT['user_id']))  api_return(400, ['success' => false, 'error' => ERR::MISSING_UID,   'errhighlight' => 101, 'message' => 'Missing parameter [[user_id]]']);
+	if (!isset($INPUT['user_key'])) api_return(400, ['success' => false, 'error' => ERR::MISSING_TOK,   'errhighlight' => 102, 'message' => 'Missing parameter [[user_token]]']);
+	if (!isset($INPUT['title']))    api_return(400, ['success' => false, 'error' => ERR::MISSING_TITLE, 'errhighlight' => 103, 'message' => 'Missing parameter [[title]]']);
 
 //------------------------------------------------------------------
 
@@ -29,12 +29,12 @@ try
 
 //------------------------------------------------------------------
 
-	if ($priority !== '0' && $priority !== '1' && $priority !== '2') api_return(400, json_encode(['success' => false, 'error' => ERR::INVALID_PRIO, 'errhighlight' => 105, 'message' => 'Invalid priority']));
+	if ($priority !== '0' && $priority !== '1' && $priority !== '2') api_return(400, ['success' => false, 'error' => ERR::INVALID_PRIO, 'errhighlight' => 105, 'message' => 'Invalid priority']);
 
-	if (strlen(trim($message)) == 0)                 api_return(400, json_encode(['success' => false, 'error' => ERR::NO_TITLE,            'errhighlight' => 103, 'message' => 'No title specified']));
-	if (strlen($message) > 120)                      api_return(400, json_encode(['success' => false, 'error' => ERR::TITLE_TOO_LONG,      'errhighlight' => 103, 'message' => 'Title too long (120 characters)']));
-	if (strlen($content) > 10000)                    api_return(400, json_encode(['success' => false, 'error' => ERR::CONTENT_TOO_LONG,    'errhighlight' => 104, 'message' => 'Content too long (10000 characters)']));
-	if ($usrmsgid != null && strlen($usrmsgid) > 64) api_return(400, json_encode(['success' => false, 'error' => ERR::USR_MSG_ID_TOO_LONG, 'errhighlight' => -1,  'message' => 'MessageID too long (64 characters)']));
+	if (strlen(trim($message)) == 0)                 api_return(400, ['success' => false, 'error' => ERR::NO_TITLE,            'errhighlight' => 103, 'message' => 'No title specified']);
+	if (strlen($message) > 120)                      api_return(400, ['success' => false, 'error' => ERR::TITLE_TOO_LONG,      'errhighlight' => 103, 'message' => 'Title too long (120 characters)']);
+	if (strlen($content) > 10000)                    api_return(400, ['success' => false, 'error' => ERR::CONTENT_TOO_LONG,    'errhighlight' => 104, 'message' => 'Content too long (10000 characters)']);
+	if ($usrmsgid != null && strlen($usrmsgid) > 64) api_return(400, ['success' => false, 'error' => ERR::USR_MSG_ID_TOO_LONG, 'errhighlight' => -1,  'message' => 'MessageID too long (64 characters)']);
 
 //------------------------------------------------------------------
 
@@ -47,19 +47,19 @@ try
 	if (count($datas)<=0) die(json_encode(['success' => false, 'error' => ERR::USER_NOT_FOUND, 'errhighlight' => 101, 'message' => 'User not found']));
 	$data = $datas[0];
 
-	if ($data === null)                     api_return(401, json_encode(['success' => false, 'error' => ERR::USER_NOT_FOUND,   'errhighlight' => 101, 'message' => 'User not found']));
-	if ($data['user_id'] !== (int)$user_id) api_return(401, json_encode(['success' => false, 'error' => ERR::USER_NOT_FOUND,   'errhighlight' => 101, 'message' => 'UserID not found']));
-	if ($data['user_key'] !== $user_key)    api_return(401, json_encode(['success' => false, 'error' => ERR::USER_AUTH_FAILED, 'errhighlight' => 102, 'message' => 'Authentification failed']));
+	if ($data === null)                     api_return(401, ['success' => false, 'error' => ERR::USER_NOT_FOUND,   'errhighlight' => 101, 'message' => 'User not found']);
+	if ($data['user_id'] !== (int)$user_id) api_return(401, ['success' => false, 'error' => ERR::USER_NOT_FOUND,   'errhighlight' => 101, 'message' => 'UserID not found']);
+	if ($data['user_key'] !== $user_key)    api_return(401, ['success' => false, 'error' => ERR::USER_AUTH_FAILED, 'errhighlight' => 102, 'message' => 'Authentification failed']);
 
 	$fcm = $data['fcm_token'];
 
 	$new_quota = $data['quota_today'] + 1;
 	if ($data['quota_day'] === null || $data['quota_day'] !== date("Y-m-d")) $new_quota=1;
-	if ($new_quota > Statics::quota_max($data['is_pro'])) api_return(403, json_encode(['success' => false, 'error' => ERR::QUOTA_REACHED, 'errhighlight' => -1, 'message' => 'Daily quota reached ('.Statics::quota_max($data['is_pro']).')']));
+	if ($new_quota > Statics::quota_max($data['is_pro'])) api_return(403, ['success' => false, 'error' => ERR::QUOTA_REACHED, 'errhighlight' => -1, 'message' => 'Daily quota reached ('.Statics::quota_max($data['is_pro']).')']);
 
 	if ($fcm == null || $fcm == '' ||  $fcm == false)
 	{
-		api_return(412, json_encode(['success' => false, 'error' => ERR::NO_DEVICE_LINKED, 'errhighlight' => -1, 'message' => 'No device linked with this account']));
+		api_return(412, ['success' => false, 'error' => ERR::NO_DEVICE_LINKED, 'errhighlight' => -1, 'message' => 'No device linked with this account']);
 	}
 
 //------------------------------------------------------------------
@@ -71,7 +71,7 @@ try
 
 		if (count($stmt->fetchAll(PDO::FETCH_ASSOC))>0)
 		{
-			api_return(200, json_encode(
+			api_return(200,
 			[
 				'success'       => true,
 				'message'       => 'Message already sent',
@@ -81,7 +81,7 @@ try
 				'quota'         => $data['quota_today'],
 				'is_pro'        => $data['is_pro'],
 				'quota_max'     => Statics::quota_max($data['is_pro']),
-			]));
+			]);
 		}
 	}
 
@@ -138,14 +138,14 @@ try
 		{
 			reportError("FCM communication failed (success_1 <> true)\n\n".$httpresult);
 			$pdo->rollBack();
-			api_return(500, json_encode(['success' => false, 'error' => ERR::FIREBASE_COM_ERRORED, 'errhighlight' => -1, 'message' => 'Communication with firebase service failed.']));
+			api_return(500, ['success' => false, 'error' => ERR::FIREBASE_COM_ERRORED, 'errhighlight' => -1, 'message' => 'Communication with firebase service failed.']);
 		}
 	}
 	catch (Exception $e)
 	{
 		reportError("FCM communication failed", $e);
 		$pdo->rollBack();
-		api_return(500, json_encode(['success' => false, 'error' => ERR::FIREBASE_COM_FAILED, 'errhighlight' => -1, 'message' => 'Communication with firebase service failed.'."\n\n".'Exception: ' . $e->getMessage()]));
+		api_return(500, ['success' => false, 'error' => ERR::FIREBASE_COM_FAILED, 'errhighlight' => -1, 'message' => 'Communication with firebase service failed.'."\n\n".'Exception: ' . $e->getMessage()]);
 	}
 
 	$stmt = $pdo->prepare('UPDATE users SET timestamp_accessed=NOW(), messages_sent=messages_sent+1, quota_today=:q, quota_day=NOW() WHERE user_id = :uid');
@@ -156,7 +156,7 @@ try
 
 	$pdo->commit();
 
-	api_return(200, json_encode(
+	api_return(200,
 	[
 		'success'       => true,
 		'error'         => ERR::NO_ERROR,
@@ -169,11 +169,11 @@ try
 		'is_pro'        => $data['is_pro'],
 		'quota_max'     => Statics::quota_max($data['is_pro']),
 		'scn_msg_id'    => $scn_msg_id,
-	]));
+	]);
 }
 catch (Exception $mex)
 {
 	reportError("Root try-catch triggered", $mex);
 	if ($pdo->inTransaction()) $pdo->rollBack();
-	api_return(500, json_encode(['success' => false, 'error' => ERR::INTERNAL_EXCEPTION, 'errhighlight' => -1, 'message' => 'PHP script threw exception.'."\n\n".'Exception: ' . $e->getMessage()]));
+	api_return(500, ['success' => false, 'error' => ERR::INTERNAL_EXCEPTION, 'errhighlight' => -1, 'message' => 'PHP script threw exception.'."\n\n".'Exception: ' . $e->getMessage()]);
 }

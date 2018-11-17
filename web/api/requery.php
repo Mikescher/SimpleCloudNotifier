@@ -26,26 +26,31 @@ if ($data === null) die(json_encode(['success' => false, 'errid'=>202, 'message'
 if ($data['user_id'] !== (int)$user_id) die(json_encode(['success' => false, 'errid'=>203, 'message' => 'UserID not found']));
 if ($data['user_key'] !== $user_key) die(json_encode(['success' => false, 'errid'=>204, 'message' => 'Authentification failed']));
 
+//-------------------
 
-
-$stmt = $pdo->prepare('SELECT COUNT(*) FROM messages WHERE ack=0 AND sender_user_id=:uid');
+$stmt = $pdo->prepare('SELECT * FROM messages WHERE ack=0 AND sender_user_id=:uid ORDER BY `timestamp` DESC LIMIT 16');
 $stmt->execute(['uid' => $user_id]);
-$nack_count = $stmt->fetch(PDO::FETCH_NUM);
+$nonacks_sql = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+$nonacks = [];
 
-$quota = $data['quota_today'];
-$is_pro = $data['is_pro'];
-
-if ($data['quota_day'] === null || $data['quota_day'] !== date("Y-m-d")) $quota=0;
+foreach ($nonacks_sql as $nack)
+{
+	$nonacks []=
+	[
+		'title'      => $nack['title'],
+		'body'       => $nack['content'],
+		'priority'   => $nack['priority'],
+		'timestamp'  => $nack['timestamp'],
+		'usr_msg_id' => $nack['usr_message_id'],
+		'scn_msg_id' => $nack['scn_message_id'],
+	];
+}
 
 api_return(200,
 [
 	'success'        => true,
 	'message'        => 'ok',
-	'user_id'        => $user_id,
-	'quota'          => $quota,
-	'quota_max'      => Statics::quota_max($is_pro),
-	'is_pro'         => $is_pro,
-	'fcm_token_set'  => ($data['fcm_token'] != null),
-	'unack_count'    => $nack_count,
+	'count'          => count($nonacks),
+	'data'           => $nonacks,
 ]);

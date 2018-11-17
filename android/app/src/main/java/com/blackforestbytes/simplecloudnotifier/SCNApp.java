@@ -105,7 +105,6 @@ public class SCNApp extends Application implements LifecycleObserver
 [ ]  - test notification channels
 [ ]  - startup time
 [ ]  - Delete single message (swipe right)
-[ ]  - Query non-ack-ed messages in app
 [ ]  - periodically get non-ack (option - even when not in-app)
 
 [ ]  - publish (+ HN post ?)

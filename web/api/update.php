@@ -39,7 +39,7 @@ if ($fcm_token === null)
 	$stmt = $pdo->prepare('UPDATE users SET timestamp_accessed=NOW(), user_key=:at WHERE user_id = :uid');
 	$stmt->execute(['uid' => $user_id, 'at' => $new_userkey]);
 
-	echo json_encode(
+	api_return(200,
 	[
 		'success'  => true,
 		'user_id'  => $user_id,
@@ -49,7 +49,6 @@ if ($fcm_token === null)
 		'is_pro'   => $is_pro,
 		'message'  => 'user updated'
 	]);
-	return 0;
 }
 else
 {
@@ -61,7 +60,7 @@ else
 	$stmt = $pdo->prepare('UPDATE users SET fcm_token=NULL WHERE user_id <> :uid AND fcm_token=:ft');
 	$stmt->execute(['uid' => $user_id, 'ft' => $fcm_token]);
 
-	echo json_encode(
+	api_return(200,
 	[
 		'success' => true,
 		'user_id' => $user_id,
@@ -71,5 +70,4 @@ else
 		'is_pro'   => $is_pro,
 		'message' => 'user updated'
 	]);
-	return 0;
 }

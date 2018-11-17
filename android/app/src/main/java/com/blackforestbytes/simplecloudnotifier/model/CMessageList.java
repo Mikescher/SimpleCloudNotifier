@@ -3,15 +3,19 @@ package com.blackforestbytes.simplecloudnotifier.model;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.blackforestbytes.simplecloudnotifier.lib.string.Str;
 import com.blackforestbytes.simplecloudnotifier.view.MessageAdapter;
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class CMessageList
 {
     public ArrayList<CMessage> Messages;
+    public Set<String> AllAcks;
 
     private ArrayList<WeakReference<MessageAdapter>> _listener = new ArrayList<>();
 
@@ -29,6 +33,7 @@ public class CMessageList
     private CMessageList()
     {
         Messages = new ArrayList<>();
+        AllAcks  = new HashSet<>();
 
         SharedPreferences sharedPref = SCNApp.getContext().getSharedPreferences("CMessageList", Context.MODE_PRIVATE);
         int count = sharedPref.getInt("message_count", 0);
@@ -42,6 +47,8 @@ public class CMessageList
 
             Messages.add(new CMessage(scnid, time, title, content, prio));
         }
+
+        AllAcks = sharedPref.getStringSet("acks", new HashSet<>());
     }
 
     public CMessage add(final long scnid, final long time, final String title, final String content, final PriorityEnum pe)
@@ -56,6 +63,7 @@ public class CMessageList
             SharedPreferences.Editor e = sharedPref.edit();
 
             Messages.add(msg);
+            AllAcks.add(Long.toHexString(msg.SCN_ID));
 
             while (Messages.size()>SCNSettings.inst().LocalCacheSize) Messages.remove(0);
 
@@ -65,6 +73,8 @@ public class CMessageList
             e.putString("message["+count+"].content",   content);
             e.putInt(   "message["+count+"].priority",  pe.ID);
             e.putLong(  "message["+count+"].scnid",     scnid);
+
+            e.putStringSet("acks", AllAcks);
 
             e.apply();
 
@@ -81,6 +91,7 @@ public class CMessageList
         if (!run)
         {
             Messages.add(new CMessage(scnid, time, title, content, pe));
+            AllAcks.add(Long.toHexString(msg.SCN_ID));
             fullSave();
         }
 
@@ -119,6 +130,8 @@ public class CMessageList
             e.putLong(  "message["+i+"].scnid",     Messages.get(i).SCN_ID);
         }
 
+        e.putStringSet("acks", AllAcks);
+
         e.apply();
     }
 
@@ -150,5 +163,10 @@ public class CMessageList
         {
             if (_listener.get(i).get() == null) _listener.remove(i);
         }
+    }
+
+    public boolean isAck(long id)
+    {
+        return AllAcks.contains(Long.toHexString(id));
     }
 }

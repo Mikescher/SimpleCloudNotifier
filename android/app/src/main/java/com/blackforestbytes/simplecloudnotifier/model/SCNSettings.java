@@ -167,7 +167,7 @@ public class SCNSettings
         {
             fcm_token_local = token;
             save();
-            if (!fcm_token_local.equals(fcm_token_server)) ServerCommunication.update(user_id, user_key, fcm_token_local, loader);
+            if (!fcm_token_local.equals(fcm_token_server)) ServerCommunication.updateFCMToken(user_id, user_key, fcm_token_local, loader);
         }
         else
         {
@@ -199,7 +199,7 @@ public class SCNSettings
     {
         if (!isConnected()) return;
 
-        ServerCommunication.update(user_id, user_key, loader);
+        ServerCommunication.resetSecret(user_id, user_key, loader);
     }
 
     // refresh account data

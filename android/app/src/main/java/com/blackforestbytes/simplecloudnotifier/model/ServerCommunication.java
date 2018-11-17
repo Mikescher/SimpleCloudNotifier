@@ -5,7 +5,9 @@ import android.view.View;
 
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
 import com.blackforestbytes.simplecloudnotifier.lib.string.Str;
+import com.blackforestbytes.simplecloudnotifier.service.FBMService;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -94,12 +96,12 @@ public class ServerCommunication
         }
     }
 
-    public static void update(int id, String key, String token, View loader)
+    public static void updateFCMToken(int id, String key, String token, View loader)
     {
         try
         {
             Request request = new Request.Builder()
-                    .url(BASE_URL + "update.php?user_id="+id+"&user_key="+key+"&fcm_token="+token)
+                    .url(BASE_URL + "updateFCMToken.php?user_id="+id+"&user_key="+key+"&fcm_token="+token)
                     .build();
 
             client.newCall(request).enqueue(new Callback()
@@ -160,12 +162,12 @@ public class ServerCommunication
         }
     }
 
-    public static void update(int id, String key, View loader)
+    public static void resetSecret(int id, String key, View loader)
     {
         try
         {
             Request request = new Request.Builder()
-                    .url(BASE_URL + "update.php?user_id=" + id + "&user_key=" + key)
+                    .url(BASE_URL + "updateFCMToken.php?user_id=" + id + "&user_key=" + key)
                     .build();
 
             client.newCall(request).enqueue(new Callback() {
@@ -280,6 +282,12 @@ public class ServerCommunication
                         SCNSettings.inst().save();
 
                         SCNApp.refreshAccountTab();
+
+                        if (json_int(json, "unack_count")>0)
+                        {
+                            ServerCommunication.requery(id, key, loader);
+                        }
+
                     } catch (Exception e) {
                         Log.e("SC:info", e.toString());
                         SCNApp.showToast("Communication with server failed", 4000);
@@ -294,6 +302,89 @@ public class ServerCommunication
         catch (Exception e)
         {
             Log.e("SC:info", e.toString());
+            SCNApp.showToast("Communication with server failed", 4000);
+        }
+    }
+
+    public static void requery(int id, String key, View loader)
+    {
+        try
+        {
+            Request request = new Request.Builder()
+                    .url(BASE_URL + "requery.php?user_id=" + id + "&user_key=" + key)
+                    .build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    Log.e("SC:requery", e.toString());
+                    SCNApp.showToast("Communication with server failed", 4000);
+                    SCNApp.runOnUiThread(() -> {
+                        if (loader != null) loader.setVisibility(View.GONE);
+                    });
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) {
+                    try (ResponseBody responseBody = response.body()) {
+                        if (!response.isSuccessful())
+                            throw new IOException("Unexpected code " + response);
+                        if (responseBody == null) throw new IOException("No response");
+
+                        String r = responseBody.string();
+                        Log.d("Server::Response", r);
+
+                        JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
+
+                        if (!json_bool(json, "success"))
+                        {
+                            SCNApp.showToast(json_str(json, "message"), 4000);
+                            return;
+                        }
+
+                        int count = json_int(json, "count");
+                        JSONArray arr = json.getJSONArray("data");
+                        for (int i = 0; i < count; i++)
+                        {
+                            JSONObject o = arr.getJSONObject(0);
+
+                            long time         = json_lng(o, "timestamp");
+                            String title      = json_str(o, "title");
+                            String content    = json_str(o, "body");
+                            PriorityEnum prio = PriorityEnum.parseAPI(json_int(o, "priority"));
+                            long scn_id       = json_lng(o, "scn_msg_id");
+
+                            FBMService.recieveData(time, title, content, prio, scn_id, true);
+                        }
+
+                        SCNSettings.inst().user_id        = json_int(json, "user_id");
+                        SCNSettings.inst().quota_curr     = json_int(json, "quota");
+                        SCNSettings.inst().quota_max      = json_int(json, "quota_max");
+                        SCNSettings.inst().promode_server = json_bool(json, "is_pro");
+                        if (!json_bool(json, "fcm_token_set")) SCNSettings.inst().fcm_token_server = "";
+                        SCNSettings.inst().save();
+
+                        SCNApp.refreshAccountTab();
+
+                        if (json_int(json, "unack_count")>0)
+                        {
+                            ServerCommunication.requery(id, key, loader);
+                        }
+
+                    } catch (Exception e) {
+                        Log.e("SC:info", e.toString());
+                        SCNApp.showToast("Communication with server failed", 4000);
+                    } finally {
+                        SCNApp.runOnUiThread(() -> {
+                            if (loader != null) loader.setVisibility(View.GONE);
+                        });
+                    }
+                }
+            });
+        }
+        catch (Exception e)
+        {
+            Log.e("SC:requery", e.toString());
             SCNApp.showToast("Communication with server failed", 4000);
         }
     }
@@ -370,8 +461,24 @@ public class ServerCommunication
                 }
 
                 @Override
-                public void onResponse(Call call, Response response) {
-                    // ????
+                public void onResponse(Call call, Response response)
+                {
+                    try (ResponseBody responseBody = response.body()) {
+                        if (!response.isSuccessful())
+                            throw new IOException("Unexpected code " + response);
+                        if (responseBody == null) throw new IOException("No response");
+
+                        String r = responseBody.string();
+                        Log.d("Server::Response", r);
+
+                        JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
+
+                        if (!json_bool(json, "success")) SCNApp.showToast(json_str(json, "message"), 4000);
+
+                    } catch (Exception e) {
+                        Log.e("SC:ack", e.toString());
+                        SCNApp.showToast("Communication with server failed", 4000);
+                    }
                 }
             });
         }
@@ -394,6 +501,11 @@ public class ServerCommunication
     private static int json_int(JSONObject o, String key) throws JSONException
     {
         return o.getInt(key);
+    }
+
+    private static long json_lng(JSONObject o, String key) throws JSONException
+    {
+        return o.getLong(key);
     }
 
     private static String json_str(JSONObject o, String key) throws JSONException

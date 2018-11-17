@@ -45,7 +45,7 @@ if ($ispro)
 	$stmt = $pdo->prepare('UPDATE users SET is_pro=0, pro_token=NULL WHERE user_id <> :uid AND pro_token = :ptk');
 	$stmt->execute(['uid' => $user_id, 'ptk' => $pro_token]);
 
-	echo json_encode(
+	api_return(200,
 	[
 		'success'  => true,
 		'user_id'  => $user_id,
@@ -54,7 +54,6 @@ if ($ispro)
 		'is_pro'   => true,
 		'message'  => 'user updated'
 	]);
-	return 0;
 }
 else
 {
@@ -63,7 +62,7 @@ else
 	$stmt = $pdo->prepare('UPDATE users SET timestamp_accessed=NOW(), is_pro=0, pro_token=NULL WHERE user_id = :uid');
 	$stmt->execute(['uid' => $user_id]);
 
-	echo json_encode(
+	api_return(200,
 	[
 		'success'  => true,
 		'user_id'  => $user_id,
@@ -72,5 +71,4 @@ else
 		'is_pro'   => false,
 		'message'  => 'user updated'
 	]);
-	return 0;
 }

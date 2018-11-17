@@ -37,11 +37,10 @@ if (count($datas)<=0) die(json_encode(['success' => false, 'errid'=>301, 'messag
 $stmt = $pdo->prepare('UPDATE messages SET ack=1 WHERE scn_message_id=:smid AND sender_user_id=:uid');
 $stmt->execute(['smid' => $scn_msg_id, 'uid' => $user_id]);
 
-echo json_encode(
+api_return(200,
 [
 	'success'        => true,
 	'prev_ack'       => $datas[0]['ack'],
 	'new_ack'        => 1,
 	'message'        => 'ok'
 ]);
-return 0;
