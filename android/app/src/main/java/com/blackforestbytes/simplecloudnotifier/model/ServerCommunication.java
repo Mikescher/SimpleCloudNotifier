@@ -357,20 +357,6 @@ public class ServerCommunication
                             FBMService.recieveData(time, title, content, prio, scn_id, true);
                         }
 
-                        SCNSettings.inst().user_id        = json_int(json, "user_id");
-                        SCNSettings.inst().quota_curr     = json_int(json, "quota");
-                        SCNSettings.inst().quota_max      = json_int(json, "quota_max");
-                        SCNSettings.inst().promode_server = json_bool(json, "is_pro");
-                        if (!json_bool(json, "fcm_token_set")) SCNSettings.inst().fcm_token_server = "";
-                        SCNSettings.inst().save();
-
-                        SCNApp.refreshAccountTab();
-
-                        if (json_int(json, "unack_count")>0)
-                        {
-                            ServerCommunication.requery(id, key, loader);
-                        }
-
                     } catch (Exception e) {
                         Log.e("SC:info", e.toString());
                         SCNApp.showToast("Communication with server failed", 4000);
