@@ -171,6 +171,9 @@ public class NotificationService
         mBuilder.setShowWhen(true);
         mBuilder.setWhen(msg.Timestamp * 1000);
         mBuilder.setAutoCancel(true);
+        mBuilder.setCategory(Notification.CATEGORY_MESSAGE);
+        mBuilder.setStyle(new NotificationCompat.InboxStyle());
+        mBuilder.setGroup(prio.toString());
 
         if (msg.Priority == PriorityEnum.LOW)    mBuilder.setPriority(NotificationCompat.PRIORITY_LOW);
         if (msg.Priority == PriorityEnum.NORMAL) mBuilder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -198,7 +201,7 @@ public class NotificationService
 
         Notification n = mBuilder.build();
 
-        if (mNotificationManager != null) mNotificationManager.notify(0, n);
+        if (mNotificationManager != null) mNotificationManager.notify((int)msg.SCN_ID, n);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
