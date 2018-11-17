@@ -55,7 +55,7 @@ function send()
 			else
 			{
 				window.location.href =
-					'/index_sent.php' +
+					'/message_sent.php' +
 					'?ok=' + 1 +
 					'&message_count=' + resp.messagecount +
 					'&quota=' + resp.quota +

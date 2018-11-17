@@ -22,7 +22,7 @@
 	<form id="mainpnl">
 
 		<a tabindex="-1" href="https://play.google.com/store/apps/details?id=com.blackforestbytes.simplecloudnotifier" class="button bordered" id="tl_link"><span class="icn-google-play"></span></a>
-		<a tabindex="-1" href="/index_api.php" class="button bordered" id="tr_link">API</a>
+		<a tabindex="-1" href="/api.php" class="button bordered" id="tr_link">API</a>
 
         <a tabindex="-1" href="/" class="linkcaption"><h1>Simple Cloud Notifier</h1></a>
 

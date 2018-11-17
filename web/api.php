@@ -40,7 +40,7 @@
     --data "title={message_title}"            \
     https://scn.blackforestbytes.com/send.php</pre>
 
-        <a href="/index_more.php" class="button bordered tertiary" style="float: right; min-width: 100px; text-align: center">More</a>
+        <a href="/api_more.php" class="button bordered tertiary" style="float: right; min-width: 100px; text-align: center">More</a>
 
     </div>
 </body>
