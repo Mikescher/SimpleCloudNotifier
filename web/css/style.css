@@ -238,7 +238,8 @@ table.scode_table th:nth-child(2) {
     margin-top: 1.75rem;
 }
 
-.linkcaption:hover {
+.linkcaption:hover,
+.linkcaption:focus {
     text-decoration: none;
 }
 
