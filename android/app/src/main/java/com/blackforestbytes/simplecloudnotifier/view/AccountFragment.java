@@ -105,7 +105,7 @@ public class AccountFragment extends Fragment
 
         v.findViewById(R.id.btnQR).setOnClickListener(cv ->
         {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(SCNSettings.inst().createOnlineURL()));
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(SCNSettings.inst().createOnlineURL(true)));
             startActivity(browserIntent);
         });
 
@@ -141,7 +141,7 @@ public class AccountFragment extends Fragment
             tvUserID.setText(String.valueOf(s.user_id));
             tvUserKey.setText(s.user_key);
             tvQuota.setText(String.format("%d / %d", s.quota_curr, s.quota_max));
-            btnQR.setImageBitmap(QRCode.from(s.createOnlineURL()).to(ImageType.PNG).withSize(512, 512).bitmap());
+            btnQR.setImageBitmap(QRCode.from(s.createOnlineURL(false)).to(ImageType.PNG).withSize(512, 512).bitmap());
             ivQuota.setColorFilter(s.quota_curr>=s.quota_max ? Color.rgb(200, 0, 0) : Color.rgb(128, 128, 128));
         }
         else

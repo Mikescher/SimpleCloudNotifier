@@ -163,10 +163,12 @@ public class SCNSettings
         return user_id>=0 && user_key != null && !user_key.isEmpty();
     }
 
-    public String createOnlineURL()
+    public String createOnlineURL(boolean longurl)
     {
-        if (!isConnected()) return ServerCommunication.BASE_URL + "index.php";
-        return ServerCommunication.BASE_URL + "index.php?preset_user_id="+user_id+"&preset_user_key="+user_key;
+        String base = longurl ? ServerCommunication.PAGE_URL_LONG : ServerCommunication.PAGE_URL_SHORT;
+
+        if (!isConnected()) return base;
+        return base + "index.php?preset_user_id="+user_id+"&preset_user_key="+user_key;
     }
 
     public void setServerToken(String token, View loader)

@@ -27,7 +27,9 @@ import okhttp3.ResponseBody;
 
 public class ServerCommunication
 {
-    public static final String BASE_URL = /*SCNApp.LOCAL_DEBUG ? "http://localhost:1010/" : */"https://scn.blackforestbytes.com/api/";
+    public static final String PAGE_URL_LONG  = "https://simplecloudnotifier.blackforestbytes.com/";
+    public static final String PAGE_URL_SHORT = "https://scn.blackforestbytes.com/";
+    public static final String BASE_URL = "https://scn.blackforestbytes.com/api/";
 
     private static final OkHttpClient client = new OkHttpClient();
 
