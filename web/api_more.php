@@ -1,5 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+<?php
+if (file_exists('/var/www/openwebanalytics/owa_php.php'))
+{
+	require_once('/var/www/openwebanalytics/owa_php.php');
+	$owa = new owa_php();
+	$owa->setSiteId('6386b0efc00d2e84ef642525345e1207');
+	$owa->setPageTitle('API (Long)');
+	$owa->trackPageView();
+}
+?>
 <head>
 	<meta charset="utf-8">
 	<link rel="stylesheet" href="/css/mini-default.min.css"> <!-- https://minicss.org/docs -->
