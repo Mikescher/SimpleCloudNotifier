@@ -85,7 +85,7 @@ public class NotificationService
             NotificationChannel channel2  = notifman.getNotificationChannel(CHANNEL_P2_ID);
             if (channel2 == null)
             {
-                channel2 = new NotificationChannel(CHANNEL_P1_ID, "Push notifications (high priority)", NotificationManager.IMPORTANCE_DEFAULT);
+                channel2 = new NotificationChannel(CHANNEL_P2_ID, "Push notifications (high priority)", NotificationManager.IMPORTANCE_DEFAULT);
                 channel2.setDescription("Push notifications from the server with low priority.\nGo to the in-app settings to configure ringtone, volume and vibrations");
                 channel2.setSound(null, null);
                 channel2.setVibrationPattern(null);
