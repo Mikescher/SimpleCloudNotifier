@@ -150,9 +150,13 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         prefMsgHighLedColor_value     = v.findViewById(R.id.prefMsgHighLedColor_value);
         prefMsgHighLedColor_container = v.findViewById(R.id.prefMsgHighLedColor_container);
         prefMsgHighEnableVibrations   = v.findViewById(R.id.prefMsgHighEnableVibrations);
-        prefMsgHighForceVolume         = v.findViewById(R.id.prefMsgHighForceVolume);
-        prefMsgHighVolume              = v.findViewById(R.id.prefMsgHighVolume);
-        prefMsgHighVolumeTest          = v.findViewById(R.id.btnHighVolumeTest);
+        prefMsgHighForceVolume        = v.findViewById(R.id.prefMsgHighForceVolume);
+        prefMsgHighVolume             = v.findViewById(R.id.prefMsgHighVolume);
+        prefMsgHighVolumeTest         = v.findViewById(R.id.btnHighVolumeTest);
+
+        ArrayAdapter<Integer> plcsa = new ArrayAdapter<>(v.getContext(), android.R.layout.simple_spinner_item, SCNSettings.CHOOSABLE_CACHE_SIZES);
+        plcsa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        prefLocalCacheSize.setAdapter(plcsa);
     }
 
     private void updateUI()
@@ -168,10 +172,7 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         prefUpgradeAccount_info.setVisibility(SCNSettings.inst().promode_local ? View.GONE    : View.VISIBLE);
         prefUpgradeAccount_msg.setVisibility( SCNSettings.inst().promode_local ? View.VISIBLE : View.GONE   );
 
-        ArrayAdapter<Integer> plcsa = new ArrayAdapter<>(c, android.R.layout.simple_spinner_item, SCNSettings.CHOOSABLE_CACHE_SIZES);
-        plcsa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        prefLocalCacheSize.setAdapter(plcsa);
-        prefLocalCacheSize.setSelection(getCacheSizeIndex(s.LocalCacheSize));
+        if (prefLocalCacheSize.getSelectedItemPosition() != getCacheSizeIndex(s.LocalCacheSize)) prefLocalCacheSize.setSelection(getCacheSizeIndex(s.LocalCacheSize));
 
         if (prefMsgLowEnableSound.isChecked() != s.PriorityLow.EnableSound) prefMsgLowEnableSound.setChecked(s.PriorityLow.EnableSound);
         if (!prefMsgLowRingtone_value.getText().equals(s.PriorityLow.SoundName)) prefMsgLowRingtone_value.setText(s.PriorityLow.SoundName);
