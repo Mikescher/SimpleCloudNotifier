@@ -65,7 +65,8 @@ public class NotificationService
                 channel0.setDescription("Push notifications from the server with low priority.\nGo to the in-app settings to configure ringtone, volume and vibrations");
                 channel0.setSound(null, null);
                 channel0.setVibrationPattern(null);
-                channel0.setLightColor(Color.BLUE);
+                channel0.setLightColor(Color.CYAN);
+                channel0.enableLights(true);
                 notifman.createNotificationChannel(channel0);
             }
         }
@@ -77,7 +78,8 @@ public class NotificationService
                 channel1.setDescription("Push notifications from the server with low priority.\nGo to the in-app settings to configure ringtone, volume and vibrations");
                 channel1.setSound(null, null);
                 channel1.setVibrationPattern(null);
-                channel1.setLightColor(Color.BLUE);
+                channel1.setLightColor(Color.CYAN);
+                channel1.enableLights(true);
                 notifman.createNotificationChannel(channel1);
             }
         }
@@ -89,7 +91,9 @@ public class NotificationService
                 channel2.setDescription("Push notifications from the server with low priority.\nGo to the in-app settings to configure ringtone, volume and vibrations");
                 channel2.setSound(null, null);
                 channel2.setVibrationPattern(null);
-                channel2.setLightColor(Color.BLUE);
+                channel2.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+                channel2.setLightColor(Color.CYAN);
+                channel2.enableLights(true);
                 notifman.createNotificationChannel(channel2);
             }
         }
@@ -115,9 +119,9 @@ public class NotificationService
             {
                 Vibrator v = (Vibrator) SCNApp.getContext().getSystemService(Context.VIBRATOR_SERVICE);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    v.vibrate(VibrationEffect.createOneShot(1500, VibrationEffect.DEFAULT_AMPLITUDE));
+                    v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
                 } else {
-                    v.vibrate(1500);
+                    v.vibrate(500);
                 }
             }
         }
@@ -254,7 +258,7 @@ public class NotificationService
         if (ns.EnableVibration)
         {
             Vibrator v = (Vibrator) SCNApp.getContext().getSystemService(Context.VIBRATOR_SERVICE);
-            v.vibrate(VibrationEffect.createOneShot(1500, VibrationEffect.DEFAULT_AMPLITUDE));
+            v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
         }
 
         //if (ns.EnableLED) {  } // no LED in Android-O -- configure via Channel
