@@ -99,4 +99,6 @@ public class SCNApp extends Application implements LifecycleObserver
     }
 }
 
-//TODO TabLayout indicator does not corretly animate when directly clicking on tabs
+//TODO TabLayout indicator does not correctly animate when directly clicking on tabs
+//TODO Vibrate is a single long and not two short ?
+//TODO Crash (see report)

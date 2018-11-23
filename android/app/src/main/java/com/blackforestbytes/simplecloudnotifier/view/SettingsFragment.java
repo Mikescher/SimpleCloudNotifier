@@ -341,7 +341,7 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
     {
         SCNSettings.inst().save();
         updateUI();
-        SCNApp.getMainActivity().adpTabs.tab1.touchHelper.updateEnabled();
+        SCNApp.getMainActivity().adpTabs.tab1.updateDeleteSwipeEnabled();
     }
 
     private void onUpgradeAccount()

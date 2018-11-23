@@ -77,4 +77,9 @@ public class NotificationsFragment extends Fragment implements MessageAdapterTou
             snackbar.show();
         }
     }
+
+    public void updateDeleteSwipeEnabled()
+    {
+        if (touchHelper != null) touchHelper.updateEnabled();
+    }
 }
