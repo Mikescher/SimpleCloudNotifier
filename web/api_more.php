@@ -204,7 +204,7 @@ if (file_exists('/var/www/openwebanalytics/owa_php.php'))
                 You can modify the displayed timestamp of a message by sending the <code>timestamp</code> parameter. The format must be a valid UNIX timestamp (elapsed seconds since 1970-01-01 GMT)
             </p>
             <p>
-                But the custom timestamp must be within 48 hoours of the current time. This parameter is only intended to supply a more precise value in case the message sending was delayed
+                The custom timestamp must be within 48 hours of the current time. This parameter is only intended to supply a more precise value in case the message sending was delayed.
             </p>
             <pre>curl                                          \
     --data "user_id={userid}"                 \
@@ -212,9 +212,6 @@ if (file_exists('/var/www/openwebanalytics/owa_php.php'))
     --data "title={message_title}"            \
     --data "timestamp={unix_timestamp}"       \
     https://scn.blackforestbytes.com/send.php</pre>
-            <p>
-                Be aware that the server only saves send messages for a short amount of time. Because of that you can only use this to prevent duplicates in a short time-frame, older messages with the same ID are probably already deleted and the message will be send again.
-            </p>
         </div>
 
         <h2>Bash script example</h2>
