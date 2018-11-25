@@ -6,8 +6,6 @@ try
 {
 
 //------------------------------------------------------------------
-//sleep(1);
-//------------------------------------------------------------------
 
 	if ($_SERVER['REQUEST_METHOD'] !== 'POST') api_return(400, ['success' => false, 'error' =>  ERR::REQ_METHOD, 'errhighlight' => -1, 'message' => 'Invalid request method (must be POST)']);
 
@@ -19,15 +17,17 @@ try
 
 //------------------------------------------------------------------
 
-
 	$user_id  = $INPUT['user_id'];
 	$user_key = $INPUT['user_key'];
 	$message  = $INPUT['title'];
-	$content  = isset($INPUT['content'])  ? $INPUT['content']  : '';
-	$priority = isset($INPUT['priority']) ? $INPUT['priority'] : '1';
-	$usrmsgid = isset($INPUT['msg_id'])   ? $INPUT['msg_id'] : null;
+	$content  = isset($INPUT['content'])   ? $INPUT['content']   : '';
+	$priority = isset($INPUT['priority'])  ? $INPUT['priority']  : '1';
+	$usrmsgid = isset($INPUT['msg_id'])    ? $INPUT['msg_id']    : null;
+	$time     = isset($INPUT['timestamp']) ? $INPUT['timestamp'] : time();
 
 //------------------------------------------------------------------
+
+	if (abs($time - time()) > 60*60*24*2) api_return(400, ['success' => false, 'error' => ERR::TIMESTAMP_OUT_OF_RANGE, 'errhighlight' => -1,  'message' => 'The timestamp mus be within 24 hours of now()']);
 
 	if ($priority !== '0' && $priority !== '1' && $priority !== '2') api_return(400, ['success' => false, 'error' => ERR::INVALID_PRIO, 'errhighlight' => 105, 'message' => 'Invalid priority']);
 
@@ -95,13 +95,14 @@ try
 	$pdo->beginTransaction();
 
 
-	$stmt = $pdo->prepare('INSERT INTO messages (sender_user_id, title, content, priority, fcm_message_id, usr_message_id) VALUES (:suid, :t, :c, :p, :fmid, :umid)');
+	$stmt = $pdo->prepare('INSERT INTO messages (sender_user_id, title, content, priority, sendtime, fcm_message_id, usr_message_id) VALUES (:suid, :t, :c, :p, :ts, :fmid, :umid)');
 	$stmt->execute(
 	[
 		'suid' => $user_id,
 		't'    => $message,
 		'c'    => $content,
 		'p'    => $priority,
+		'ts'   => $time,
 		'fmid' => null,
 		'umid' => $usrmsgid,
 	]);
@@ -125,7 +126,7 @@ try
 			'body'       => str_limit($content, 1900),
 			'trimmed'    => (strlen($content) > 1900),
 			'priority'   => $priority,
-			'timestamp'  => time(),
+			'timestamp'  => $time,
 			'usr_msg_id' => $usrmsgid,
 			'scn_msg_id' => $scn_msg_id,
 		]

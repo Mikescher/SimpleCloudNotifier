@@ -198,6 +198,25 @@ if (file_exists('/var/www/openwebanalytics/owa_php.php'))
             </p>
         </div>
 
+        <h2>Custom Time</h2>
+        <div class="section">
+            <p>
+                You can modify the displayed timestamp of a message by sending the <code>timestamp</code> parameter. The format must be a valid UNIX timestamp (elapsed seconds since 1970-01-01 GMT)
+            </p>
+            <p>
+                But the custom timestamp must be within 48 hoours of the current time. This parameter is only intended to supply a more precise value in case the message sending was delayed
+            </p>
+            <pre>curl                                          \
+    --data "user_id={userid}"                 \
+    --data "user_key={userkey}"               \
+    --data "title={message_title}"            \
+    --data "timestamp={unix_timestamp}"       \
+    https://scn.blackforestbytes.com/send.php</pre>
+            <p>
+                Be aware that the server only saves send messages for a short amount of time. Because of that you can only use this to prevent duplicates in a short time-frame, older messages with the same ID are probably already deleted and the message will be send again.
+            </p>
+        </div>
+
         <h2>Bash script example</h2>
         <div class="section">
             <p>
@@ -227,6 +246,7 @@ user_key=<span style="color:#2a00ff; ">"????????????????????????????????????????
 
 title=$1
 content=<span style="color:#2a00ff; ">""</span>
+sendtime=$(date +%s)
 
 <span style="color:#7f0055; font-weight:bold; ">if</span> [ <span style="color:#2a00ff; ">"$#"</span> -gt 1 ]; <span style="color:#7f0055; font-weight:bold; ">then</span>
     content=$2
@@ -243,7 +263,7 @@ usr_msg_id=$(uuidgen)
 <span style="color:#7f0055; font-weight:bold; ">while</span> true ; <span style="color:#7f0055; font-weight:bold; ">do</span>
 
     curlresp=$(curl -s -o <span style="color:#3f3fbf; ">/dev/null</span> -w <span style="color:#2a00ff; ">"%{http_code}"</span> <span style="color:#2a00ff; ">\</span>
-                    -d <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">user_id</span><span style="color:#2a00ff; ">=</span><span style="color:#2a00ff; ">$user_id</span><span style="color:#2a00ff; ">"</span> -d <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">user_key</span><span style="color:#2a00ff; ">=</span><span style="color:#2a00ff; ">$user_key</span><span style="color:#2a00ff; ">"</span> -d <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">title</span><span style="color:#2a00ff; ">=</span><span style="color:#2a00ff; ">$title</span><span style="color:#2a00ff; ">"</span> <span style="color:#2a00ff; ">\</span>
+                    -d <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">user_id</span><span style="color:#2a00ff; ">=</span><span style="color:#2a00ff; ">$user_id</span><span style="color:#2a00ff; ">"</span> -d <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">user_key</span><span style="color:#2a00ff; ">=</span><span style="color:#2a00ff; ">$user_key</span><span style="color:#2a00ff; ">"</span> -d <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">title</span><span style="color:#2a00ff; ">=</span><span style="color:#2a00ff; ">$title</span><span style="color:#2a00ff; ">"</span> -d <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">timestamp</span><span style="color:#2a00ff; ">=</span><span style="color:#2a00ff; ">$sendtime</span><span style="color:#2a00ff; ">"</span> <span style="color:#2a00ff; ">\</span>
                     -d <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">content</span><span style="color:#2a00ff; ">=</span><span style="color:#2a00ff; ">$content</span><span style="color:#2a00ff; ">"</span> -d <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">priority</span><span style="color:#2a00ff; ">=</span><span style="color:#2a00ff; ">$priority</span><span style="color:#2a00ff; ">"</span> -d <span style="color:#2a00ff; ">"</span><span style="color:#2a00ff; ">msg_id</span><span style="color:#2a00ff; ">=</span><span style="color:#2a00ff; ">$usr_msg_id</span><span style="color:#2a00ff; ">"</span> <span style="color:#2a00ff; ">\</span>
                     https:<span style="color:#3f3fbf; ">/</span><span style="color:#3f3fbf; ">/scn.blackforestbytes.com/send.php</span>)
 

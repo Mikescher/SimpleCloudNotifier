@@ -4,29 +4,30 @@ include('lib/httpful.phar');
 
 class ERR
 {
-	const NO_ERROR             = 0000;
+	const NO_ERROR                = 0000;
 
-	const MISSING_UID          = 1101;
-	const MISSING_TOK          = 1102;
-	const MISSING_TITLE        = 1103;
-	const INVALID_PRIO         = 1104;
-	const REQ_METHOD           = 1105;
+	const MISSING_UID             = 1101;
+	const MISSING_TOK             = 1102;
+	const MISSING_TITLE           = 1103;
+	const INVALID_PRIO            = 1104;
+	const REQ_METHOD              = 1105;
 
-	const NO_TITLE             = 1201;
-	const TITLE_TOO_LONG       = 1202;
-	const CONTENT_TOO_LONG     = 1203;
-	const USR_MSG_ID_TOO_LONG  = 1204;
+	const NO_TITLE                = 1201;
+	const TITLE_TOO_LONG          = 1202;
+	const CONTENT_TOO_LONG        = 1203;
+	const USR_MSG_ID_TOO_LONG     = 1204;
+	const TIMESTAMP_OUT_OF_RANGE  = 1205;
 
-	const USER_NOT_FOUND       = 1301;
-	const USER_AUTH_FAILED     = 1302;
+	const USER_NOT_FOUND          = 1301;
+	const USER_AUTH_FAILED        = 1302;
 
-	const NO_DEVICE_LINKED     = 1401;
+	const NO_DEVICE_LINKED        = 1401;
 
-	const QUOTA_REACHED        = 2101;
+	const QUOTA_REACHED           = 2101;
 
-	const FIREBASE_COM_FAILED  = 9901;
-	const FIREBASE_COM_ERRORED = 9902;
-	const INTERNAL_EXCEPTION   = 9903;
+	const FIREBASE_COM_FAILED     = 9901;
+	const FIREBASE_COM_ERRORED    = 9902;
+	const INTERNAL_EXCEPTION      = 9903;
 }
 
 class Statics

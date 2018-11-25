@@ -21,6 +21,7 @@ user_key="????????????????????????????????????????????????????????????????"
 
 title=$1
 content=""
+sendtime=$(date +%s)
 
 if [ "$#" -gt 1 ]; then
     content=$2
@@ -37,7 +38,7 @@ usr_msg_id=$(uuidgen)
 while true ; do
 
     curlresp=$(curl -s -o /dev/null -w "%{http_code}" \
-                    -d "user_id=$user_id" -d "user_key=$user_key" -d "title=$title" \
+                    -d "user_id=$user_id" -d "user_key=$user_key" -d "title=$title" -d "timestamp=$sendtime" \
                     -d "content=$content" -d "priority=$priority" -d "msg_id=$usr_msg_id" \
                     https://scn.blackforestbytes.com/send.php)
     
