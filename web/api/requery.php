@@ -41,7 +41,7 @@ foreach ($nonacks_sql as $nack)
 		'title'      => $nack['title'],
 		'body'       => $nack['content'],
 		'priority'   => $nack['priority'],
-		'timestamp'  => strtotime($nack['timestamp']),
+		'timestamp'  => $nack['sendtime'],
 		'usr_msg_id' => $nack['usr_message_id'],
 		'scn_msg_id' => $nack['scn_message_id'],
 	];
