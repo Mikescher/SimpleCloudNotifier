@@ -9,6 +9,8 @@ import java.util.TimeZone;
 
 public class CMessage
 {
+    public boolean IsExpandedInAdapter = false;
+
     public final long SCN_ID;
     public final long Timestamp;
     public final String Title;

@@ -136,6 +136,8 @@ public class MessageAdapter extends RecyclerView.Adapter
             tvTitle.setText(msg.Title);
             tvMessage.setText(msg.Content);
 
+            tvMessage.setMaxLines(msg.IsExpandedInAdapter ? 999 : 6);
+
             switch (msg.Priority)
             {
                 case LOW:
@@ -160,15 +162,25 @@ public class MessageAdapter extends RecyclerView.Adapter
         @Override
         public void onClick(View v)
         {
+            if (data.IsExpandedInAdapter)
+            {
+                data.IsExpandedInAdapter=false;
+                tvMessage.setMaxLines(6);
+                return;
+            }
+
             for (MessagePresenter holder : MessageAdapter.this.viewHolders.keySet())
             {
                 if (holder == null) continue;
                 if (holder == this) continue;
                 if (holder.tvMessage == null) continue;
-                if (holder.tvMessage.getMaxLines() == 6) continue;
+                if (!holder.data.IsExpandedInAdapter) continue;
+
+                holder.data.IsExpandedInAdapter=false;
                 holder.tvMessage.setMaxLines(6);
             }
 
+            data.IsExpandedInAdapter=true;
             tvMessage.setMaxLines(9999);
         }
     }
