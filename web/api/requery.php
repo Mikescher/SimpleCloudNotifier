@@ -28,7 +28,7 @@ if ($data['user_key'] !== $user_key) die(json_encode(['success' => false, 'errid
 
 //-------------------
 
-$stmt = $pdo->prepare('SELECT * FROM messages WHERE ack=0 AND sender_user_id=:uid ORDER BY `timestamp` DESC LIMIT 16');
+$stmt = $pdo->prepare('SELECT * FROM messages WHERE ack=0 AND sender_user_id=:uid ORDER BY `timestamp_real` DESC LIMIT 16');
 $stmt->execute(['uid' => $user_id]);
 $nonacks_sql = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
