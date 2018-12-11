@@ -35,4 +35,5 @@
     <string name="volume_icon">Volume icon</string>
     <string name="play_test_sound">Play test sound</string>
     <string name="delete">DELETE</string>
+    <string name="title_activity_query_log">QueryLogActivity</string>
 </resources>

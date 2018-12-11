@@ -4,12 +4,11 @@ import android.util.Log;
 import android.view.View;
 
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
-import com.blackforestbytes.simplecloudnotifier.lib.datatypes.Tuple5;
-import com.blackforestbytes.simplecloudnotifier.lib.lambda.Func1to0;
 import com.blackforestbytes.simplecloudnotifier.lib.lambda.Func5to0;
 import com.blackforestbytes.simplecloudnotifier.lib.string.Str;
 import com.blackforestbytes.simplecloudnotifier.service.FBMService;
 
+import org.joda.time.Instant;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,20 +47,20 @@ public class ServerCommunication
                 @Override
                 public void onFailure(Call call, IOException e)
                 {
-                    Log.e("SC:register", e.toString());
-                    SCNApp.showToast("Communication with server failed", 4000);
+                    handleError("register", call, null, Str.Empty, true, e);
                     SCNApp.runOnUiThread(() -> { if (loader!=null)loader.setVisibility(View.GONE); });
                 }
 
                 @Override
                 public void onResponse(Call call, Response response)
                 {
+                    String r = Str.Empty;
                     try (ResponseBody responseBody = response.body())
                     {
                         if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
                         if (responseBody ==  null) throw new IOException("No response");
 
-                        String r = responseBody.string();
+                        r = responseBody.string();
                         Log.d("Server::Response", request.url().toString()+"\n"+r);
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
@@ -81,11 +80,12 @@ public class ServerCommunication
                         SCNSettings.inst().save();
 
                         SCNApp.refreshAccountTab();
+
+                        handleSuccess("register", call, response, r);
                     }
                     catch (Exception e)
                     {
-                        Log.e("SC:register", e.toString());
-                        SCNApp.showToast("Communication with server failed", 4000);
+                        handleError("register", call, response, r, false, e);
                     }
                     finally
                     {
@@ -96,8 +96,7 @@ public class ServerCommunication
         }
         catch (Exception e)
         {
-            Log.e("SC:register", e.toString());
-            SCNApp.showToast("Communication with server failed", 4000);
+            handleError("register", null, null, Str.Empty, false, e);
         }
     }
 
@@ -114,20 +113,20 @@ public class ServerCommunication
                 @Override
                 public void onFailure(Call call, IOException e)
                 {
-                    Log.e("SC:update_1", e.toString());
-                    SCNApp.showToast("Communication with server failed", 4000);
+                    handleError("update<1>", call, null, Str.Empty, true, e);
                     SCNApp.runOnUiThread(() -> { if (loader!=null)loader.setVisibility(View.GONE); });
                 }
 
                 @Override
                 public void onResponse(Call call, Response response)
                 {
+                    String r = Str.Empty;
                     try (ResponseBody responseBody = response.body())
                     {
                         if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
                         if (responseBody ==  null) throw new IOException("No response");
 
-                        String r = responseBody.string();
+                        r = responseBody.string();
                         Log.d("Server::Response", request.url().toString()+"\n"+r);
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
@@ -147,10 +146,12 @@ public class ServerCommunication
                         SCNSettings.inst().save();
 
                         SCNApp.refreshAccountTab();
+
+                        handleSuccess("update<1>", call, response, r);
                     }
                     catch (Exception e)
                     {
-                        Log.e("SC:update_1", e.toString());
+                        handleError("update<1>", call, response, r, false, e);
                         SCNApp.showToast("Communication with server failed", 4000);
                     }
                     finally
@@ -162,8 +163,7 @@ public class ServerCommunication
         }
         catch (Exception e)
         {
-            Log.e("SC:update_1", e.toString());
-            SCNApp.showToast("Communication with server failed", 4000);
+            handleError("update<1>", null, null, Str.Empty, false, e);
         }
     }
 
@@ -177,19 +177,23 @@ public class ServerCommunication
 
             client.newCall(request).enqueue(new Callback() {
                 @Override
-                public void onFailure(Call call, IOException e) {
-                    Log.e("SC:update_2", e.toString());
+                public void onFailure(Call call, IOException e)
+                {
+                    handleError("update<1>", call, null, Str.Empty, true, e);
                     SCNApp.showToast("Communication with server failed", 4000);
                 }
 
                 @Override
-                public void onResponse(Call call, Response response) {
-                    try (ResponseBody responseBody = response.body()) {
+                public void onResponse(Call call, Response response)
+                {
+                    String r = Str.Empty;
+                    try (ResponseBody responseBody = response.body())
+                    {
                         if (!response.isSuccessful())
                             throw new IOException("Unexpected code " + response);
                         if (responseBody == null) throw new IOException("No response");
 
-                        String r = responseBody.string();
+                        r = responseBody.string();
                         Log.d("Server::Response", request.url().toString()+"\n"+r);
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
@@ -207,10 +211,16 @@ public class ServerCommunication
                         SCNSettings.inst().save();
 
                         SCNApp.refreshAccountTab();
-                    } catch (Exception e) {
-                        Log.e("SC:update_2", e.toString());
+
+                        handleSuccess("update<2>", call, response, r);
+                    }
+                    catch (Exception e)
+                    {
+                        handleError("update<2>", call, response, r, false, e);
                         SCNApp.showToast("Communication with server failed", 4000);
-                    } finally {
+                    }
+                    finally
+                    {
                         SCNApp.runOnUiThread(() -> {
                             if (loader != null) loader.setVisibility(View.GONE);
                         });
@@ -220,8 +230,7 @@ public class ServerCommunication
         }
         catch (Exception e)
         {
-            Log.e("SC:update_2", e.toString());
-            SCNApp.showToast("Communication with server failed", 4000);
+            handleError("update<2>", null, null, Str.Empty, false, e);
         }
     }
 
@@ -236,21 +245,23 @@ public class ServerCommunication
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    Log.e("SC:info", e.toString());
-                    SCNApp.showToast("Communication with server failed", 4000);
+                    handleError("info", call, null, Str.Empty, true, e);
                     SCNApp.runOnUiThread(() -> {
                         if (loader != null) loader.setVisibility(View.GONE);
                     });
                 }
 
                 @Override
-                public void onResponse(Call call, Response response) {
-                    try (ResponseBody responseBody = response.body()) {
+                public void onResponse(Call call, Response response)
+                {
+                    String r = Str.Empty;
+                    try (ResponseBody responseBody = response.body())
+                    {
                         if (!response.isSuccessful())
                             throw new IOException("Unexpected code " + response);
                         if (responseBody == null) throw new IOException("No response");
 
-                        String r = responseBody.string();
+                        r = responseBody.string();
                         Log.d("Server::Response", request.url().toString()+"\n"+r);
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
@@ -290,21 +301,23 @@ public class ServerCommunication
 
                         if (json_int(json, "unack_count")>0) ServerCommunication.requery(id, key, loader);
 
-                    } catch (Exception e) {
-                        Log.e("SC:info", e.toString());
+                        handleSuccess("info", call, response, r);
+                    }
+                    catch (Exception e)
+                    {
+                        handleError("info", call, response, r, false, e);
                         SCNApp.showToast("Communication with server failed", 4000);
-                    } finally {
-                        SCNApp.runOnUiThread(() -> {
-                            if (loader != null) loader.setVisibility(View.GONE);
-                        });
+                    }
+                    finally
+                    {
+                        SCNApp.runOnUiThread(() -> { if (loader != null) loader.setVisibility(View.GONE); });
                     }
                 }
             });
         }
         catch (Exception e)
         {
-            Log.e("SC:info", e.toString());
-            SCNApp.showToast("Communication with server failed", 4000);
+            handleError("info", null, null, Str.Empty, false, e);
         }
     }
 
@@ -319,21 +332,23 @@ public class ServerCommunication
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    Log.e("SC:requery", e.toString());
-                    SCNApp.showToast("Communication with server failed", 4000);
+                    handleError("requery", call, null, Str.Empty, true, e);
                     SCNApp.runOnUiThread(() -> {
                         if (loader != null) loader.setVisibility(View.GONE);
                     });
                 }
 
                 @Override
-                public void onResponse(Call call, Response response) {
-                    try (ResponseBody responseBody = response.body()) {
+                public void onResponse(Call call, Response response)
+                {
+                    String r = Str.Empty;
+                    try (ResponseBody responseBody = response.body())
+                    {
                         if (!response.isSuccessful())
                             throw new IOException("Unexpected code " + response);
                         if (responseBody == null) throw new IOException("No response");
 
-                        String r = responseBody.string();
+                        r = responseBody.string();
                         Log.d("Server::Response", request.url().toString()+"\n"+r);
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
@@ -359,10 +374,15 @@ public class ServerCommunication
                             FBMService.recieveData(time, title, content, prio, scn_id, true);
                         }
 
-                    } catch (Exception e) {
-                        Log.e("SC:info", e.toString());
+                        handleSuccess("requery", call, response, r);
+                    }
+                    catch (Exception e)
+                    {
+                        handleError("requery", call, response, r, false, e);
                         SCNApp.showToast("Communication with server failed", 4000);
-                    } finally {
+                    }
+                    finally
+                    {
                         SCNApp.runOnUiThread(() -> {
                             if (loader != null) loader.setVisibility(View.GONE);
                         });
@@ -372,8 +392,7 @@ public class ServerCommunication
         }
         catch (Exception e)
         {
-            Log.e("SC:requery", e.toString());
-            SCNApp.showToast("Communication with server failed", 4000);
+            handleError("requery", null, null, Str.Empty, false, e);
         }
     }
 
@@ -387,21 +406,25 @@ public class ServerCommunication
                     .url(BASE_URL + "upgrade.php?user_id=" + id + "&user_key=" + key + "&pro=" + pro + "&pro_token=" + URLEncoder.encode(pro_token, "utf-8"))
                     .build();
 
-            client.newCall(request).enqueue(new Callback() {
+            client.newCall(request).enqueue(new Callback()
+            {
                 @Override
-                public void onFailure(Call call, IOException e) {
-                    Log.e("SC:upgrade", e.toString());
-                    SCNApp.showToast("Communication with server failed", 4000);
+                public void onFailure(Call call, IOException e)
+                {
+                    handleError("upgrade", call, null, Str.Empty, true, e);
                 }
 
                 @Override
-                public void onResponse(Call call, Response response) {
-                    try (ResponseBody responseBody = response.body()) {
+                public void onResponse(Call call, Response response)
+                {
+                    String r = Str.Empty;
+                    try (ResponseBody responseBody = response.body())
+                    {
                         if (!response.isSuccessful())
                             throw new IOException("Unexpected code " + response);
                         if (responseBody == null) throw new IOException("No response");
 
-                        String r = responseBody.string();
+                        r = responseBody.string();
                         Log.d("Server::Response", request.url().toString()+"\n"+r);
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
@@ -418,10 +441,15 @@ public class ServerCommunication
                         SCNSettings.inst().save();
 
                         SCNApp.refreshAccountTab();
-                    } catch (Exception e) {
-                        Log.e("SC:upgrade", e.toString());
-                        SCNApp.showToast("Communication with server failed", 4000);
-                    } finally {
+
+                        handleSuccess("upgrade", call, response, r);
+                    }
+                    catch (Exception e)
+                    {
+                        handleError("upgrade", call, response, r, false, e);
+                    }
+                    finally
+                    {
                         SCNApp.runOnUiThread(() -> { if (loader != null) loader.setVisibility(View.GONE); });
                     }
                 }
@@ -429,8 +457,7 @@ public class ServerCommunication
         }
         catch (Exception e)
         {
-            e.printStackTrace();
-            SCNApp.showToast("Communication with server failed", 4000);
+            handleError("upgrade", null, null, Str.Empty, false, e);
         }
     }
 
@@ -442,37 +469,43 @@ public class ServerCommunication
                     .url(BASE_URL + "ack.php?user_id=" + id + "&user_key=" + key + "&scn_msg_id=" + msg_scn_id)
                     .build();
 
-            client.newCall(request).enqueue(new Callback() {
+            client.newCall(request).enqueue(new Callback()
+            {
                 @Override
-                public void onFailure(Call call, IOException e) {
-                    Log.e("SC:ack", e.toString());
+                public void onFailure(Call call, IOException e)
+                {
+                    handleError("ack", call, null, Str.Empty, true, e);
                 }
 
                 @Override
                 public void onResponse(Call call, Response response)
                 {
-                    try (ResponseBody responseBody = response.body()) {
+                    String r = Str.Empty;
+                    try (ResponseBody responseBody = response.body())
+                    {
                         if (!response.isSuccessful())
                             throw new IOException("Unexpected code " + response);
                         if (responseBody == null) throw new IOException("No response");
 
-                        String r = responseBody.string();
+                        r = responseBody.string();
                         Log.d("Server::Response", request.url().toString()+"\n"+r);
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
 
                         if (!json_bool(json, "success")) SCNApp.showToast(json_str(json, "message"), 4000);
 
-                    } catch (Exception e) {
-                        Log.e("SC:ack", e.toString());
-                        SCNApp.showToast("Communication with server failed", 4000);
+                        handleSuccess("ack", call, response, r);
+                    }
+                    catch (Exception e)
+                    {
+                        handleError("ack", call, response, r, false, e);
                     }
                 }
             });
         }
         catch (Exception e)
         {
-            Log.e("SC:ack", e.toString());
+            handleError("ack", null, null, Str.Empty, false, e);
         }
     }
 
@@ -487,21 +520,21 @@ public class ServerCommunication
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    Log.e("SC:expand", e.toString());
-                    SCNApp.showToast("Communication with server failed", 4000);
-                    SCNApp.runOnUiThread(() -> {
-                        if (loader != null) loader.setVisibility(View.GONE);
-                    });
+                    handleError("expand", call, null, Str.Empty, true, e);
+                    SCNApp.runOnUiThread(() -> { if (loader != null) loader.setVisibility(View.GONE); });
                 }
 
                 @Override
-                public void onResponse(Call call, Response response) {
-                    try (ResponseBody responseBody = response.body()) {
+                public void onResponse(Call call, Response response)
+                {
+                    String r = Str.Empty;
+                    try (ResponseBody responseBody = response.body())
+                    {
                         if (!response.isSuccessful())
                             throw new IOException("Unexpected code " + response);
                         if (responseBody == null) throw new IOException("No response");
 
-                        String r = responseBody.string();
+                        r = responseBody.string();
                         Log.d("Server::Response", request.url().toString()+"\n"+r);
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
@@ -522,21 +555,22 @@ public class ServerCommunication
 
                         okResult.invoke(title, content, prio, time, scn_id);
 
-                    } catch (Exception e) {
-                        Log.e("SC:expand", e.toString());
-                        SCNApp.showToast("Communication with server failed", 4000);
-                    } finally {
-                        SCNApp.runOnUiThread(() -> {
-                            if (loader != null) loader.setVisibility(View.GONE);
-                        });
+                        handleSuccess("expand", call, response, r);
+                    }
+                    catch (Exception e)
+                    {
+                        handleError("expand", call, response, r, false, e);
+                    }
+                    finally
+                    {
+                        SCNApp.runOnUiThread(() -> { if (loader != null) loader.setVisibility(View.GONE); });
                     }
                 }
             });
         }
         catch (Exception e)
         {
-            Log.e("SC:expand", e.toString());
-            SCNApp.showToast("Communication with server failed", 4000);
+            handleError("expand", null, null, Str.Empty, false, e);
         }
     }
 
@@ -563,5 +597,58 @@ public class ServerCommunication
     private static String json_str(JSONObject o, String key) throws JSONException
     {
         return o.getString(key);
+    }
+
+    private static void handleSuccess(String source, Call call, Response resp, String respBody)
+    {
+        Log.d("SC:"+source, respBody);
+
+        try
+        {
+            Instant i  = Instant.now();
+            String s   = source;
+            String u   = call.request().url().toString();
+            int rc     = resp.code();
+            String r   = respBody;
+            LogLevel l = LogLevel.INFO;
+
+            SingleQuery q = new SingleQuery(l, i, s, u, r, rc, "SUCCESS");
+            QueryLog.instance().add(q);
+        }
+        catch (Exception e2)
+        {
+            Log.e("SC:HandleSuccess", e2.toString());
+        }
+    }
+
+    private static void handleError(String source, Call call, Response resp, String respBody, boolean isio, Exception e)
+    {
+        Log.e("SC:"+source, e.toString());
+
+        if (isio)
+        {
+            SCNApp.showToast("Can't connect to server", 3000);
+        }
+        else
+        {
+            SCNApp.showToast("Communication with server failed", 4000);
+        }
+
+        try
+        {
+            Instant i  = Instant.now();
+            String s   = source;
+            String u   = (call==null)?Str.Empty:call.request().url().toString();
+            int rc     = (resp==null)?-1:resp.code();
+            String r   = respBody;
+            LogLevel l = isio?LogLevel.WARN:LogLevel.ERROR;
+
+            SingleQuery q = new SingleQuery(l, i, s, u, r, rc, e.toString());
+            QueryLog.instance().add(q);
+        }
+        catch (Exception e2)
+        {
+            Log.e("SC:HandleError", e2.toString());
+        }
     }
 }

@@ -1,14 +1,21 @@
 package com.blackforestbytes.simplecloudnotifier.view;
 
+import android.content.Intent;
+import android.icu.text.SymbolTable;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.blackforestbytes.simplecloudnotifier.R;
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
 import com.blackforestbytes.simplecloudnotifier.model.CMessageList;
+import com.blackforestbytes.simplecloudnotifier.model.QueryLog;
 import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
 import com.blackforestbytes.simplecloudnotifier.service.IABService;
 import com.blackforestbytes.simplecloudnotifier.service.NotificationService;
+import com.blackforestbytes.simplecloudnotifier.view.debug.QueryLogActivity;
 import com.google.android.material.tabs.TabLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,6 +31,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        QueryLog.instance();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -33,6 +42,7 @@ public class MainActivity extends AppCompatActivity
         layoutRoot = findViewById(R.id.layoutRoot);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setOnClickListener(this::onToolbackClicked);
         setSupportActionBar(toolbar);
 
         ViewPager viewPager = findViewById(R.id.pager);
@@ -80,5 +90,17 @@ public class MainActivity extends AppCompatActivity
 
         CMessageList.inst().fullSave();
         IABService.inst().destroy();
+    }
+
+    private int clickCount = 0;
+    private long lastClick = 0;
+    private void onToolbackClicked(View v)
+    {
+        long now = System.currentTimeMillis();
+        if (now - lastClick > 200) clickCount=0;
+        clickCount++;
+        lastClick = now;
+
+        if (clickCount == 4) startActivity(new Intent(this, QueryLogActivity.class));
     }
 }

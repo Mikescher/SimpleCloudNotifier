@@ -5,6 +5,7 @@ import android.content.Context;
 import android.widget.Toast;
 
 import com.android.billingclient.api.BillingClient;
+import com.blackforestbytes.simplecloudnotifier.model.QueryLog;
 import com.blackforestbytes.simplecloudnotifier.view.AccountFragment;
 import com.blackforestbytes.simplecloudnotifier.view.MainActivity;
 import com.blackforestbytes.simplecloudnotifier.view.TabAdapter;
@@ -98,3 +99,9 @@ public class SCNApp extends Application implements LifecycleObserver
         isBackground = false;
     }
 }
+
+//TODO: Collapse on click again
+//TODO: Share button on expand
+//TODO: Delete button on expand
+//TODO: Config for collapsed line count
+//TODO: Sometimes ads but promode
