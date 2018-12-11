@@ -100,7 +100,5 @@ public class SCNApp extends Application implements LifecycleObserver
     }
 }
 
-//TODO: Share button on expand
-//TODO: Delete button on expand
 //TODO: Config for collapsed line count
 //TODO: Sometimes ads but promode

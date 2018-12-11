@@ -52,7 +52,7 @@ public class SCNSettings
 
     public boolean Enabled = true;
     public int LocalCacheSize = 500;
-    public boolean EnableDeleteSwipe = true;
+    public boolean EnableDeleteSwipe = false;
 
     public final NotificationSettings PriorityLow  = new NotificationSettings(PriorityEnum.LOW);
     public final NotificationSettings PriorityNorm = new NotificationSettings(PriorityEnum.NORMAL);

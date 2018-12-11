@@ -1,5 +1,6 @@
 package com.blackforestbytes.simplecloudnotifier.view;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,8 +10,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.blackforestbytes.simplecloudnotifier.R;
+import com.blackforestbytes.simplecloudnotifier.SCNApp;
 import com.blackforestbytes.simplecloudnotifier.model.CMessage;
 import com.blackforestbytes.simplecloudnotifier.model.CMessageList;
+import com.google.android.material.button.MaterialButton;
 
 import java.lang.ref.WeakReference;
 import java.util.Collections;
@@ -53,7 +56,7 @@ public class MessageAdapter extends RecyclerView.Adapter
     {
         CMessage msg = CMessageList.inst().tryGetFromBack(position);
         MessagePresenter view = (MessagePresenter) holder;
-        view.setMessage(msg);
+        view.setMessage(msg, position);
 
         viewHolders.put(view, true);
     }
@@ -110,7 +113,11 @@ public class MessageAdapter extends RecyclerView.Adapter
         public RelativeLayout viewForeground;
         public RelativeLayout viewBackground;
 
+        public MaterialButton btnShare;
+        public MaterialButton btnDelete;
+
         private CMessage data;
+        private int datapos;
 
         MessagePresenter(View itemView)
         {
@@ -121,6 +128,8 @@ public class MessageAdapter extends RecyclerView.Adapter
             ivPriority     = itemView.findViewById(R.id.ivPriority);
             viewForeground = itemView.findViewById(R.id.layoutFront);
             viewBackground = itemView.findViewById(R.id.layoutBack);
+            btnShare       = itemView.findViewById(R.id.btnShare);
+            btnDelete      = itemView.findViewById(R.id.btnDelete);
 
             itemView.setOnClickListener(this);
             tvTimestamp.setOnClickListener(this);
@@ -128,15 +137,26 @@ public class MessageAdapter extends RecyclerView.Adapter
             tvMessage.setOnClickListener(this);
             ivPriority.setOnClickListener(this);
             viewForeground.setOnClickListener(this);
+
+            btnShare.setOnClickListener(v ->
+            {
+                if (data == null) return;
+                Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+                sharingIntent.setType("text/plain");
+                sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, data.Title);
+                sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, data.Content);
+                SCNApp.getMainActivity().startActivity(Intent.createChooser(sharingIntent, "Share message"));
+
+            });
+            btnDelete.setOnClickListener(v -> { if (data != null) SCNApp.getMainActivity().adpTabs.tab1.deleteMessage(datapos); });
+
         }
 
-        void setMessage(CMessage msg)
+        void setMessage(CMessage msg, int pos)
         {
             tvTimestamp.setText(msg.formatTimestamp());
             tvTitle.setText(msg.Title);
             tvMessage.setText(msg.Content);
-
-            tvMessage.setMaxLines(msg.IsExpandedInAdapter ? 999 : 6);
 
             switch (msg.Priority)
             {
@@ -157,6 +177,28 @@ public class MessageAdapter extends RecyclerView.Adapter
             }
 
             data = msg;
+            datapos = pos;
+
+            if (msg.IsExpandedInAdapter) expand(true); else collapse(true);
+        }
+
+        private void expand(boolean force)
+        {
+            if (data != null && data.IsExpandedInAdapter && !force) return;
+            if (data != null) data.IsExpandedInAdapter = true;
+            if (tvMessage != null) tvMessage.setMaxLines(999);
+            if (btnDelete != null) btnDelete.setVisibility(View.VISIBLE);
+            if (btnShare != null) btnShare.setVisibility(View.VISIBLE);
+
+        }
+
+        private void collapse(boolean force)
+        {
+            if (data != null && !data.IsExpandedInAdapter && !force) return;
+            if (data != null) data.IsExpandedInAdapter = false;
+            if (tvMessage != null) tvMessage.setMaxLines(6);
+            if (btnDelete != null) btnDelete.setVisibility(View.GONE);
+            if (btnShare != null) btnShare.setVisibility(View.GONE);
         }
 
         @Override
@@ -164,8 +206,7 @@ public class MessageAdapter extends RecyclerView.Adapter
         {
             if (data.IsExpandedInAdapter)
             {
-                data.IsExpandedInAdapter=false;
-                tvMessage.setMaxLines(6);
+                collapse(false);
                 return;
             }
 
@@ -173,15 +214,10 @@ public class MessageAdapter extends RecyclerView.Adapter
             {
                 if (holder == null) continue;
                 if (holder == this) continue;
-                if (holder.tvMessage == null) continue;
-                if (!holder.data.IsExpandedInAdapter) continue;
-
-                holder.data.IsExpandedInAdapter=false;
-                holder.tvMessage.setMaxLines(6);
+                holder.collapse(false);
             }
 
-            data.IsExpandedInAdapter=true;
-            tvMessage.setMaxLines(9999);
+            expand(false);
         }
     }
 }

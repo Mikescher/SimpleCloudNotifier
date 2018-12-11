@@ -67,8 +67,8 @@
                         <option name="values">
                           <map>
                             <entry key="assetSourceType" value="FILE" />
-                            <entry key="outputName" value="ic_garbage" />
-                            <entry key="sourceFile" value="C:\Users\Mike\Downloads\garbage.svg" />
+                            <entry key="outputName" value="ic_share" />
+                            <entry key="sourceFile" value="C:\Users\Mike\Downloads\baseline-share-24px.svg" />
                           </map>
                         </option>
                       </PersistentState>

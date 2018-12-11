@@ -111,8 +111,10 @@
                     android:gravity="center|center"
                     android:minHeight="48dp">
 
-                    <Button
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/prefUpgradeAccount"
+                        app:cornerRadius="0dp"
+                        android:backgroundTint="#4CAF50"
                         android:text="@string/str_upgrade_account"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
