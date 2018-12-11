@@ -12,7 +12,7 @@ import java.util.List;
 
 public class QueryLog
 {
-    private final static int MAX_HISTORY_SIZE = 64;
+    private final static int MAX_HISTORY_SIZE = 192;
 
     private static QueryLog _instance;
     public static QueryLog instance() { if (_instance == null) synchronized (QueryLog.class) { if (_instance == null) _instance = new QueryLog(); } return _instance; }

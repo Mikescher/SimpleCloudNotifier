@@ -13,6 +13,7 @@ import com.blackforestbytes.simplecloudnotifier.R;
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
 import com.blackforestbytes.simplecloudnotifier.model.CMessage;
 import com.blackforestbytes.simplecloudnotifier.model.CMessageList;
+import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
 import com.google.android.material.button.MaterialButton;
 
 import java.lang.ref.WeakReference;
@@ -186,17 +187,19 @@ public class MessageAdapter extends RecyclerView.Adapter
         {
             if (data != null && data.IsExpandedInAdapter && !force) return;
             if (data != null) data.IsExpandedInAdapter = true;
-            if (tvMessage != null) tvMessage.setMaxLines(999);
+            if (tvMessage != null) tvMessage.setMaxLines(9999);
             if (btnDelete != null) btnDelete.setVisibility(View.VISIBLE);
             if (btnShare != null) btnShare.setVisibility(View.VISIBLE);
 
         }
 
+        private int norm(int i) { return (i<=0)?0:((i>9999)?9999:i); }
+
         private void collapse(boolean force)
         {
             if (data != null && !data.IsExpandedInAdapter && !force) return;
             if (data != null) data.IsExpandedInAdapter = false;
-            if (tvMessage != null) tvMessage.setMaxLines(6);
+            if (tvMessage != null) tvMessage.setMaxLines(norm(SCNSettings.inst().PreviewLineCount));
             if (btnDelete != null) btnDelete.setVisibility(View.GONE);
             if (btnShare != null) btnShare.setVisibility(View.GONE);
         }

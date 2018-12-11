@@ -53,6 +53,7 @@ public class SCNSettings
     public boolean Enabled = true;
     public int LocalCacheSize = 500;
     public boolean EnableDeleteSwipe = false;
+    public int PreviewLineCount = 6;
 
     public final NotificationSettings PriorityLow  = new NotificationSettings(PriorityEnum.LOW);
     public final NotificationSettings PriorityNorm = new NotificationSettings(PriorityEnum.NORMAL);
@@ -77,6 +78,7 @@ public class SCNSettings
         Enabled                     = sharedPref.getBoolean("app_enabled",  Enabled);
         LocalCacheSize              = sharedPref.getInt("local_cache_size", LocalCacheSize);
         EnableDeleteSwipe           = sharedPref.getBoolean("do_del_swipe",  EnableDeleteSwipe);
+        PreviewLineCount            = sharedPref.getInt("preview_line_count", PreviewLineCount);
 
         PriorityLow.EnableLED         = sharedPref.getBoolean("priority_low:enabled_led",         PriorityLow.EnableLED);
         PriorityLow.EnableSound       = sharedPref.getBoolean("priority_low:enabled_sound",       PriorityLow.EnableSound);
@@ -124,6 +126,7 @@ public class SCNSettings
         e.putBoolean("app_enabled",                      Enabled);
         e.putInt(    "local_cache_size",                 LocalCacheSize);
         e.putBoolean("do_del_swipe",                     EnableDeleteSwipe);
+        e.putInt(    "preview_line_count",               PreviewLineCount);
 
         e.putBoolean("priority_low:enabled_led",         PriorityLow.EnableLED);
         e.putBoolean("priority_low:enabled_sound",       PriorityLow.EnableSound);

@@ -1,5 +1,6 @@
 package com.blackforestbytes.simplecloudnotifier.view;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.media.AudioAttributes;
@@ -10,6 +11,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
@@ -32,6 +35,7 @@ import com.blackforestbytes.simplecloudnotifier.lib.lambda.FI;
 import com.blackforestbytes.simplecloudnotifier.lib.string.Str;
 import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
 import com.blackforestbytes.simplecloudnotifier.service.IABService;
+import com.blackforestbytes.simplecloudnotifier.util.TextChangedListener;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -51,6 +55,7 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
     private TextView  prefUpgradeAccount_msg;
     private TextView  prefUpgradeAccount_info;
     private Switch    prefEnableDeleteSwipe;
+    private EditText  prefPreviewLineCount;
 
     private Switch    prefMsgLowEnableSound;
     private TextView  prefMsgLowRingtone_value;
@@ -117,6 +122,7 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         prefUpgradeAccount_msg        = v.findViewById(R.id.prefUpgradeAccount2);
         prefUpgradeAccount_info       = v.findViewById(R.id.prefUpgradeAccount_info);
         prefEnableDeleteSwipe         = v.findViewById(R.id.prefEnableDeleteSwipe);
+        prefPreviewLineCount          = v.findViewById(R.id.prefPreviewLineCount);
 
         prefMsgLowEnableSound         = v.findViewById(R.id.prefMsgLowEnableSound);
         prefMsgLowRingtone_value      = v.findViewById(R.id.prefMsgLowRingtone_value);
@@ -159,6 +165,7 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         prefLocalCacheSize.setAdapter(plcsa);
     }
 
+    @SuppressLint("SetTextI18n")
     private void updateUI()
     {
         SCNSettings s = SCNSettings.inst();
@@ -167,6 +174,7 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
 
         if (prefAppEnabled.isChecked() != s.Enabled) prefAppEnabled.setChecked(s.Enabled);
         if (prefEnableDeleteSwipe.isChecked() != s.EnableDeleteSwipe) prefEnableDeleteSwipe.setChecked(s.EnableDeleteSwipe);
+        if (!prefPreviewLineCount.getText().toString().equals(Integer.toString(s.PreviewLineCount))) prefPreviewLineCount.setText(Integer.toString(s.PreviewLineCount));
 
         prefUpgradeAccount.setVisibility(     SCNSettings.inst().promode_local ? View.GONE    : View.VISIBLE);
         prefUpgradeAccount_info.setVisibility(SCNSettings.inst().promode_local ? View.GONE    : View.VISIBLE);
@@ -220,6 +228,12 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
 
         prefAppEnabled.setOnCheckedChangeListener((a,b) -> { boolean prev=s.Enabled; s.Enabled=b; saveAndUpdate(); updateEnabled(prev, b); });
         prefEnableDeleteSwipe.setOnCheckedChangeListener((a,b) -> { s.EnableDeleteSwipe=b; saveAndUpdate(); });
+        prefPreviewLineCount.addTextChangedListener(new TextChangedListener<EditText>(prefPreviewLineCount) {
+            @Override
+            public void onTextChanged(EditText target, Editable ed) {
+                if (!ed.toString().isEmpty()) try { s.PreviewLineCount=Integer.parseInt(ed.toString()); saveAndUpdate(); } catch (Exception e) { /* */ }
+            }
+        });
 
         prefLocalCacheSize.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
         {

@@ -6,6 +6,9 @@
     <color name="colorHeader">#3F51B5</color>
     <color name="colorHeaderForeground">#FFFFFF</color>
 
+    <color name="colorOnPrimary">#ecf0f1</color>
+    <color name="colorSecondary">#FF5722</color>
+
     <color name="colorBlack">#000</color>
 
     <color name="bg_row_background">#fa315b</color>

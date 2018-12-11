@@ -30,6 +30,7 @@
     <string name="str_enable_vibration">Enable notification vibration</string>
     <string name="str_upgrade_account">Upgrade account</string>
     <string name="str_deleteswipe">Delete messages by swiping left</string>
+    <string name="str_previewlinecount">Number of visibile lines in collapsed messages</string>
     <string name="str_promode">Thank you for supporting the app and using the pro mode</string>
     <string name="str_promode_info">Increase your daily quota, remove the ad banner and support the developer (that\'s me)</string>
     <string name="volume_icon">Volume icon</string>
