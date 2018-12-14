@@ -77,7 +77,7 @@ public class IABService implements PurchasesUpdatedListener
     private void loadCache()
     {
         _localCache.clear();
-        SharedPreferences sharedPref = SCNApp.getContext().getSharedPreferences("iab", Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = SCNApp.getContext().getSharedPreferences("IAB", Context.MODE_PRIVATE);
         int count = sharedPref.getInt("c", 0);
         for (int i=0; i < count; i++)
         {
@@ -90,7 +90,7 @@ public class IABService implements PurchasesUpdatedListener
 
     private void saveCache()
     {
-        SharedPreferences sharedPref = SCNApp.getContext().getSharedPreferences("CMessageList", Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = SCNApp.getContext().getSharedPreferences("IAB", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor= sharedPref.edit();
 
         editor.putInt("c", _localCache.size());
