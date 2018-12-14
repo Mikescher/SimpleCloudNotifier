@@ -58,7 +58,7 @@ public class NotificationsFragment extends Fragment implements MessageAdapterTou
 
     public void updateProState()
     {
-        if (adView != null) adView.setVisibility(IABService.inst().getPurchaseCached(IABService.IAB_PRO_MODE) != null ? View.GONE : View.VISIBLE);
+        if (adView != null) adView.setVisibility(IABService.inst().getPurchaseCachedSimple(IABService.IAB_PRO_MODE) ? View.GONE : View.VISIBLE);
     }
 
     @Override

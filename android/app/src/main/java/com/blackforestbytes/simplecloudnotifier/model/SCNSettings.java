@@ -6,8 +6,8 @@ import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.View;
 
-import com.android.billingclient.api.Purchase;
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
+import com.blackforestbytes.simplecloudnotifier.lib.datatypes.Tuple3;
 import com.blackforestbytes.simplecloudnotifier.lib.string.Str;
 import com.blackforestbytes.simplecloudnotifier.service.IABService;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -243,14 +243,16 @@ public class SCNSettings
 
     public void updateProState(View loader)
     {
-        Purchase purch = IABService.inst().getPurchaseCached(IABService.IAB_PRO_MODE);
-        boolean promode_real = (purch != null);
+        Tuple3<Boolean, Boolean, String> state = IABService.inst().getPurchaseCachedExtended(IABService.IAB_PRO_MODE);
+        if (!state.Item2) return; // not nitialized
+
+        boolean promode_real = state.Item1;
 
         if (promode_real != promode_local || promode_real != promode_server)
         {
             promode_local = promode_real;
 
-            promode_token = promode_real ? purch.getPurchaseToken() : "";
+            promode_token = promode_real ? state.Item3 : "";
             updateProStateOnServer(loader);
         }
     }

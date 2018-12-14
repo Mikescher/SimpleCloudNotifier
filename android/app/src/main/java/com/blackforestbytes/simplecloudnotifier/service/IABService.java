@@ -2,6 +2,7 @@ package com.blackforestbytes.simplecloudnotifier.service;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -11,13 +12,18 @@ import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
+import com.blackforestbytes.simplecloudnotifier.lib.datatypes.Tuple2;
+import com.blackforestbytes.simplecloudnotifier.lib.datatypes.Tuple3;
 import com.blackforestbytes.simplecloudnotifier.lib.lambda.Func0to0;
 import com.blackforestbytes.simplecloudnotifier.lib.string.Str;
 import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
 import com.blackforestbytes.simplecloudnotifier.view.MainActivity;
 
 import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import androidx.annotation.Nullable;
 
@@ -45,18 +51,66 @@ public class IABService implements PurchasesUpdatedListener
         }
     }
 
+    public enum SimplePurchaseState { YES, NO, UNINITIALIZED }
+
     private BillingClient client;
     private boolean isServiceConnected;
     private final List<Purchase> purchases = new ArrayList<>();
+    private boolean _isInitialized = false;
+
+    private Map<String, Boolean> _localCache= new HashMap<>();
 
     public IABService(Context c)
     {
+        _isInitialized = false;
+
+        loadCache();
+
         client = BillingClient
                 .newBuilder(c)
                 .setListener(this)
                 .build();
 
         startServiceConnection(this::queryPurchases, false);
+    }
+
+    private void loadCache()
+    {
+        _localCache.clear();
+        SharedPreferences sharedPref = SCNApp.getContext().getSharedPreferences("iab", Context.MODE_PRIVATE);
+        int count = sharedPref.getInt("c", 0);
+        for (int i=0; i < count; i++)
+        {
+            String  k = sharedPref.getString("["+i+"]->key", null);
+            boolean v = sharedPref.getBoolean("["+i+"]->value", false);
+            if (k==null)continue;
+            _localCache.put(k, v);
+        }
+    }
+
+    private void saveCache()
+    {
+        SharedPreferences sharedPref = SCNApp.getContext().getSharedPreferences("CMessageList", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor= sharedPref.edit();
+
+        editor.putInt("c", _localCache.size());
+        int i = 0;
+        for (Map.Entry<String, Boolean> e : _localCache.entrySet())
+        {
+            editor.putString("["+i+"]->key", e.getKey());
+            editor.putBoolean("["+i+"]->value", e.getValue());
+            i++;
+        }
+        editor.apply();
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private synchronized void updateCache(String k, boolean v)
+    {
+        if (_localCache.containsKey(k) && _localCache.get(k)==v) return;
+
+        _localCache.put(k, v);
+        saveCache();
     }
 
     public void queryPurchases()
@@ -71,10 +125,12 @@ public class IABService implements PurchasesUpdatedListener
             {
                 for (Purchase p : purchasesResult.getPurchasesList())
                 {
-                    handlePurchase(p);
+                    handlePurchase(p, false);
                 }
 
-                boolean newProMode = getPurchaseCached(IAB_PRO_MODE) != null;
+                _isInitialized = true;
+
+                boolean newProMode = getPurchaseCachedSimple(IAB_PRO_MODE);
                 if (newProMode != SCNSettings.inst().promode_local)
                 {
                     refreshProModeListener();
@@ -102,7 +158,8 @@ public class IABService implements PurchasesUpdatedListener
         }, true);
     }
 
-    private void executeServiceRequest(Func0to0 runnable, final boolean userRequest) {
+    private void executeServiceRequest(Func0to0 runnable, final boolean userRequest)
+    {
         if (isServiceConnected)
         {
             runnable.invoke();
@@ -130,28 +187,31 @@ public class IABService implements PurchasesUpdatedListener
         {
             for (Purchase purchase : purchases)
             {
-                handlePurchase(purchase);
+                handlePurchase(purchase, true);
             }
         }
         else if (responseCode == BillingClient.BillingResponse.ITEM_ALREADY_OWNED && purchases != null)
         {
             for (Purchase purchase : purchases)
             {
-                handlePurchase(purchase);
+                handlePurchase(purchase, true);
             }
         }
     }
 
-    private void handlePurchase(Purchase purchase)
+    private void handlePurchase(Purchase purchase, boolean triggerUpdate)
     {
         Log.d(TAG, "Got a verified purchase: " + purchase);
 
         purchases.add(purchase);
 
-        refreshProModeListener();
+        if (triggerUpdate) refreshProModeListener();
+
+        updateCache(purchase.getSku(), true);
     }
 
-    private void refreshProModeListener() {
+    private void refreshProModeListener()
+    {
         MainActivity ma = SCNApp.getMainActivity();
         if (ma != null) ma.adpTabs.tab3.updateProState();
         if (ma != null) ma.adpTabs.tab1.updateProState();
@@ -183,13 +243,31 @@ public class IABService implements PurchasesUpdatedListener
         });
     }
 
-    public Purchase getPurchaseCached(String id)
+    public boolean getPurchaseCachedSimple(String id)
     {
-        for (Purchase p : purchases)
+        return getPurchaseCachedExtended(id).Item1;
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    public Tuple3<Boolean, Boolean, String> getPurchaseCachedExtended(String id)
+    {
+        // <state, initialized, token>
+
+        if (!_isInitialized)
         {
-            if (Str.equals(p.getSku(), id)) return p;
+            if (_localCache.containsKey(id) && _localCache.get(id)) return new Tuple3<>(true, false, Str.Empty);
         }
 
-        return null;
+        for (Purchase p : purchases)
+        {
+            if (Str.equals(p.getSku(), id))
+            {
+                updateCache(id, true);
+                return new Tuple3<>(true, true, p.getPurchaseToken());
+            }
+        }
+
+        updateCache(id, false);
+        return new Tuple3<>(false, true, Str.Empty);
     }
 }
