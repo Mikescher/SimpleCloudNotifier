@@ -122,6 +122,9 @@ public class SCNSettings
         e.putString( "user_key",                         user_key);
         e.putString( "fcm_token_local",                  fcm_token_local);
         e.putString( "fcm_token_server",                 fcm_token_server);
+        e.putBoolean("promode_local",                    promode_local);
+        e.putBoolean("promode_server",                   promode_server);
+        e.putString( "promode_token",                    promode_token);
 
         e.putBoolean("app_enabled",                      Enabled);
         e.putInt(    "local_cache_size",                 LocalCacheSize);
@@ -244,15 +247,16 @@ public class SCNSettings
     public void updateProState(View loader)
     {
         Tuple3<Boolean, Boolean, String> state = IABService.inst().getPurchaseCachedExtended(IABService.IAB_PRO_MODE);
-        if (!state.Item2) return; // not nitialized
+        if (!state.Item2) return; // not initialized
 
         boolean promode_real = state.Item1;
 
         if (promode_real != promode_local || promode_real != promode_server)
         {
             promode_local = promode_real;
-
             promode_token = promode_real ? state.Item3 : "";
+            save();
+
             updateProStateOnServer(loader);
         }
     }
