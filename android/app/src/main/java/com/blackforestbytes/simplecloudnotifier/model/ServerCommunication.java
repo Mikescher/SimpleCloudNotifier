@@ -105,7 +105,7 @@ public class ServerCommunication
         try
         {
             Request request = new Request.Builder()
-                    .url(BASE_URL + "updateFCMToken.php?user_id="+id+"&user_key="+key+"&fcm_token="+token)
+                    .url(BASE_URL + "update.php?user_id="+id+"&user_key="+key+"&fcm_token="+token)
                     .build();
 
             client.newCall(request).enqueue(new Callback()
@@ -172,7 +172,7 @@ public class ServerCommunication
         try
         {
             Request request = new Request.Builder()
-                    .url(BASE_URL + "updateFCMToken.php?user_id=" + id + "&user_key=" + key)
+                    .url(BASE_URL + "update.php?user_id=" + id + "&user_key=" + key)
                     .build();
 
             client.newCall(request).enqueue(new Callback() {
