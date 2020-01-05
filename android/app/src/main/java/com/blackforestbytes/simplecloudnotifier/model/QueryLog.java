@@ -15,9 +15,9 @@ public class QueryLog
     private final static int MAX_HISTORY_SIZE = 192;
 
     private static QueryLog _instance;
-    public static QueryLog instance() { if (_instance == null) synchronized (QueryLog.class) { if (_instance == null) _instance = new QueryLog(); } return _instance; }
+    public static QueryLog inst() { if (_instance == null) synchronized (QueryLog.class) { if (_instance == null) _instance = new QueryLog(); } return _instance; }
 
-    private QueryLog(){ load(); }
+    private QueryLog(){ reloadPrefs(); }
 
     private final List<SingleQuery> history = new ArrayList<>();
 
@@ -50,7 +50,7 @@ public class QueryLog
         e.apply();
     }
 
-    public synchronized void load()
+    public synchronized void reloadPrefs()
     {
         try
         {

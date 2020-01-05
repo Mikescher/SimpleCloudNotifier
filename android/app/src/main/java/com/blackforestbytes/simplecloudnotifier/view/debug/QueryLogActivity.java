@@ -22,7 +22,7 @@ public class QueryLogActivity extends AppCompatActivity
         setContentView(R.layout.activity_querylog);
 
         ListView lvMain = findViewById(R.id.lvQueryList);
-        SingleQuery[] arr = QueryLog.instance().get().toArray(new SingleQuery[0]);
+        SingleQuery[] arr = QueryLog.inst().get().toArray(new SingleQuery[0]);
         QueryLogAdapter a = new QueryLogAdapter(this, arr);
         lvMain.setAdapter(a);
 

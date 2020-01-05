@@ -37,4 +37,6 @@
     <string name="play_test_sound">Play test sound</string>
     <string name="delete">DELETE</string>
     <string name="title_activity_query_log">QueryLogActivity</string>
+    <string name="import_settings">Import settings</string>
+    <string name="export_settings">Export settings</string>
 </resources>

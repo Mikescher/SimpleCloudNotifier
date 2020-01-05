@@ -74,6 +74,11 @@ public class IABService implements PurchasesUpdatedListener
         startServiceConnection(this::queryPurchases, false);
     }
 
+    public void reloadPrefs()
+    {
+        loadCache();
+    }
+
     private void loadCache()
     {
         _localCache.clear();

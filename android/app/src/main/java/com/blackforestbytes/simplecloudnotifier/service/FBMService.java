@@ -4,8 +4,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
-import com.blackforestbytes.simplecloudnotifier.lib.datatypes.Tuple4;
-import com.blackforestbytes.simplecloudnotifier.lib.datatypes.Tuple5;
 import com.blackforestbytes.simplecloudnotifier.lib.string.Str;
 import com.blackforestbytes.simplecloudnotifier.model.CMessage;
 import com.blackforestbytes.simplecloudnotifier.model.CMessageList;
@@ -15,7 +13,6 @@ import com.blackforestbytes.simplecloudnotifier.model.QueryLog;
 import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
 import com.blackforestbytes.simplecloudnotifier.model.ServerCommunication;
 import com.blackforestbytes.simplecloudnotifier.model.SingleQuery;
-import com.google.android.gms.common.util.JsonUtils;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -52,7 +49,7 @@ public class FBMService extends FirebaseMessagingService
 
 
             SingleQuery q = new SingleQuery(LogLevel.INFO, Instant.now(), "FBM<recieve>", Str.Empty, new JSONObject(remoteMessage.getData()).toString(), 0, "SUCCESS");
-            QueryLog.instance().add(q);
+            QueryLog.inst().add(q);
 
             if (trimmed)
             {

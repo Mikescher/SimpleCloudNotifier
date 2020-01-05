@@ -2,6 +2,8 @@ package com.blackforestbytes.simplecloudnotifier.view;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
@@ -11,6 +13,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.Editable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,6 +31,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.billingclient.api.Purchase;
+import com.blackforestbytes.simplecloudnotifier.BuildConfig;
 import com.blackforestbytes.simplecloudnotifier.R;
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
 import com.blackforestbytes.simplecloudnotifier.lib.android.ThreadUtils;
@@ -39,9 +43,15 @@ import com.blackforestbytes.simplecloudnotifier.util.TextChangedListener;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.Date;
+import java.util.Map;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import top.defaults.colorpicker.ColorPickerPopup;
 import xyz.aprildown.ultimatemusicpicker.MusicPickerListener;
@@ -92,6 +102,9 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
     private Switch    prefMsgHighForceVolume;
     private SeekBar   prefMsgHighVolume;
     private ImageView prefMsgHighVolumeTest;
+
+    private Button    prefBtnImport;
+    private Button    prefBtnExport;
 
     private int musicPickerSwitch = -1;
 
@@ -159,6 +172,9 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         prefMsgHighForceVolume        = v.findViewById(R.id.prefMsgHighForceVolume);
         prefMsgHighVolume             = v.findViewById(R.id.prefMsgHighVolume);
         prefMsgHighVolumeTest         = v.findViewById(R.id.btnHighVolumeTest);
+
+        prefBtnExport                 = v.findViewById(R.id.prefExport);
+        prefBtnImport                 = v.findViewById(R.id.prefImport);
 
         ArrayAdapter<Integer> plcsa = new ArrayAdapter<>(v.getContext(), android.R.layout.simple_spinner_item, SCNSettings.CHOOSABLE_CACHE_SIZES);
         plcsa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -246,6 +262,9 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
 
         prefUpgradeAccount.setOnClickListener(a -> onUpgradeAccount());
 
+        prefBtnExport.setOnClickListener(a -> onExport());
+        prefBtnImport.setOnClickListener(a -> onImport());
+
         prefMsgLowEnableSound.setOnCheckedChangeListener((a,b) -> { s.PriorityLow.EnableSound=b; saveAndUpdate(); });
         prefMsgLowRingtone_container.setOnClickListener(a -> chooseRingtoneLow());
         prefMsgLowRepeatSound.setOnCheckedChangeListener((a,b) -> { s.PriorityLow.RepeatSound=b; saveAndUpdate(); });
@@ -275,6 +294,55 @@ public class SettingsFragment extends Fragment implements MusicPickerListener
         prefMsgHighForceVolume.setOnCheckedChangeListener((a,b) -> { s.PriorityHigh.ForceVolume=b; saveAndUpdate(); });
         prefMsgHighVolume.setOnSeekBarChangeListener(FI.SeekBarChanged((a,b,c) -> { if (c) { s.PriorityHigh.ForceVolumeValue=b; saveAndUpdate(); updateVolume(2, b); } }));
         prefMsgHighVolumeTest.setOnClickListener((v) -> { if (s.PriorityHigh.ForceVolume) playTestSound(2, prefMsgHighVolumeTest, s.PriorityHigh.SoundSource, s.PriorityHigh.ForceVolumeValue); });
+    }
+
+    private void onExport()
+    {
+        Context ctxt = getContext();
+        if (ctxt == null) return;
+
+        try
+        {
+            File outputDir = ctxt.getCacheDir(); // context being the Activity pointer
+            File outputFile = File.createTempFile("scn_export_", ".dat", outputDir);
+
+            ObjectOutputStream output = new ObjectOutputStream(new FileOutputStream(outputFile));
+
+            Map<String, ?> d1 = ctxt.getSharedPreferences("Config", Context.MODE_PRIVATE).getAll();
+            Map<String, ?> d2 = ctxt.getSharedPreferences("IAB", Context.MODE_PRIVATE).getAll();
+            Map<String, ?> d3 = ctxt.getSharedPreferences("CMessageList", Context.MODE_PRIVATE).getAll();
+            Map<String, ?> d4 = ctxt.getSharedPreferences("QueryLog", Context.MODE_PRIVATE).getAll();
+
+            output.writeObject(d1);
+            output.writeObject(d2);
+            output.writeObject(d3);
+            output.writeObject(d4);
+
+            Intent intent = new Intent(Intent.ACTION_SEND);
+
+            Uri uri = FileProvider.getUriForFile(ctxt, "com.blackforestbytes.simplecloudnotifier.fileprovider", outputFile);
+            intent.putExtra(Intent.EXTRA_STREAM, uri);
+            intent.setType("*/*");
+            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            startActivity(Intent.createChooser(intent, "Export"));
+        }
+        catch (IOException e)
+        {
+            Log.e("Export:Err", e.toString());
+            SCNApp.showToast("Export failed", Toast.LENGTH_LONG);
+        }
+    }
+
+    private void onImport()
+    {
+        SCNApp.getMainActivity().setContentView(R.layout.activity_main);
+
+        Intent intent = new Intent()
+                .setType("*/*")
+                .setAction(Intent.ACTION_GET_CONTENT);
+
+        ((MainActivity)getActivity()).startActivityForResult(Intent.createChooser(intent, "Select a file"), 1991);
     }
 
     private void updateEnabled(boolean prev, boolean now)

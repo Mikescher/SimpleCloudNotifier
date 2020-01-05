@@ -63,6 +63,11 @@ public class SCNSettings
 
     public SCNSettings()
     {
+        reloadPrefs();
+    }
+
+    public void reloadPrefs()
+    {
         SharedPreferences sharedPref = SCNApp.getContext().getSharedPreferences("Config", Context.MODE_PRIVATE);
 
         quota_curr       = sharedPref.getInt(   "quota_curr",        0);

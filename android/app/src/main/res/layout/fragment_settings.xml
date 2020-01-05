@@ -805,6 +805,24 @@
 
         </androidx.cardview.widget.CardView>
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/prefExport"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            app:cornerRadius="0dp"
+            android:backgroundTint="#444444"
+            android:text="@string/export_settings" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/prefImport"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            app:cornerRadius="0dp"
+            android:backgroundTint="#666666"
+            android:text="@string/import_settings" />
+
     </LinearLayout>
 
 </ScrollView>

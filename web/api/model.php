@@ -166,6 +166,12 @@ function verifyOrderToken($tok)
 {
 	// https://developers.google.com/android-publisher/api-ref/purchases/products/get
 
+	// if this does no longer work, you probably have to go through the initial OAuth process again
+	// 1. go to Postman do the [ https://accounts.google.com/o/oauth2/auth ] request (in browser) to get a new "code"
+	// 2. go to Postman do the [ Get Tokens ] request to get a new "access_token" and "access_token"
+	// 3. update these tokens in the server config.php
+
+
 	try
 	{
 		$package  = getConfig()['verify_api']['package_name'];

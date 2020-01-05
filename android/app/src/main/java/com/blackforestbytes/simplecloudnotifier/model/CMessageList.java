@@ -36,6 +36,11 @@ public class CMessageList
 
     private CMessageList()
     {
+        reloadPrefs();
+    }
+
+    public void reloadPrefs()
+    {
         synchronized (msg_lock)
         {
             Messages = new ArrayList<>();

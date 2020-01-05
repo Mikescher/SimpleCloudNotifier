@@ -613,7 +613,7 @@ public class ServerCommunication
             LogLevel l = LogLevel.INFO;
 
             SingleQuery q = new SingleQuery(l, i, s, u, r, rc, "SUCCESS");
-            QueryLog.instance().add(q);
+            QueryLog.inst().add(q);
         }
         catch (Exception e2)
         {
@@ -644,7 +644,7 @@ public class ServerCommunication
             LogLevel l = isio?LogLevel.WARN:LogLevel.ERROR;
 
             SingleQuery q = new SingleQuery(l, i, s, u, r, rc, e.toString());
-            QueryLog.instance().add(q);
+            QueryLog.inst().add(q);
         }
         catch (Exception e2)
         {
