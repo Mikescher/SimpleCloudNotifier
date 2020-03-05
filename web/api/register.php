@@ -24,17 +24,20 @@ if ($ispro)
 		$pdo->rollBack();
 		die(json_encode(['success' => false, 'message' => 'Purchase token could not be verified']));
 	}
-
-	$stmt = $pdo->prepare('UPDATE users SET is_pro=0, pro_token=NULL WHERE user_id <> :uid AND pro_token = :ptk');
-	$stmt->execute(['uid' => $user_id, 'ptk' => $pro_token]);
 }
 
 $stmt = $pdo->prepare('INSERT INTO users (user_key, fcm_token, is_pro, pro_token, timestamp_accessed) VALUES (:key, :token, :bpro, :spro, NOW())');
-$stmt->execute(['key' => $user_key, 'token' => $fcmtoken, 'bpro' => $ispro, 'spro' => $ispro ? $pro_token : null]);
+$stmt->execute(['key' => $user_key, 'token' => $fcmtoken, 'bpro' => ($ispro ? 1 : 0), 'spro' => ($ispro ? $pro_token : null)]);
 $user_id = $pdo->lastInsertId('user_id');
 
 $stmt = $pdo->prepare('UPDATE users SET fcm_token=NULL WHERE user_id <> :uid AND fcm_token=:ft');
-$stmt->execute(['uid' => $user_id, 'ft' => $fcm_token]);
+$stmt->execute(['uid' => $user_id, 'ft' => $fcmtoken]);
+
+if ($ispro)
+{
+	$stmt = $pdo->prepare('UPDATE users SET is_pro=0, pro_token=NULL WHERE user_id <> :uid AND pro_token = :ptk');
+	$stmt->execute(['uid' => $user_id, 'ptk' => $pro_token]);
+}
 
 $pdo->commit();
 

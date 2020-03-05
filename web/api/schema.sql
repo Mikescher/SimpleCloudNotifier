@@ -24,7 +24,7 @@ CREATE TABLE `messages`
 	`sender_user_id`     INT(11)         NOT NULL,
 
 	`timestamp_real`     DATETIME        NOT NULL   DEFAULT CURRENT_TIMESTAMP,
-	`ack`                BIT             NOT NULL   DEFAULT 0,
+	`ack`                TINYINT(1)      NOT NULL   DEFAULT 0,
 
 	`title`              VARCHAR(256)    NOT NULL,
 	`content`            VARCHAR(12288)      NULL,
