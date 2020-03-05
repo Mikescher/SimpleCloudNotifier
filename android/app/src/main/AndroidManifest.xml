@@ -62,7 +62,7 @@
             android:name=".view.debug.QueryLogActivity"
             android:label="@string/title_activity_query_log"
             android:theme="@style/AppTheme" />
-        <activity android:name=".view.debug.SingleQueryLogActivity"></activity>
+        <activity android:name=".view.debug.SingleQueryLogActivity" />
     </application>
 
 </manifest>

@@ -229,10 +229,10 @@ public class NotificationService
         if (msg.Priority == PriorityEnum.NORMAL) mBuilder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
         if (msg.Priority == PriorityEnum.HIGH)   mBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
 
-        Intent intnt_click = new Intent(SCNApp.getContext(), BroadcastReceiverService.class);
-        intnt_click.putExtra(BroadcastReceiverService.ID_KEY, BroadcastReceiverService.NOTIF_SHOW_MAIN);
-        PendingIntent pi = PendingIntent.getBroadcast(ctxt, 0, intnt_click, 0);
+        Intent intent = new Intent(ctxt, MainActivity.class);
+        PendingIntent pi = PendingIntent.getActivity(ctxt, 0, intent, 0);
         mBuilder.setContentIntent(pi);
+
         NotificationManager mNotificationManager = (NotificationManager) ctxt.getSystemService(Context.NOTIFICATION_SERVICE);
         if (mNotificationManager == null) return;
 
