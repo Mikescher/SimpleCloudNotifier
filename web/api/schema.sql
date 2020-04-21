@@ -27,7 +27,7 @@ CREATE TABLE `messages`
 	`ack`                TINYINT(1)      NOT NULL   DEFAULT 0,
 
 	`title`              VARCHAR(256)    NOT NULL,
-	`content`            VARCHAR(12288)      NULL,
+	`content`            LONGTEXT            NULL,
 	`priority`           INT(11)         NOT NULL,
 	`sendtime`           BIGINT UNSIGNED NOT NULL,
 
