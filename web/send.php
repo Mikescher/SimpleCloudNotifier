@@ -52,7 +52,7 @@ try
 //------------------------------------------------------------------
 
 	if (strlen($message) > 120) api_return(400, ['success' => false, 'error' => ERR::TITLE_TOO_LONG, 'errhighlight' => 103, 'message' => 'Title too long (120 characters)']);
-	if (strlen($content) > Statics::contentlen_max($data['is_pro'])) api_return(400, ['success' => false, 'error' => ERR::CONTENT_TOO_LONG, 'errhighlight' => 104, 'message' => 'Content too long ('.Statics::contentlen_max($data['is_pro']).' characters)']);
+	if (strlen($content) > Statics::contentlen_max($data['is_pro'])) api_return(400, ['success' => false, 'error' => ERR::CONTENT_TOO_LONG, 'errhighlight' => 104, 'message' => 'Content too long ('.strlen($content).' characters; max := '.Statics::contentlen_max($data['is_pro']).' characters)']);
 
 //------------------------------------------------------------------
 
