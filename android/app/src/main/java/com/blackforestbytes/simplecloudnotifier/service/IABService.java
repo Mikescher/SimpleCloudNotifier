@@ -9,8 +9,12 @@ import android.widget.Toast;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
+import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
+import com.android.billingclient.api.SkuDetails;
+import com.android.billingclient.api.SkuDetailsParams;
+import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.blackforestbytes.simplecloudnotifier.SCNApp;
 import com.blackforestbytes.simplecloudnotifier.lib.datatypes.Tuple2;
 import com.blackforestbytes.simplecloudnotifier.lib.datatypes.Tuple3;
@@ -20,11 +24,15 @@ import com.blackforestbytes.simplecloudnotifier.model.SCNSettings;
 import com.blackforestbytes.simplecloudnotifier.view.MainActivity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import static androidx.constraintlayout.widget.Constraints.TAG;
@@ -58,7 +66,7 @@ public class IABService implements PurchasesUpdatedListener
     private final List<Purchase> purchases = new ArrayList<>();
     private boolean _isInitialized = false;
 
-    private Map<String, Boolean> _localCache= new HashMap<>();
+    private final Map<String, Boolean> _localCache= new HashMap<>();
 
     public IABService(Context c)
     {
@@ -72,6 +80,7 @@ public class IABService implements PurchasesUpdatedListener
                 .build();
 
         startServiceConnection(this::queryPurchases, false);
+        startServiceConnection(this::querySkuDetails, false);
     }
 
     public void reloadPrefs()
@@ -126,9 +135,9 @@ public class IABService implements PurchasesUpdatedListener
             Purchase.PurchasesResult purchasesResult = client.queryPurchases(BillingClient.SkuType.INAPP);
             Log.i(TAG, "Querying purchases elapsed time: " + (System.currentTimeMillis() - time) + "ms");
 
-            if (purchasesResult.getResponseCode() == BillingClient.BillingResponse.OK)
+            if (purchasesResult.getResponseCode() == BillingClient.BillingResponseCode.OK)
             {
-                for (Purchase p : purchasesResult.getPurchasesList())
+                for (Purchase p : Objects.requireNonNull(purchasesResult.getPurchasesList()))
                 {
                     handlePurchase(p, false);
                 }
@@ -150,17 +159,35 @@ public class IABService implements PurchasesUpdatedListener
         executeServiceRequest(queryToExecute, false);
     }
 
+    public void querySkuDetails() {
+    }
+
     public void purchase(Activity a, String id)
     {
-        executeServiceRequest(() ->
-        {
-            BillingFlowParams flowParams = BillingFlowParams
-                    .newBuilder()
-                    .setSku(id)
-                    .setType(BillingClient.SkuType.INAPP) // SkuType.SUB for subscription
-                    .build();
-            client.launchBillingFlow(a, flowParams);
-        }, true);
+        Func0to0 queryRequest = () -> {
+            // Query the purchase async
+            SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
+            params.setSkusList(Collections.singletonList(id)).setType(BillingClient.SkuType.INAPP);
+            client.querySkuDetailsAsync(params.build(), (billingResult, skuDetailsList) ->
+            {
+                if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK || skuDetailsList == null || skuDetailsList.size() != 1)
+                {
+                    SCNApp.showToast("Could not find product", Toast.LENGTH_SHORT);
+                    return;
+                }
+
+                executeServiceRequest(() ->
+                {
+                    BillingFlowParams flowParams = BillingFlowParams
+                            .newBuilder()
+                            .setSkuDetails(skuDetailsList.get(0))
+                            .build();
+                    client.launchBillingFlow(a, flowParams);
+                }, true);
+            });
+        };
+        executeServiceRequest(queryRequest, false);
+
     }
 
     private void executeServiceRequest(Func0to0 runnable, final boolean userRequest)
@@ -186,16 +213,16 @@ public class IABService implements PurchasesUpdatedListener
     }
 
     @Override
-    public void onPurchasesUpdated(int responseCode, @Nullable List<Purchase> purchases)
+    public void onPurchasesUpdated(@NonNull BillingResult billingResult, @Nullable List<Purchase> purchases)
     {
-        if (responseCode == BillingClient.BillingResponse.OK && purchases != null)
+        if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases != null)
         {
             for (Purchase purchase : purchases)
             {
                 handlePurchase(purchase, true);
             }
         }
-        else if (responseCode == BillingClient.BillingResponse.ITEM_ALREADY_OWNED && purchases != null)
+        else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED && purchases != null)
         {
             for (Purchase purchase : purchases)
             {
@@ -228,9 +255,9 @@ public class IABService implements PurchasesUpdatedListener
         client.startConnection(new BillingClientStateListener()
         {
             @Override
-            public void onBillingSetupFinished(@BillingClient.BillingResponse int billingResponseCode)
+            public void onBillingSetupFinished(@NonNull BillingResult billingResult)
             {
-                if (billingResponseCode == BillingClient.BillingResponse.OK)
+                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK)
                 {
                     isServiceConnected = true;
                     if (executeOnSuccess != null) executeOnSuccess.invoke();

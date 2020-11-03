@@ -68,6 +68,7 @@ public class ServerCommunication
                         if (!json_bool(json, "success"))
                         {
                             SCNApp.showToast(json_str(json, "message"), 4000);
+                            handleNonSuccess("register", call, response, r);
                             return;
                         }
 
@@ -134,6 +135,7 @@ public class ServerCommunication
                         if (!json_bool(json, "success"))
                         {
                             SCNApp.showToast(json_str(json, "message"), 4000);
+                            handleNonSuccess("update<1>", call, response, r);
                             return;
                         }
 
@@ -200,6 +202,7 @@ public class ServerCommunication
 
                         if (!json_bool(json, "success")) {
                             SCNApp.showToast(json_str(json, "message"), 4000);
+                            handleNonSuccess("update<2>", call, response, r);
                             return;
                         }
 
@@ -269,6 +272,7 @@ public class ServerCommunication
                         if (!json_bool(json, "success"))
                         {
                             SCNApp.showToast(json_str(json, "message"), 4000);
+                            handleNonSuccess("info", call, response, r);
 
                             int errid = json.optInt("errid", 0);
 
@@ -356,6 +360,7 @@ public class ServerCommunication
                         if (!json_bool(json, "success"))
                         {
                             SCNApp.showToast(json_str(json, "message"), 4000);
+                            handleNonSuccess("requery", call, response, r);
                             return;
                         }
 
@@ -420,8 +425,7 @@ public class ServerCommunication
                     String r = Str.Empty;
                     try (ResponseBody responseBody = response.body())
                     {
-                        if (!response.isSuccessful())
-                            throw new IOException("Unexpected code " + response);
+                        if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
                         if (responseBody == null) throw new IOException("No response");
 
                         r = responseBody.string();
@@ -431,6 +435,7 @@ public class ServerCommunication
 
                         if (!json_bool(json, "success")) {
                             SCNApp.showToast(json_str(json, "message"), 4000);
+                            handleNonSuccess("upgrade", call, response, r);
                             return;
                         }
 
@@ -492,7 +497,11 @@ public class ServerCommunication
 
                         JSONObject json = (JSONObject) new JSONTokener(r).nextValue();
 
-                        if (!json_bool(json, "success")) SCNApp.showToast(json_str(json, "message"), 4000);
+                        if (!json_bool(json, "success"))
+                        {
+                            SCNApp.showToast(json_str(json, "message"), 4000);
+                            handleNonSuccess("ack", call, response, r);
+                        }
 
                         handleSuccess("ack", call, response, r);
                     }
@@ -542,6 +551,7 @@ public class ServerCommunication
                         if (!json_bool(json, "success"))
                         {
                             SCNApp.showToast(json_str(json, "message"), 4000);
+                            handleNonSuccess("expand", call, response, r);
                             return;
                         }
 
@@ -613,6 +623,28 @@ public class ServerCommunication
             LogLevel l = LogLevel.INFO;
 
             SingleQuery q = new SingleQuery(l, i, s, u, r, rc, "SUCCESS");
+            QueryLog.inst().add(q);
+        }
+        catch (Exception e2)
+        {
+            Log.e("SC:HandleSuccess", e2.toString());
+        }
+    }
+
+    private static void handleNonSuccess(String source, Call call, Response resp, String respBody)
+    {
+        Log.d("SC:"+source, respBody);
+
+        try
+        {
+            Instant i  = Instant.now();
+            String s   = source;
+            String u   = call.request().url().toString();
+            int rc     = resp.code();
+            String r   = respBody;
+            LogLevel l = LogLevel.WARN;
+
+            SingleQuery q = new SingleQuery(l, i, s, u, r, rc, "NON-SUCCESS");
             QueryLog.inst().add(q);
         }
         catch (Exception e2)
