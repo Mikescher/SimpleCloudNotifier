@@ -10,7 +10,7 @@ import com.blackforestbytes.simplecloudnotifier.SCNApp;
 import com.blackforestbytes.simplecloudnotifier.lib.datatypes.Tuple3;
 import com.blackforestbytes.simplecloudnotifier.lib.string.Str;
 import com.blackforestbytes.simplecloudnotifier.service.IABService;
-import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.installations.FirebaseInstallations;
 
 public class SCNSettings
 {
@@ -182,13 +182,13 @@ public class SCNSettings
         return base + "index.php?preset_user_id="+user_id+"&preset_user_key="+user_key;
     }
 
-    public void setServerToken(String token, View loader)
+    public void setServerToken(String token, View loader, boolean force)
     {
         if (isConnected())
         {
             fcm_token_local = token;
             save();
-            if (!fcm_token_local.equals(fcm_token_server)) ServerCommunication.updateFCMToken(user_id, user_key, fcm_token_local, loader);
+            if (!fcm_token_local.equals(fcm_token_server) || force) ServerCommunication.updateFCMToken(user_id, user_key, fcm_token_local, loader);
         }
         else
         {
@@ -200,13 +200,12 @@ public class SCNSettings
     }
 
     // called at app start
-    public void work(Activity a)
+    public void work(Activity a, boolean force)
     {
-        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(a, instanceIdResult ->
+        FirebaseInstallations.getInstance().getId().addOnSuccessListener(a, newToken ->
         {
-            String newToken = instanceIdResult.getToken();
             Log.d("FB::GetInstanceId", newToken);
-            SCNSettings.inst().setServerToken(newToken, null);
+            SCNSettings.inst().setServerToken(newToken, null, force);
         }).addOnCompleteListener(r ->
         {
             if (isConnected()) ServerCommunication.info(user_id, user_key, null);
@@ -232,16 +231,15 @@ public class SCNSettings
 
             if (promode_server != promode_local) updateProState(loader);
 
-            if (!Str.equals(fcm_token_local, fcm_token_server)) work(a);
+            if (!Str.equals(fcm_token_local, fcm_token_server)) work(a, false);
         }
         else
         {
             // get token then register
-            FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(a, instanceIdResult ->
+            FirebaseInstallations.getInstance().getId().addOnSuccessListener(a, newToken ->
             {
-                String newToken = instanceIdResult.getToken();
                 Log.d("FB::GetInstanceId", newToken);
-                SCNSettings.inst().setServerToken(newToken, loader); // does register in here
+                SCNSettings.inst().setServerToken(newToken, loader, false); // does register in here
             }).addOnCompleteListener(r ->
             {
                 if (isConnected()) ServerCommunication.info(user_id, user_key, null); // info again for safety

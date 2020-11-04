@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity
 
         SCNApp.register(this);
         IABService.startup(this);
-        SCNSettings.inst().work(this);
+        SCNSettings.inst().work(this, true);
     }
 
     @Override
@@ -207,7 +207,7 @@ public class MainActivity extends AppCompatActivity
                     tabLayout.setupWithViewPager(viewPager);
 
 
-                    SCNSettings.inst().work(this);
+                    SCNSettings.inst().work(this, true);
 
                     SCNApp.showToast("Backup imported", Toast.LENGTH_LONG);
 
