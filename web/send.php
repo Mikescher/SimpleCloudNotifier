@@ -185,6 +185,6 @@ try
 catch (Exception $mex)
 {
 	reportError("Root try-catch triggered", $mex);
-	if ($pdo->inTransaction()) $pdo->rollBack();
+	if ($pdo !== null && $pdo->inTransaction()) $pdo->rollBack();
 	api_return(500, ['success' => false, 'error' => ERR::INTERNAL_EXCEPTION, 'errhighlight' => -1, 'message' => 'PHP script threw exception.'."\n\n".'Exception: ' . $e->getMessage()]);
 }
