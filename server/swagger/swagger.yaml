@@ -87,15 +87,15 @@ definitions:
   handler.Register.response:
     properties:
       is_pro:
-        type: string
+        type: integer
       message:
         type: string
       quota:
-        type: string
+        type: integer
       quota_max:
-        type: string
+        type: integer
       success:
-        type: string
+        type: boolean
       user_id:
         type: string
       user_key:
@@ -112,6 +112,23 @@ definitions:
       message:
         type: string
       success:
+        type: string
+    type: object
+  handler.Send.body:
+    properties:
+      content:
+        type: string
+      msg_id:
+        type: string
+      priority:
+        type: string
+      timestamp:
+        type: string
+      title:
+        type: string
+      user_id:
+        type: string
+      user_key:
         type: string
     type: object
   handler.Send.response:
@@ -212,6 +229,7 @@ info:
 paths:
   /ack.php:
     get:
+      operationId: compat-ack
       parameters:
       - description: the user_id
         in: query
@@ -251,6 +269,7 @@ paths:
             $ref: '#/definitions/ginresp.errBody'
   /expand.php:
     get:
+      operationId: compat-expand
       responses:
         "200":
           description: OK
@@ -274,6 +293,7 @@ paths:
             $ref: '#/definitions/ginresp.errBody'
   /info.php:
     get:
+      operationId: compat-info
       parameters:
       - description: the user_id
         in: query
@@ -348,6 +368,7 @@ paths:
             $ref: '#/definitions/ginresp.errBody'
   /register.php:
     get:
+      operationId: compat-register
       parameters:
       - description: the (android) fcm token
         in: query
@@ -379,6 +400,7 @@ paths:
       summary: Register a new account
   /requery.php:
     get:
+      operationId: compat-requery
       parameters:
       - description: the user_id
         in: query
@@ -402,78 +424,40 @@ paths:
       summary: Return all not-acknowledged messages
   /send.php:
     post:
-      description: all aeguments can either be supplied in the query or in the json
-        body
+      consumes:
+      - application/json
+      description: (all arguments can either be supplied in the query or in the json
+        body)
+      operationId: compat-send
       parameters:
-      - description: the user_id
-        in: query
-        name: user_id
-        required: true
-        type: string
-      - description: the user_key
-        in: query
-        name: user_key
-        required: true
-        type: string
-      - description: The message title
-        in: query
-        name: title
-        required: true
-        type: string
-      - description: The message content
-        in: query
+      - in: query
         name: content
         type: string
-      - description: The message priority
-        in: query
+      - in: query
+        name: messageID
+        type: string
+      - in: query
         name: priority
         type: string
-      - description: The message idempotency id
-        in: query
-        name: msg_id
-        type: string
-      - description: The message timestamp
-        in: query
+      - in: query
         name: timestamp
         type: string
-      - description: the user_id
-        in: body
-        name: user_id
-        required: true
-        schema:
-          type: string
-      - description: the user_key
-        in: body
-        name: user_key
-        required: true
-        schema:
-          type: string
-      - description: The message title
-        in: body
+      - in: query
         name: title
-        required: true
-        schema:
-          type: string
-      - description: The message content
+        type: string
+      - in: query
+        name: userID
+        type: string
+      - in: query
+        name: userKey
+        type: string
+      - description: ' '
         in: body
-        name: content
+        name: post_body
         schema:
-          type: string
-      - description: The message priority
-        in: body
-        name: priority
-        schema:
-          type: string
-      - description: The message idempotency id
-        in: body
-        name: msg_id
-        schema:
-          type: string
-      - description: The message timestamp
-        in: body
-        name: timestamp
-        schema:
-          type: string
+          $ref: '#/definitions/handler.Send.body'
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
@@ -486,6 +470,7 @@ paths:
       summary: Send a message
   /update.php:
     get:
+      operationId: compat-update
       parameters:
       - description: the user_id
         in: query
@@ -514,6 +499,7 @@ paths:
       summary: Set the fcm-token (android)
   /upgrade.php:
     get:
+      operationId: compat-upgrade
       parameters:
       - description: the user_id
         in: query

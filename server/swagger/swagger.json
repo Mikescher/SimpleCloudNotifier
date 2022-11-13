@@ -12,6 +12,7 @@
         "/ack.php": {
             "get": {
                 "summary": "Acknowledge that a message was received",
+                "operationId": "compat-ack",
                 "parameters": [
                     {
                         "type": "string",
@@ -72,6 +73,7 @@
         "/expand.php": {
             "get": {
                 "summary": "Get a whole (potentially truncated) message",
+                "operationId": "compat-expand",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -109,6 +111,7 @@
         "/info.php": {
             "get": {
                 "summary": "Get information about the current user",
+                "operationId": "compat-info",
                 "parameters": [
                     {
                         "type": "string",
@@ -226,6 +229,7 @@
         "/register.php": {
             "get": {
                 "summary": "Register a new account",
+                "operationId": "compat-register",
                 "parameters": [
                     {
                         "type": "string",
@@ -272,6 +276,7 @@
         "/requery.php": {
             "get": {
                 "summary": "Return all not-acknowledged messages",
+                "operationId": "compat-requery",
                 "parameters": [
                     {
                         "type": "string",
@@ -306,111 +311,57 @@
         },
         "/send.php": {
             "post": {
-                "description": "all aeguments can either be supplied in the query or in the json body",
+                "description": "(all arguments can either be supplied in the query or in the json body)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
                 "summary": "Send a message",
+                "operationId": "compat-send",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "the user_id",
-                        "name": "user_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the user_key",
-                        "name": "user_key",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "The message title",
-                        "name": "title",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "The message content",
                         "name": "content",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "The message priority",
+                        "name": "messageID",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "name": "priority",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "The message idempotency id",
-                        "name": "msg_id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "The message timestamp",
                         "name": "timestamp",
                         "in": "query"
                     },
                     {
-                        "description": "the user_id",
-                        "name": "user_id",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "the user_key",
-                        "name": "user_key",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "The message title",
+                        "type": "string",
                         "name": "title",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
+                        "in": "query"
                     },
                     {
-                        "description": "The message content",
-                        "name": "content",
-                        "in": "body",
-                        "schema": {
-                            "type": "string"
-                        }
+                        "type": "string",
+                        "name": "userID",
+                        "in": "query"
                     },
                     {
-                        "description": "The message priority",
-                        "name": "priority",
-                        "in": "body",
-                        "schema": {
-                            "type": "string"
-                        }
+                        "type": "string",
+                        "name": "userKey",
+                        "in": "query"
                     },
                     {
-                        "description": "The message idempotency id",
-                        "name": "msg_id",
+                        "description": " ",
+                        "name": "post_body",
                         "in": "body",
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "The message timestamp",
-                        "name": "timestamp",
-                        "in": "body",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handler.Send.body"
                         }
                     }
                 ],
@@ -433,6 +384,7 @@
         "/update.php": {
             "get": {
                 "summary": "Set the fcm-token (android)",
+                "operationId": "compat-update",
                 "parameters": [
                     {
                         "type": "string",
@@ -475,6 +427,7 @@
         "/upgrade.php": {
             "get": {
                 "summary": "Upgrade a free account to a paid account",
+                "operationId": "compat-upgrade",
                 "parameters": [
                     {
                         "type": "string",
@@ -661,19 +614,19 @@
             "type": "object",
             "properties": {
                 "is_pro": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "message": {
                     "type": "string"
                 },
                 "quota": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "quota_max": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "success": {
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "user_id": {
                     "type": "string"
@@ -699,6 +652,32 @@
                     "type": "string"
                 },
                 "success": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.Send.body": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "msg_id": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "user_key": {
                     "type": "string"
                 }
             }

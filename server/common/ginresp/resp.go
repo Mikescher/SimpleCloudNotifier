@@ -76,8 +76,8 @@ func InternalError(e error) HTTPResponse {
 	return &errHTTPResponse{statusCode: http.StatusInternalServerError, data: errBody{Success: false, Message: e.Error()}}
 }
 
-func NotImplemented(errid int) HTTPResponse {
-	return &errHTTPResponse{statusCode: http.StatusInternalServerError, data: internAPIError{Success: false, ErrorID: errid, Message: "NotImplemented"}}
+func InternAPIError(errid int, msg string) HTTPResponse {
+	return &errHTTPResponse{statusCode: http.StatusInternalServerError, data: internAPIError{Success: false, ErrorID: errid, Message: msg}}
 }
 
 func SendAPIError(errorid apierr.APIError, highlight int, msg string) HTTPResponse {
