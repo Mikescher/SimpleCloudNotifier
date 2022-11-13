@@ -1,0 +1,551 @@
+basePath: /api/
+definitions:
+  ginresp.errBody:
+    properties:
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  ginresp.internAPIError:
+    properties:
+      errid:
+        type: integer
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  ginresp.sendAPIError:
+    properties:
+      errhighlight:
+        type: integer
+      error:
+        type: integer
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  handler.Ack.response:
+    properties:
+      message:
+        type: string
+      new_ack:
+        type: integer
+      prev_ack:
+        type: integer
+      success:
+        type: string
+    type: object
+  handler.DatabaseTest.response:
+    properties:
+      libVersion:
+        type: string
+      libVersionNumber:
+        type: integer
+      sourceID:
+        type: string
+      success:
+        type: boolean
+    type: object
+  handler.Expand.response:
+    properties:
+      data:
+        $ref: '#/definitions/models.ShortCompatMessage'
+      message:
+        type: string
+      success:
+        type: string
+    type: object
+  handler.Health.response:
+    properties:
+      status:
+        type: string
+    type: object
+  handler.Info.response:
+    properties:
+      fcm_token_set:
+        type: boolean
+      is_pro:
+        type: string
+      message:
+        type: string
+      quota:
+        type: string
+      quota_max:
+        type: string
+      success:
+        type: string
+      unack_count:
+        type: integer
+      user_id:
+        type: string
+      user_key:
+        type: string
+    type: object
+  handler.Register.response:
+    properties:
+      is_pro:
+        type: string
+      message:
+        type: string
+      quota:
+        type: string
+      quota_max:
+        type: string
+      success:
+        type: string
+      user_id:
+        type: string
+      user_key:
+        type: string
+    type: object
+  handler.Requery.response:
+    properties:
+      count:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/models.CompatMessage'
+        type: array
+      message:
+        type: string
+      success:
+        type: string
+    type: object
+  handler.Send.response:
+    properties:
+      message:
+        type: string
+      success:
+        type: string
+    type: object
+  handler.Update.response:
+    properties:
+      is_pro:
+        type: string
+      message:
+        type: string
+      quota:
+        type: string
+      quota_max:
+        type: string
+      success:
+        type: string
+      user_id:
+        type: string
+      user_key:
+        type: string
+    type: object
+  handler.Upgrade.response:
+    properties:
+      data:
+        $ref: '#/definitions/models.ShortCompatMessage'
+      message:
+        type: string
+      success:
+        type: string
+    type: object
+  handler.pingResponse:
+    properties:
+      info:
+        $ref: '#/definitions/handler.pingResponseInfo'
+      message:
+        type: string
+    type: object
+  handler.pingResponseInfo:
+    properties:
+      addr:
+        type: string
+      headers:
+        additionalProperties:
+          items:
+            type: string
+          type: array
+        type: object
+      method:
+        type: string
+      request:
+        type: string
+      uri:
+        type: string
+    type: object
+  models.CompatMessage:
+    properties:
+      body:
+        type: string
+      priority:
+        type: integer
+      scn_msg_id:
+        type: string
+      timestamp:
+        type: integer
+      title:
+        type: string
+      usr_msg_id:
+        type: string
+    type: object
+  models.ShortCompatMessage:
+    properties:
+      body:
+        type: string
+      priority:
+        type: integer
+      scn_msg_id:
+        type: string
+      timestamp:
+        type: integer
+      title:
+        type: string
+      trimmed:
+        type: boolean
+      usr_msg_id:
+        type: string
+    type: object
+host: scn.blackforestbytes.com
+info:
+  contact: {}
+  description: API for SCN
+  title: SimpleCloudNotifier API
+  version: "2.0"
+paths:
+  /ack.php:
+    get:
+      parameters:
+      - description: the user_id
+        in: query
+        name: user_id
+        required: true
+        type: string
+      - description: the user_key
+        in: query
+        name: user_key
+        required: true
+        type: string
+      - description: the message id
+        in: query
+        name: scn_msg_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.Ack.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.internAPIError'
+      summary: Acknowledge that a message was received
+  /db-test:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.DatabaseTest.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.errBody'
+  /expand.php:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.Expand.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.internAPIError'
+      summary: Get a whole (potentially truncated) message
+  /health:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.Health.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.errBody'
+  /info.php:
+    get:
+      parameters:
+      - description: the user_id
+        in: query
+        name: user_id
+        required: true
+        type: string
+      - description: the user_key
+        in: query
+        name: user_key
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.Info.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.internAPIError'
+      summary: Get information about the current user
+  /ping:
+    delete:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.pingResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.errBody'
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.pingResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.errBody'
+    patch:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.pingResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.errBody'
+    post:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.pingResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.errBody'
+    put:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.pingResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.errBody'
+  /register.php:
+    get:
+      parameters:
+      - description: the (android) fcm token
+        in: query
+        name: fcm_token
+        required: true
+        type: string
+      - description: if the user is a paid account
+        enum:
+        - "true"
+        - "false"
+        in: query
+        name: pro
+        required: true
+        type: string
+      - description: the (android) IAP token
+        in: query
+        name: pro_token
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.Register.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.internAPIError'
+      summary: Register a new account
+  /requery.php:
+    get:
+      parameters:
+      - description: the user_id
+        in: query
+        name: user_id
+        required: true
+        type: string
+      - description: the user_key
+        in: query
+        name: user_key
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.Requery.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.internAPIError'
+      summary: Return all not-acknowledged messages
+  /send.php:
+    post:
+      description: all aeguments can either be supplied in the query or in the json
+        body
+      parameters:
+      - description: the user_id
+        in: query
+        name: user_id
+        required: true
+        type: string
+      - description: the user_key
+        in: query
+        name: user_key
+        required: true
+        type: string
+      - description: The message title
+        in: query
+        name: title
+        required: true
+        type: string
+      - description: The message content
+        in: query
+        name: content
+        type: string
+      - description: The message priority
+        in: query
+        name: priority
+        type: string
+      - description: The message idempotency id
+        in: query
+        name: msg_id
+        type: string
+      - description: The message timestamp
+        in: query
+        name: timestamp
+        type: string
+      - description: the user_id
+        in: body
+        name: user_id
+        required: true
+        schema:
+          type: string
+      - description: the user_key
+        in: body
+        name: user_key
+        required: true
+        schema:
+          type: string
+      - description: The message title
+        in: body
+        name: title
+        required: true
+        schema:
+          type: string
+      - description: The message content
+        in: body
+        name: content
+        schema:
+          type: string
+      - description: The message priority
+        in: body
+        name: priority
+        schema:
+          type: string
+      - description: The message idempotency id
+        in: body
+        name: msg_id
+        schema:
+          type: string
+      - description: The message timestamp
+        in: body
+        name: timestamp
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.Send.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.sendAPIError'
+      summary: Send a message
+  /update.php:
+    get:
+      parameters:
+      - description: the user_id
+        in: query
+        name: user_id
+        required: true
+        type: string
+      - description: the user_key
+        in: query
+        name: user_key
+        required: true
+        type: string
+      - description: the (android) fcm token
+        in: query
+        name: fcm_token
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.Update.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.internAPIError'
+      summary: Set the fcm-token (android)
+  /upgrade.php:
+    get:
+      parameters:
+      - description: the user_id
+        in: query
+        name: user_id
+        required: true
+        type: string
+      - description: the user_key
+        in: query
+        name: user_key
+        required: true
+        type: string
+      - description: if the user is a paid account
+        enum:
+        - "true"
+        - "false"
+        in: query
+        name: pro
+        required: true
+        type: string
+      - description: the (android) IAP token
+        in: query
+        name: pro_token
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.Upgrade.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.internAPIError'
+      summary: Upgrade a free account to a paid account
+swagger: "2.0"

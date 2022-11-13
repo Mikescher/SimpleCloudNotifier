@@ -1,0 +1,844 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API for SCN",
+        "title": "SimpleCloudNotifier API",
+        "contact": {},
+        "version": "2.0"
+    },
+    "host": "scn.blackforestbytes.com",
+    "basePath": "/api/",
+    "paths": {
+        "/ack.php": {
+            "get": {
+                "summary": "Acknowledge that a message was received",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the message id",
+                        "name": "scn_msg_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Ack.response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.internAPIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/db-test": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.DatabaseTest.response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.errBody"
+                        }
+                    }
+                }
+            }
+        },
+        "/expand.php": {
+            "get": {
+                "summary": "Get a whole (potentially truncated) message",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Expand.response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.internAPIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Health.response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.errBody"
+                        }
+                    }
+                }
+            }
+        },
+        "/info.php": {
+            "get": {
+                "summary": "Get information about the current user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Info.response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.internAPIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/ping": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.pingResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.errBody"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.pingResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.errBody"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.pingResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.errBody"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.pingResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.errBody"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.pingResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.errBody"
+                        }
+                    }
+                }
+            }
+        },
+        "/register.php": {
+            "get": {
+                "summary": "Register a new account",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the (android) fcm token",
+                        "name": "fcm_token",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "true",
+                            "false"
+                        ],
+                        "type": "string",
+                        "description": "if the user is a paid account",
+                        "name": "pro",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the (android) IAP token",
+                        "name": "pro_token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Register.response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.internAPIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/requery.php": {
+            "get": {
+                "summary": "Return all not-acknowledged messages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Requery.response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.internAPIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/send.php": {
+            "post": {
+                "description": "all aeguments can either be supplied in the query or in the json body",
+                "summary": "Send a message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The message title",
+                        "name": "title",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The message content",
+                        "name": "content",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The message priority",
+                        "name": "priority",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The message idempotency id",
+                        "name": "msg_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The message timestamp",
+                        "name": "timestamp",
+                        "in": "query"
+                    },
+                    {
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "The message title",
+                        "name": "title",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "The message content",
+                        "name": "content",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "The message priority",
+                        "name": "priority",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "The message idempotency id",
+                        "name": "msg_id",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "The message timestamp",
+                        "name": "timestamp",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Send.response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.sendAPIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/update.php": {
+            "get": {
+                "summary": "Set the fcm-token (android)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the (android) fcm token",
+                        "name": "fcm_token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Update.response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.internAPIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/upgrade.php": {
+            "get": {
+                "summary": "Upgrade a free account to a paid account",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "true",
+                            "false"
+                        ],
+                        "type": "string",
+                        "description": "if the user is a paid account",
+                        "name": "pro",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the (android) IAP token",
+                        "name": "pro_token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Upgrade.response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.internAPIError"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "ginresp.errBody": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ginresp.internAPIError": {
+            "type": "object",
+            "properties": {
+                "errid": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ginresp.sendAPIError": {
+            "type": "object",
+            "properties": {
+                "errhighlight": {
+                    "type": "integer"
+                },
+                "error": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "handler.Ack.response": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "new_ack": {
+                    "type": "integer"
+                },
+                "prev_ack": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.DatabaseTest.response": {
+            "type": "object",
+            "properties": {
+                "libVersion": {
+                    "type": "string"
+                },
+                "libVersionNumber": {
+                    "type": "integer"
+                },
+                "sourceID": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "handler.Expand.response": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.ShortCompatMessage"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.Health.response": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.Info.response": {
+            "type": "object",
+            "properties": {
+                "fcm_token_set": {
+                    "type": "boolean"
+                },
+                "is_pro": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "quota": {
+                    "type": "string"
+                },
+                "quota_max": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "string"
+                },
+                "unack_count": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "user_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.Register.response": {
+            "type": "object",
+            "properties": {
+                "is_pro": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "quota": {
+                    "type": "string"
+                },
+                "quota_max": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "user_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.Requery.response": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CompatMessage"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.Send.response": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.Update.response": {
+            "type": "object",
+            "properties": {
+                "is_pro": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "quota": {
+                    "type": "string"
+                },
+                "quota_max": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "user_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.Upgrade.response": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.ShortCompatMessage"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.pingResponse": {
+            "type": "object",
+            "properties": {
+                "info": {
+                    "$ref": "#/definitions/handler.pingResponseInfo"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.pingResponseInfo": {
+            "type": "object",
+            "properties": {
+                "addr": {
+                    "type": "string"
+                },
+                "headers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "method": {
+                    "type": "string"
+                },
+                "request": {
+                    "type": "string"
+                },
+                "uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CompatMessage": {
+            "type": "object",
+            "properties": {
+                "body": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "scn_msg_id": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "usr_msg_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ShortCompatMessage": {
+            "type": "object",
+            "properties": {
+                "body": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "scn_msg_id": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "trimmed": {
+                    "type": "boolean"
+                },
+                "usr_msg_id": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

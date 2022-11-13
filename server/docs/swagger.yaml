@@ -1,0 +1,14 @@
+info:
+  contact: {}
+paths:
+  /ping:
+    get:
+      consumes:
+      - application/json
+      description: asdf
+      operationId: ping
+      produces:
+      - application/json
+      responses: {}
+      summary: Test request
+swagger: "2.0"
