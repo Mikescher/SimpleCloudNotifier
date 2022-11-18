@@ -25,15 +25,15 @@ definitions:
     type: object
   handler.CreateUser.body:
     properties:
-      agentModel:
+      agent_model:
         type: string
-      agentVersion:
+      agent_version:
         type: string
-      clientType:
+      client_type:
         type: string
-      fcmtoken:
+      fcm_token:
         type: string
-      proToken:
+      pro_token:
         type: string
       username:
         type: string
@@ -129,6 +129,13 @@ definitions:
       user_id:
         type: string
       user_key:
+        type: string
+    type: object
+  handler.UpdateUser.body:
+    properties:
+      pro_token:
+        type: string
+      username:
         type: string
     type: object
   handler.Upgrade.response:
@@ -253,6 +260,68 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Create a new user
+  /api-v2/user/{uid}:
+    get:
+      operationId: api-user-get
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Get a user (only self is allowed)
+    patch:
+      description: The body-values are optional, only send the ones you want to update
+      operationId: api-user-update
+      parameters:
+      - description: ' '
+        in: body
+        name: post_body
+        schema:
+          $ref: '#/definitions/handler.UpdateUser.body'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: (Partially) update a user (only self allowed)
   /api/ack.php:
     get:
       operationId: compat-ack

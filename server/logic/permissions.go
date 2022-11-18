@@ -29,13 +29,22 @@ func NewEmptyPermissions() PermissionSet {
 	}
 }
 
-var respoNotAuthorized = ginresp.InternAPIError(apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+var respoNotAuthorized = ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 
 func (ac *AppContext) CheckPermissionUserRead(userid int64) *ginresp.HTTPResponse {
 	p := ac.permissions
 	if p.ReferenceID != nil && *p.ReferenceID == userid && p.KeyType == PermKeyTypeUserRead {
 		return nil
 	}
+	if p.ReferenceID != nil && *p.ReferenceID == userid && p.KeyType == PermKeyTypeUserAdmin {
+		return nil
+	}
+
+	return langext.Ptr(respoNotAuthorized)
+}
+
+func (ac *AppContext) CheckPermissionUserAdmin(userid int64) *ginresp.HTTPResponse {
+	p := ac.permissions
 	if p.ReferenceID != nil && *p.ReferenceID == userid && p.KeyType == PermKeyTypeUserAdmin {
 		return nil
 	}

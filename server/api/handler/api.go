@@ -7,7 +7,9 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"database/sql"
 	"github.com/gin-gonic/gin"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"net/http"
+	"regexp"
 )
 
 type APIHandler struct {
@@ -19,21 +21,21 @@ type APIHandler struct {
 // @Summary Create a new user
 // @ID      api-user-create
 //
-// @Param       post_body body     handler.CreateUser.body  false " "
+// @Param   post_body body     handler.CreateUser.body false " "
 //
-// @Success 200 {object} models.UserJSON
-// @Failure 400 {object} ginresp.apiError
-// @Failure 500 {object} ginresp.apiError
+// @Success 200       {object} models.UserJSON
+// @Failure 400       {object} ginresp.apiError
+// @Failure 500       {object} ginresp.apiError
 //
 // @Router  /api-v2/user/ [POST]
 func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 	type body struct {
-		FCMToken     string  `form:"fcm_token"`
-		ProToken     *string `form:"pro_token"`
-		Username     *string `form:"username"`
-		AgentModel   string  `form:"agent_model"`
-		AgentVersion string  `form:"agent_version"`
-		ClientType   string  `form:"client_type"`
+		FCMToken     string  `json:"fcm_token"`
+		ProToken     *string `json:"pro_token"`
+		Username     *string `json:"username"`
+		AgentModel   string  `json:"agent_model"`
+		AgentVersion string  `json:"agent_version"`
+		ClientType   string  `json:"client_type"`
 	}
 
 	var b body
@@ -49,17 +51,17 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 	} else if b.ClientType == string(models.ClientTypeIOS) {
 		clientType = models.ClientTypeIOS
 	} else {
-		return ginresp.InternAPIError(apierr.INVALID_CLIENTTYPE, "Invalid ClientType", nil)
+		return ginresp.InternAPIError(400, apierr.INVALID_CLIENTTYPE, "Invalid ClientType", nil)
 	}
 
 	if b.ProToken != nil {
 		ptok, err := h.app.VerifyProToken(*b.ProToken)
 		if err != nil {
-			return ginresp.InternAPIError(apierr.FAILED_VERIFY_PRO_TOKEN, "Failed to query purchase status", err)
+			return ginresp.InternAPIError(500, apierr.FAILED_VERIFY_PRO_TOKEN, "Failed to query purchase status", err)
 		}
 
 		if !ptok {
-			return ginresp.InternAPIError(apierr.INVALID_PRO_TOKEN, "Purchase token could not be verified", nil)
+			return ginresp.InternAPIError(400, apierr.INVALID_PRO_TOKEN, "Purchase token could not be verified", nil)
 		}
 	}
 
@@ -69,24 +71,24 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 
 	err := h.app.Database.ClearFCMTokens(ctx, b.FCMToken)
 	if err != nil {
-		return ginresp.InternAPIError(apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
 	}
 
 	if b.ProToken != nil {
-		err := h.app.Database.ClearProTokens(ctx, b.FCMToken)
+		err := h.app.Database.ClearProTokens(ctx, *b.ProToken)
 		if err != nil {
-			return ginresp.InternAPIError(apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
+			return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
 		}
 	}
 
 	userobj, err := h.app.Database.CreateUser(ctx, readKey, sendKey, adminKey, b.ProToken, b.Username)
 	if err != nil {
-		return ginresp.InternAPIError(apierr.DATABASE_ERROR, "Failed to create user in db", err)
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to create user in db", err)
 	}
 
 	_, err = h.app.Database.CreateClient(ctx, userobj.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion)
 	if err != nil {
-		return ginresp.InternAPIError(apierr.DATABASE_ERROR, "Failed to create user in db", err)
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to create user in db", err)
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, userobj.JSON()))
@@ -94,11 +96,10 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 
 // GetUser swaggerdoc
 //
-// @Summary Create a new user
-// @ID      api-user-create
+// @Summary Get a user (only self is allowed)
+// @ID      api-user-get
 //
-// @Param       post_body body     handler.CreateUser.body  false " "
-// @Param       uid       path     int                      true  "UserID"
+// @Param   uid path     int true "UserID"
 //
 // @Success 200 {object} models.UserJSON
 // @Failure 400 {object} ginresp.apiError
@@ -125,17 +126,90 @@ func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 
 	user, err := h.app.Database.GetUser(ctx, u.UserID)
 	if err == sql.ErrNoRows {
-		return ginresp.InternAPIError(apierr.USER_NOT_FOUND, "User not found", err)
+		return ginresp.InternAPIError(404, apierr.USER_NOT_FOUND, "User not found", err)
 	}
 	if err != nil {
-		return ginresp.InternAPIError(apierr.DATABASE_ERROR, "Failed to query user", err)
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query user", err)
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, user.JSON()))
 }
 
+// UpdateUser swaggerdoc
+//
+// @Summary     (Partially) update a user (only self allowed)
+// @Description The body-values are optional, only send the ones you want to update
+// @ID          api-user-update
+//
+// @Param       post_body body     handler.UpdateUser.body false " "
+//
+// @Success     200       {object} models.UserJSON
+// @Failure     400       {object} ginresp.apiError
+// @Failure     401       {object} ginresp.apiError
+// @Failure     404       {object} ginresp.apiError
+// @Failure     500       {object} ginresp.apiError
+//
+// @Router      /api-v2/user/{uid} [PATCH]
 func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
-	return ginresp.NotImplemented()
+	type uri struct {
+		UserID int64 `uri:"uid"`
+	}
+	type body struct {
+		Username *string `json:"username"`
+		ProToken *string `json:"pro_token"`
+	}
+
+	var u uri
+	var b body
+	ctx, errResp := h.app.StartRequest(g, &u, nil, &b)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+		return *permResp
+	}
+
+	if b.Username != nil {
+		username := langext.Ptr(regexp.MustCompile(`[[:alnum:]\-_]`).ReplaceAllString(*b.Username, ""))
+		if *username == "" {
+			username = nil
+		}
+
+		err := h.app.Database.UpdateUserUsername(ctx, u.UserID, b.Username)
+		if err != nil {
+			return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to update user", err)
+		}
+	}
+
+	if b.ProToken != nil {
+		ptok, err := h.app.VerifyProToken(*b.ProToken)
+		if err != nil {
+			return ginresp.InternAPIError(500, apierr.FAILED_VERIFY_PRO_TOKEN, "Failed to query purchase status", err)
+		}
+
+		if !ptok {
+			return ginresp.InternAPIError(400, apierr.INVALID_PRO_TOKEN, "Purchase token could not be verified", nil)
+		}
+
+		err = h.app.Database.ClearProTokens(ctx, *b.ProToken)
+		if err != nil {
+			return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
+		}
+
+		err = h.app.Database.UpdateUserProToken(ctx, u.UserID, b.ProToken)
+		if err != nil {
+			return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to update user", err)
+		}
+	}
+
+	user, err := h.app.Database.GetUser(ctx, u.UserID)
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query (updated) user", err)
+	}
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, user.JSON()))
 }
 
 func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {

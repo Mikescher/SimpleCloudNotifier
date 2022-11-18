@@ -174,3 +174,31 @@ func (db *Database) GetUser(ctx TxContext, userid int64) (models.User, error) {
 
 	return user, nil
 }
+
+func (db *Database) UpdateUserUsername(ctx TxContext, userid int64, username *string) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, "UPDATE users SET username = ? WHERE user_id = ?", username, userid)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *Database) UpdateUserProToken(ctx TxContext, userid int64, protoken *string) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, "UPDATE users SET pro_token = ? AND is_pro = ? WHERE user_id = ?", protoken, bool2DB(protoken != nil), userid)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

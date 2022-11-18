@@ -77,11 +77,11 @@ func InternalError(e error) HTTPResponse {
 	return &errHTTPResponse{statusCode: http.StatusInternalServerError, data: apiError{Success: false, Error: int(apierr.INTERNAL_EXCEPTION), Message: e.Error()}}
 }
 
-func InternAPIError(errorid apierr.APIError, msg string, e error) HTTPResponse {
+func InternAPIError(status int, errorid apierr.APIError, msg string, e error) HTTPResponse {
 	if scn.Conf.ReturnRawErrors {
-		return &errHTTPResponse{statusCode: http.StatusInternalServerError, data: apiError{Success: false, Error: int(errorid), Message: msg, RawError: e}}
+		return &errHTTPResponse{statusCode: status, data: apiError{Success: false, Error: int(errorid), Message: msg, RawError: e}}
 	} else {
-		return &errHTTPResponse{statusCode: http.StatusInternalServerError, data: apiError{Success: false, Error: int(errorid), Message: msg}}
+		return &errHTTPResponse{statusCode: status, data: apiError{Success: false, Error: int(errorid), Message: msg}}
 	}
 }
 

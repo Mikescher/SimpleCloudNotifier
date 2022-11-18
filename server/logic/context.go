@@ -63,7 +63,7 @@ func (ac *AppContext) FinishSuccess(res ginresp.HTTPResponse) ginresp.HTTPRespon
 	if ac.transaction != nil {
 		err := ac.transaction.Commit()
 		if err != nil {
-			return ginresp.InternAPIError(apierr.COMMIT_FAILED, "Failed to comit changes to DB", err)
+			return ginresp.InternAPIError(500, apierr.COMMIT_FAILED, "Failed to comit changes to DB", err)
 		}
 		ac.transaction = nil
 	}

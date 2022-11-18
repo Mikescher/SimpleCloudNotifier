@@ -99,19 +99,19 @@ func (app *Application) StartRequest(g *gin.Context, uri any, query any, body an
 
 	if body != nil {
 		if err := g.ShouldBindJSON(&body); err != nil {
-			return nil, langext.Ptr(ginresp.InternAPIError(apierr.BINDFAIL_BODY_PARAM, "Failed to read body", err))
+			return nil, langext.Ptr(ginresp.InternAPIError(400, apierr.BINDFAIL_BODY_PARAM, "Failed to read body", err))
 		}
 	}
 
 	if query != nil {
 		if err := g.ShouldBindQuery(&query); err != nil {
-			return nil, langext.Ptr(ginresp.InternAPIError(apierr.BINDFAIL_QUERY_PARAM, "Failed to read query", err))
+			return nil, langext.Ptr(ginresp.InternAPIError(400, apierr.BINDFAIL_QUERY_PARAM, "Failed to read query", err))
 		}
 	}
 
 	if uri != nil {
 		if err := g.ShouldBindUri(&uri); err != nil {
-			return nil, langext.Ptr(ginresp.InternAPIError(apierr.BINDFAIL_URI_PARAM, "Failed to read uri", err))
+			return nil, langext.Ptr(ginresp.InternAPIError(400, apierr.BINDFAIL_URI_PARAM, "Failed to read uri", err))
 		}
 	}
 
@@ -123,7 +123,7 @@ func (app *Application) StartRequest(g *gin.Context, uri any, query any, body an
 	perm, err := app.getPermissions(actx, authheader)
 	if err != nil {
 		cancel()
-		return nil, langext.Ptr(ginresp.InternAPIError(apierr.PERM_QUERY_FAIL, "Failed to determine permissions", err))
+		return nil, langext.Ptr(ginresp.InternAPIError(400, apierr.PERM_QUERY_FAIL, "Failed to determine permissions", err))
 	}
 
 	actx.permissions = perm
