@@ -1,12 +1,16 @@
 package models
 
-import "time"
+import (
+	"database/sql"
+	"github.com/blockloop/scan"
+	"time"
+)
 
 type User struct {
 	UserID            int64
 	Username          *string
-	ReadKey           string
 	SendKey           string
+	ReadKey           string
 	AdminKey          string
 	TimestampCreated  time.Time
 	TimestampLastRead *time.Time
@@ -48,4 +52,46 @@ type UserJSON struct {
 	QuotaToday        int     `json:"quota_today"`
 	QuotaDay          *string `json:"quota_day"`
 	IsPro             bool    `json:"is_pro"`
+}
+
+type UserDB struct {
+	UserID            int64   `db:"user_id"`
+	Username          *string `db:"username"`
+	SendKey           string  `db:"send_key"`
+	ReadKey           string  `db:"read_key"`
+	AdminKey          string  `db:"admin_key"`
+	TimestampCreated  int64   `db:"timestamp_created"`
+	TimestampLastRead *int64  `db:"timestamp_lastread"`
+	TimestampLastSent *int64  `db:"timestamp_lastsent"`
+	MessagesSent      int     `db:"messages_sent"`
+	QuotaToday        int     `db:"quota_today"`
+	QuotaDay          *string `db:"quota_day"`
+	IsPro             bool    `db:"is_pro"`
+	ProToken          *string `db:"pro_token"`
+}
+
+func (u UserDB) Model() User {
+	return User{
+		UserID:            u.UserID,
+		Username:          u.Username,
+		SendKey:           u.SendKey,
+		ReadKey:           u.ReadKey,
+		AdminKey:          u.AdminKey,
+		TimestampCreated:  time.UnixMilli(u.TimestampCreated),
+		TimestampLastRead: timeOptFromMilli(u.TimestampLastRead),
+		TimestampLastSent: timeOptFromMilli(u.TimestampLastSent),
+		MessagesSent:      u.MessagesSent,
+		QuotaToday:        u.QuotaToday,
+		QuotaDay:          u.QuotaDay,
+		IsPro:             u.IsPro,
+	}
+}
+
+func DecodeUser(r *sql.Rows) (User, error) {
+	var udb UserDB
+	err := scan.RowStrict(&udb, r)
+	if err != nil {
+		return User{}, err
+	}
+	return udb.Model(), nil
 }

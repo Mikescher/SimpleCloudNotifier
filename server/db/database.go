@@ -11,14 +11,14 @@ import (
 	"time"
 )
 
-//go:embed schema_1.0.ddl
-var schema_1_0 string
+//go:embed schema_1.ddl
+var schema1 string
 
-//go:embed schema_2.0.ddl
-var schema_2_0 string
+//go:embed schema_2.ddl
+var schema2 string
 
-//go:embed schema_3.0.ddl
-var schema_3_0 string
+//go:embed schema_3.ddl
+var schema3 string
 
 type Database struct {
 	db *sql.DB
@@ -40,7 +40,7 @@ func (db *Database) Migrate(ctx context.Context) error {
 	schema, err := db.ReadSchema(ctx)
 	if schema == 0 {
 
-		_, err = db.db.ExecContext(ctx, schema_3_0)
+		_, err = db.db.ExecContext(ctx, schema3)
 		if err != nil {
 			return err
 		}

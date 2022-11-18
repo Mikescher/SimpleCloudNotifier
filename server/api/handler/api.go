@@ -5,6 +5,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/api/models"
 	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/logic"
+	"database/sql"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -35,13 +36,12 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 		ClientType   string  `form:"client_type"`
 	}
 
-	ctx := h.app.StartRequest(g)
-	defer ctx.Cancel()
-
 	var b body
-	if err := g.ShouldBindJSON(&b); err != nil {
-		return ginresp.InternAPIError(apierr.MISSING_BODY_PARAM, "Failed to read body", err)
+	ctx, errResp := h.app.StartRequest(g, nil, nil, &b)
+	if errResp != nil {
+		return *errResp
 	}
+	defer ctx.Cancel()
 
 	var clientType models.ClientType
 	if b.ClientType == string(models.ClientTypeAndroid) {
@@ -92,8 +92,46 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, userobj.JSON()))
 }
 
+// GetUser swaggerdoc
+//
+// @Summary Create a new user
+// @ID      api-user-create
+//
+// @Param       post_body body     handler.CreateUser.body  false " "
+// @Param       uid       path     int                      true  "UserID"
+//
+// @Success 200 {object} models.UserJSON
+// @Failure 400 {object} ginresp.apiError
+// @Failure 401 {object} ginresp.apiError
+// @Failure 404 {object} ginresp.apiError
+// @Failure 500 {object} ginresp.apiError
+//
+// @Router  /api-v2/user/{uid} [GET]
 func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
-	return ginresp.NotImplemented()
+	type uri struct {
+		UserID int64 `uri:"uid"`
+	}
+
+	var u uri
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	if permResp := ctx.CheckPermissionUserRead(u.UserID); permResp != nil {
+		return *permResp
+	}
+
+	user, err := h.app.Database.GetUser(ctx, u.UserID)
+	if err == sql.ErrNoRows {
+		return ginresp.InternAPIError(apierr.USER_NOT_FOUND, "User not found", err)
+	}
+	if err != nil {
+		return ginresp.InternAPIError(apierr.DATABASE_ERROR, "Failed to query user", err)
+	}
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, user.JSON()))
 }
 
 func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {

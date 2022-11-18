@@ -15,6 +15,17 @@ type AppContext struct {
 	cancelFunc  context.CancelFunc
 	cancelled   bool
 	transaction *sql.Tx
+	permissions PermissionSet
+}
+
+func CreateAppContext(innerCtx context.Context, cancelFn context.CancelFunc) *AppContext {
+	return &AppContext{
+		inner:       innerCtx,
+		cancelFunc:  cancelFn,
+		cancelled:   false,
+		transaction: nil,
+		permissions: NewEmptyPermissions(),
+	}
 }
 
 func (ac *AppContext) Deadline() (deadline time.Time, ok bool) {

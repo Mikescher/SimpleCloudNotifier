@@ -12,3 +12,10 @@ func timeOptFmt(t *time.Time, fmt string) *string {
 		return langext.Ptr(t.Format(fmt))
 	}
 }
+
+func timeOptFromMilli(millis *int64) *time.Time {
+	if millis == nil {
+		return nil
+	}
+	return langext.Ptr(time.UnixMilli(*millis))
+}

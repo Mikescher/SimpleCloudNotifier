@@ -4,8 +4,8 @@ CREATE TABLE users
 
     username           TEXT                                    NULL  DEFAULT NULL,
 
-    read_key           TEXT                                NOT NULL,
     send_key           TEXT                                NOT NULL,
+    read_key           TEXT                                NOT NULL,
     admin_key          TEXT                                NOT NULL,
 
     timestamp_created  INTEGER                             NOT NULL,
@@ -51,21 +51,23 @@ CREATE TABLE channels
     subscribe_key      TEXT        NOT NULL,
     send_key           TEXT        NOT NULL,
 
-    messages_sent      INTEGER     NOT NULL   DEFAULT '0',
-
     timestamp_created  INTEGER     NOT NULL,
     timestamp_lastread INTEGER         NULL   DEFAULT NULL,
-    timestamp_lastsent INTEGER         NULL   DEFAULT NULL
+    timestamp_lastsent INTEGER         NULL   DEFAULT NULL,
+
+    messages_sent      INTEGER     NOT NULL   DEFAULT '0'
 );
 CREATE UNIQUE INDEX "idx_channels_identity" ON channels (owner_user_id, name);
 
 CREATE TABLE subscriptions
 (
-    subscription_id        INTEGER    PRIMARY KEY AUTOINCREMENT,
+    subscription_id        INTEGER                                PRIMARY KEY AUTOINCREMENT,
 
-    subscriber_user_id     INTEGER    NOT NULL,
-    channel_owner_user_id  INTEGER    NOT NULL,
-    channel_name           TEXT       NOT NULL
+    subscriber_user_id     INTEGER                                NOT NULL,
+    channel_owner_user_id  INTEGER                                NOT NULL,
+    channel_name           TEXT                                   NOT NULL,
+
+    confirmed              INTEGER   CHECK(confirmed IN (0, 1))   NOT NULL   DEFAULT 0
 );
 CREATE UNIQUE INDEX "idx_subscriptions_ref" ON subscriptions (subscriber_user_id, channel_owner_user_id, channel_name);
 

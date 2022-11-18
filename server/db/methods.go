@@ -2,6 +2,7 @@ package db
 
 import (
 	"blackforestbytes.com/simplecloudnotifier/api/models"
+	"database/sql"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"time"
 )
@@ -109,4 +110,67 @@ func (db *Database) ClearProTokens(ctx TxContext, protoken string) error {
 	}
 
 	return nil
+}
+
+func (db *Database) GetUserByKey(ctx TxContext, key string) (*models.User, error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := tx.QueryContext(ctx, "SELECT * FROM users WHERE admin_key = ? OR send_key = ? OR read_key = ? LIMIT 1", key, key, key)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := models.DecodeUser(rows)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (db *Database) GetChannelByKey(ctx TxContext, key string) (*models.Channel, error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := tx.QueryContext(ctx, "SELECT * FROM channels WHERE subscribe_key = ? OR send_key = ? LIMIT 1", key, key)
+	if err != nil {
+		return nil, err
+	}
+
+	channel, err := models.DecodeChannel(rows)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &channel, nil
+}
+
+func (db *Database) GetUser(ctx TxContext, userid int64) (models.User, error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	rows, err := tx.QueryContext(ctx, "SELECT * FROM users WHERE user_id = ? LIMIT 1", userid)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	user, err := models.DecodeUser(rows)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
 }
