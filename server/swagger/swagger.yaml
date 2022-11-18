@@ -1,27 +1,12 @@
-basePath: /api/
+basePath: /
 definitions:
-  ginresp.errBody:
-    properties:
-      message:
-        type: string
-      success:
-        type: boolean
-    type: object
-  ginresp.internAPIError:
-    properties:
-      errid:
-        type: integer
-      message:
-        type: string
-      success:
-        type: boolean
-    type: object
-  ginresp.sendAPIError:
+  ginresp.apiError:
     properties:
       errhighlight:
         type: integer
       error:
         type: integer
+      errorObject: {}
       message:
         type: string
       success:
@@ -36,6 +21,21 @@ definitions:
       prev_ack:
         type: integer
       success:
+        type: string
+    type: object
+  handler.CreateUser.body:
+    properties:
+      agentModel:
+        type: string
+      agentVersion:
+        type: string
+      clientType:
+        type: string
+      fcmtoken:
+        type: string
+      proToken:
+        type: string
+      username:
         type: string
     type: object
   handler.DatabaseTest.response:
@@ -109,30 +109,6 @@ definitions:
         items:
           $ref: '#/definitions/models.CompatMessage'
         type: array
-      message:
-        type: string
-      success:
-        type: string
-    type: object
-  handler.Send.body:
-    properties:
-      content:
-        type: string
-      msg_id:
-        type: string
-      priority:
-        type: string
-      timestamp:
-        type: string
-      title:
-        type: string
-      user_id:
-        type: string
-      user_key:
-        type: string
-    type: object
-  handler.Send.response:
-    properties:
       message:
         type: string
       success:
@@ -220,6 +196,33 @@ definitions:
       usr_msg_id:
         type: string
     type: object
+  models.UserJSON:
+    properties:
+      admin_key:
+        type: string
+      is_pro:
+        type: boolean
+      messages_sent:
+        type: integer
+      quota_day:
+        type: string
+      quota_today:
+        type: integer
+      read_key:
+        type: string
+      send_key:
+        type: string
+      timestamp_created:
+        type: string
+      timestamp_last_read:
+        type: string
+      timestamp_last_sent:
+        type: string
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
 host: scn.blackforestbytes.com
 info:
   contact: {}
@@ -227,7 +230,30 @@ info:
   title: SimpleCloudNotifier API
   version: "2.0"
 paths:
-  /ack.php:
+  /api-v2/user/:
+    post:
+      operationId: api-user-create
+      parameters:
+      - description: ' '
+        in: body
+        name: post_body
+        schema:
+          $ref: '#/definitions/handler.CreateUser.body'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Create a new user
+  /api/ack.php:
     get:
       operationId: compat-ack
       parameters:
@@ -254,20 +280,9 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/ginresp.internAPIError'
+            $ref: '#/definitions/ginresp.apiError'
       summary: Acknowledge that a message was received
-  /db-test:
-    get:
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.DatabaseTest.response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.errBody'
-  /expand.php:
+  /api/expand.php:
     get:
       operationId: compat-expand
       responses:
@@ -278,20 +293,9 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/ginresp.internAPIError'
+            $ref: '#/definitions/ginresp.apiError'
       summary: Get a whole (potentially truncated) message
-  /health:
-    get:
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.Health.response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.errBody'
-  /info.php:
+  /api/info.php:
     get:
       operationId: compat-info
       parameters:
@@ -313,60 +317,9 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/ginresp.internAPIError'
+            $ref: '#/definitions/ginresp.apiError'
       summary: Get information about the current user
-  /ping:
-    delete:
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.pingResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.errBody'
-    get:
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.pingResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.errBody'
-    patch:
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.pingResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.errBody'
-    post:
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.pingResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.errBody'
-    put:
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.pingResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.errBody'
-  /register.php:
+  /api/register.php:
     get:
       operationId: compat-register
       parameters:
@@ -396,9 +349,9 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/ginresp.internAPIError'
+            $ref: '#/definitions/ginresp.apiError'
       summary: Register a new account
-  /requery.php:
+  /api/requery.php:
     get:
       operationId: compat-requery
       parameters:
@@ -420,55 +373,9 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/ginresp.internAPIError'
+            $ref: '#/definitions/ginresp.apiError'
       summary: Return all not-acknowledged messages
-  /send.php:
-    post:
-      consumes:
-      - application/json
-      description: (all arguments can either be supplied in the query or in the json
-        body)
-      operationId: compat-send
-      parameters:
-      - in: query
-        name: content
-        type: string
-      - in: query
-        name: messageID
-        type: string
-      - in: query
-        name: priority
-        type: string
-      - in: query
-        name: timestamp
-        type: string
-      - in: query
-        name: title
-        type: string
-      - in: query
-        name: userID
-        type: string
-      - in: query
-        name: userKey
-        type: string
-      - description: ' '
-        in: body
-        name: post_body
-        schema:
-          $ref: '#/definitions/handler.Send.body'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.Send.response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.sendAPIError'
-      summary: Send a message
-  /update.php:
+  /api/update.php:
     get:
       operationId: compat-update
       parameters:
@@ -495,9 +402,9 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/ginresp.internAPIError'
+            $ref: '#/definitions/ginresp.apiError'
       summary: Set the fcm-token (android)
-  /upgrade.php:
+  /api/upgrade.php:
     get:
       operationId: compat-upgrade
       parameters:
@@ -532,6 +439,79 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/ginresp.internAPIError'
+            $ref: '#/definitions/ginresp.apiError'
       summary: Upgrade a free account to a paid account
+  /db-test:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.DatabaseTest.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+  /health:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.Health.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+  /ping:
+    delete:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.pingResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.pingResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+    patch:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.pingResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+    post:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.pingResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+    put:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.pingResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
 swagger: "2.0"

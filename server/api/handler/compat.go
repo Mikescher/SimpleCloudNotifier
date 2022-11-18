@@ -1,17 +1,10 @@
 package handler
 
 import (
-	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/api/models"
 	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/logic"
-	"context"
-	"database/sql"
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"strconv"
-	"time"
 )
 
 type CompatHandler struct {
@@ -32,8 +25,8 @@ func NewCompatHandler(app *logic.Application) CompatHandler {
 // @Param   pro       query    string true "if the user is a paid account" Enums(true, false)
 // @Param   pro_token query    string true "the (android) IAP token"
 // @Success 200       {object} handler.Register.response
-// @Failure 500       {object} ginresp.internAPIError
-// @Router  /register.php [get]
+// @Failure 500       {object} ginresp.apiError
+// @Router  /api/register.php [get]
 func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
 		FCMToken *string `form:"fcm_token"`
@@ -50,81 +43,9 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 		IsPro     int    `json:"is_pro"`
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	//TODO
 
-	var q query
-	if err := g.ShouldBindQuery(&q); err != nil {
-		return ginresp.InternAPIError(0, "Failed to read arguments")
-	}
-
-	if q.FCMToken == nil {
-		return ginresp.InternAPIError(0, "Missing parameter [[fcm_token]]")
-	}
-	if q.Pro == nil {
-		return ginresp.InternAPIError(0, "Missing parameter [[pro]]")
-	}
-	if q.ProToken == nil {
-		return ginresp.InternAPIError(0, "Missing parameter [[pro_token]]")
-	}
-
-	isProInt := 0
-	isProBool := false
-	if *q.Pro == "true" {
-		isProInt = 1
-		isProBool = true
-	} else {
-		q.ProToken = nil
-	}
-
-	if isProBool {
-		ptok, err := h.app.VerifyProToken(*q.ProToken)
-		if err != nil {
-			return ginresp.InternAPIError(0, fmt.Sprintf("Failed to query purchaste status: %v", err))
-		}
-
-		if !ptok {
-			return ginresp.InternAPIError(0, "Purchase token could not be verified")
-		}
-	}
-
-	userKey := h.app.GenerateRandomAuthKey()
-
-	return h.app.RunTransaction(ctx, nil, func(tx *sql.Tx) (ginresp.HTTPResponse, bool) {
-
-		res, err := tx.ExecContext(ctx, "INSERT INTO users (user_key, fcm_token, is_pro, pro_token, timestamp_accessed) VALUES (?, ?, ?, ?, NOW())", userKey, *q.FCMToken, isProInt, q.ProToken)
-		if err != nil {
-			return ginresp.InternAPIError(0, fmt.Sprintf("Failed to create user: %v", err)), false
-		}
-
-		userId, err := res.LastInsertId()
-		if err != nil {
-			return ginresp.InternAPIError(0, fmt.Sprintf("Failed to get user_id: %v", err)), false
-		}
-
-		_, err = tx.ExecContext(ctx, "UPDATE users SET fcm_token=NULL WHERE user_id <> ? AND fcm_token=?", userId, q.FCMToken)
-		if err != nil {
-			return ginresp.InternAPIError(0, fmt.Sprintf("Failed to update fcm: %v", err)), false
-		}
-
-		if isProInt == 1 {
-			_, err := tx.ExecContext(ctx, "UPDATE users SET is_pro=0, pro_token=NULL WHERE user_id <> ? AND pro_token = ?", userId, q.ProToken)
-			if err != nil {
-				return ginresp.InternAPIError(0, fmt.Sprintf("Failed to update ispro: %v", err)), false
-			}
-		}
-
-		return ginresp.JSON(http.StatusOK, response{
-			Success:   true,
-			Message:   "New user registered",
-			UserID:    strconv.FormatInt(userId, 10),
-			UserKey:   userKey,
-			QuotaUsed: 0,
-			QuotaMax:  h.app.QuotaMax(isProBool),
-			IsPro:     isProInt,
-		}), true
-
-	})
+	return ginresp.NotImplemented()
 }
 
 // Info swaggerdoc
@@ -134,8 +55,8 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 // @Param   user_id  query    string true "the user_id"
 // @Param   user_key query    string true "the user_key"
 // @Success 200      {object} handler.Info.response
-// @Failure 500      {object} ginresp.internAPIError
-// @Router  /info.php [get]
+// @Failure 500      {object} ginresp.apiError
+// @Router  /api/info.php [get]
 func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
 		UserID  string `form:"user_id"`
@@ -155,7 +76,7 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 
 	//TODO
 
-	return ginresp.InternAPIError(0, "NotImplemented")
+	return ginresp.NotImplemented()
 }
 
 // Ack swaggerdoc
@@ -166,8 +87,8 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 // @Param   user_key   query    string true "the user_key"
 // @Param   scn_msg_id query    string true "the message id"
 // @Success 200        {object} handler.Ack.response
-// @Failure 500        {object} ginresp.internAPIError
-// @Router  /ack.php [get]
+// @Failure 500        {object} ginresp.apiError
+// @Router  /api/ack.php [get]
 func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
 		UserID    string `form:"user_id"`
@@ -183,7 +104,7 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 
 	//TODO
 
-	return ginresp.InternAPIError(0, "NotImplemented")
+	return ginresp.NotImplemented()
 }
 
 // Requery swaggerdoc
@@ -193,8 +114,8 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 // @Param   user_id  query    string true "the user_id"
 // @Param   user_key query    string true "the user_key"
 // @Success 200      {object} handler.Requery.response
-// @Failure 500      {object} ginresp.internAPIError
-// @Router  /requery.php [get]
+// @Failure 500      {object} ginresp.apiError
+// @Router  /api/requery.php [get]
 func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
 		UserID  string `form:"user_id"`
@@ -209,7 +130,7 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 
 	//TODO
 
-	return ginresp.InternAPIError(0, "NotImplemented")
+	return ginresp.NotImplemented()
 }
 
 // Update swaggerdoc
@@ -220,8 +141,8 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 // @Param   user_key  query    string true "the user_key"
 // @Param   fcm_token query    string true "the (android) fcm token"
 // @Success 200       {object} handler.Update.response
-// @Failure 500       {object} ginresp.internAPIError
-// @Router  /update.php [get]
+// @Failure 500       {object} ginresp.apiError
+// @Router  /api/update.php [get]
 func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
 		UserID   string `form:"user_id"`
@@ -240,7 +161,7 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 
 	//TODO
 
-	return ginresp.InternAPIError(0, "NotImplemented")
+	return ginresp.NotImplemented()
 }
 
 // Expand swaggerdoc
@@ -248,8 +169,8 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 // @Summary Get a whole (potentially truncated) message
 // @ID      compat-expand
 // @Success 200 {object} handler.Expand.response
-// @Failure 500 {object} ginresp.internAPIError
-// @Router  /expand.php [get]
+// @Failure 500 {object} ginresp.apiError
+// @Router  /api/expand.php [get]
 func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
 		UserID    string `form:"user_id"`
@@ -264,7 +185,7 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 
 	//TODO
 
-	return ginresp.InternAPIError(0, "NotImplemented")
+	return ginresp.NotImplemented()
 }
 
 // Upgrade swaggerdoc
@@ -276,8 +197,8 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 // @Param   pro       query    string true "if the user is a paid account" Enums(true, false)
 // @Param   pro_token query    string true "the (android) IAP token"
 // @Success 200       {object} handler.Upgrade.response
-// @Failure 500       {object} ginresp.internAPIError
-// @Router  /upgrade.php [get]
+// @Failure 500       {object} ginresp.apiError
+// @Router  /api/upgrade.php [get]
 func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
 		UserID   string `form:"user_id"`
@@ -293,47 +214,5 @@ func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 
 	//TODO
 
-	return ginresp.InternAPIError(0, "NotImplemented")
-}
-
-// Send swaggerdoc
-//
-// @Summary     Send a message
-// @Description (all arguments can either be supplied in the query or in the json body)
-// @ID          compat-send
-// @Accept      json
-// @Produce     json
-// @Param       _         query    handler.Send.query false " "
-// @Param       post_body body     handler.Send.body  false " "
-// @Success     200       {object} handler.Send.response
-// @Failure     500       {object} ginresp.sendAPIError
-// @Router      /send.php [post]
-func (h CompatHandler) Send(g *gin.Context) ginresp.HTTPResponse {
-	type query struct {
-		UserID    string  `form:"user_id" required:"true"`
-		UserKey   string  `form:"user_key" required:"true"`
-		Title     string  `form:"title" required:"true"`
-		Content   *string `form:"content"`
-		Priority  *string `form:"priority"`
-		MessageID *string `form:"msg_id"`
-		Timestamp *string `form:"timestamp"`
-	}
-	type body struct {
-		UserID    string  `json:"user_id" required:"true"`
-		UserKey   string  `json:"user_key" required:"true"`
-		Title     string  `json:"title" required:"true"`
-		Content   *string `json:"content"`
-		Priority  *string `json:"priority"`
-		MessageID *string `json:"msg_id"`
-		Timestamp *string `json:"timestamp"`
-	}
-	type response struct {
-		Success string `json:"success"`
-		Message string `json:"message"`
-		//TODO
-	}
-
-	//TODO
-
-	return ginresp.SendAPIError(apierr.INTERNAL_EXCEPTION, -1, "NotImplemented")
+	return ginresp.NotImplemented()
 }

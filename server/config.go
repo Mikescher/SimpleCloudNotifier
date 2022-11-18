@@ -3,48 +3,59 @@ package server
 import (
 	"github.com/rs/zerolog/log"
 	"os"
+	"time"
 )
 
 type Config struct {
-	Namespace  string
-	GinDebug   bool
-	ServerIP   string
-	ServerPort string
-	DBFile     string
+	Namespace       string
+	GinDebug        bool
+	ServerIP        string
+	ServerPort      string
+	DBFile          string
+	RequestTimeout  time.Duration
+	ReturnRawErrors bool
 }
 
 var Conf Config
 
 var configLoc = Config{
-	Namespace:  "local",
-	GinDebug:   true,
-	ServerIP:   "0.0.0.0",
-	ServerPort: "8080",
-	DBFile:     ".run-data/db.sqlite3",
+	Namespace:       "local",
+	GinDebug:        true,
+	ServerIP:        "0.0.0.0",
+	ServerPort:      "8080",
+	DBFile:          ".run-data/db.sqlite3",
+	RequestTimeout:  16 * time.Second,
+	ReturnRawErrors: true,
 }
 
 var configDev = Config{
-	Namespace:  "develop",
-	GinDebug:   true,
-	ServerIP:   "0.0.0.0",
-	ServerPort: "80",
-	DBFile:     "/data/scn.sqlite3",
+	Namespace:       "develop",
+	GinDebug:        true,
+	ServerIP:        "0.0.0.0",
+	ServerPort:      "80",
+	DBFile:          "/data/scn.sqlite3",
+	RequestTimeout:  16 * time.Second,
+	ReturnRawErrors: true,
 }
 
 var configStag = Config{
-	Namespace:  "staging",
-	GinDebug:   true,
-	ServerIP:   "0.0.0.0",
-	ServerPort: "80",
-	DBFile:     "/data/scn.sqlite3",
+	Namespace:       "staging",
+	GinDebug:        true,
+	ServerIP:        "0.0.0.0",
+	ServerPort:      "80",
+	DBFile:          "/data/scn.sqlite3",
+	RequestTimeout:  16 * time.Second,
+	ReturnRawErrors: true,
 }
 
 var configProd = Config{
-	Namespace:  "production",
-	GinDebug:   false,
-	ServerIP:   "0.0.0.0",
-	ServerPort: "80",
-	DBFile:     "/data/scn.sqlite3",
+	Namespace:       "production",
+	GinDebug:        false,
+	ServerIP:        "0.0.0.0",
+	ServerPort:      "80",
+	DBFile:          "/data/scn.sqlite3",
+	RequestTimeout:  16 * time.Second,
+	ReturnRawErrors: false,
 }
 
 var allConfig = []Config{

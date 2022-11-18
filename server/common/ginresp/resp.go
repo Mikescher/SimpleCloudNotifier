@@ -1,13 +1,14 @@
 package ginresp
 
 import (
+	scn "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 type HTTPResponse interface {
-	Write(context *gin.Context)
+	Write(g *gin.Context)
 }
 
 type jsonHTTPResponse struct {
@@ -73,13 +74,21 @@ func Text(sc int, data string) HTTPResponse {
 }
 
 func InternalError(e error) HTTPResponse {
-	return &errHTTPResponse{statusCode: http.StatusInternalServerError, data: errBody{Success: false, Message: e.Error()}}
+	return &errHTTPResponse{statusCode: http.StatusInternalServerError, data: apiError{Success: false, Error: int(apierr.INTERNAL_EXCEPTION), Message: e.Error()}}
 }
 
-func InternAPIError(errid int, msg string) HTTPResponse {
-	return &errHTTPResponse{statusCode: http.StatusInternalServerError, data: internAPIError{Success: false, ErrorID: errid, Message: msg}}
+func InternAPIError(errorid apierr.APIError, msg string, e error) HTTPResponse {
+	if scn.Conf.ReturnRawErrors {
+		return &errHTTPResponse{statusCode: http.StatusInternalServerError, data: apiError{Success: false, Error: int(errorid), Message: msg, RawError: e}}
+	} else {
+		return &errHTTPResponse{statusCode: http.StatusInternalServerError, data: apiError{Success: false, Error: int(errorid), Message: msg}}
+	}
 }
 
 func SendAPIError(errorid apierr.APIError, highlight int, msg string) HTTPResponse {
-	return &errHTTPResponse{statusCode: http.StatusInternalServerError, data: sendAPIError{Success: false, Error: int(errorid), ErrorHighlight: highlight, Message: msg}}
+	return &errHTTPResponse{statusCode: http.StatusInternalServerError, data: apiError{Success: false, Error: int(errorid), ErrorHighlight: highlight, Message: msg}}
+}
+
+func NotImplemented() HTTPResponse {
+	return &errHTTPResponse{statusCode: http.StatusInternalServerError, data: apiError{Success: false, Error: -1, ErrorHighlight: 0, Message: "Not Implemented"}}
 }

@@ -7,9 +7,45 @@
         "version": "2.0"
     },
     "host": "scn.blackforestbytes.com",
-    "basePath": "/api/",
+    "basePath": "/",
     "paths": {
-        "/ack.php": {
+        "/api-v2/user/": {
+            "post": {
+                "summary": "Create a new user",
+                "operationId": "api-user-create",
+                "parameters": [
+                    {
+                        "description": " ",
+                        "name": "post_body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/handler.CreateUser.body"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ack.php": {
             "get": {
                 "summary": "Acknowledge that a message was received",
                 "operationId": "compat-ack",
@@ -46,31 +82,13 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/ginresp.internAPIError"
+                            "$ref": "#/definitions/ginresp.apiError"
                         }
                     }
                 }
             }
         },
-        "/db-test": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.DatabaseTest.response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.errBody"
-                        }
-                    }
-                }
-            }
-        },
-        "/expand.php": {
+        "/api/expand.php": {
             "get": {
                 "summary": "Get a whole (potentially truncated) message",
                 "operationId": "compat-expand",
@@ -84,31 +102,13 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/ginresp.internAPIError"
+                            "$ref": "#/definitions/ginresp.apiError"
                         }
                     }
                 }
             }
         },
-        "/health": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.Health.response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.errBody"
-                        }
-                    }
-                }
-            }
-        },
-        "/info.php": {
+        "/api/info.php": {
             "get": {
                 "summary": "Get information about the current user",
                 "operationId": "compat-info",
@@ -138,95 +138,13 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/ginresp.internAPIError"
+                            "$ref": "#/definitions/ginresp.apiError"
                         }
                     }
                 }
             }
         },
-        "/ping": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.pingResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.errBody"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.pingResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.errBody"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.pingResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.errBody"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.pingResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.errBody"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.pingResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.errBody"
-                        }
-                    }
-                }
-            }
-        },
-        "/register.php": {
+        "/api/register.php": {
             "get": {
                 "summary": "Register a new account",
                 "operationId": "compat-register",
@@ -267,13 +185,13 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/ginresp.internAPIError"
+                            "$ref": "#/definitions/ginresp.apiError"
                         }
                     }
                 }
             }
         },
-        "/requery.php": {
+        "/api/requery.php": {
             "get": {
                 "summary": "Return all not-acknowledged messages",
                 "operationId": "compat-requery",
@@ -303,85 +221,13 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/ginresp.internAPIError"
+                            "$ref": "#/definitions/ginresp.apiError"
                         }
                     }
                 }
             }
         },
-        "/send.php": {
-            "post": {
-                "description": "(all arguments can either be supplied in the query or in the json body)",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Send a message",
-                "operationId": "compat-send",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "name": "content",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "messageID",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "priority",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "timestamp",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "title",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "userID",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "userKey",
-                        "in": "query"
-                    },
-                    {
-                        "description": " ",
-                        "name": "post_body",
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/handler.Send.body"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.Send.response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.sendAPIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/update.php": {
+        "/api/update.php": {
             "get": {
                 "summary": "Set the fcm-token (android)",
                 "operationId": "compat-update",
@@ -418,13 +264,13 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/ginresp.internAPIError"
+                            "$ref": "#/definitions/ginresp.apiError"
                         }
                     }
                 }
             }
         },
-        "/upgrade.php": {
+        "/api/upgrade.php": {
             "get": {
                 "summary": "Upgrade a free account to a paid account",
                 "operationId": "compat-upgrade",
@@ -472,7 +318,125 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/ginresp.internAPIError"
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/db-test": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.DatabaseTest.response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Health.response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/ping": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.pingResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.pingResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.pingResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.pingResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.pingResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
                         }
                     }
                 }
@@ -480,32 +444,7 @@
         }
     },
     "definitions": {
-        "ginresp.errBody": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "ginresp.internAPIError": {
-            "type": "object",
-            "properties": {
-                "errid": {
-                    "type": "integer"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "ginresp.sendAPIError": {
+        "ginresp.apiError": {
             "type": "object",
             "properties": {
                 "errhighlight": {
@@ -514,6 +453,7 @@
                 "error": {
                     "type": "integer"
                 },
+                "errorObject": {},
                 "message": {
                     "type": "string"
                 },
@@ -535,6 +475,29 @@
                     "type": "integer"
                 },
                 "success": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.CreateUser.body": {
+            "type": "object",
+            "properties": {
+                "agentModel": {
+                    "type": "string"
+                },
+                "agentVersion": {
+                    "type": "string"
+                },
+                "clientType": {
+                    "type": "string"
+                },
+                "fcmtoken": {
+                    "type": "string"
+                },
+                "proToken": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -648,43 +611,6 @@
                         "$ref": "#/definitions/models.CompatMessage"
                     }
                 },
-                "message": {
-                    "type": "string"
-                },
-                "success": {
-                    "type": "string"
-                }
-            }
-        },
-        "handler.Send.body": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "string"
-                },
-                "msg_id": {
-                    "type": "string"
-                },
-                "priority": {
-                    "type": "string"
-                },
-                "timestamp": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
-                },
-                "user_key": {
-                    "type": "string"
-                }
-            }
-        },
-        "handler.Send.response": {
-            "type": "object",
-            "properties": {
                 "message": {
                     "type": "string"
                 },
@@ -815,6 +741,47 @@
                     "type": "boolean"
                 },
                 "usr_msg_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UserJSON": {
+            "type": "object",
+            "properties": {
+                "admin_key": {
+                    "type": "string"
+                },
+                "is_pro": {
+                    "type": "boolean"
+                },
+                "messages_sent": {
+                    "type": "integer"
+                },
+                "quota_day": {
+                    "type": "string"
+                },
+                "quota_today": {
+                    "type": "integer"
+                },
+                "read_key": {
+                    "type": "string"
+                },
+                "send_key": {
+                    "type": "string"
+                },
+                "timestamp_created": {
+                    "type": "string"
+                },
+                "timestamp_last_read": {
+                    "type": "string"
+                },
+                "timestamp_last_sent": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "username": {
                     "type": "string"
                 }
             }

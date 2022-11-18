@@ -6,15 +6,15 @@ type WHandlerFunc func(*gin.Context) HTTPResponse
 
 func Wrap(fn WHandlerFunc) gin.HandlerFunc {
 
-	return func(context *gin.Context) {
+	return func(g *gin.Context) {
 
-		wrap := fn(context)
+		wrap := fn(g)
 
-		if context.Writer.Written() {
+		if g.Writer.Written() {
 			panic("Writing in WrapperFunc is not supported")
 		}
 
-		wrap.Write(context)
+		wrap.Write(g)
 
 	}
 

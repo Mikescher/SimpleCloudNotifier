@@ -2,10 +2,8 @@ package logic
 
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
-	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
+	"blackforestbytes.com/simplecloudnotifier/db"
 	"context"
-	"database/sql"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"math/rand"
@@ -20,10 +18,10 @@ import (
 type Application struct {
 	Config   scn.Config
 	Gin      *gin.Engine
-	Database *sql.DB
+	Database *db.Database
 }
 
-func NewApp(db *sql.DB) *Application {
+func NewApp(db *db.Database) *Application {
 	return &Application{Database: db}
 }
 
@@ -74,30 +72,6 @@ func (app *Application) GenerateRandomAuthKey() string {
 	return k
 }
 
-func (app *Application) RunTransaction(ctx context.Context, opt *sql.TxOptions, fn func(tx *sql.Tx) (ginresp.HTTPResponse, bool)) ginresp.HTTPResponse {
-
-	tx, err := app.Database.BeginTx(ctx, opt)
-	if err != nil {
-		return ginresp.InternAPIError(0, fmt.Sprintf("Failed to create transaction: %v", err))
-	}
-
-	res, commit := fn(tx)
-
-	if commit {
-		err = tx.Commit()
-		if err != nil {
-			return ginresp.InternAPIError(0, fmt.Sprintf("Failed to commit transaction: %v", err))
-		}
-	} else {
-		err = tx.Rollback()
-		if err != nil {
-			return ginresp.InternAPIError(0, fmt.Sprintf("Failed to rollback transaction: %v", err))
-		}
-	}
-
-	return res
-}
-
 func (app *Application) QuotaMax(ispro bool) int {
 	if ispro {
 		return 1000
@@ -108,4 +82,17 @@ func (app *Application) QuotaMax(ispro bool) int {
 
 func (app *Application) VerifyProToken(token string) (bool, error) {
 	return false, nil //TODO implement pro verification
+}
+
+func (app *Application) Migrate() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 24*time.Second)
+	defer cancel()
+
+	return app.Database.Migrate(ctx)
+}
+
+func (app *Application) StartRequest(g *gin.Context) *AppContext {
+	ctx, cancel := context.WithTimeout(context.Background(), app.Config.RequestTimeout)
+
+	return &AppContext{inner: ctx, cancelFunc: cancel}
 }

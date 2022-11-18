@@ -34,7 +34,7 @@ type pingResponseInfo struct {
 // Ping swaggerdoc
 //
 // @Success 200 {object} pingResponse
-// @Failure 500 {object} ginresp.errBody
+// @Failure 500 {object} ginresp.apiError
 // @Router  /ping [get]
 // @Router  /ping [post]
 // @Router  /ping [put]
@@ -60,7 +60,7 @@ func (h CommonHandler) Ping(g *gin.Context) ginresp.HTTPResponse {
 // DatabaseTest swaggerdoc
 //
 // @Success 200 {object} handler.DatabaseTest.response
-// @Failure 500 {object} ginresp.errBody
+// @Failure 500 {object} ginresp.apiError
 // @Router  /db-test [get]
 func (h CommonHandler) DatabaseTest(g *gin.Context) ginresp.HTTPResponse {
 	type response struct {
@@ -88,11 +88,22 @@ func (h CommonHandler) DatabaseTest(g *gin.Context) ginresp.HTTPResponse {
 // Health swaggerdoc
 //
 // @Success 200 {object} handler.Health.response
-// @Failure 500 {object} ginresp.errBody
+// @Failure 500 {object} ginresp.apiError
 // @Router  /health [get]
 func (h CommonHandler) Health(*gin.Context) ginresp.HTTPResponse {
 	type response struct {
 		Status string `json:"status"`
 	}
 	return ginresp.JSON(http.StatusOK, response{Status: "ok"})
+}
+
+func (h CommonHandler) NoRoute(g *gin.Context) ginresp.HTTPResponse {
+	return ginresp.JSON(http.StatusNotFound, gin.H{
+		"FullPath":   g.FullPath(),
+		"Method":     g.Request.Method,
+		"URL":        g.Request.URL.String(),
+		"RequestURI": g.Request.RequestURI,
+		"Proto":      g.Request.Proto,
+		"Header":     g.Request.Header,
+	})
 }
