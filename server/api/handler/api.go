@@ -247,7 +247,7 @@ func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
 
 	clients, err := h.app.Database.ListClients(ctx, u.UserID)
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query user", err)
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query clients", err)
 	}
 
 	res := langext.ArrMap(clients, func(v models.Client) models.ClientJSON { return v.JSON() })
@@ -255,8 +255,47 @@ func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, result{Clients: res}))
 }
 
+// GetClient swaggerdoc
+//
+// @Summary get a single clients
+// @ID      api-clients-get
+//
+// @Param   uid path     int true "UserID"
+// @Param   cid path     int true "ClientID"
+//
+// @Success 200 {object} models.ClientJSON
+// @Failure 400 {object} ginresp.apiError
+// @Failure 401 {object} ginresp.apiError
+// @Failure 404 {object} ginresp.apiError
+// @Failure 500 {object} ginresp.apiError
+//
+// @Router  /api-v2/user/{uid}/clients/{cid} [GET]
 func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
-	return ginresp.NotImplemented()
+	type uri struct {
+		UserID   int64 `uri:"uid"`
+		ClientID int64 `uri:"cid"`
+	}
+
+	var u uri
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	if permResp := ctx.CheckPermissionUserRead(u.UserID); permResp != nil {
+		return *permResp
+	}
+
+	client, err := h.app.Database.GetClient(ctx, u.UserID, u.ClientID)
+	if err == sql.ErrNoRows {
+		return ginresp.InternAPIError(404, apierr.CLIENT_NOT_FOUND, "Client not found", err)
+	}
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query client", err)
+	}
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, client.JSON()))
 }
 
 func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {

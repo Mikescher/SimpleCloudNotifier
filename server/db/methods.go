@@ -221,3 +221,22 @@ func (db *Database) ListClients(ctx TxContext, userid int64) ([]models.Client, e
 
 	return data, nil
 }
+
+func (db *Database) GetClient(ctx TxContext, userid int64, clientid int64) (models.Client, error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return models.Client{}, err
+	}
+
+	rows, err := tx.QueryContext(ctx, "SELECT * FROM clients WHERE user_id = ? AND client_id = ? LIMIT 1", userid, clientid)
+	if err != nil {
+		return models.Client{}, err
+	}
+
+	client, err := models.DecodeClient(rows)
+	if err != nil {
+		return models.Client{}, err
+	}
+
+	return client, nil
+}

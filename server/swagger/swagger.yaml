@@ -377,6 +377,42 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: List all clients
+  /api-v2/user/{uid}/clients/{cid}:
+    get:
+      operationId: api-clients-get
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: ClientID
+        in: path
+        name: cid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ClientJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: get a single clients
   /api/ack.php:
     get:
       operationId: compat-ack
