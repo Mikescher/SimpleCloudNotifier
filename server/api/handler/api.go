@@ -257,7 +257,7 @@ func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
 
 // GetClient swaggerdoc
 //
-// @Summary get a single clients
+// @Summary Get a single clients
 // @ID      api-clients-get
 //
 // @Param   uid path     int true "UserID"
@@ -300,18 +300,18 @@ func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
 
 // AddClient swaggerdoc
 //
-// @Summary get a single clients
-// @ID      api-clients-get
+// @Summary Add a new clients
+// @ID      api-clients-create
 //
-// @Param   uid path     int true "UserID"
+// @Param   uid       path     int                    true  "UserID"
 //
 // @Param   post_body body     handler.AddClient.body false " "
 //
-// @Success 200 {object} models.ClientJSON
-// @Failure 400 {object} ginresp.apiError
-// @Failure 401 {object} ginresp.apiError
-// @Failure 404 {object} ginresp.apiError
-// @Failure 500 {object} ginresp.apiError
+// @Success 200       {object} models.ClientJSON
+// @Failure 400       {object} ginresp.apiError
+// @Failure 401       {object} ginresp.apiError
+// @Failure 404       {object} ginresp.apiError
+// @Failure 500       {object} ginresp.apiError
 //
 // @Router  /api-v2/user/{uid}/clients [POST]
 func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
@@ -354,8 +354,52 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, client.JSON()))
 }
 
+// DeleteClient swaggerdoc
+//
+// @Summary Delete a client
+// @ID      api-clients-delete
+//
+// @Param   uid path     int true "UserID"
+// @Param   cid path     int true "ClientID"
+//
+// @Success 200 {object} models.ClientJSON
+// @Failure 400 {object} ginresp.apiError
+// @Failure 401 {object} ginresp.apiError
+// @Failure 404 {object} ginresp.apiError
+// @Failure 500 {object} ginresp.apiError
+//
+// @Router  /api-v2/user/{uid}/clients [POST]
 func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
-	return ginresp.NotImplemented()
+	type uri struct {
+		UserID   int64 `uri:"uid"`
+		ClientID int64 `uri:"cid"`
+	}
+
+	var u uri
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+		return *permResp
+	}
+
+	client, err := h.app.Database.GetClient(ctx, u.UserID, u.ClientID)
+	if err == sql.ErrNoRows {
+		return ginresp.InternAPIError(404, apierr.CLIENT_NOT_FOUND, "Client not found", err)
+	}
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query client", err)
+	}
+
+	err = h.app.Database.DeleteClient(ctx, u.ClientID)
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to delete client", err)
+	}
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, client.JSON()))
 }
 
 func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {

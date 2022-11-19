@@ -240,3 +240,17 @@ func (db *Database) GetClient(ctx TxContext, userid int64, clientid int64) (mode
 
 	return client, nil
 }
+
+func (db *Database) DeleteClient(ctx TxContext, clientid int64) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, "DELETE FROM clients WHERE client_id = ?", clientid)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
