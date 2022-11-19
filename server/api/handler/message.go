@@ -76,7 +76,6 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 		ErrorHighlight int             `json:"errhighlight"`
 		Message        string          `json:"message"`
 		SuppressSend   bool            `json:"suppress_send"`
-		Response       string          `json:"response"`
 		MessageCount   int             `json:"messagecount"`
 		Quota          int             `json:"quota"`
 		IsPro          bool            `json:"is_pro"`
@@ -145,10 +144,9 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 			return ginresp.JSON(http.StatusOK, response{
 				Success:        true,
 				ErrorID:        apierr.NO_ERROR,
-				ErrorHighlight: 0,
+				ErrorHighlight: -1,
 				Message:        "Message already sent",
 				SuppressSend:   true,
-				Response:       "",
 				MessageCount:   user.MessagesSent,
 				Quota:          user.QuotaUsedToday(),
 				IsPro:          user.IsPro,
@@ -187,7 +185,7 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.SendAPIError(500, apierr.DATABASE_ERROR, -1, "Failed to create message in db")
 	}
 
-	subscriptions, err := h.database.ListChannelSubscriptions(ctx, channel.ChannelID)
+	subscriptions, err := h.database.ListSubscriptionsByChannel(ctx, channel.ChannelID)
 	if err != nil {
 		return ginresp.SendAPIError(500, apierr.DATABASE_ERROR, -1, "Failed to query subscriptions")
 	}
@@ -216,7 +214,18 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 		}
 	}
 
-	return ginresp.NotImplemented()
+	return ginresp.JSON(http.StatusOK, response{
+		Success:        true,
+		ErrorID:        apierr.NO_ERROR,
+		ErrorHighlight: -1,
+		Message:        "Message sent",
+		SuppressSend:   false,
+		MessageCount:   user.MessagesSent,
+		Quota:          user.QuotaUsedToday(),
+		IsPro:          user.IsPro,
+		QuotaMax:       user.QuotaPerDay(),
+		SCNMessageID:   msg.SCNMessageID,
+	})
 }
 
 func (h MessageHandler) deliverMessage(ctx *logic.AppContext, client models.Client, msg models.Message) (*string, error) {

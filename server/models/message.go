@@ -28,13 +28,37 @@ func (m Message) JSON() MessageJSON {
 		OwnerUserID:   m.OwnerUserID,
 		ChannelName:   m.ChannelName,
 		ChannelID:     m.ChannelID,
-		Timestamp:     langext.Coalesce(m.TimestampClient, m.TimestampReal).Format(time.RFC3339Nano),
+		Timestamp:     m.Timestamp().Format(time.RFC3339Nano),
 		Title:         m.Title,
 		Content:       m.Content,
 		Priority:      m.Priority,
 		UserMessageID: m.UserMessageID,
-		Trimmed:       false,
 	}
+}
+
+func (m Message) Timestamp() time.Time {
+	return langext.Coalesce(m.TimestampClient, m.TimestampReal)
+}
+
+func (m Message) NeedsTrim() bool {
+	return m.Content != nil && len(*m.Content) > 1900
+}
+
+func (m Message) TrimmedBody() string {
+	if !m.NeedsTrim() {
+		return langext.Coalesce(m.Content, "")
+	}
+	return langext.Coalesce(m.Content, "")[0:1900-3] + "..."
+}
+
+func (m Message) ShortBody() string {
+	if m.Content == nil {
+		return ""
+	}
+	if len(*m.Content) < 200 {
+		return *m.Content
+	}
+	return (*m.Content)[0:200-3] + "..."
 }
 
 type MessageJSON struct {
@@ -48,7 +72,6 @@ type MessageJSON struct {
 	Content       *string `json:"body"`
 	Priority      int     `json:"priority"`
 	UserMessageID *string `json:"usr_message_id"`
-	Trimmed       bool    `json:"trimmed"`
 }
 
 type MessageDB struct {

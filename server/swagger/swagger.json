@@ -91,7 +91,7 @@
                 }
             }
         },
-        "/api-v2/user/": {
+        "/api-v2/users/": {
             "post": {
                 "summary": "Create a new user",
                 "operationId": "api-user-create",
@@ -127,7 +127,7 @@
                 }
             }
         },
-        "/api-v2/user/{uid}": {
+        "/api-v2/users/{uid}": {
             "get": {
                 "summary": "Get a user",
                 "operationId": "api-user-get",
@@ -221,7 +221,7 @@
                 }
             }
         },
-        "/api-v2/user/{uid}/clients": {
+        "/api-v2/users/{uid}/clients": {
             "get": {
                 "summary": "List all clients",
                 "operationId": "api-clients-list",
@@ -320,7 +320,7 @@
                 }
             }
         },
-        "/api-v2/user/{uid}/clients/{cid}": {
+        "/api-v2/users/{uid}/clients/{cid}": {
             "get": {
                 "summary": "Get a single clients",
                 "operationId": "api-clients-get",

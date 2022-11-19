@@ -168,6 +168,8 @@ gogs.mikescher.com/BlackForestBytes/goext v0.0.19 h1:IvCHlIHDviHQXntZFTNdV7qNq5y
 gogs.mikescher.com/BlackForestBytes/goext v0.0.19/go.mod h1:TMBOjo3FRFh/GiTT0z3nwLmgcFJB87oSF2VMs4XUCTQ=
 gogs.mikescher.com/BlackForestBytes/goext v0.0.20 h1:HxJ0iZ838TQnp/a+/DNajdZjZkV43OsK4VbHarOiHTs=
 gogs.mikescher.com/BlackForestBytes/goext v0.0.20/go.mod h1:TMBOjo3FRFh/GiTT0z3nwLmgcFJB87oSF2VMs4XUCTQ=
+gogs.mikescher.com/BlackForestBytes/goext v0.0.21 h1:OibsssmorZsTdFYRiQFlkXtjUYweQg9SBkWO40ONe0Y=
+gogs.mikescher.com/BlackForestBytes/goext v0.0.21/go.mod h1:TMBOjo3FRFh/GiTT0z3nwLmgcFJB87oSF2VMs4XUCTQ=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=
 golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 h1:/UOmuWzQfxxo9UtlXMwuQU8CMgg1eZXqTRwkSQJWKOI=

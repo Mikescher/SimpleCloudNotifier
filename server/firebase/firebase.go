@@ -47,11 +47,20 @@ type Notification struct {
 }
 
 func (fb App) SendNotification(ctx context.Context, client models.Client, msg models.Message) (string, error) {
+
 	n := messaging.Message{
-		Data: map[string]string{"scn_msg_id": strconv.FormatInt(msg.SCNMessageID, 10)},
+		Data: map[string]string{
+			"scn_msg_id": strconv.FormatInt(msg.SCNMessageID, 10),
+			"usr_msg_id": langext.Coalesce(msg.UserMessageID, ""),
+			"timestamp":  strconv.FormatInt(msg.Timestamp().Unix(), 10),
+			"priority":   strconv.Itoa(msg.Priority),
+			"trimmed":    langext.Conditional(msg.NeedsTrim(), "true", "false"),
+			"title":      msg.Title,
+			"body":       msg.TrimmedBody(),
+		},
 		Notification: &messaging.Notification{
 			Title: msg.Title,
-			Body:  langext.Coalesce(msg.Content, ""),
+			Body:  msg.ShortBody(),
 		},
 		Android:    nil,
 		APNS:       nil,
@@ -61,12 +70,12 @@ func (fb App) SendNotification(ctx context.Context, client models.Client, msg mo
 		Topic:      "",
 		Condition:  "",
 	}
+	
 	if client.Type == models.ClientTypeIOS {
 		n.APNS = nil
-	}
-
-	if client.Type == models.ClientTypeAndroid {
-		n.Android = nil
+	} else if client.Type == models.ClientTypeAndroid {
+		n.Notification = nil
+		n.Android = &messaging.AndroidConfig{Priority: "high"}
 	}
 
 	res, err := fb.messaging.Send(ctx, &n)

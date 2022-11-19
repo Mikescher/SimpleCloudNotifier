@@ -340,7 +340,7 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Send a new message
-  /api-v2/user/:
+  /api-v2/users/:
     post:
       operationId: api-user-create
       parameters:
@@ -363,7 +363,7 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Create a new user
-  /api-v2/user/{uid}:
+  /api-v2/users/{uid}:
     get:
       operationId: api-user-get
       parameters:
@@ -425,7 +425,7 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: (Partially) update a user
-  /api-v2/user/{uid}/clients:
+  /api-v2/users/{uid}/clients:
     get:
       operationId: api-clients-list
       parameters:
@@ -491,7 +491,7 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Delete a client
-  /api-v2/user/{uid}/clients/{cid}:
+  /api-v2/users/{uid}/clients/{cid}:
     get:
       operationId: api-clients-get
       parameters:
