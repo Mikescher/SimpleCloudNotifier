@@ -6,6 +6,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/common"
 	"blackforestbytes.com/simplecloudnotifier/common/ginext"
 	"blackforestbytes.com/simplecloudnotifier/db"
+	"blackforestbytes.com/simplecloudnotifier/firebase"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"fmt"
 	"github.com/rs/zerolog/log"
@@ -33,7 +34,9 @@ func main() {
 
 	router := api.NewRouter(app)
 
-	app.Init(conf, ginengine)
+	fb := firebase.NewFirebaseApp()
+
+	app.Init(conf, ginengine, &fb)
 
 	router.Init(ginengine)
 

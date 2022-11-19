@@ -5,6 +5,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/db"
+	"blackforestbytes.com/simplecloudnotifier/firebase"
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -23,15 +24,17 @@ type Application struct {
 	Config   scn.Config
 	Gin      *gin.Engine
 	Database *db.Database
+	Firebase *firebase.App
 }
 
 func NewApp(db *db.Database) *Application {
 	return &Application{Database: db}
 }
 
-func (app *Application) Init(cfg scn.Config, g *gin.Engine) {
+func (app *Application) Init(cfg scn.Config, g *gin.Engine, fb *firebase.App) {
 	app.Config = cfg
 	app.Gin = g
+	app.Firebase = fb
 }
 
 func (app *Application) Run() {
