@@ -45,7 +45,7 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 
 	//TODO
 
-	return ginresp.NotImplemented()
+	return ginresp.NotImplemented() //TODO
 }
 
 // Info swaggerdoc
@@ -76,7 +76,7 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 
 	//TODO
 
-	return ginresp.NotImplemented()
+	return ginresp.NotImplemented() //TODO
 }
 
 // Ack swaggerdoc
@@ -104,7 +104,7 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 
 	//TODO
 
-	return ginresp.NotImplemented()
+	return ginresp.NotImplemented() //TODO
 }
 
 // Requery swaggerdoc
@@ -130,7 +130,7 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 
 	//TODO
 
-	return ginresp.NotImplemented()
+	return ginresp.NotImplemented() //TODO
 }
 
 // Update swaggerdoc
@@ -161,7 +161,7 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 
 	//TODO
 
-	return ginresp.NotImplemented()
+	return ginresp.NotImplemented() //TODO
 }
 
 // Expand swaggerdoc
@@ -185,7 +185,7 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 
 	//TODO
 
-	return ginresp.NotImplemented()
+	return ginresp.NotImplemented() //TODO
 }
 
 // Upgrade swaggerdoc
@@ -214,5 +214,5 @@ func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 
 	//TODO
 
-	return ginresp.NotImplemented()
+	return ginresp.NotImplemented() //TODO
 }

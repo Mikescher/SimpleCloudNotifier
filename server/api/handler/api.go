@@ -498,7 +498,7 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 }
 
 func (h APIHandler) GetChannelMessages(g *gin.Context) ginresp.HTTPResponse {
-	return ginresp.NotImplemented()
+	return ginresp.NotImplemented() //TODO
 }
 
 // ListUserSubscriptions swaggerdoc
@@ -697,25 +697,25 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 }
 
 func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
-	return ginresp.NotImplemented()
+	return ginresp.NotImplemented() //TODO
 }
 
 func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
-	return ginresp.NotImplemented()
+	return ginresp.NotImplemented() //TODO
 }
 
 func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
-	return ginresp.NotImplemented()
+	return ginresp.NotImplemented() //TODO
 }
 
 func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
-	return ginresp.NotImplemented()
+	return ginresp.NotImplemented() //TODO
 }
 
 func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
-	return ginresp.NotImplemented()
+	return ginresp.NotImplemented() //TODO
 }
 
 func (h APIHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
-	return ginresp.NotImplemented()
+	return ginresp.NotImplemented() //TODO
 }
