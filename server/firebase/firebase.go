@@ -56,11 +56,11 @@ func (fb App) SendNotification(ctx context.Context, client models.Client, msg mo
 			"priority":   strconv.Itoa(msg.Priority),
 			"trimmed":    langext.Conditional(msg.NeedsTrim(), "true", "false"),
 			"title":      msg.Title,
-			"body":       msg.TrimmedBody(),
+			"body":       langext.Coalesce(msg.TrimmedContent(), ""),
 		},
 		Notification: &messaging.Notification{
 			Title: msg.Title,
-			Body:  msg.ShortBody(),
+			Body:  msg.ShortContent(),
 		},
 		Android:    nil,
 		APNS:       nil,
@@ -70,7 +70,7 @@ func (fb App) SendNotification(ctx context.Context, client models.Client, msg mo
 		Topic:      "",
 		Condition:  "",
 	}
-	
+
 	if client.Type == models.ClientTypeIOS {
 		n.APNS = nil
 	} else if client.Type == models.ClientTypeAndroid {

@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+const (
+	ContentLengthTrim  = 1900
+	ContentLengthShort = 200
+)
+
 type Message struct {
 	SCNMessageID    int64
 	SenderUserID    int64
@@ -21,7 +26,7 @@ type Message struct {
 	UserMessageID   *string
 }
 
-func (m Message) JSON() MessageJSON {
+func (m Message) FullJSON() MessageJSON {
 	return MessageJSON{
 		SCNMessageID:  m.SCNMessageID,
 		SenderUserID:  m.SenderUserID,
@@ -33,6 +38,23 @@ func (m Message) JSON() MessageJSON {
 		Content:       m.Content,
 		Priority:      m.Priority,
 		UserMessageID: m.UserMessageID,
+		Trimmed:       false,
+	}
+}
+
+func (m Message) TrimmedJSON() MessageJSON {
+	return MessageJSON{
+		SCNMessageID:  m.SCNMessageID,
+		SenderUserID:  m.SenderUserID,
+		OwnerUserID:   m.OwnerUserID,
+		ChannelName:   m.ChannelName,
+		ChannelID:     m.ChannelID,
+		Timestamp:     m.Timestamp().Format(time.RFC3339Nano),
+		Title:         m.Title,
+		Content:       m.TrimmedContent(),
+		Priority:      m.Priority,
+		UserMessageID: m.UserMessageID,
+		Trimmed:       m.NeedsTrim(),
 	}
 }
 
@@ -41,24 +63,27 @@ func (m Message) Timestamp() time.Time {
 }
 
 func (m Message) NeedsTrim() bool {
-	return m.Content != nil && len(*m.Content) > 1900
+	return m.Content != nil && len(*m.Content) > ContentLengthTrim
 }
 
-func (m Message) TrimmedBody() string {
-	if !m.NeedsTrim() {
-		return langext.Coalesce(m.Content, "")
+func (m Message) TrimmedContent() *string {
+	if m.Content == nil {
+		return nil
 	}
-	return langext.Coalesce(m.Content, "")[0:1900-3] + "..."
+	if !m.NeedsTrim() {
+		return m.Content
+	}
+	return langext.Ptr(langext.Coalesce(m.Content, "")[0:ContentLengthTrim-3] + "...")
 }
 
-func (m Message) ShortBody() string {
+func (m Message) ShortContent() string {
 	if m.Content == nil {
 		return ""
 	}
-	if len(*m.Content) < 200 {
+	if len(*m.Content) < ContentLengthShort {
 		return *m.Content
 	}
-	return (*m.Content)[0:200-3] + "..."
+	return (*m.Content)[0:ContentLengthShort-3] + "..."
 }
 
 type MessageJSON struct {
@@ -72,6 +97,7 @@ type MessageJSON struct {
 	Content       *string `json:"body"`
 	Priority      int     `json:"priority"`
 	UserMessageID *string `json:"usr_message_id"`
+	Trimmed       bool    `json:"trimmed"`
 }
 
 type MessageDB struct {

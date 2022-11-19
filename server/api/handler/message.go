@@ -190,10 +190,24 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.SendAPIError(500, apierr.DATABASE_ERROR, -1, "Failed to query subscriptions")
 	}
 
+	err = h.database.IncUserMessageCounter(ctx, user)
+	if err != nil {
+		return ginresp.SendAPIError(500, apierr.DATABASE_ERROR, -1, "Failed to inc user msg-counter")
+	}
+
+	err = h.database.IncChannelMessageCounter(ctx, channel)
+	if err != nil {
+		return ginresp.SendAPIError(500, apierr.DATABASE_ERROR, -1, "Failed to channel msg-counter")
+	}
+
 	for _, sub := range subscriptions {
 		clients, err := h.database.ListClients(ctx, sub.SubscriberUserID)
 		if err != nil {
 			return ginresp.SendAPIError(500, apierr.DATABASE_ERROR, -1, "Failed to query clients")
+		}
+
+		if !sub.Confirmed {
+			continue
 		}
 
 		for _, client := range clients {
@@ -220,8 +234,8 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 		ErrorHighlight: -1,
 		Message:        "Message sent",
 		SuppressSend:   false,
-		MessageCount:   user.MessagesSent,
-		Quota:          user.QuotaUsedToday(),
+		MessageCount:   user.MessagesSent + 1,
+		Quota:          user.QuotaUsedToday() + 1,
 		IsPro:          user.IsPro,
 		QuotaMax:       user.QuotaPerDay(),
 		SCNMessageID:   msg.SCNMessageID,

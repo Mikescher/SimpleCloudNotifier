@@ -1,10 +1,10 @@
 package models
 
 import (
+	scn "blackforestbytes.com/simplecloudnotifier"
 	"database/sql"
 	"github.com/blockloop/scan"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
-	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
 	"time"
 )
 
@@ -58,7 +58,7 @@ func (u User) QuotaPerDay() int {
 }
 
 func (u User) QuotaUsedToday() int {
-	now := time.Now().In(timeext.TimezoneBerlin).Format("2006-01-02")
+	now := scn.QuotaDayString()
 	if u.QuotaUsedDay != nil && *u.QuotaUsedDay == now {
 		return u.QuotaUsed
 	} else {

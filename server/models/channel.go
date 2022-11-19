@@ -14,7 +14,6 @@ type Channel struct {
 	SubscribeKey      string
 	SendKey           string
 	TimestampCreated  time.Time
-	TimestampLastRead *time.Time
 	TimestampLastSent *time.Time
 	MessagesSent      int
 }
@@ -27,7 +26,6 @@ func (c Channel) JSON() ChannelJSON {
 		SubscribeKey:      c.SubscribeKey,
 		SendKey:           c.SendKey,
 		TimestampCreated:  c.TimestampCreated.Format(time.RFC3339Nano),
-		TimestampLastRead: timeOptFmt(c.TimestampLastRead, time.RFC3339Nano),
 		TimestampLastSent: timeOptFmt(c.TimestampLastSent, time.RFC3339Nano),
 		MessagesSent:      c.MessagesSent,
 	}
@@ -40,7 +38,6 @@ type ChannelJSON struct {
 	SubscribeKey      string  `json:"subscribe_key"`
 	SendKey           string  `json:"send_key"`
 	TimestampCreated  string  `json:"timestamp_created"`
-	TimestampLastRead *string `json:"timestamp_last_read"`
 	TimestampLastSent *string `json:"timestamp_last_sent"`
 	MessagesSent      int     `json:"messages_sent"`
 }
@@ -65,7 +62,6 @@ func (c ChannelDB) Model() Channel {
 		SubscribeKey:      c.SubscribeKey,
 		SendKey:           c.SendKey,
 		TimestampCreated:  time.UnixMilli(c.TimestampCreated),
-		TimestampLastRead: timeOptFromMilli(c.TimestampLastRead),
 		TimestampLastSent: timeOptFromMilli(c.TimestampLastSent),
 		MessagesSent:      c.MessagesSent,
 	}

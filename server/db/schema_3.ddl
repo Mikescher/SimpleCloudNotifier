@@ -52,7 +52,6 @@ CREATE TABLE channels
     send_key           TEXT        NOT NULL,
 
     timestamp_created  INTEGER     NOT NULL,
-    timestamp_lastread INTEGER         NULL   DEFAULT NULL,
     timestamp_lastsent INTEGER         NULL   DEFAULT NULL,
 
     messages_sent      INTEGER     NOT NULL   DEFAULT '0'

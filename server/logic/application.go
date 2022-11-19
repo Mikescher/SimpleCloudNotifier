@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"regexp"
 	"strings"
 	"syscall"
 	"time"
@@ -152,32 +153,20 @@ func (app *Application) getPermissions(ctx *AppContext, hdr string) (PermissionS
 	}
 
 	if user != nil && user.SendKey == key {
-		return PermissionSet{ReferenceID: langext.Ptr(user.UserID), KeyType: PermKeyTypeUserSend}, nil
+		return PermissionSet{UserID: langext.Ptr(user.UserID), KeyType: PermKeyTypeUserSend}, nil
 	}
 	if user != nil && user.ReadKey == key {
-		return PermissionSet{ReferenceID: langext.Ptr(user.UserID), KeyType: PermKeyTypeUserRead}, nil
+		return PermissionSet{UserID: langext.Ptr(user.UserID), KeyType: PermKeyTypeUserRead}, nil
 	}
 	if user != nil && user.AdminKey == key {
-		return PermissionSet{ReferenceID: langext.Ptr(user.UserID), KeyType: PermKeyTypeUserAdmin}, nil
-	}
-
-	channel, err := app.Database.GetChannelByKey(ctx, key)
-	if err != nil {
-		return PermissionSet{}, err
-	}
-
-	if channel != nil && channel.SendKey == key {
-		return PermissionSet{ReferenceID: langext.Ptr(channel.ChannelID), KeyType: PermKeyTypeChannelSend}, nil
-	}
-	if channel != nil && channel.SubscribeKey == key {
-		return PermissionSet{ReferenceID: langext.Ptr(channel.ChannelID), KeyType: PermKeyTypeChannelSub}, nil
+		return PermissionSet{UserID: langext.Ptr(user.UserID), KeyType: PermKeyTypeUserAdmin}, nil
 	}
 
 	return NewEmptyPermissions(), nil
 }
 
 func (app *Application) GetOrCreateChannel(ctx *AppContext, userid int64, chanName string) (models.Channel, error) {
-	chanName = strings.ToLower(strings.TrimSpace(chanName))
+	chanName = app.NormalizeChannelName(chanName)
 
 	existingChan, err := app.Database.GetChannelByName(ctx, userid, chanName)
 	if err != nil {
@@ -196,10 +185,29 @@ func (app *Application) GetOrCreateChannel(ctx *AppContext, userid int64, chanNa
 		return models.Channel{}, err
 	}
 
-	_, err = app.Database.CreateSubscribtion(ctx, userid, userid, newChan.Name, newChan.ChannelID, true)
+	_, err = app.Database.CreateSubscription(ctx, userid, newChan, true)
 	if err != nil {
 		return models.Channel{}, err
 	}
 
 	return newChan, nil
+}
+
+func (app *Application) NormalizeChannelName(v string) string {
+	rex := regexp.MustCompile("[^[:alnum:]\\-_]")
+
+	v = strings.TrimSpace(v)
+	v = strings.ToLower(v)
+	v = rex.ReplaceAllString(v, "")
+
+	return v
+}
+
+func (app *Application) NormalizeUsername(v string) string {
+	rex := regexp.MustCompile("[^[:alnum:]\\-_ ]")
+
+	v = strings.TrimSpace(v)
+	v = rex.ReplaceAllString(v, "")
+
+	return v
 }

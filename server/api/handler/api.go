@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"net/http"
-	"regexp"
 )
 
 type APIHandler struct {
@@ -90,7 +89,12 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 		}
 	}
 
-	userobj, err := h.database.CreateUser(ctx, readKey, sendKey, adminKey, b.ProToken, b.Username)
+	username := b.Username
+	if username != nil {
+		username = langext.Ptr(h.app.NormalizeUsername(*username))
+	}
+
+	userobj, err := h.database.CreateUser(ctx, readKey, sendKey, adminKey, b.ProToken, username)
 	if err != nil {
 		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to create user in db", err)
 	}
@@ -181,7 +185,7 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	if b.Username != nil {
-		username := langext.Ptr(regexp.MustCompile(`[[:alnum:]\-_]`).ReplaceAllString(*b.Username, ""))
+		username := langext.Ptr(h.app.NormalizeUsername(*b.Username))
 		if *username == "" {
 			username = nil
 		}
@@ -634,7 +638,7 @@ func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.InternAPIError(404, apierr.SUBSCRIPTION_NOT_FOUND, "Subscription not found", err)
 	}
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query channel", err)
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
 	}
 
 	if subscription.SubscriberUserID != u.UserID {
@@ -672,7 +676,7 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionUserRead(u.UserID); permResp != nil {
+	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
 		return *permResp
 	}
 
@@ -681,10 +685,10 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.InternAPIError(404, apierr.SUBSCRIPTION_NOT_FOUND, "Subscription not found", err)
 	}
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query channel", err)
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
 	}
 
-	if subscription.SubscriberUserID != u.UserID {
+	if subscription.SubscriberUserID != u.UserID && subscription.ChannelOwnerUserID != u.UserID {
 		return ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 	}
 
@@ -696,24 +700,251 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, subscription.JSON()))
 }
 
+// CreateSubscription swaggerdoc
+//
+// @Summary Creare/Request a subscription
+// @ID      api-subscriptions-create
+//
+// @Param       uid        path     int true "UserID"
+// @Param       query_data query    handler.CreateSubscription.query false " "
+// @Param       post_data  body     handler.CreateSubscription.body  false " "
+//
+// @Success 200 {object} models.SubscriptionJSON
+// @Failure 400 {object} ginresp.apiError
+// @Failure 401 {object} ginresp.apiError
+// @Failure 404 {object} ginresp.apiError
+// @Failure 500 {object} ginresp.apiError
+//
+// @Router  /api-v2/users/{uid}/subscriptions [POST]
 func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
-	return ginresp.NotImplemented() //TODO
+	type uri struct {
+		UserID int64 `uri:"uid"`
+	}
+	type body struct {
+		ChannelOwnerUserID int64  `form:"channel_owner_user_id"`
+		Channel            string `form:"channel_name"`
+	}
+	type query struct {
+		ChanSubscribeKey *string `form:"chan_subscribe_key"`
+	}
+
+	var u uri
+	var q query
+	var b body
+	ctx, errResp := h.app.StartRequest(g, &u, &q, &b)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+		return *permResp
+	}
+
+	channel, err := h.database.GetChannelByName(ctx, b.ChannelOwnerUserID, h.app.NormalizeChannelName(b.Channel))
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query channel", err)
+	}
+	if channel == nil {
+		return ginresp.InternAPIError(400, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
+	}
+
+	sub, err := h.database.CreateSubscription(ctx, u.UserID, *channel, channel.OwnerUserID == u.UserID)
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to create subscription", err)
+	}
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, sub.JSON()))
 }
 
+// UpdateSubscription swaggerdoc
+//
+// @Summary Update a subscription (e.g. confirm)
+// @ID      api-subscriptions-update
+//
+// @Param   uid path     int true "UserID"
+// @Param   sid path     int true "SubscriptionID"
+//
+// @Success 200 {object} models.SubscriptionJSON
+// @Failure 400 {object} ginresp.apiError
+// @Failure 401 {object} ginresp.apiError
+// @Failure 404 {object} ginresp.apiError
+// @Failure 500 {object} ginresp.apiError
+//
+// @Router  /api-v2/users/{uid}/subscriptions/{sid} [PATCH]
 func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
-	return ginresp.NotImplemented() //TODO
+	type uri struct {
+		UserID         int64 `uri:"uid"`
+		SubscriptionID int64 `uri:"sid"`
+	}
+	type body struct {
+		Confirmed *bool `form:"confirmed"`
+	}
+
+	var u uri
+	var b body
+	ctx, errResp := h.app.StartRequest(g, &u, nil, &b)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+		return *permResp
+	}
+
+	subscription, err := h.database.GetSubscription(ctx, u.SubscriptionID)
+	if err == sql.ErrNoRows {
+		return ginresp.InternAPIError(404, apierr.SUBSCRIPTION_NOT_FOUND, "Subscription not found", err)
+	}
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
+	}
+
+	if subscription.ChannelOwnerUserID != u.UserID {
+		return ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+	}
+
+	if b.Confirmed != nil {
+		err = h.database.UpdateSubscriptionConfirmed(ctx, u.SubscriptionID, *b.Confirmed)
+		if err != nil {
+			return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to update subscription", err)
+		}
+	}
+
+	subscription, err = h.database.GetSubscription(ctx, u.SubscriptionID)
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
+	}
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, subscription.JSON()))
 }
 
 func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
+	//also update last_read
 	return ginresp.NotImplemented() //TODO
 }
 
+// GetMessage swaggerdoc
+//
+// @Summary Get a single message (untrimmed)
+// @Description The user must either own the message and request the resource with the READ or ADMIN Key
+// @Description Or the user must subscribe to the corresponding channel (and be confirmed) and request the resource with the READ or ADMIN Key
+// @Description The returned message is never trimmed
+// @ID      api-message-get
+//
+// @Param   mid path     int true "SCNMessageID"
+//
+// @Success 200 {object} models.MessageJSON
+// @Failure 400 {object} ginresp.apiError
+// @Failure 401 {object} ginresp.apiError
+// @Failure 404 {object} ginresp.apiError
+// @Failure 500 {object} ginresp.apiError
+//
+// @Router  /api-v2/messages/{mid} [PATCH]
 func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
-	return ginresp.NotImplemented() //TODO
+	type uri struct {
+		MessageID int64 `uri:"mid"`
+	}
+
+	var u uri
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	if permResp := ctx.CheckPermissionAny(); permResp != nil {
+		return *permResp
+	}
+
+	msg, err := h.database.GetMessage(ctx, u.MessageID)
+	if err == sql.ErrNoRows {
+		return ginresp.InternAPIError(404, apierr.MESSAGE_NOT_FOUND, "message not found", err)
+	}
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query message", err)
+	}
+
+	if !ctx.CheckPermissionMessageReadDirect(msg) {
+
+		// either we have direct read permissions (it is our message + read/admin key)
+		// or we subscribe (+confirmed) to the channel and have read/admin key
+
+		if uid := ctx.GetPermissionUserID(); uid != nil && ctx.IsPermissionUserRead() {
+			sub, err := h.database.GetSubscriptionBySubscriber(ctx, *uid, msg.ChannelID)
+			if err != nil {
+				return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
+			}
+			if sub == nil {
+				// not subbed
+				return ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+			}
+			if !sub.Confirmed {
+				// sub not confirmed
+				return ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+			}
+			// => perm okay
+
+		} else {
+			// auth-key is not set or not a user:x variant
+			return ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+		}
+
+	}
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, msg.FullJSON()))
 }
 
+// DeleteMessage swaggerdoc
+//
+// @Summary Delete a single message
+// @Description The user must own the message and request the resource with the ADMIN Key
+// @ID      api-message-delete
+//
+// @Param   mid path     int true "SCNMessageID"
+//
+// @Success 200 {object} models.MessageJSON
+// @Failure 400 {object} ginresp.apiError
+// @Failure 401 {object} ginresp.apiError
+// @Failure 404 {object} ginresp.apiError
+// @Failure 500 {object} ginresp.apiError
+//
+// @Router  /api-v2/messages/{mid} [PATCH]
 func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
-	return ginresp.NotImplemented() //TODO
+	type uri struct {
+		MessageID int64 `uri:"mid"`
+	}
+
+	var u uri
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	if permResp := ctx.CheckPermissionAny(); permResp != nil {
+		return *permResp
+	}
+
+	msg, err := h.database.GetMessage(ctx, u.MessageID)
+	if err == sql.ErrNoRows {
+		return ginresp.InternAPIError(404, apierr.MESSAGE_NOT_FOUND, "message not found", err)
+	}
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query message", err)
+	}
+
+	if !ctx.CheckPermissionMessageReadDirect(msg) {
+		return ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+	}
+
+	err = h.database.DeleteMessage(ctx, msg.SCNMessageID)
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to delete message", err)
+	}
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, msg.FullJSON()))
 }
 
 func (h APIHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
