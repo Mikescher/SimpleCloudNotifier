@@ -28,7 +28,8 @@ build-docker:
             -t "$(DOCKER_REPO)/$(DOCKER_NAME):latest" \
             .
 
-build-swagger:
+.PHONY: swagger
+swagger:
 	which swag || go install github.com/swaggo/swag/cmd/swag@latest
 	swag init -generalInfo api/router.go --output ./swagger/ --outputTypes "json,yaml"
 

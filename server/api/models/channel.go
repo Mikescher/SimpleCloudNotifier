@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"github.com/blockloop/scan"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"time"
 )
 
@@ -71,10 +72,19 @@ func (c ChannelDB) Model() Channel {
 }
 
 func DecodeChannel(r *sql.Rows) (Channel, error) {
-	var udb ChannelDB
-	err := scan.RowStrict(&udb, r)
+	var data ChannelDB
+	err := scan.RowStrict(&data, r)
 	if err != nil {
 		return Channel{}, err
 	}
-	return udb.Model(), nil
+	return data.Model(), nil
+}
+
+func DecodeChannels(r *sql.Rows) ([]Channel, error) {
+	var data []ChannelDB
+	err := scan.RowsStrict(&data, r)
+	if err != nil {
+		return nil, err
+	}
+	return langext.ArrMap(data, func(v ChannelDB) Channel { return v.Model() }), nil
 }

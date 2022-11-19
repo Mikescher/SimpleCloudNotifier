@@ -84,6 +84,13 @@ definitions:
       user_key:
         type: string
     type: object
+  handler.ListClients.result:
+    properties:
+      clients:
+        items:
+          $ref: '#/definitions/models.ClientJSON'
+        type: array
+    type: object
   handler.Register.response:
     properties:
       is_pro:
@@ -170,6 +177,23 @@ definitions:
         type: string
       uri:
         type: string
+    type: object
+  models.ClientJSON:
+    properties:
+      agent_model:
+        type: string
+      agent_version:
+        type: string
+      client_id:
+        type: integer
+      fcm_token:
+        type: string
+      timestamp_created:
+        type: string
+      type:
+        type: string
+      user_id:
+        type: integer
     type: object
   models.CompatMessage:
     properties:
@@ -290,7 +314,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/ginresp.apiError'
-      summary: Get a user (only self is allowed)
+      summary: Get a user
     patch:
       description: The body-values are optional, only send the ones you want to update
       operationId: api-user-update
@@ -321,7 +345,38 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/ginresp.apiError'
-      summary: (Partially) update a user (only self allowed)
+      summary: (Partially) update a user
+  /api-v2/user/{uid}/clients:
+    get:
+      operationId: api-clients-list
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListClients.result'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: List all clients
   /api/ack.php:
     get:
       operationId: compat-ack

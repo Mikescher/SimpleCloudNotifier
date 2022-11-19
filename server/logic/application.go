@@ -43,7 +43,7 @@ func (app *Application) Run() {
 	errChan := make(chan error)
 
 	go func() {
-		log.Info().Str("address", httpserver.Addr).Msg("HTTP-Server started")
+		log.Info().Str("address", httpserver.Addr).Msg("HTTP-Server started on http://localhost:" + app.Config.ServerPort)
 		errChan <- httpserver.ListenAndServe()
 	}()
 

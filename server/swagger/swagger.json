@@ -47,7 +47,7 @@
         },
         "/api-v2/user/{uid}": {
             "get": {
-                "summary": "Get a user (only self is allowed)",
+                "summary": "Get a user",
                 "operationId": "api-user-get",
                 "parameters": [
                     {
@@ -93,7 +93,7 @@
             },
             "patch": {
                 "description": "The body-values are optional, only send the ones you want to update",
-                "summary": "(Partially) update a user (only self allowed)",
+                "summary": "(Partially) update a user",
                 "operationId": "api-user-update",
                 "parameters": [
                     {
@@ -110,6 +110,53 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.UserJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api-v2/user/{uid}/clients": {
+            "get": {
+                "summary": "List all clients",
+                "operationId": "api-clients-list",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ListClients.result"
                         }
                     },
                     "400": {
@@ -667,6 +714,17 @@
                 }
             }
         },
+        "handler.ListClients.result": {
+            "type": "object",
+            "properties": {
+                "clients": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ClientJSON"
+                    }
+                }
+            }
+        },
         "handler.Register.response": {
             "type": "object",
             "properties": {
@@ -798,6 +856,32 @@
                 },
                 "uri": {
                     "type": "string"
+                }
+            }
+        },
+        "models.ClientJSON": {
+            "type": "object",
+            "properties": {
+                "agent_model": {
+                    "type": "string"
+                },
+                "agent_version": {
+                    "type": "string"
+                },
+                "client_id": {
+                    "type": "integer"
+                },
+                "fcm_token": {
+                    "type": "string"
+                },
+                "timestamp_created": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },

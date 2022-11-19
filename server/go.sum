@@ -95,6 +95,8 @@ github.com/ugorji/go/codec v1.2.7 h1:YPXUKf7fYbp/y8xloBqZOw2qaVggbfwMlI8WM3wZUJ0
 github.com/ugorji/go/codec v1.2.7/go.mod h1:WGN1fab3R1fzQlVQTkfxVtIBhWDRqOviHU95kRgeqEY=
 gogs.mikescher.com/BlackForestBytes/goext v0.0.17 h1:jsfbvII7aa0SH9qY0fnXBdtNnQe1YY3DgXDThEwLICc=
 gogs.mikescher.com/BlackForestBytes/goext v0.0.17/go.mod h1:TMBOjo3FRFh/GiTT0z3nwLmgcFJB87oSF2VMs4XUCTQ=
+gogs.mikescher.com/BlackForestBytes/goext v0.0.18 h1:fprrLoAPGdI4ObveHR1DjiP9WhlTJppWtjqMA6ZkyS8=
+gogs.mikescher.com/BlackForestBytes/goext v0.0.18/go.mod h1:TMBOjo3FRFh/GiTT0z3nwLmgcFJB87oSF2VMs4XUCTQ=
 golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 h1:/UOmuWzQfxxo9UtlXMwuQU8CMgg1eZXqTRwkSQJWKOI=
 golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=
 golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 h1:6zppjxzCulZykYSLyVDYbneBfbaBIQPYMevg0bEwv2s=

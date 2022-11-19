@@ -8,13 +8,17 @@ func Wrap(fn WHandlerFunc) gin.HandlerFunc {
 
 	return func(g *gin.Context) {
 
+		reqctx := g.Request.Context()
+
 		wrap := fn(g)
 
 		if g.Writer.Written() {
 			panic("Writing in WrapperFunc is not supported")
 		}
 
-		wrap.Write(g)
+		if reqctx.Err() == nil {
+			wrap.Write(g)
+		}
 
 	}
 

@@ -96,7 +96,7 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 
 // GetUser swaggerdoc
 //
-// @Summary Get a user (only self is allowed)
+// @Summary Get a user
 // @ID      api-user-get
 //
 // @Param   uid path     int true "UserID"
@@ -137,7 +137,7 @@ func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 
 // UpdateUser swaggerdoc
 //
-// @Summary     (Partially) update a user (only self allowed)
+// @Summary     (Partially) update a user
 // @Description The body-values are optional, only send the ones you want to update
 // @ID          api-user-update
 //
@@ -212,8 +212,47 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, user.JSON()))
 }
 
+// ListClients swaggerdoc
+//
+// @Summary List all clients
+// @ID      api-clients-list
+//
+// @Param   uid path     int true "UserID"
+//
+// @Success 200 {object} handler.ListClients.result
+// @Failure 400 {object} ginresp.apiError
+// @Failure 401 {object} ginresp.apiError
+// @Failure 404 {object} ginresp.apiError
+// @Failure 500 {object} ginresp.apiError
+//
+// @Router  /api-v2/user/{uid}/clients [GET]
 func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
-	return ginresp.NotImplemented()
+	type uri struct {
+		UserID int64 `uri:"uid"`
+	}
+	type result struct {
+		Clients []models.ClientJSON `json:"clients"`
+	}
+
+	var u uri
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	if permResp := ctx.CheckPermissionUserRead(u.UserID); permResp != nil {
+		return *permResp
+	}
+
+	clients, err := h.app.Database.ListClients(ctx, u.UserID)
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query user", err)
+	}
+
+	res := langext.ArrMap(clients, func(v models.Client) models.ClientJSON { return v.JSON() })
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, result{Clients: res}))
 }
 
 func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {

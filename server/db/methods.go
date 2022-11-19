@@ -202,3 +202,22 @@ func (db *Database) UpdateUserProToken(ctx TxContext, userid int64, protoken *st
 
 	return nil
 }
+
+func (db *Database) ListClients(ctx TxContext, userid int64) ([]models.Client, error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := tx.QueryContext(ctx, "SELECT * FROM clients WHERE user_id = ?", userid)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := models.DecodeClients(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}

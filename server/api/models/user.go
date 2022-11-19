@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"github.com/blockloop/scan"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"time"
 )
 
@@ -88,10 +89,19 @@ func (u UserDB) Model() User {
 }
 
 func DecodeUser(r *sql.Rows) (User, error) {
-	var udb UserDB
-	err := scan.RowStrict(&udb, r)
+	var data UserDB
+	err := scan.RowStrict(&data, r)
 	if err != nil {
 		return User{}, err
 	}
-	return udb.Model(), nil
+	return data.Model(), nil
+}
+
+func DecodeUsers(r *sql.Rows) ([]User, error) {
+	var data []UserDB
+	err := scan.RowsStrict(&data, r)
+	if err != nil {
+		return nil, err
+	}
+	return langext.ArrMap(data, func(v UserDB) User { return v.Model() }), nil
 }
