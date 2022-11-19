@@ -11,16 +11,22 @@
     "paths": {
         "/": {
             "post": {
+                "description": "All parameter can be set via query-parameter or the json body. Only UserID, UserKey and Title are required",
                 "summary": "Send a new message",
                 "parameters": [
                     {
                         "type": "string",
-                        "name": "message_content",
+                        "name": "chanKey",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "name": "message_title",
+                        "name": "channel",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "content",
                         "in": "query"
                     },
                     {
@@ -29,23 +35,28 @@
                         "in": "query"
                     },
                     {
-                        "type": "integer",
+                        "type": "number",
                         "name": "sendTimestamp",
                         "in": "query"
                     },
                     {
                         "type": "string",
+                        "name": "title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "userID",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "userKey",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "name": "userMessageID",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "user_id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "user_key",
                         "in": "query"
                     },
                     {
@@ -61,7 +72,122 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.ClientJSON"
+                            "$ref": "#/definitions/handler.SendMessage.response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api-v2/messages": {
+            "get": {
+                "description": "The next_page_token is an opaque token, the special value \"@start\" (or empty-string) is the beginning and \"@end\" is the end\nSimply start the pagination without a next_page_token and get the next page by calling this endpoint with the returned next_page_token of the last query\nIf there are no more entries the token \"@end\" will be returned\nBy default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)",
+                "summary": "List all (subscribed) messages",
+                "operationId": "api-messages-list",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "filter",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "nextPageToken",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "name": "trimmed",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ListMessages.response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api-v2/messages/{mid}": {
+            "patch": {
+                "description": "The user must own the message and request the resource with the ADMIN Key",
+                "summary": "Delete a single message",
+                "operationId": "api-messages-delete",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "SCNMessageID",
+                        "name": "mid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageJSON"
                         }
                     },
                     "400": {
@@ -221,6 +347,161 @@
                 }
             }
         },
+        "/api-v2/users/{uid}/channels": {
+            "get": {
+                "summary": "List all channels of a user",
+                "operationId": "api-channels-list",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ListChannels.response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api-v2/users/{uid}/channels/{cid}": {
+            "get": {
+                "summary": "List all channels of a user",
+                "operationId": "api-channels-get",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ChannelID",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ChannelJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api-v2/users/{uid}/channels/{cid}/subscriptions": {
+            "get": {
+                "summary": "List all subscriptions of a channel",
+                "operationId": "api-chan-subscriptions-list",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ChannelID",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ListChannelSubscriptions.response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
         "/api-v2/users/{uid}/clients": {
             "get": {
                 "summary": "List all clients",
@@ -238,7 +519,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.ListClients.result"
+                            "$ref": "#/definitions/handler.ListClients.response"
                         }
                     },
                     "400": {
@@ -345,6 +626,269 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.ClientJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api-v2/users/{uid}/subscriptions": {
+            "get": {
+                "summary": "List all channels of a user",
+                "operationId": "api-user-subscriptions-list",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ListUserSubscriptions.response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Creare/Request a subscription",
+                "operationId": "api-subscriptions-create",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "name": "chanSubscribeKey",
+                        "in": "query"
+                    },
+                    {
+                        "description": " ",
+                        "name": "post_data",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/handler.CreateSubscription.body"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SubscriptionJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api-v2/users/{uid}/subscriptions/{sid}": {
+            "get": {
+                "summary": "Get a single subscription",
+                "operationId": "api-subscriptions-get",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "SubscriptionID",
+                        "name": "sid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SubscriptionJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Cancel (delete) subscription",
+                "operationId": "api-subscriptions-delete",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "SubscriptionID",
+                        "name": "sid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SubscriptionJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "Update a subscription (e.g. confirm)",
+                "operationId": "api-subscriptions-update",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "SubscriptionID",
+                        "name": "sid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SubscriptionJSON"
                         }
                     },
                     "400": {
@@ -773,16 +1317,22 @@
         },
         "/send": {
             "post": {
+                "description": "All parameter can be set via query-parameter or the json body. Only UserID, UserKey and Title are required",
                 "summary": "Send a new message",
                 "parameters": [
                     {
                         "type": "string",
-                        "name": "message_content",
+                        "name": "chanKey",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "name": "message_title",
+                        "name": "channel",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "content",
                         "in": "query"
                     },
                     {
@@ -791,23 +1341,28 @@
                         "in": "query"
                     },
                     {
-                        "type": "integer",
+                        "type": "number",
                         "name": "sendTimestamp",
                         "in": "query"
                     },
                     {
                         "type": "string",
+                        "name": "title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "userID",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "userKey",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "name": "userMessageID",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "user_id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "user_key",
                         "in": "query"
                     },
                     {
@@ -823,7 +1378,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.ClientJSON"
+                            "$ref": "#/definitions/handler.SendMessage.response"
                         }
                     },
                     "400": {
@@ -834,6 +1389,12 @@
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -904,6 +1465,17 @@
                 },
                 "fcm_token": {
                     "type": "string"
+                }
+            }
+        },
+        "handler.CreateSubscription.body": {
+            "type": "object",
+            "properties": {
+                "channel": {
+                    "type": "string"
+                },
+                "channelOwnerUserID": {
+                    "type": "integer"
                 }
             }
         },
@@ -1001,13 +1573,63 @@
                 }
             }
         },
-        "handler.ListClients.result": {
+        "handler.ListChannelSubscriptions.response": {
+            "type": "object",
+            "properties": {
+                "subscriptions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SubscriptionJSON"
+                    }
+                }
+            }
+        },
+        "handler.ListChannels.response": {
+            "type": "object",
+            "properties": {
+                "channels": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ChannelJSON"
+                    }
+                }
+            }
+        },
+        "handler.ListClients.response": {
             "type": "object",
             "properties": {
                 "clients": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.ClientJSON"
+                    }
+                }
+            }
+        },
+        "handler.ListMessages.response": {
+            "type": "object",
+            "properties": {
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.MessageJSON"
+                    }
+                },
+                "next_page_token": {
+                    "type": "string"
+                },
+                "page_size": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handler.ListUserSubscriptions.response": {
+            "type": "object",
+            "properties": {
+                "subscriptions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SubscriptionJSON"
                     }
                 }
             }
@@ -1061,26 +1683,67 @@
         "handler.SendMessage.body": {
             "type": "object",
             "properties": {
+                "chanKey": {
+                    "type": "string"
+                },
+                "channel": {
+                    "type": "string"
+                },
                 "message_content": {
                     "type": "string"
                 },
                 "message_title": {
                     "type": "string"
                 },
+                "msg_id": {
+                    "type": "string"
+                },
                 "priority": {
                     "type": "integer"
                 },
-                "sendTimestamp": {
-                    "type": "integer"
-                },
-                "userMessageID": {
-                    "type": "string"
+                "timestamp": {
+                    "type": "number"
                 },
                 "user_id": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "user_key": {
                     "type": "string"
+                }
+            }
+        },
+        "handler.SendMessage.response": {
+            "type": "object",
+            "properties": {
+                "errhighlight": {
+                    "type": "integer"
+                },
+                "error": {
+                    "type": "integer"
+                },
+                "is_pro": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "messagecount": {
+                    "type": "integer"
+                },
+                "quota": {
+                    "type": "integer"
+                },
+                "quota_max": {
+                    "type": "integer"
+                },
+                "scn_msg_id": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "suppress_send": {
+                    "type": "boolean"
                 }
             }
         },
@@ -1172,6 +1835,35 @@
                 }
             }
         },
+        "models.ChannelJSON": {
+            "type": "object",
+            "properties": {
+                "channel_id": {
+                    "type": "integer"
+                },
+                "messages_sent": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_user_id": {
+                    "type": "integer"
+                },
+                "send_key": {
+                    "type": "string"
+                },
+                "subscribe_key": {
+                    "type": "string"
+                },
+                "timestamp_created": {
+                    "type": "string"
+                },
+                "timestamp_last_sent": {
+                    "type": "string"
+                }
+            }
+        },
         "models.ClientJSON": {
             "type": "object",
             "properties": {
@@ -1221,6 +1913,44 @@
                 }
             }
         },
+        "models.MessageJSON": {
+            "type": "object",
+            "properties": {
+                "body": {
+                    "type": "string"
+                },
+                "channel_id": {
+                    "type": "integer"
+                },
+                "channel_name": {
+                    "type": "string"
+                },
+                "owner_user_id": {
+                    "type": "integer"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "scn_message_id": {
+                    "type": "integer"
+                },
+                "sender_user_id": {
+                    "type": "integer"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "trimmed": {
+                    "type": "boolean"
+                },
+                "usr_message_id": {
+                    "type": "string"
+                }
+            }
+        },
         "models.ShortCompatMessage": {
             "type": "object",
             "properties": {
@@ -1247,6 +1977,32 @@
                 }
             }
         },
+        "models.SubscriptionJSON": {
+            "type": "object",
+            "properties": {
+                "channel_id": {
+                    "type": "integer"
+                },
+                "channel_name": {
+                    "type": "string"
+                },
+                "channel_owner_user_id": {
+                    "type": "integer"
+                },
+                "confirmed": {
+                    "type": "boolean"
+                },
+                "subscriber_user_id": {
+                    "type": "integer"
+                },
+                "subscription_id": {
+                    "type": "integer"
+                },
+                "timestamp_created": {
+                    "type": "string"
+                }
+            }
+        },
         "models.UserJSON": {
             "type": "object",
             "properties": {
@@ -1259,11 +2015,11 @@
                 "messages_sent": {
                     "type": "integer"
                 },
-                "quota_day": {
-                    "type": "string"
-                },
-                "quota_today": {
+                "quota_used": {
                     "type": "integer"
+                },
+                "quota_used_day": {
+                    "type": "string"
                 },
                 "read_key": {
                     "type": "string"

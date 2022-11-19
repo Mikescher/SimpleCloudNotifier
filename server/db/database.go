@@ -2,23 +2,14 @@ package db
 
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
+	"blackforestbytes.com/simplecloudnotifier/db/schema"
 	"context"
 	"database/sql"
-	_ "embed"
 	"errors"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"time"
 )
-
-//go:embed schema_1.ddl
-var schema1 string
-
-//go:embed schema_2.ddl
-var schema2 string
-
-//go:embed schema_3.ddl
-var schema3 string
 
 type Database struct {
 	db *sql.DB
@@ -37,24 +28,24 @@ func (db *Database) Migrate(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 24*time.Second)
 	defer cancel()
 
-	schema, err := db.ReadSchema(ctx)
-	if schema == 0 {
+	currschema, err := db.ReadSchema(ctx)
+	if currschema == 0 {
 
-		_, err = db.db.ExecContext(ctx, schema3)
+		_, err = db.db.ExecContext(ctx, schema.Schema3)
 		if err != nil {
 			return err
 		}
 
 		return nil
 
-	} else if schema == 1 {
+	} else if currschema == 1 {
 		return errors.New("cannot autom. upgrade schema 1")
-	} else if schema == 2 {
+	} else if currschema == 2 {
 		return errors.New("cannot autom. upgrade schema 2") //TODO
-	} else if schema == 3 {
+	} else if currschema == 3 {
 		return nil // current
 	} else {
-		return errors.New(fmt.Sprintf("Unknown DB schema: %d", schema))
+		return errors.New(fmt.Sprintf("Unknown DB schema: %d", currschema))
 	}
 
 }

@@ -1,8 +1,10 @@
 package db
 
 import (
+	"blackforestbytes.com/simplecloudnotifier/db/cursortoken"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -102,4 +104,39 @@ func (db *Database) DeleteMessage(ctx TxContext, scnMessageID int64) error {
 	}
 
 	return nil
+}
+
+func (db *Database) ListMessages(ctx TxContext, userid int64, pageSize int, inTok cursortoken.CursorToken) ([]models.Message, cursortoken.CursorToken, error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return nil, cursortoken.CursorToken{}, err
+	}
+
+	if inTok.Mode == cursortoken.CTMEnd {
+		return make([]models.Message, 0), cursortoken.End(), nil
+	}
+
+	pageCond := ""
+	if inTok.Mode == cursortoken.CTMNormal {
+		pageCond = fmt.Sprintf("AND ( timestamp_real < %d OR (timestamp_real = %d AND scn_message_id < %d ) )", inTok.Timestamp, inTok.Timestamp, inTok.Id)
+	}
+
+	rows, err := tx.QueryContext(ctx, "SELECT messages.* FROM messages LEFT JOIN subscriptions subs on messages.channel_id = subs.channel_id WHERE subs.subscriber_user_id = ? AND subs.confirmed = 1 "+pageCond+" ORDER BY timestamp_real DESC LIMIT ?",
+		userid,
+		pageSize+1)
+	if err != nil {
+		return nil, cursortoken.CursorToken{}, err
+	}
+
+	data, err := models.DecodeMessages(rows)
+	if err != nil {
+		return nil, cursortoken.CursorToken{}, err
+	}
+
+	if len(data) <= pageSize {
+		return data, cursortoken.End(), nil
+	} else {
+		outToken := cursortoken.Normal(data[pageSize-1].TimestampReal, data[pageSize-1].SCNMessageID, "DESC")
+		return data[0:pageSize], outToken, nil
+	}
 }

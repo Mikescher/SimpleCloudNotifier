@@ -4,11 +4,13 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/db"
+	"blackforestbytes.com/simplecloudnotifier/db/cursortoken"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"gogs.mikescher.com/BlackForestBytes/goext/mathext"
 	"net/http"
 )
 
@@ -705,15 +707,15 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Summary Creare/Request a subscription
 // @ID      api-subscriptions-create
 //
-// @Param       uid        path     int true "UserID"
-// @Param       query_data query    handler.CreateSubscription.query false " "
-// @Param       post_data  body     handler.CreateSubscription.body  false " "
+// @Param   uid        path     int                              true  "UserID"
+// @Param   query_data query    handler.CreateSubscription.query false " "
+// @Param   post_data  body     handler.CreateSubscription.body  false " "
 //
-// @Success 200 {object} models.SubscriptionJSON
-// @Failure 400 {object} ginresp.apiError
-// @Failure 401 {object} ginresp.apiError
-// @Failure 404 {object} ginresp.apiError
-// @Failure 500 {object} ginresp.apiError
+// @Success 200        {object} models.SubscriptionJSON
+// @Failure 400        {object} ginresp.apiError
+// @Failure 401        {object} ginresp.apiError
+// @Failure 404        {object} ginresp.apiError
+// @Failure 500        {object} ginresp.apiError
 //
 // @Router  /api-v2/users/{uid}/subscriptions [POST]
 func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
@@ -820,28 +822,98 @@ func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, subscription.JSON()))
 }
 
+// ListMessages swaggerdoc
+//
+// @Summary     List all (subscribed) messages
+// @Description The next_page_token is an opaque token, the special value "@start" (or empty-string) is the beginning and "@end" is the end
+// @Description Simply start the pagination without a next_page_token and get the next page by calling this endpoint with the returned next_page_token of the last query
+// @Description If there are no more entries the token "@end" will be returned
+// @Description By default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)
+// @ID          api-messages-list
+//
+// @Param       query_data query    handler.ListMessages.query false " "
+//
+// @Success     200        {object} handler.ListMessages.response
+// @Failure     400        {object} ginresp.apiError
+// @Failure     401        {object} ginresp.apiError
+// @Failure     404        {object} ginresp.apiError
+// @Failure     500        {object} ginresp.apiError
+//
+// @Router      /api-v2/messages [GET]
 func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
-	//also update last_read
-	return ginresp.NotImplemented() //TODO
+	type query struct {
+		PageSize      *int    `form:"page_size"`
+		NextPageToken *string `form:"next_page_token"`
+		Filter        *string `form:"filter"`
+		Trimmed       *bool   `form:"trimmed"`
+	}
+	type response struct {
+		Messages      []models.MessageJSON `json:"messages"`
+		NextPageToken string               `json:"next_page_token"`
+		PageSize      int                  `json:"page_size"`
+	}
+
+	var q query
+	ctx, errResp := h.app.StartRequest(g, nil, &q, nil)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	trimmed := langext.Coalesce(q.Trimmed, true)
+
+	maxPageSize := langext.Conditional(trimmed, 16, 256)
+
+	pageSize := mathext.Clamp(langext.Coalesce(q.PageSize, 64), 1, maxPageSize)
+
+	if permResp := ctx.CheckPermissionRead(); permResp != nil {
+		return *permResp
+	}
+
+	userid := *ctx.GetPermissionUserID()
+
+	tok, err := cursortoken.Decode(langext.Coalesce(q.NextPageToken, ""))
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.PAGETOKEN_ERROR, "Failed to decode next_page_token", err)
+	}
+
+	err = h.database.UpdateUserLastRead(ctx, userid)
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to update last-read", err)
+	}
+
+	messages, npt, err := h.database.ListMessages(ctx, userid, pageSize, tok)
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query messages", err)
+	}
+
+	var res []models.MessageJSON
+	if trimmed {
+		res = langext.ArrMap(messages, func(v models.Message) models.MessageJSON { return v.TrimmedJSON() })
+	} else {
+		res = langext.ArrMap(messages, func(v models.Message) models.MessageJSON { return v.FullJSON() })
+	}
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize}))
 }
 
 // GetMessage swaggerdoc
 //
-// @Summary Get a single message (untrimmed)
+// @Summary     Get a single message (untrimmed)
 // @Description The user must either own the message and request the resource with the READ or ADMIN Key
 // @Description Or the user must subscribe to the corresponding channel (and be confirmed) and request the resource with the READ or ADMIN Key
 // @Description The returned message is never trimmed
-// @ID      api-message-get
+// @ID          api-messages-get
 //
-// @Param   mid path     int true "SCNMessageID"
+// @Param       mid path     int true "SCNMessageID"
 //
-// @Success 200 {object} models.MessageJSON
-// @Failure 400 {object} ginresp.apiError
-// @Failure 401 {object} ginresp.apiError
-// @Failure 404 {object} ginresp.apiError
-// @Failure 500 {object} ginresp.apiError
+// @Success     200 {object} models.MessageJSON
+// @Failure     400 {object} ginresp.apiError
+// @Failure     401 {object} ginresp.apiError
+// @Failure     404 {object} ginresp.apiError
+// @Failure     500 {object} ginresp.apiError
 //
-// @Router  /api-v2/messages/{mid} [PATCH]
+// @Router      /api-v2/messages/{mid} [PATCH]
 func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		MessageID int64 `uri:"mid"`
@@ -898,19 +970,19 @@ func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 
 // DeleteMessage swaggerdoc
 //
-// @Summary Delete a single message
+// @Summary     Delete a single message
 // @Description The user must own the message and request the resource with the ADMIN Key
-// @ID      api-message-delete
+// @ID          api-messages-delete
 //
-// @Param   mid path     int true "SCNMessageID"
+// @Param       mid path     int true "SCNMessageID"
 //
-// @Success 200 {object} models.MessageJSON
-// @Failure 400 {object} ginresp.apiError
-// @Failure 401 {object} ginresp.apiError
-// @Failure 404 {object} ginresp.apiError
-// @Failure 500 {object} ginresp.apiError
+// @Success     200 {object} models.MessageJSON
+// @Failure     400 {object} ginresp.apiError
+// @Failure     401 {object} ginresp.apiError
+// @Failure     404 {object} ginresp.apiError
+// @Failure     500 {object} ginresp.apiError
 //
-// @Router  /api-v2/messages/{mid} [PATCH]
+// @Router      /api-v2/messages/{mid} [PATCH]
 func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		MessageID int64 `uri:"mid"`

@@ -42,6 +42,18 @@ func (ac *AppContext) CheckPermissionUserRead(userid int64) *ginresp.HTTPRespons
 	return langext.Ptr(respoNotAuthorized)
 }
 
+func (ac *AppContext) CheckPermissionRead() *ginresp.HTTPResponse {
+	p := ac.permissions
+	if p.UserID != nil && p.KeyType == PermKeyTypeUserRead {
+		return nil
+	}
+	if p.UserID != nil && p.KeyType == PermKeyTypeUserAdmin {
+		return nil
+	}
+
+	return langext.Ptr(respoNotAuthorized)
+}
+
 func (ac *AppContext) CheckPermissionUserAdmin(userid int64) *ginresp.HTTPResponse {
 	p := ac.permissions
 	if p.UserID != nil && *p.UserID == userid && p.KeyType == PermKeyTypeUserAdmin {
