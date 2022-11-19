@@ -105,7 +105,7 @@ func (r *Router) Init(e *gin.Engine) {
 
 		apiv2.GET("/users/:uid/channels", ginresp.Wrap(r.apiHandler.ListChannels))
 		apiv2.GET("/users/:uid/channels/:cid", ginresp.Wrap(r.apiHandler.GetChannel))
-		apiv2.GET("/users/:uid/channels/:cid/messages", ginresp.Wrap(r.apiHandler.GetChannelMessages))
+		apiv2.GET("/users/:uid/channels/:cid/messages", ginresp.Wrap(r.apiHandler.ListChannelMessages))
 		apiv2.GET("/users/:uid/channels/:cid/subscriptions", ginresp.Wrap(r.apiHandler.ListChannelSubscriptions))
 
 		apiv2.GET("/users/:uid/subscriptions", ginresp.Wrap(r.apiHandler.ListUserSubscriptions))

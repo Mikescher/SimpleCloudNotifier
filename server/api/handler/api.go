@@ -494,7 +494,7 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 
 	channel, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID)
 	if err == sql.ErrNoRows {
-		return ginresp.InternAPIError(404, apierr.CLIENT_NOT_FOUND, "Channel not found", err)
+		return ginresp.InternAPIError(404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
 	}
 	if err != nil {
 		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query channel", err)
@@ -503,8 +503,98 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, channel.JSON()))
 }
 
-func (h APIHandler) GetChannelMessages(g *gin.Context) ginresp.HTTPResponse {
-	return ginresp.NotImplemented() //TODO
+// ListChannelMessages swaggerdoc
+//
+// @Summary     List messages of a channel
+// @Description The next_page_token is an opaque token, the special value "@start" (or empty-string) is the beginning and "@end" is the end
+// @Description Simply start the pagination without a next_page_token and get the next page by calling this endpoint with the returned next_page_token of the last query
+// @Description If there are no more entries the token "@end" will be returned
+// @Description By default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)
+// @ID          api-channel-messages
+//
+// @Param       query_data query    handler.ListChannelMessages.query false " "
+//
+// @Success     200        {object} handler.ListChannelMessages.response
+// @Failure     400        {object} ginresp.apiError
+// @Failure     401        {object} ginresp.apiError
+// @Failure     404        {object} ginresp.apiError
+// @Failure     500        {object} ginresp.apiError
+//
+// @Router      /api-v2/users/{uid}/channels/{cid}/messages [GET]
+func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
+	type uri struct {
+		ChannelUserID int64 `uri:"uid"`
+		ChannelID     int64 `uri:"cid"`
+	}
+	type query struct {
+		PageSize      *int    `form:"page_size"`
+		NextPageToken *string `form:"next_page_token"`
+		Filter        *string `form:"filter"`
+		Trimmed       *bool   `form:"trimmed"`
+	}
+	type response struct {
+		Messages      []models.MessageJSON `json:"messages"`
+		NextPageToken string               `json:"next_page_token"`
+		PageSize      int                  `json:"page_size"`
+	}
+
+	var u uri
+	var q query
+	ctx, errResp := h.app.StartRequest(g, &u, &q, nil)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	trimmed := langext.Coalesce(q.Trimmed, true)
+
+	maxPageSize := langext.Conditional(trimmed, 16, 256)
+
+	pageSize := mathext.Clamp(langext.Coalesce(q.PageSize, 64), 1, maxPageSize)
+
+	if permResp := ctx.CheckPermissionRead(); permResp != nil {
+		return *permResp
+	}
+
+	channel, err := h.database.GetChannel(ctx, u.ChannelUserID, u.ChannelID)
+	if err == sql.ErrNoRows {
+		return ginresp.InternAPIError(404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
+	}
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query channel", err)
+	}
+
+	userid := *ctx.GetPermissionUserID()
+
+	sub, err := h.database.GetSubscriptionBySubscriber(ctx, userid, channel.ChannelID)
+	if err == sql.ErrNoRows {
+		return ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+	}
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
+	}
+	if !sub.Confirmed {
+		return ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+	}
+
+	tok, err := cursortoken.Decode(langext.Coalesce(q.NextPageToken, ""))
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.PAGETOKEN_ERROR, "Failed to decode next_page_token", err)
+	}
+
+	messages, npt, err := h.database.ListChannelMessages(ctx, channel.ChannelID, pageSize, tok)
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query messages", err)
+	}
+
+	var res []models.MessageJSON
+	if trimmed {
+		res = langext.ArrMap(messages, func(v models.Message) models.MessageJSON { return v.TrimmedJSON() })
+	} else {
+		res = langext.ArrMap(messages, func(v models.Message) models.MessageJSON { return v.FullJSON() })
+	}
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize}))
 }
 
 // ListUserSubscriptions swaggerdoc

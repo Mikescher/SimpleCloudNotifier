@@ -448,6 +448,67 @@
                 }
             }
         },
+        "/api-v2/users/{uid}/channels/{cid}/messages": {
+            "get": {
+                "description": "The next_page_token is an opaque token, the special value \"@start\" (or empty-string) is the beginning and \"@end\" is the end\nSimply start the pagination without a next_page_token and get the next page by calling this endpoint with the returned next_page_token of the last query\nIf there are no more entries the token \"@end\" will be returned\nBy default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)",
+                "summary": "List messages of a channel",
+                "operationId": "api-channel-messages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "filter",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "nextPageToken",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "name": "trimmed",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ListChannelMessages.response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
         "/api-v2/users/{uid}/channels/{cid}/subscriptions": {
             "get": {
                 "summary": "List all subscriptions of a channel",
@@ -1570,6 +1631,23 @@
                 },
                 "user_key": {
                     "type": "string"
+                }
+            }
+        },
+        "handler.ListChannelMessages.response": {
+            "type": "object",
+            "properties": {
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.MessageJSON"
+                    }
+                },
+                "next_page_token": {
+                    "type": "string"
+                },
+                "page_size": {
+                    "type": "integer"
                 }
             }
         },

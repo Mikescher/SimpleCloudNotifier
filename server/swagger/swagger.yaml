@@ -102,6 +102,17 @@ definitions:
       user_key:
         type: string
     type: object
+  handler.ListChannelMessages.response:
+    properties:
+      messages:
+        items:
+          $ref: '#/definitions/models.MessageJSON'
+        type: array
+      next_page_token:
+        type: string
+      page_size:
+        type: integer
+    type: object
   handler.ListChannelSubscriptions.response:
     properties:
       subscriptions:
@@ -707,6 +718,49 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: List all channels of a user
+  /api-v2/users/{uid}/channels/{cid}/messages:
+    get:
+      description: |-
+        The next_page_token is an opaque token, the special value "@start" (or empty-string) is the beginning and "@end" is the end
+        Simply start the pagination without a next_page_token and get the next page by calling this endpoint with the returned next_page_token of the last query
+        If there are no more entries the token "@end" will be returned
+        By default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)
+      operationId: api-channel-messages
+      parameters:
+      - in: query
+        name: filter
+        type: string
+      - in: query
+        name: nextPageToken
+        type: string
+      - in: query
+        name: pageSize
+        type: integer
+      - in: query
+        name: trimmed
+        type: boolean
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListChannelMessages.response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: List messages of a channel
   /api-v2/users/{uid}/channels/{cid}/subscriptions:
     get:
       operationId: api-chan-subscriptions-list

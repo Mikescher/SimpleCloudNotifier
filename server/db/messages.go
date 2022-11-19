@@ -140,3 +140,38 @@ func (db *Database) ListMessages(ctx TxContext, userid int64, pageSize int, inTo
 		return data[0:pageSize], outToken, nil
 	}
 }
+
+func (db *Database) ListChannelMessages(ctx TxContext, channelid int64, pageSize int, inTok cursortoken.CursorToken) ([]models.Message, cursortoken.CursorToken, error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return nil, cursortoken.CursorToken{}, err
+	}
+
+	if inTok.Mode == cursortoken.CTMEnd {
+		return make([]models.Message, 0), cursortoken.End(), nil
+	}
+
+	pageCond := ""
+	if inTok.Mode == cursortoken.CTMNormal {
+		pageCond = fmt.Sprintf("AND ( timestamp_real < %d OR (timestamp_real = %d AND scn_message_id < %d ) )", inTok.Timestamp, inTok.Timestamp, inTok.Id)
+	}
+
+	rows, err := tx.QueryContext(ctx, "SELECT * FROM messages WHERE channel_id = ? "+pageCond+" ORDER BY timestamp_real DESC LIMIT ?",
+		channelid,
+		pageSize+1)
+	if err != nil {
+		return nil, cursortoken.CursorToken{}, err
+	}
+
+	data, err := models.DecodeMessages(rows)
+	if err != nil {
+		return nil, cursortoken.CursorToken{}, err
+	}
+
+	if len(data) <= pageSize {
+		return data, cursortoken.End(), nil
+	} else {
+		outToken := cursortoken.Normal(data[pageSize-1].TimestampReal, data[pageSize-1].SCNMessageID, "DESC")
+		return data[0:pageSize], outToken, nil
+	}
+}
