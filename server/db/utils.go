@@ -1,6 +1,9 @@
 package db
 
-import "time"
+import (
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"time"
+)
 
 func bool2DB(b bool) int {
 	if b {
@@ -12,4 +15,11 @@ func bool2DB(b bool) int {
 
 func time2DB(t time.Time) int64 {
 	return t.UnixMilli()
+}
+
+func time2DBOpt(t *time.Time) *int64 {
+	if t == nil {
+		return nil
+	}
+	return langext.Ptr(t.UnixMilli())
 }

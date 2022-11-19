@@ -14,8 +14,8 @@ CREATE TABLE users
 
     messages_sent      INTEGER                             NOT NULL   DEFAULT '0',
 
-    quota_today        INTEGER                             NOT NULL   DEFAULT '0',
-    quota_day          TEXT                                    NULL   DEFAULT NULL,
+    quota_used         INTEGER                             NOT NULL   DEFAULT '0',
+    quota_used_day     TEXT                                    NULL   DEFAULT NULL,
 
     is_pro             INTEGER   CHECK(is_pro IN (0, 1))   NOT NULL   DEFAULT 0,
     pro_token          TEXT                                    NULL   DEFAULT NULL
@@ -66,8 +66,11 @@ CREATE TABLE subscriptions
     subscriber_user_id     INTEGER                                NOT NULL,
     channel_owner_user_id  INTEGER                                NOT NULL,
     channel_name           TEXT                                   NOT NULL,
+    channel_id             INTEGER                                NOT NULL,
 
-    confirmed              INTEGER   CHECK(confirmed IN (0, 1))   NOT NULL   DEFAULT 0
+    timestamp_created      INTEGER                                NOT NULL,
+
+    confirmed              INTEGER   CHECK(confirmed IN (0, 1))   NOT NULL
 );
 CREATE UNIQUE INDEX "idx_subscriptions_ref" ON subscriptions (subscriber_user_id, channel_owner_user_id, channel_name);
 
@@ -76,8 +79,8 @@ CREATE TABLE messages
 (
     scn_message_id     INTEGER                                  PRIMARY KEY AUTOINCREMENT,
     sender_user_id     INTEGER                                  NOT NULL,
+    owner_user_id      INTEGER                                  NOT NULL,
     channel_name       TEXT                                     NOT NULL,
-
     channel_id         INTEGER                                  NOT NULL,
 
     timestamp_real     INTEGER                                  NOT NULL,
@@ -88,8 +91,8 @@ CREATE TABLE messages
     priority           INTEGER  CHECK(priority IN (0, 1, 2))    NOT NULL,
     usr_message_id     TEXT                                         NULL
 );
-CREATE INDEX "idx_messages_channel"     ON messages (sender_user_id, channel_name);
-CREATE INDEX "idx_messages_idempotency" ON messages (sender_user_id, usr_message_id);
+CREATE INDEX "idx_messages_channel"     ON messages (owner_user_id, channel_name);
+CREATE INDEX "idx_messages_idempotency" ON messages (owner_user_id, usr_message_id);
 
 
 CREATE TABLE deliveries

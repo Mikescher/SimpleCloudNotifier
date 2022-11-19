@@ -2,9 +2,10 @@ package handler
 
 import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
-	"blackforestbytes.com/simplecloudnotifier/api/models"
 	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
+	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/logic"
+	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
@@ -13,7 +14,15 @@ import (
 )
 
 type APIHandler struct {
-	app *logic.Application
+	app      *logic.Application
+	database *db.Database
+}
+
+func NewAPIHandler(app *logic.Application) APIHandler {
+	return APIHandler{
+		app:      app,
+		database: app.Database,
+	}
 }
 
 // CreateUser swaggerdoc
@@ -69,24 +78,24 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 	sendKey := h.app.GenerateRandomAuthKey()
 	adminKey := h.app.GenerateRandomAuthKey()
 
-	err := h.app.Database.ClearFCMTokens(ctx, b.FCMToken)
+	err := h.database.ClearFCMTokens(ctx, b.FCMToken)
 	if err != nil {
 		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
 	}
 
 	if b.ProToken != nil {
-		err := h.app.Database.ClearProTokens(ctx, *b.ProToken)
+		err := h.database.ClearProTokens(ctx, *b.ProToken)
 		if err != nil {
 			return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
 		}
 	}
 
-	userobj, err := h.app.Database.CreateUser(ctx, readKey, sendKey, adminKey, b.ProToken, b.Username)
+	userobj, err := h.database.CreateUser(ctx, readKey, sendKey, adminKey, b.ProToken, b.Username)
 	if err != nil {
 		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to create user in db", err)
 	}
 
-	_, err = h.app.Database.CreateClient(ctx, userobj.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion)
+	_, err = h.database.CreateClient(ctx, userobj.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion)
 	if err != nil {
 		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to create user in db", err)
 	}
@@ -124,7 +133,7 @@ func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	user, err := h.app.Database.GetUser(ctx, u.UserID)
+	user, err := h.database.GetUser(ctx, u.UserID)
 	if err == sql.ErrNoRows {
 		return ginresp.InternAPIError(404, apierr.USER_NOT_FOUND, "User not found", err)
 	}
@@ -177,7 +186,7 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 			username = nil
 		}
 
-		err := h.app.Database.UpdateUserUsername(ctx, u.UserID, b.Username)
+		err := h.database.UpdateUserUsername(ctx, u.UserID, b.Username)
 		if err != nil {
 			return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to update user", err)
 		}
@@ -193,18 +202,18 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 			return ginresp.InternAPIError(400, apierr.INVALID_PRO_TOKEN, "Purchase token could not be verified", nil)
 		}
 
-		err = h.app.Database.ClearProTokens(ctx, *b.ProToken)
+		err = h.database.ClearProTokens(ctx, *b.ProToken)
 		if err != nil {
 			return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
 		}
 
-		err = h.app.Database.UpdateUserProToken(ctx, u.UserID, b.ProToken)
+		err = h.database.UpdateUserProToken(ctx, u.UserID, b.ProToken)
 		if err != nil {
 			return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to update user", err)
 		}
 	}
 
-	user, err := h.app.Database.GetUser(ctx, u.UserID)
+	user, err := h.database.GetUser(ctx, u.UserID)
 	if err != nil {
 		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query (updated) user", err)
 	}
@@ -245,7 +254,7 @@ func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	clients, err := h.app.Database.ListClients(ctx, u.UserID)
+	clients, err := h.database.ListClients(ctx, u.UserID)
 	if err != nil {
 		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query clients", err)
 	}
@@ -287,7 +296,7 @@ func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	client, err := h.app.Database.GetClient(ctx, u.UserID, u.ClientID)
+	client, err := h.database.GetClient(ctx, u.UserID, u.ClientID)
 	if err == sql.ErrNoRows {
 		return ginresp.InternAPIError(404, apierr.CLIENT_NOT_FOUND, "Client not found", err)
 	}
@@ -346,7 +355,7 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	client, err := h.app.Database.CreateClient(ctx, u.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion)
+	client, err := h.database.CreateClient(ctx, u.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion)
 	if err != nil {
 		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to create user in db", err)
 	}
@@ -386,7 +395,7 @@ func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	client, err := h.app.Database.GetClient(ctx, u.UserID, u.ClientID)
+	client, err := h.database.GetClient(ctx, u.UserID, u.ClientID)
 	if err == sql.ErrNoRows {
 		return ginresp.InternAPIError(404, apierr.CLIENT_NOT_FOUND, "Client not found", err)
 	}
@@ -394,7 +403,7 @@ func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query client", err)
 	}
 
-	err = h.app.Database.DeleteClient(ctx, u.ClientID)
+	err = h.database.DeleteClient(ctx, u.ClientID)
 	if err != nil {
 		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to delete client", err)
 	}
@@ -446,8 +455,6 @@ func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 	return ginresp.NotImplemented()
 }
 
-func NewAPIHandler(app *logic.Application) APIHandler {
-	return APIHandler{
-		app: app,
-	}
+func (h APIHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
+	return ginresp.NotImplemented()
 }

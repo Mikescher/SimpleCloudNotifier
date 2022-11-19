@@ -85,8 +85,8 @@ func InternAPIError(status int, errorid apierr.APIError, msg string, e error) HT
 	}
 }
 
-func SendAPIError(errorid apierr.APIError, highlight int, msg string) HTTPResponse {
-	return &errHTTPResponse{statusCode: http.StatusInternalServerError, data: apiError{Success: false, Error: int(errorid), ErrorHighlight: highlight, Message: msg}}
+func SendAPIError(status int, errorid apierr.APIError, highlight int, msg string) HTTPResponse {
+	return &errHTTPResponse{statusCode: status, data: apiError{Success: false, Error: int(errorid), ErrorHighlight: highlight, Message: msg}}
 }
 
 func NotImplemented() HTTPResponse {

@@ -132,6 +132,23 @@ definitions:
       success:
         type: string
     type: object
+  handler.SendMessage.body:
+    properties:
+      message_content:
+        type: string
+      message_title:
+        type: string
+      priority:
+        type: integer
+      sendTimestamp:
+        type: integer
+      user_id:
+        type: string
+      user_key:
+        type: string
+      userMessageID:
+        type: string
+    type: object
   handler.Update.response:
     properties:
       is_pro:
@@ -272,6 +289,57 @@ info:
   title: SimpleCloudNotifier API
   version: "2.0"
 paths:
+  /:
+    post:
+      parameters:
+      - in: query
+        name: message_content
+        type: string
+      - in: query
+        name: message_title
+        type: string
+      - in: query
+        name: priority
+        type: integer
+      - in: query
+        name: sendTimestamp
+        type: integer
+      - in: query
+        name: userMessageID
+        type: string
+      - in: query
+        name: user_id
+        type: string
+      - in: query
+        name: user_key
+        type: string
+      - description: ' '
+        in: body
+        name: post_body
+        schema:
+          $ref: '#/definitions/handler.SendMessage.body'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ClientJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Send a new message
   /api-v2/user/:
     post:
       operationId: api-user-create
@@ -720,4 +788,55 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/ginresp.apiError'
+  /send:
+    post:
+      parameters:
+      - in: query
+        name: message_content
+        type: string
+      - in: query
+        name: message_title
+        type: string
+      - in: query
+        name: priority
+        type: integer
+      - in: query
+        name: sendTimestamp
+        type: integer
+      - in: query
+        name: userMessageID
+        type: string
+      - in: query
+        name: user_id
+        type: string
+      - in: query
+        name: user_key
+        type: string
+      - description: ' '
+        in: body
+        name: post_body
+        schema:
+          $ref: '#/definitions/handler.SendMessage.body'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ClientJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Send a new message
 swagger: "2.0"

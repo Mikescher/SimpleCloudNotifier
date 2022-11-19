@@ -1,12 +1,15 @@
 package firebase
 
 import (
+	"blackforestbytes.com/simplecloudnotifier/models"
 	"context"
 	_ "embed"
 	fb "firebase.google.com/go"
 	"firebase.google.com/go/messaging"
 	"github.com/rs/zerolog/log"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"google.golang.org/api/option"
+	"strconv"
 )
 
 //go:embed scnserviceaccountkey.json
@@ -43,26 +46,26 @@ type Notification struct {
 	Priority int
 }
 
-func (fb App) SendNotification(ctx context.Context, notification Notification) (string, error) {
+func (fb App) SendNotification(ctx context.Context, client models.Client, msg models.Message) (string, error) {
 	n := messaging.Message{
-		Data: map[string]string{"scn_msg_id": notification.Id},
+		Data: map[string]string{"scn_msg_id": strconv.FormatInt(msg.SCNMessageID, 10)},
 		Notification: &messaging.Notification{
-			Title: notification.Title,
-			Body:  notification.Body,
+			Title: msg.Title,
+			Body:  langext.Coalesce(msg.Content, ""),
 		},
 		Android:    nil,
 		APNS:       nil,
 		Webpush:    nil,
 		FCMOptions: nil,
-		Token:      notification.Token,
+		Token:      *client.FCMToken,
 		Topic:      "",
 		Condition:  "",
 	}
-	if notification.Platform == "ios" {
+	if client.Type == models.ClientTypeIOS {
 		n.APNS = nil
 	}
 
-	if notification.Platform == "android" {
+	if client.Type == models.ClientTypeAndroid {
 		n.Android = nil
 	}
 

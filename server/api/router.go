@@ -117,7 +117,7 @@ func (r *Router) Init(e *gin.Engine) {
 		apiv2.GET("/messages/:mid", ginresp.Wrap(r.apiHandler.GetMessage))
 		apiv2.DELETE("/messages/:mid", ginresp.Wrap(r.apiHandler.DeleteMessage))
 
-		apiv2.POST("/messages", ginresp.Wrap(r.messageHandler.SendMessage))
+		apiv2.POST("/messages", ginresp.Wrap(r.apiHandler.SendMessage))
 	}
 
 	// ================ Send API ================
@@ -126,7 +126,7 @@ func (r *Router) Init(e *gin.Engine) {
 	{
 		sendAPI.POST("/", ginresp.Wrap(r.messageHandler.SendMessage))
 		sendAPI.POST("/send", ginresp.Wrap(r.messageHandler.SendMessage))
-		sendAPI.POST("/send.php")
+		sendAPI.POST("/send.php", ginresp.Wrap(r.messageHandler.SendMessage))
 	}
 
 	if r.app.Config.ReturnRawErrors {

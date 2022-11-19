@@ -9,6 +9,88 @@
     "host": "scn.blackforestbytes.com",
     "basePath": "/",
     "paths": {
+        "/": {
+            "post": {
+                "summary": "Send a new message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "message_content",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "message_title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "priority",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "sendTimestamp",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "userMessageID",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "user_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "user_key",
+                        "in": "query"
+                    },
+                    {
+                        "description": " ",
+                        "name": "post_body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/handler.SendMessage.body"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ClientJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
         "/api-v2/user/": {
             "post": {
                 "summary": "Create a new user",
@@ -688,6 +770,88 @@
                     }
                 }
             }
+        },
+        "/send": {
+            "post": {
+                "summary": "Send a new message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "message_content",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "message_title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "priority",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "sendTimestamp",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "userMessageID",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "user_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "user_key",
+                        "in": "query"
+                    },
+                    {
+                        "description": " ",
+                        "name": "post_body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/handler.SendMessage.body"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ClientJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -890,6 +1054,32 @@
                     "type": "string"
                 },
                 "success": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.SendMessage.body": {
+            "type": "object",
+            "properties": {
+                "message_content": {
+                    "type": "string"
+                },
+                "message_title": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "sendTimestamp": {
+                    "type": "integer"
+                },
+                "userMessageID": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "user_key": {
                     "type": "string"
                 }
             }

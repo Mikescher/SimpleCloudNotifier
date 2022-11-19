@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"github.com/blockloop/scan"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
 	"time"
 )
 
@@ -17,8 +18,8 @@ type User struct {
 	TimestampLastRead *time.Time
 	TimestampLastSent *time.Time
 	MessagesSent      int
-	QuotaToday        int
-	QuotaDay          *string
+	QuotaUsed         int
+	QuotaUsedDay      *string
 	IsPro             bool
 	ProToken          *string
 }
@@ -34,10 +35,39 @@ func (u User) JSON() UserJSON {
 		TimestampLastRead: timeOptFmt(u.TimestampLastRead, time.RFC3339Nano),
 		TimestampLastSent: timeOptFmt(u.TimestampLastSent, time.RFC3339Nano),
 		MessagesSent:      u.MessagesSent,
-		QuotaToday:        u.QuotaToday,
-		QuotaDay:          u.QuotaDay,
+		QuotaUsed:         u.QuotaUsed,
+		QuotaUsedDay:      u.QuotaUsedDay,
 		IsPro:             u.IsPro,
 	}
+}
+
+func (u User) MaxContentLength() int {
+	if u.IsPro {
+		return 16384
+	} else {
+		return 2048
+	}
+}
+
+func (u User) QuotaPerDay() int {
+	if u.IsPro {
+		return 1000
+	} else {
+		return 50
+	}
+}
+
+func (u User) QuotaUsedToday() int {
+	now := time.Now().In(timeext.TimezoneBerlin).Format("2006-01-02")
+	if u.QuotaUsedDay != nil && *u.QuotaUsedDay == now {
+		return u.QuotaUsed
+	} else {
+		return 0
+	}
+}
+
+func (u User) QuotaRemainingToday() int {
+	return u.QuotaPerDay() - u.QuotaUsedToday()
 }
 
 type UserJSON struct {
@@ -50,8 +80,8 @@ type UserJSON struct {
 	TimestampLastRead *string `json:"timestamp_last_read"`
 	TimestampLastSent *string `json:"timestamp_last_sent"`
 	MessagesSent      int     `json:"messages_sent"`
-	QuotaToday        int     `json:"quota_today"`
-	QuotaDay          *string `json:"quota_day"`
+	QuotaUsed         int     `json:"quota_used"`
+	QuotaUsedDay      *string `json:"quota_used_day"`
 	IsPro             bool    `json:"is_pro"`
 }
 
@@ -65,8 +95,8 @@ type UserDB struct {
 	TimestampLastRead *int64  `db:"timestamp_lastread"`
 	TimestampLastSent *int64  `db:"timestamp_lastsent"`
 	MessagesSent      int     `db:"messages_sent"`
-	QuotaToday        int     `db:"quota_today"`
-	QuotaDay          *string `db:"quota_day"`
+	QuotaUsed         int     `db:"quota_used"`
+	QuotaUsedDay      *string `db:"quota_used_day"`
 	IsPro             bool    `db:"is_pro"`
 	ProToken          *string `db:"pro_token"`
 }
@@ -82,8 +112,8 @@ func (u UserDB) Model() User {
 		TimestampLastRead: timeOptFromMilli(u.TimestampLastRead),
 		TimestampLastSent: timeOptFromMilli(u.TimestampLastSent),
 		MessagesSent:      u.MessagesSent,
-		QuotaToday:        u.QuotaToday,
-		QuotaDay:          u.QuotaDay,
+		QuotaUsed:         u.QuotaUsed,
+		QuotaUsedDay:      u.QuotaUsedDay,
 		IsPro:             u.IsPro,
 	}
 }

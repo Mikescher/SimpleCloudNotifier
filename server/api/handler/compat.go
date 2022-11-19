@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"blackforestbytes.com/simplecloudnotifier/api/models"
 	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/logic"
+	"blackforestbytes.com/simplecloudnotifier/models"
 	"github.com/gin-gonic/gin"
 )
 

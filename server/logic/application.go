@@ -6,6 +6,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/firebase"
+	"blackforestbytes.com/simplecloudnotifier/models"
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -173,4 +174,32 @@ func (app *Application) getPermissions(ctx *AppContext, hdr string) (PermissionS
 	}
 
 	return NewEmptyPermissions(), nil
+}
+
+func (app *Application) GetOrCreateChannel(ctx *AppContext, userid int64, chanName string) (models.Channel, error) {
+	chanName = strings.ToLower(strings.TrimSpace(chanName))
+
+	existingChan, err := app.Database.GetChannelByName(ctx, userid, chanName)
+	if err != nil {
+		return models.Channel{}, err
+	}
+
+	if existingChan != nil {
+		return *existingChan, nil
+	}
+
+	subscribeKey := app.GenerateRandomAuthKey()
+	sendKey := app.GenerateRandomAuthKey()
+
+	newChan, err := app.Database.CreateChannel(ctx, userid, chanName, subscribeKey, sendKey)
+	if err != nil {
+		return models.Channel{}, err
+	}
+
+	_, err = app.Database.CreateSubscribtion(ctx, userid, userid, newChan.Name, newChan.ChannelID, true)
+	if err != nil {
+		return models.Channel{}, err
+	}
+
+	return newChan, nil
 }
