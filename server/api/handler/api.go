@@ -298,8 +298,60 @@ func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, client.JSON()))
 }
 
+// AddClient swaggerdoc
+//
+// @Summary get a single clients
+// @ID      api-clients-get
+//
+// @Param   uid path     int true "UserID"
+//
+// @Param   post_body body     handler.AddClient.body false " "
+//
+// @Success 200 {object} models.ClientJSON
+// @Failure 400 {object} ginresp.apiError
+// @Failure 401 {object} ginresp.apiError
+// @Failure 404 {object} ginresp.apiError
+// @Failure 500 {object} ginresp.apiError
+//
+// @Router  /api-v2/user/{uid}/clients [POST]
 func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
-	return ginresp.NotImplemented()
+	type uri struct {
+		UserID int64 `uri:"uid"`
+	}
+	type body struct {
+		FCMToken     string `json:"fcm_token"`
+		AgentModel   string `json:"agent_model"`
+		AgentVersion string `json:"agent_version"`
+		ClientType   string `json:"client_type"`
+	}
+
+	var u uri
+	var b body
+	ctx, errResp := h.app.StartRequest(g, &u, nil, &b)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	var clientType models.ClientType
+	if b.ClientType == string(models.ClientTypeAndroid) {
+		clientType = models.ClientTypeAndroid
+	} else if b.ClientType == string(models.ClientTypeIOS) {
+		clientType = models.ClientTypeIOS
+	} else {
+		return ginresp.InternAPIError(400, apierr.INVALID_CLIENTTYPE, "Invalid ClientType", nil)
+	}
+
+	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+		return *permResp
+	}
+
+	client, err := h.app.Database.CreateClient(ctx, u.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion)
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to create user in db", err)
+	}
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, client.JSON()))
 }
 
 func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
