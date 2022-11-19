@@ -1,7 +1,6 @@
 package db
 
 import (
-	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
@@ -533,7 +532,7 @@ func (db *Database) CreateSuccessDelivery(ctx TxContext, client models.Client, m
 	}, nil
 }
 
-func (db *Database) ListChannels(ctx *logic.AppContext, userid int64) ([]models.Channel, error) {
+func (db *Database) ListChannels(ctx TxContext, userid int64) ([]models.Channel, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
@@ -571,7 +570,7 @@ func (db *Database) GetChannel(ctx TxContext, userid int64, channelid int64) (mo
 	return client, nil
 }
 
-func (db *Database) GetSubscription(ctx *logic.AppContext, subid int64) (models.Subscription, error) {
+func (db *Database) GetSubscription(ctx TxContext, subid int64) (models.Subscription, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Subscription{}, err
@@ -590,7 +589,7 @@ func (db *Database) GetSubscription(ctx *logic.AppContext, subid int64) (models.
 	return sub, nil
 }
 
-func (db *Database) DeleteSubscription(ctx *logic.AppContext, subid int64) error {
+func (db *Database) DeleteSubscription(ctx TxContext, subid int64) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err

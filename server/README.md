@@ -10,3 +10,4 @@
  - https://firebase.google.com/docs/cloud-messaging/send-message#rest
  - List subscribtions on owned channels /RESTful?)
  - deploy
+ - Dockerfile
