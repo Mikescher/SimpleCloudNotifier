@@ -24,14 +24,18 @@ import (
 )
 
 type Application struct {
-	Config   scn.Config
-	Gin      *gin.Engine
-	Database *db.Database
-	Firebase *firebase.App
+	Config         scn.Config
+	Gin            *gin.Engine
+	Database       *db.Database
+	Firebase       *firebase.App
+	DefaultChannel string
 }
 
 func NewApp(db *db.Database) *Application {
-	return &Application{Database: db}
+	return &Application{
+		Database:       db,
+		DefaultChannel: "main",
+	}
 }
 
 func (app *Application) Init(cfg scn.Config, g *gin.Engine, fb *firebase.App) {

@@ -52,8 +52,6 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
 		UserID        *int64   `form:"user_id"`
 		UserKey       *string  `form:"user_key"`
-		Channel       *string  `form:"channel"`
-		ChanKey       *string  `form:"chan_key"`
 		Title         *string  `form:"title"`
 		Content       *string  `form:"content"`
 		Priority      *int     `form:"priority"`
@@ -63,8 +61,6 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 	type form struct {
 		UserID        *int64   `form:"user_id"`
 		UserKey       *string  `form:"user_key"`
-		Channel       *string  `form:"channel"`
-		ChanKey       *string  `form:"chan_key"`
 		Title         *string  `form:"title"`
 		Content       *string  `form:"content"`
 		Priority      *int     `form:"priority"`
@@ -82,7 +78,7 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 
 	data := dataext.ObjectMerge(f, q)
 
-	return h.sendMessageInternal(ctx, data.UserID, data.UserKey, data.Channel, data.ChanKey, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp)
+	return h.sendMessageInternal(ctx, data.UserID, data.UserKey, langext.Ptr(h.app.DefaultChannel), nil, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp)
 
 }
 
@@ -155,6 +151,13 @@ func (h MessageHandler) sendMessageInternal(ctx *logic.AppContext, UserID *int64
 		SCNMessageID   int64           `json:"scn_msg_id"`
 	}
 
+	if Title != nil {
+		Title = langext.Ptr(strings.TrimSpace(*Title))
+	}
+	if UserMessageID != nil {
+		UserMessageID = langext.Ptr(strings.TrimSpace(*UserMessageID))
+	}
+
 	if UserID == nil {
 		return ginresp.SendAPIError(400, apierr.MISSING_UID, 101, "Missing parameter [[user_id]]", nil)
 	}
@@ -170,16 +173,16 @@ func (h MessageHandler) sendMessageInternal(ctx *logic.AppContext, UserID *int64
 	if Priority != nil && (*Priority != 0 && *Priority != 1 && *Priority != 2) {
 		return ginresp.SendAPIError(400, apierr.INVALID_PRIO, 105, "Invalid priority", nil)
 	}
-	if len(strings.TrimSpace(*Title)) == 0 {
+	if len(*Title) == 0 {
 		return ginresp.SendAPIError(400, apierr.NO_TITLE, 103, "No title specified", nil)
 	}
-	if UserMessageID != nil && len(strings.TrimSpace(*UserMessageID)) > 64 {
+	if UserMessageID != nil && len(*UserMessageID) > 64 {
 		return ginresp.SendAPIError(400, apierr.USR_MSG_ID_TOO_LONG, -1, "MessageID too long (64 characters)", nil)
 	}
 
-	channelName := "main"
+	channelName := h.app.DefaultChannel
 	if Channel != nil {
-		channelName = strings.ToLower(strings.TrimSpace(*Channel))
+		channelName = h.app.NormalizeChannelName(*Channel)
 	}
 
 	user, err := h.database.GetUser(ctx, *UserID)
@@ -190,11 +193,11 @@ func (h MessageHandler) sendMessageInternal(ctx *logic.AppContext, UserID *int64
 		return ginresp.SendAPIError(500, apierr.DATABASE_ERROR, -1, "Failed to query user", err)
 	}
 
-	if len(strings.TrimSpace(*Title)) > 120 {
+	if len(*Title) > 120 {
 		return ginresp.SendAPIError(400, apierr.TITLE_TOO_LONG, 103, "Title too long (120 characters)", nil)
 	}
-	if Content != nil && len(strings.TrimSpace(*Content)) > user.MaxContentLength() {
-		return ginresp.SendAPIError(400, apierr.CONTENT_TOO_LONG, 104, fmt.Sprintf("Content too long (%d characters; max := %d characters)", len(strings.TrimSpace(*Content)), user.MaxContentLength()), nil)
+	if Content != nil && len(*Content) > user.MaxContentLength() {
+		return ginresp.SendAPIError(400, apierr.CONTENT_TOO_LONG, 104, fmt.Sprintf("Content too long (%d characters; max := %d characters)", len(*Content), user.MaxContentLength()), nil)
 	}
 
 	if UserMessageID != nil {
