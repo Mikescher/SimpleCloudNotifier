@@ -88,6 +88,7 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Param       query_data query    handler.SendMessage.query false " "
 // @Param       post_body  body     handler.SendMessage.body  false " "
+// @Param       form_body  formData handler.SendMessage.body  false " "
 //
 // @Success     200        {object} handler.sendMessageInternal.response
 // @Failure     400        {object} ginresp.apiError
@@ -114,23 +115,35 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 		UserID        *int64   `json:"user_id"`
 		UserKey       *string  `json:"user_key"`
 		Channel       *string  `json:"channel"`
-		ChanKey       *string  `form:"chan_key"`
+		ChanKey       *string  `json:"chan_key"`
 		Title         *string  `json:"title"`
 		Content       *string  `json:"content"`
 		Priority      *int     `json:"priority"`
 		UserMessageID *string  `json:"msg_id"`
 		SendTimestamp *float64 `json:"timestamp"`
 	}
+	type form struct {
+		UserID        *int64   `form:"user_id"`
+		UserKey       *string  `form:"user_key"`
+		Channel       *string  `form:"channel"`
+		ChanKey       *string  `form:"chan_key"`
+		Title         *string  `form:"title"`
+		Content       *string  `form:"content"`
+		Priority      *int     `form:"priority"`
+		UserMessageID *string  `form:"msg_id"`
+		SendTimestamp *float64 `form:"timestamp"`
+	}
 
 	var b body
 	var q query
-	ctx, errResp := h.app.StartRequest(g, nil, &q, &b, nil)
+	var f form
+	ctx, errResp := h.app.StartRequest(g, nil, &q, &b, &f)
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	data := dataext.ObjectMerge(b, q)
+	data := dataext.ObjectMerge(dataext.ObjectMerge(b, f), q)
 
 	return h.sendMessageInternal(g, ctx, data.UserID, data.UserKey, data.Channel, data.ChanKey, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp)
 
@@ -161,10 +174,10 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 		return ginresp.SendAPIError(g, 400, apierr.MISSING_UID, 101, "Missing parameter [[user_id]]", nil)
 	}
 	if UserKey == nil {
-		return ginresp.SendAPIError(g, 400, apierr.MISSING_UID, 102, "Missing parameter [[user_token]]", nil)
+		return ginresp.SendAPIError(g, 400, apierr.MISSING_TOK, 102, "Missing parameter [[user_token]]", nil)
 	}
 	if Title == nil {
-		return ginresp.SendAPIError(g, 400, apierr.MISSING_UID, 103, "Missing parameter [[title]]", nil)
+		return ginresp.SendAPIError(g, 400, apierr.MISSING_TITLE, 103, "Missing parameter [[title]]", nil)
 	}
 	if SendTimestamp != nil && mathext.Abs(*SendTimestamp-float64(time.Now().Unix())) > (24*time.Hour).Seconds() {
 		return ginresp.SendAPIError(g, 400, apierr.TIMESTAMP_OUT_OF_RANGE, -1, "The timestamp mus be within 24 hours of now()", nil)
@@ -192,8 +205,8 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to query user", err)
 	}
 
-	if len(*Title) > 120 {
-		return ginresp.SendAPIError(g, 400, apierr.TITLE_TOO_LONG, 103, "Title too long (120 characters)", nil)
+	if len(*Title) > user.MaxTitleLength() {
+		return ginresp.SendAPIError(g, 400, apierr.TITLE_TOO_LONG, 103, fmt.Sprintf("Title too long (max %d characters)", user.MaxTitleLength()), nil)
 	}
 	if Content != nil && len(*Content) > user.MaxContentLength() {
 		return ginresp.SendAPIError(g, 400, apierr.CONTENT_TOO_LONG, 104, fmt.Sprintf("Content too long (%d characters; max := %d characters)", len(*Content), user.MaxContentLength()), nil)

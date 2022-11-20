@@ -49,6 +49,10 @@ func (u User) MaxContentLength() int {
 	}
 }
 
+func (u User) MaxTitleLength() int {
+	return 120
+}
+
 func (u User) QuotaPerDay() int {
 	if u.IsPro {
 		return 1000

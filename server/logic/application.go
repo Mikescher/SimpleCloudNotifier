@@ -122,25 +122,25 @@ func (app *Application) StartRequest(g *gin.Context, uri any, query any, body an
 
 	if uri != nil {
 		if err := g.ShouldBindUri(uri); err != nil {
-			return nil, langext.Ptr(ginresp.InternAPIError(g, 400, apierr.BINDFAIL_URI_PARAM, "Failed to read uri", err))
+			return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_URI_PARAM, "Failed to read uri", err))
 		}
 	}
 
 	if query != nil {
 		if err := g.ShouldBindQuery(query); err != nil {
-			return nil, langext.Ptr(ginresp.InternAPIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Failed to read query", err))
+			return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Failed to read query", err))
 		}
 	}
 
 	if body != nil && g.Request.Header.Get("Content-Type") == "application/javascript" {
 		if err := g.ShouldBindJSON(body); err != nil {
-			return nil, langext.Ptr(ginresp.InternAPIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Failed to read body", err))
+			return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Failed to read body", err))
 		}
 	}
 
 	if form != nil && g.Request.Header.Get("Content-Type") == "multipart/form-data" {
 		if err := g.ShouldBindWith(form, binding.Form); err != nil {
-			return nil, langext.Ptr(ginresp.InternAPIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Failed to read multipart-form", err))
+			return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Failed to read multipart-form", err))
 		}
 	}
 
@@ -152,7 +152,7 @@ func (app *Application) StartRequest(g *gin.Context, uri any, query any, body an
 	perm, err := app.getPermissions(actx, authheader)
 	if err != nil {
 		cancel()
-		return nil, langext.Ptr(ginresp.InternAPIError(g, 400, apierr.PERM_QUERY_FAIL, "Failed to determine permissions", err))
+		return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.PERM_QUERY_FAIL, "Failed to determine permissions", err))
 	}
 
 	actx.permissions = perm

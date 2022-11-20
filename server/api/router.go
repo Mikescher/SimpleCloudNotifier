@@ -118,7 +118,7 @@ func (r *Router) Init(e *gin.Engine) {
 		apiv2.GET("/messages/:mid", ginresp.Wrap(r.apiHandler.GetMessage))
 		apiv2.DELETE("/messages/:mid", ginresp.Wrap(r.apiHandler.DeleteMessage))
 
-		apiv2.POST("/messages", ginresp.Wrap(r.apiHandler.SendMessage))
+		apiv2.POST("/messages", ginresp.Wrap(r.apiHandler.CreateMessage))
 	}
 
 	// ================ Send API ================

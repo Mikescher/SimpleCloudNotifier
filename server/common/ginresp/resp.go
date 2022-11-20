@@ -69,8 +69,8 @@ func InternalError(e error) HTTPResponse {
 	return createApiError(nil, "InternalError", 500, apierr.INTERNAL_EXCEPTION, 0, e.Error(), e)
 }
 
-func InternAPIError(g *gin.Context, status int, errorid apierr.APIError, msg string, e error) HTTPResponse {
-	return createApiError(g, "InternAPIError", status, errorid, 0, msg, e)
+func APIError(g *gin.Context, status int, errorid apierr.APIError, msg string, e error) HTTPResponse {
+	return createApiError(g, "APIError", status, errorid, 0, msg, e)
 }
 
 func SendAPIError(g *gin.Context, status int, errorid apierr.APIError, highlight int, msg string, e error) HTTPResponse {
