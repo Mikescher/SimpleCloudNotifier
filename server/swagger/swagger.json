@@ -66,6 +66,51 @@
                         "schema": {
                             "$ref": "#/definitions/handler.SendMessage.body"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "name": "chan_key",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "channel",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "content",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "msg_id",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "priority",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "name": "timestamp",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "title",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "user_id",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "user_key",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -140,6 +185,80 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/handler.ListMessages.response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "This is similar to the main route `POST -\u003e https://scn.blackfrestbytes.com/`\nBut this route can change in the future, for long-living scripts etc. it's better to use the normal POST route",
+                "summary": "Create a new message",
+                "operationId": "api-messages-create",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "chan_key",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "channel",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "content",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "msg_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "priority",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "name": "timestamp",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "title",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageJSON"
                         }
                     },
                     "400": {
@@ -349,6 +468,7 @@
         },
         "/api-v2/users/{uid}/channels": {
             "get": {
+                "description": "The possible values for 'selector' are:\n- \"owned\" Return all channels of the user\n- \"subscribed\" Return all channels that the user is subscribing to\n- \"all\" Return channels that the user owns or is subscribing\n- \"subscribed_any\" Return all channels that the user is subscribing to (even unconfirmed)\n- \"all_any\" Return channels that the user owns or is subscribing (even unconfirmed)",
                 "summary": "List all channels of a user",
                 "operationId": "api-channels-list",
                 "parameters": [
@@ -357,6 +477,20 @@
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "owned",
+                            "subscribed",
+                            "all",
+                            "subscribed_any",
+                            "all_any"
+                        ],
+                        "type": "string",
+                        "description": "Filter channels (default: owned)",
+                        "name": "selector",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -1569,6 +1703,51 @@
                         "schema": {
                             "$ref": "#/definitions/handler.SendMessage.body"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "name": "chan_key",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "channel",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "content",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "msg_id",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "priority",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "name": "timestamp",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "title",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "user_id",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "user_key",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -2049,7 +2228,7 @@
         "handler.SendMessage.body": {
             "type": "object",
             "properties": {
-                "chanKey": {
+                "chan_key": {
                     "type": "string"
                 },
                 "channel": {
@@ -2225,10 +2404,8 @@
                 "owner_user_id": {
                     "type": "integer"
                 },
-                "send_key": {
-                    "type": "string"
-                },
                 "subscribe_key": {
+                    "description": "can be nil, depending on endpoint",
                     "type": "string"
                 },
                 "timestamp_created": {

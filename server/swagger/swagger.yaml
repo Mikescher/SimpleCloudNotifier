@@ -209,7 +209,7 @@ definitions:
     type: object
   handler.SendMessage.body:
     properties:
-      chanKey:
+      chan_key:
         type: string
       channel:
         type: string
@@ -324,9 +324,8 @@ definitions:
         type: string
       owner_user_id:
         type: integer
-      send_key:
-        type: string
       subscribe_key:
+        description: can be nil, depending on endpoint
         type: string
       timestamp_created:
         type: string
@@ -480,6 +479,33 @@ paths:
         name: post_body
         schema:
           $ref: '#/definitions/handler.SendMessage.body'
+      - in: formData
+        name: chan_key
+        type: string
+      - in: formData
+        name: channel
+        type: string
+      - in: formData
+        name: content
+        type: string
+      - in: formData
+        name: msg_id
+        type: string
+      - in: formData
+        name: priority
+        type: integer
+      - in: formData
+        name: timestamp
+        type: number
+      - in: formData
+        name: title
+        type: string
+      - in: formData
+        name: user_id
+        type: integer
+      - in: formData
+        name: user_key
+        type: string
       responses:
         "200":
           description: OK
@@ -549,6 +575,55 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: List all (subscribed) messages
+    post:
+      description: |-
+        This is similar to the main route `POST -> https://scn.blackfrestbytes.com/`
+        But this route can change in the future, for long-living scripts etc. it's better to use the normal POST route
+      operationId: api-messages-create
+      parameters:
+      - in: query
+        name: chan_key
+        type: string
+      - in: query
+        name: channel
+        type: string
+      - in: query
+        name: content
+        type: string
+      - in: query
+        name: msg_id
+        type: string
+      - in: query
+        name: priority
+        type: integer
+      - in: query
+        name: timestamp
+        type: number
+      - in: query
+        name: title
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MessageJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Create a new message
   /api-v2/messages/{mid}:
     patch:
       description: The user must own the message and request the resource with the
@@ -669,6 +744,13 @@ paths:
       summary: (Partially) update a user
   /api-v2/users/{uid}/channels:
     get:
+      description: |-
+        The possible values for 'selector' are:
+        - "owned" Return all channels of the user
+        - "subscribed" Return all channels that the user is subscribing to
+        - "all" Return channels that the user owns or is subscribing
+        - "subscribed_any" Return all channels that the user is subscribing to (even unconfirmed)
+        - "all_any" Return channels that the user owns or is subscribing (even unconfirmed)
       operationId: api-channels-list
       parameters:
       - description: UserID
@@ -676,6 +758,17 @@ paths:
         name: uid
         required: true
         type: integer
+      - description: 'Filter channels (default: owned)'
+        enum:
+        - owned
+        - subscribed
+        - all
+        - subscribed_any
+        - all_any
+        in: query
+        name: selector
+        required: true
+        type: string
       responses:
         "200":
           description: OK
@@ -1489,6 +1582,33 @@ paths:
         name: post_body
         schema:
           $ref: '#/definitions/handler.SendMessage.body'
+      - in: formData
+        name: chan_key
+        type: string
+      - in: formData
+        name: channel
+        type: string
+      - in: formData
+        name: content
+        type: string
+      - in: formData
+        name: msg_id
+        type: string
+      - in: formData
+        name: priority
+        type: integer
+      - in: formData
+        name: timestamp
+        type: number
+      - in: formData
+        name: title
+        type: string
+      - in: formData
+        name: user_id
+        type: integer
+      - in: formData
+        name: user_key
+        type: string
       responses:
         "200":
           description: OK

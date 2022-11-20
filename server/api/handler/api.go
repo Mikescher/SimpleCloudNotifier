@@ -423,28 +423,39 @@ func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 
 // ListChannels swaggerdoc
 //
-// @Summary List all channels of a user
-// @ID      api-channels-list
+// @Summary     List channels of a user (subscribed/owned)
+// @Description The possible values for 'selector' are:
+// @Description - "owned" Return all channels of the user
+// @Description - "subscribed" Return all channels that the user is subscribing to
+// @Description - "all" Return channels that the user owns or is subscribing
+// @Description - "subscribed_any" Return all channels that the user is subscribing to (even unconfirmed)
+// @Description - "all_any" Return channels that the user owns or is subscribing (even unconfirmed)
+// @ID          api-channels-list
 //
-// @Param   uid path     int true "UserID"
+// @Param       uid      path     int    true "UserID"
+// @Param       selector query    string true "Filter channels (default: owned)" Enums(owned, subscribed, all, subscribed_any, all_any)
 //
-// @Success 200 {object} handler.ListChannels.response
-// @Failure 400 {object} ginresp.apiError
-// @Failure 401 {object} ginresp.apiError
-// @Failure 404 {object} ginresp.apiError
-// @Failure 500 {object} ginresp.apiError
+// @Success     200      {object} handler.ListChannels.response
+// @Failure     400      {object} ginresp.apiError
+// @Failure     401      {object} ginresp.apiError
+// @Failure     404      {object} ginresp.apiError
+// @Failure     500      {object} ginresp.apiError
 //
-// @Router  /api-v2/users/{uid}/channels [GET]
+// @Router      /api-v2/users/{uid}/channels [GET]
 func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID int64 `uri:"uid"`
+	}
+	type query struct {
+		Selector *string `form:"selector"`
 	}
 	type response struct {
 		Channels []models.ChannelJSON `json:"channels"`
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	var q query
+	ctx, errResp := h.app.StartRequest(g, &u, &q, nil, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -454,12 +465,43 @@ func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	clients, err := h.database.ListChannels(ctx, u.UserID)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
-	}
+	sel := strings.ToLower(langext.Coalesce(q.Selector, "owned"))
 
-	res := langext.ArrMap(clients, func(v models.Channel) models.ChannelJSON { return v.JSON() })
+	var res []models.ChannelJSON
+
+	if sel == "owned" {
+		channels, err := h.database.ListChannelsByOwner(ctx, u.UserID)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
+		}
+		res = langext.ArrMap(channels, func(v models.Channel) models.ChannelJSON { return v.JSON(true) })
+	} else if sel == "subscribed_any" {
+		channels, err := h.database.ListChannelsBySubscriber(ctx, u.UserID, false)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
+		}
+		res = langext.ArrMap(channels, func(v models.Channel) models.ChannelJSON { return v.JSON(false) })
+	} else if sel == "all_any" {
+		channels, err := h.database.ListChannelsByAccess(ctx, u.UserID, false)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
+		}
+		res = langext.ArrMap(channels, func(v models.Channel) models.ChannelJSON { return v.JSON(false) })
+	} else if sel == "subscribed" {
+		channels, err := h.database.ListChannelsBySubscriber(ctx, u.UserID, true)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
+		}
+		res = langext.ArrMap(channels, func(v models.Channel) models.ChannelJSON { return v.JSON(false) })
+	} else if sel == "all" {
+		channels, err := h.database.ListChannelsByAccess(ctx, u.UserID, true)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
+		}
+		res = langext.ArrMap(channels, func(v models.Channel) models.ChannelJSON { return v.JSON(false) })
+	} else {
+		return ginresp.APIError(g, 400, apierr.INVALID_ENUM_VALUE, "Invalid value for the [selector] parameter", nil)
+	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{Channels: res}))
 }
@@ -504,7 +546,7 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, channel.JSON()))
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, channel.JSON(true)))
 }
 
 // ListChannelMessages swaggerdoc
@@ -1131,11 +1173,11 @@ func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Param       post_data query    handler.CreateMessage.body false " "
 //
-// @Success     200        {object} models.MessageJSON
-// @Failure     400        {object} ginresp.apiError
-// @Failure     401        {object} ginresp.apiError
-// @Failure     404        {object} ginresp.apiError
-// @Failure     500        {object} ginresp.apiError
+// @Success     200       {object} models.MessageJSON
+// @Failure     400       {object} ginresp.apiError
+// @Failure     401       {object} ginresp.apiError
+// @Failure     404       {object} ginresp.apiError
+// @Failure     500       {object} ginresp.apiError
 //
 // @Router      /api-v2/messages [POST]
 func (h APIHandler) CreateMessage(g *gin.Context) ginresp.HTTPResponse {

@@ -6,28 +6,6 @@ import (
 	"time"
 )
 
-func (db *Database) GetChannelByKey(ctx TxContext, key string) (*models.Channel, error) {
-	tx, err := ctx.GetOrCreateTransaction(db)
-	if err != nil {
-		return nil, err
-	}
-
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM channels WHERE subscribe_key = ? OR send_key = ? LIMIT 1", key, key)
-	if err != nil {
-		return nil, err
-	}
-
-	channel, err := models.DecodeChannel(rows)
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	return &channel, nil
-}
-
 func (db *Database) GetChannelByName(ctx TxContext, userid int64, chanName string) (*models.Channel, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
@@ -85,13 +63,63 @@ func (db *Database) CreateChannel(ctx TxContext, userid int64, name string, subs
 	}, nil
 }
 
-func (db *Database) ListChannels(ctx TxContext, userid int64) ([]models.Channel, error) {
+func (db *Database) ListChannelsByOwner(ctx TxContext, userid int64) ([]models.Channel, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
 	}
 
 	rows, err := tx.QueryContext(ctx, "SELECT * FROM channels WHERE owner_user_id = ?", userid)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := models.DecodeChannels(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func (db *Database) ListChannelsBySubscriber(ctx TxContext, userid int64, confirmed bool) ([]models.Channel, error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return nil, err
+	}
+
+	confCond := ""
+	if confirmed {
+		confCond = " AND sub.confirmed = 1"
+	}
+
+	rows, err := tx.QueryContext(ctx, "SELECT * FROM channels LEFT JOIN subscriptions sub on channels.channel_id = sub.channel_id WHERE sub.subscriber_user_id = ? "+confCond,
+		userid)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := models.DecodeChannels(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func (db *Database) ListChannelsByAccess(ctx TxContext, userid int64, confirmed bool) ([]models.Channel, error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return nil, err
+	}
+
+	confCond := "sub.subscriber_user_id = ?"
+	if confirmed {
+		confCond = "(sub.subscriber_user_id = ? AND sub.confirmed = 1)"
+	}
+
+	rows, err := tx.QueryContext(ctx, "SELECT * FROM channels LEFT JOIN subscriptions sub on channels.channel_id = sub.channel_id WHERE owner_user_id = ? OR "+confCond,
+		userid)
 	if err != nil {
 		return nil, err
 	}

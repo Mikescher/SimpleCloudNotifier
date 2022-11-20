@@ -18,13 +18,13 @@ type Channel struct {
 	MessagesSent      int
 }
 
-func (c Channel) JSON() ChannelJSON {
+func (c Channel) JSON(includeKey bool) ChannelJSON {
 	return ChannelJSON{
 		ChannelID:         c.ChannelID,
 		OwnerUserID:       c.OwnerUserID,
 		Name:              c.Name,
-		SubscribeKey:      c.SubscribeKey,
-		SendKey:           c.SendKey,
+		SubscribeKey:      langext.Conditional(includeKey, langext.Ptr(c.SubscribeKey), nil),
+		SendKey:           langext.Conditional(includeKey, langext.Ptr(c.SendKey), nil),
 		TimestampCreated:  c.TimestampCreated.Format(time.RFC3339Nano),
 		TimestampLastSent: timeOptFmt(c.TimestampLastSent, time.RFC3339Nano),
 		MessagesSent:      c.MessagesSent,
@@ -35,8 +35,8 @@ type ChannelJSON struct {
 	ChannelID         int64   `json:"channel_id"`
 	OwnerUserID       int64   `json:"owner_user_id"`
 	Name              string  `json:"name"`
-	SubscribeKey      string  `json:"subscribe_key"`
-	SendKey           string  `json:"send_key"`
+	SubscribeKey      *string `json:"subscribe_key"` // can be nil, depending on endpoint
+	SendKey           *string `json:"send_key"`      // can be nil, depending on endpoint
 	TimestampCreated  string  `json:"timestamp_created"`
 	TimestampLastSent *string `json:"timestamp_last_sent"`
 	MessagesSent      int     `json:"messages_sent"`
