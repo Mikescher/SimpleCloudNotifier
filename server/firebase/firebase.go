@@ -56,9 +56,9 @@ func (fb FBConnector) SendNotification(ctx context.Context, client models.Client
 
 	jsonBody := gin.H{
 		"data": gin.H{
-			"scn_msg_id": strconv.FormatInt(msg.SCNMessageID, 10),
+			"scn_msg_id": msg.SCNMessageID.String(),
 			"usr_msg_id": langext.Coalesce(msg.UserMessageID, ""),
-			"client_id":  strconv.FormatInt(client.ClientID, 10),
+			"client_id":  client.ClientID.String(),
 			"timestamp":  strconv.FormatInt(msg.Timestamp().Unix(), 10),
 			"priority":   strconv.Itoa(msg.Priority),
 			"trimmed":    langext.Conditional(msg.NeedsTrim(), "true", "false"),

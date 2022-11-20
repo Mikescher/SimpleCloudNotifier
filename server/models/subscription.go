@@ -8,10 +8,10 @@ import (
 )
 
 type Subscription struct {
-	SubscriptionID     int64
-	SubscriberUserID   int64
-	ChannelOwnerUserID int64
-	ChannelID          int64
+	SubscriptionID     SubscriptionID
+	SubscriberUserID   UserID
+	ChannelOwnerUserID UserID
+	ChannelID          ChannelID
 	ChannelName        string
 	TimestampCreated   time.Time
 	Confirmed          bool
@@ -30,23 +30,23 @@ func (s Subscription) JSON() SubscriptionJSON {
 }
 
 type SubscriptionJSON struct {
-	SubscriptionID     int64  `json:"subscription_id"`
-	SubscriberUserID   int64  `json:"subscriber_user_id"`
-	ChannelOwnerUserID int64  `json:"channel_owner_user_id"`
-	ChannelID          int64  `json:"channel_id"`
-	ChannelName        string `json:"channel_name"`
-	TimestampCreated   string `json:"timestamp_created"`
-	Confirmed          bool   `json:"confirmed"`
+	SubscriptionID     SubscriptionID `json:"subscription_id"`
+	SubscriberUserID   UserID         `json:"subscriber_user_id"`
+	ChannelOwnerUserID UserID         `json:"channel_owner_user_id"`
+	ChannelID          ChannelID      `json:"channel_id"`
+	ChannelName        string         `json:"channel_name"`
+	TimestampCreated   string         `json:"timestamp_created"`
+	Confirmed          bool           `json:"confirmed"`
 }
 
 type SubscriptionDB struct {
-	SubscriptionID     int64  `db:"subscription_id"`
-	SubscriberUserID   int64  `db:"subscriber_user_id"`
-	ChannelOwnerUserID int64  `db:"channel_owner_user_id"`
-	ChannelID          int64  `db:"channel_id"`
-	ChannelName        string `db:"channel_name"`
-	TimestampCreated   int64  `db:"timestamp_created"`
-	Confirmed          int    `db:"confirmed"`
+	SubscriptionID     SubscriptionID `db:"subscription_id"`
+	SubscriberUserID   UserID         `db:"subscriber_user_id"`
+	ChannelOwnerUserID UserID         `db:"channel_owner_user_id"`
+	ChannelID          ChannelID      `db:"channel_id"`
+	ChannelName        string         `db:"channel_name"`
+	TimestampCreated   int64          `db:"timestamp_created"`
+	Confirmed          int            `db:"confirmed"`
 }
 
 func (s SubscriptionDB) Model() Subscription {

@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func (db *Database) CreateClient(ctx TxContext, userid int64, ctype models.ClientType, fcmToken string, agentModel string, agentVersion string) (models.Client, error) {
+func (db *Database) CreateClient(ctx TxContext, userid models.UserID, ctype models.ClientType, fcmToken string, agentModel string, agentVersion string) (models.Client, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Client{}, err
@@ -31,7 +31,7 @@ func (db *Database) CreateClient(ctx TxContext, userid int64, ctype models.Clien
 	}
 
 	return models.Client{
-		ClientID:         liid,
+		ClientID:         models.ClientID(liid),
 		UserID:           userid,
 		Type:             ctype,
 		FCMToken:         langext.Ptr(fcmToken),
@@ -55,7 +55,7 @@ func (db *Database) ClearFCMTokens(ctx TxContext, fcmtoken string) error {
 	return nil
 }
 
-func (db *Database) ListClients(ctx TxContext, userid int64) ([]models.Client, error) {
+func (db *Database) ListClients(ctx TxContext, userid models.UserID) ([]models.Client, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
@@ -74,7 +74,7 @@ func (db *Database) ListClients(ctx TxContext, userid int64) ([]models.Client, e
 	return data, nil
 }
 
-func (db *Database) GetClient(ctx TxContext, userid int64, clientid int64) (models.Client, error) {
+func (db *Database) GetClient(ctx TxContext, userid models.UserID, clientid models.ClientID) (models.Client, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Client{}, err
@@ -93,7 +93,7 @@ func (db *Database) GetClient(ctx TxContext, userid int64, clientid int64) (mode
 	return client, nil
 }
 
-func (db *Database) DeleteClient(ctx TxContext, clientid int64) error {
+func (db *Database) DeleteClient(ctx TxContext, clientid models.ClientID) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err

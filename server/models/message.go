@@ -13,11 +13,11 @@ const (
 )
 
 type Message struct {
-	SCNMessageID    int64
-	SenderUserID    int64
-	OwnerUserID     int64
+	SCNMessageID    SCNMessageID
+	SenderUserID    UserID
+	OwnerUserID     UserID
 	ChannelName     string
-	ChannelID       int64
+	ChannelID       ChannelID
 	TimestampReal   time.Time
 	TimestampClient *time.Time
 	Title           string
@@ -87,31 +87,31 @@ func (m Message) ShortContent() string {
 }
 
 type MessageJSON struct {
-	SCNMessageID  int64   `json:"scn_message_id"`
-	SenderUserID  int64   `json:"sender_user_id"`
-	OwnerUserID   int64   `json:"owner_user_id"`
-	ChannelName   string  `json:"channel_name"`
-	ChannelID     int64   `json:"channel_id"`
-	Timestamp     string  `json:"timestamp"`
-	Title         string  `json:"title"`
-	Content       *string `json:"body"`
-	Priority      int     `json:"priority"`
-	UserMessageID *string `json:"usr_message_id"`
-	Trimmed       bool    `json:"trimmed"`
+	SCNMessageID  SCNMessageID `json:"scn_message_id"`
+	SenderUserID  UserID       `json:"sender_user_id"`
+	OwnerUserID   UserID       `json:"owner_user_id"`
+	ChannelName   string       `json:"channel_name"`
+	ChannelID     ChannelID    `json:"channel_id"`
+	Timestamp     string       `json:"timestamp"`
+	Title         string       `json:"title"`
+	Content       *string      `json:"body"`
+	Priority      int          `json:"priority"`
+	UserMessageID *string      `json:"usr_message_id"`
+	Trimmed       bool         `json:"trimmed"`
 }
 
 type MessageDB struct {
-	SCNMessageID    int64   `db:"scn_message_id"`
-	SenderUserID    int64   `db:"sender_user_id"`
-	OwnerUserID     int64   `db:"owner_user_id"`
-	ChannelName     string  `db:"channel_name"`
-	ChannelID       int64   `db:"channel_id"`
-	TimestampReal   int64   `db:"timestamp_real"`
-	TimestampClient *int64  `db:"timestamp_client"`
-	Title           string  `db:"title"`
-	Content         *string `db:"content"`
-	Priority        int     `db:"priority"`
-	UserMessageID   *string `db:"usr_message_id"`
+	SCNMessageID    SCNMessageID `db:"scn_message_id"`
+	SenderUserID    UserID       `db:"sender_user_id"`
+	OwnerUserID     UserID       `db:"owner_user_id"`
+	ChannelName     string       `db:"channel_name"`
+	ChannelID       ChannelID    `db:"channel_id"`
+	TimestampReal   int64        `db:"timestamp_real"`
+	TimestampClient *int64       `db:"timestamp_client"`
+	Title           string       `db:"title"`
+	Content         *string      `db:"content"`
+	Priority        int          `db:"priority"`
+	UserMessageID   *string      `db:"usr_message_id"`
 }
 
 func (m MessageDB) Model() Message {

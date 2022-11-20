@@ -33,7 +33,7 @@ func (db *Database) CreateUser(ctx TxContext, readKey string, sendKey string, ad
 	}
 
 	return models.User{
-		UserID:            liid,
+		UserID:            models.UserID(liid),
 		Username:          username,
 		ReadKey:           readKey,
 		SendKey:           sendKey,
@@ -85,7 +85,7 @@ func (db *Database) GetUserByKey(ctx TxContext, key string) (*models.User, error
 	return &user, nil
 }
 
-func (db *Database) GetUser(ctx TxContext, userid int64) (models.User, error) {
+func (db *Database) GetUser(ctx TxContext, userid models.UserID) (models.User, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.User{}, err
@@ -104,7 +104,7 @@ func (db *Database) GetUser(ctx TxContext, userid int64) (models.User, error) {
 	return user, nil
 }
 
-func (db *Database) UpdateUserUsername(ctx TxContext, userid int64, username *string) error {
+func (db *Database) UpdateUserUsername(ctx TxContext, userid models.UserID, username *string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -120,7 +120,7 @@ func (db *Database) UpdateUserUsername(ctx TxContext, userid int64, username *st
 	return nil
 }
 
-func (db *Database) UpdateUserProToken(ctx TxContext, userid int64, protoken *string) error {
+func (db *Database) UpdateUserProToken(ctx TxContext, userid models.UserID, protoken *string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -158,7 +158,7 @@ func (db *Database) IncUserMessageCounter(ctx TxContext, user models.User) error
 	return nil
 }
 
-func (db *Database) UpdateUserLastRead(ctx TxContext, userid int64) error {
+func (db *Database) UpdateUserLastRead(ctx TxContext, userid models.UserID) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -174,7 +174,7 @@ func (db *Database) UpdateUserLastRead(ctx TxContext, userid int64) error {
 	return nil
 }
 
-func (db *Database) UpdateUserKeys(ctx TxContext, userid int64, sendKey string, readKey string, adminKey string) error {
+func (db *Database) UpdateUserKeys(ctx TxContext, userid models.UserID, sendKey string, readKey string, adminKey string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -192,7 +192,7 @@ func (db *Database) UpdateUserKeys(ctx TxContext, userid int64, sendKey string, 
 	return nil
 }
 
-func (db *Database) UpdateUserSendKey(ctx TxContext, userid int64, newkey string) error {
+func (db *Database) UpdateUserSendKey(ctx TxContext, userid models.UserID, newkey string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -208,7 +208,7 @@ func (db *Database) UpdateUserSendKey(ctx TxContext, userid int64, newkey string
 	return nil
 }
 
-func (db *Database) UpdateUserReadKey(ctx TxContext, userid int64, newkey string) error {
+func (db *Database) UpdateUserReadKey(ctx TxContext, userid models.UserID, newkey string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -224,7 +224,7 @@ func (db *Database) UpdateUserReadKey(ctx TxContext, userid int64, newkey string
 	return nil
 }
 
-func (db *Database) UpdateUserAdminKey(ctx TxContext, userid int64, newkey string) error {
+func (db *Database) UpdateUserAdminKey(ctx TxContext, userid models.UserID, newkey string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err

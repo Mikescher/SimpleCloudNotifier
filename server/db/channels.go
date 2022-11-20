@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func (db *Database) GetChannelByName(ctx TxContext, userid int64, chanName string) (*models.Channel, error) {
+func (db *Database) GetChannelByName(ctx TxContext, userid models.UserID, chanName string) (*models.Channel, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
@@ -28,7 +28,7 @@ func (db *Database) GetChannelByName(ctx TxContext, userid int64, chanName strin
 	return &channel, nil
 }
 
-func (db *Database) CreateChannel(ctx TxContext, userid int64, name string, subscribeKey string, sendKey string) (models.Channel, error) {
+func (db *Database) CreateChannel(ctx TxContext, userid models.UserID, name string, subscribeKey string, sendKey string) (models.Channel, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Channel{}, err
@@ -52,7 +52,7 @@ func (db *Database) CreateChannel(ctx TxContext, userid int64, name string, subs
 	}
 
 	return models.Channel{
-		ChannelID:         liid,
+		ChannelID:         models.ChannelID(liid),
 		OwnerUserID:       userid,
 		Name:              name,
 		SubscribeKey:      subscribeKey,
@@ -63,7 +63,7 @@ func (db *Database) CreateChannel(ctx TxContext, userid int64, name string, subs
 	}, nil
 }
 
-func (db *Database) ListChannelsByOwner(ctx TxContext, userid int64) ([]models.Channel, error) {
+func (db *Database) ListChannelsByOwner(ctx TxContext, userid models.UserID) ([]models.Channel, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
@@ -82,7 +82,7 @@ func (db *Database) ListChannelsByOwner(ctx TxContext, userid int64) ([]models.C
 	return data, nil
 }
 
-func (db *Database) ListChannelsBySubscriber(ctx TxContext, userid int64, confirmed bool) ([]models.Channel, error) {
+func (db *Database) ListChannelsBySubscriber(ctx TxContext, userid models.UserID, confirmed bool) ([]models.Channel, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
@@ -107,18 +107,18 @@ func (db *Database) ListChannelsBySubscriber(ctx TxContext, userid int64, confir
 	return data, nil
 }
 
-func (db *Database) ListChannelsByAccess(ctx TxContext, userid int64, confirmed bool) ([]models.Channel, error) {
+func (db *Database) ListChannelsByAccess(ctx TxContext, userid models.UserID, confirmed bool) ([]models.Channel, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
 	}
 
-	confCond := "sub.subscriber_user_id = ?"
+	confCond := "OR sub.subscriber_user_id = ?"
 	if confirmed {
-		confCond = "(sub.subscriber_user_id = ? AND sub.confirmed = 1)"
+		confCond = "OR (sub.subscriber_user_id = ? AND sub.confirmed = 1)"
 	}
 
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM channels LEFT JOIN subscriptions sub on channels.channel_id = sub.channel_id WHERE owner_user_id = ? OR "+confCond,
+	rows, err := tx.QueryContext(ctx, "SELECT * FROM channels LEFT JOIN subscriptions sub on channels.channel_id = sub.channel_id WHERE owner_user_id = ? "+confCond,
 		userid)
 	if err != nil {
 		return nil, err
@@ -132,7 +132,7 @@ func (db *Database) ListChannelsByAccess(ctx TxContext, userid int64, confirmed 
 	return data, nil
 }
 
-func (db *Database) GetChannel(ctx TxContext, userid int64, channelid int64) (models.Channel, error) {
+func (db *Database) GetChannel(ctx TxContext, userid models.UserID, channelid models.ChannelID) (models.Channel, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Channel{}, err
@@ -168,7 +168,7 @@ func (db *Database) IncChannelMessageCounter(ctx TxContext, channel models.Chann
 	return nil
 }
 
-func (db *Database) UpdateChannelSendKey(ctx TxContext, channelid int64, newkey string) error {
+func (db *Database) UpdateChannelSendKey(ctx TxContext, channelid models.ChannelID, newkey string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -184,7 +184,7 @@ func (db *Database) UpdateChannelSendKey(ctx TxContext, channelid int64, newkey 
 	return nil
 }
 
-func (db *Database) UpdateChannelSubscribeKey(ctx TxContext, channelid int64, newkey string) error {
+func (db *Database) UpdateChannelSubscribeKey(ctx TxContext, channelid models.ChannelID, newkey string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err

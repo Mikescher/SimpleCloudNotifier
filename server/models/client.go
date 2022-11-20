@@ -15,8 +15,8 @@ const (
 )
 
 type Client struct {
-	ClientID         int64
-	UserID           int64
+	ClientID         ClientID
+	UserID           UserID
 	Type             ClientType
 	FCMToken         *string
 	TimestampCreated time.Time
@@ -37,8 +37,8 @@ func (c Client) JSON() ClientJSON {
 }
 
 type ClientJSON struct {
-	ClientID         int64      `json:"client_id"`
-	UserID           int64      `json:"user_id"`
+	ClientID         ClientID   `json:"client_id"`
+	UserID           UserID     `json:"user_id"`
 	Type             ClientType `json:"type"`
 	FCMToken         *string    `json:"fcm_token"`
 	TimestampCreated string     `json:"timestamp_created"`
@@ -47,8 +47,8 @@ type ClientJSON struct {
 }
 
 type ClientDB struct {
-	ClientID         int64      `db:"client_id"`
-	UserID           int64      `db:"user_id"`
+	ClientID         ClientID   `db:"client_id"`
+	UserID           UserID     `db:"user_id"`
 	Type             ClientType `db:"type"`
 	FCMToken         *string    `db:"fcm_token"`
 	TimestampCreated int64      `db:"timestamp_created"`

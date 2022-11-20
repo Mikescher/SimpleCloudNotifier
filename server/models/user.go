@@ -9,7 +9,7 @@ import (
 )
 
 type User struct {
-	UserID            int64
+	UserID            UserID
 	Username          *string
 	SendKey           string
 	ReadKey           string
@@ -38,6 +38,7 @@ func (u User) JSON() UserJSON {
 		QuotaUsed:         u.QuotaUsed,
 		QuotaUsedDay:      u.QuotaUsedDay,
 		IsPro:             u.IsPro,
+		DefaultChannel:    u.DefaultChannel(),
 	}
 }
 
@@ -74,8 +75,12 @@ func (u User) QuotaRemainingToday() int {
 	return u.QuotaPerDay() - u.QuotaUsedToday()
 }
 
+func (u User) DefaultChannel() string {
+	return "main"
+}
+
 type UserJSON struct {
-	UserID            int64   `json:"user_id"`
+	UserID            UserID  `json:"user_id"`
 	Username          *string `json:"username"`
 	ReadKey           string  `json:"read_key"`
 	SendKey           string  `json:"send_key"`
@@ -87,10 +92,11 @@ type UserJSON struct {
 	QuotaUsed         int     `json:"quota_used"`
 	QuotaUsedDay      *string `json:"quota_used_day"`
 	IsPro             bool    `json:"is_pro"`
+	DefaultChannel    string  `json:"default_channel"`
 }
 
 type UserDB struct {
-	UserID            int64   `db:"user_id"`
+	UserID            UserID  `db:"user_id"`
 	Username          *string `db:"username"`
 	SendKey           string  `db:"send_key"`
 	ReadKey           string  `db:"read_key"`

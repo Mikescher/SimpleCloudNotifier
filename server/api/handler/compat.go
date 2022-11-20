@@ -122,7 +122,7 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
 		Success:   true,
 		Message:   "New user registered",
-		UserID:    user.UserID,
+		UserID:    user.UserID.IntID(),
 		UserKey:   user.AdminKey,
 		QuotaUsed: user.QuotaUsedToday(),
 		QuotaMax:  user.QuotaPerDay(),
@@ -180,7 +180,7 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(102, "Missing parameter [[user_key]]")
 	}
 
-	user, err := h.database.GetUser(ctx, *data.UserID)
+	user, err := h.database.GetUser(ctx, models.UserID(*data.UserID))
 	if err == sql.ErrNoRows {
 		return ginresp.CompatAPIError(201, "User not found")
 	}
@@ -202,7 +202,7 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
 		Success:    true,
 		Message:    "ok",
-		UserID:     user.UserID,
+		UserID:     user.UserID.IntID(),
 		UserKey:    user.AdminKey,
 		QuotaUsed:  user.QuotaUsedToday(),
 		QuotaMax:   user.QuotaPerDay(),
@@ -263,7 +263,7 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(103, "Missing parameter [[scn_msg_id]]")
 	}
 
-	user, err := h.database.GetUser(ctx, *data.UserID)
+	user, err := h.database.GetUser(ctx, models.UserID(*data.UserID))
 	if err == sql.ErrNoRows {
 		return ginresp.CompatAPIError(201, "User not found")
 	}
@@ -328,7 +328,7 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(102, "Missing parameter [[user_key]]")
 	}
 
-	user, err := h.database.GetUser(ctx, *data.UserID)
+	user, err := h.database.GetUser(ctx, models.UserID(*data.UserID))
 	if err == sql.ErrNoRows {
 		return ginresp.CompatAPIError(201, "User not found")
 	}
@@ -399,7 +399,7 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(102, "Missing parameter [[user_key]]")
 	}
 
-	user, err := h.database.GetUser(ctx, *data.UserID)
+	user, err := h.database.GetUser(ctx, models.UserID(*data.UserID))
 	if err == sql.ErrNoRows {
 		return ginresp.CompatAPIError(201, "User not found")
 	}
@@ -451,7 +451,7 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
 		Success:   true,
 		Message:   "user updated",
-		UserID:    user.UserID,
+		UserID:    user.UserID.IntID(),
 		UserKey:   user.AdminKey,
 		QuotaUsed: user.QuotaUsedToday(),
 		QuotaMax:  user.QuotaPerDay(),
@@ -509,7 +509,7 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(103, "Missing parameter [[scn_msg_id]]")
 	}
 
-	user, err := h.database.GetUser(ctx, *data.UserID)
+	user, err := h.database.GetUser(ctx, models.UserID(*data.UserID))
 	if err == sql.ErrNoRows {
 		return ginresp.CompatAPIError(201, "User not found")
 	}
@@ -521,7 +521,7 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 
-	msg, err := h.database.GetMessage(ctx, *data.MessageID)
+	msg, err := h.database.GetMessage(ctx, models.SCNMessageID(*data.MessageID))
 	if err == sql.ErrNoRows {
 		return ginresp.CompatAPIError(301, "Message not found")
 	}
@@ -539,7 +539,7 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 			Priority:      msg.Priority,
 			Timestamp:     msg.Timestamp().Unix(),
 			UserMessageID: msg.UserMessageID,
-			SCNMessageID:  msg.SCNMessageID,
+			SCNMessageID:  msg.SCNMessageID.IntID(),
 		},
 	}))
 }
@@ -603,7 +603,7 @@ func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(104, "Missing parameter [[pro_token]]")
 	}
 
-	user, err := h.database.GetUser(ctx, *data.UserID)
+	user, err := h.database.GetUser(ctx, models.UserID(*data.UserID))
 	if err == sql.ErrNoRows {
 		return ginresp.CompatAPIError(201, "User not found")
 	}
@@ -648,7 +648,7 @@ func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
 		Success:   true,
 		Message:   "user updated",
-		UserID:    user.UserID,
+		UserID:    user.UserID.IntID(),
 		QuotaUsed: user.QuotaUsedToday(),
 		QuotaMax:  user.QuotaPerDay(),
 		IsPro:     user.IsPro,

@@ -5,6 +5,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/logic"
+	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -49,22 +50,22 @@ func NewMessageHandler(app *logic.Application) MessageHandler {
 // @Router      /send.php [POST]
 func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
-		UserID        *int64   `form:"user_id"`
-		UserKey       *string  `form:"user_key"`
-		Title         *string  `form:"title"`
-		Content       *string  `form:"content"`
-		Priority      *int     `form:"priority"`
-		UserMessageID *string  `form:"msg_id"`
-		SendTimestamp *float64 `form:"timestamp"`
+		UserID        *models.UserID `form:"user_id"`
+		UserKey       *string        `form:"user_key"`
+		Title         *string        `form:"title"`
+		Content       *string        `form:"content"`
+		Priority      *int           `form:"priority"`
+		UserMessageID *string        `form:"msg_id"`
+		SendTimestamp *float64       `form:"timestamp"`
 	}
 	type form struct {
-		UserID        *int64   `form:"user_id"`
-		UserKey       *string  `form:"user_key"`
-		Title         *string  `form:"title"`
-		Content       *string  `form:"content"`
-		Priority      *int     `form:"priority"`
-		UserMessageID *string  `form:"msg_id"`
-		SendTimestamp *float64 `form:"timestamp"`
+		UserID        *models.UserID `form:"user_id"`
+		UserKey       *string        `form:"user_key"`
+		Title         *string        `form:"title"`
+		Content       *string        `form:"content"`
+		Priority      *int           `form:"priority"`
+		UserMessageID *string        `form:"msg_id"`
+		SendTimestamp *float64       `form:"timestamp"`
 	}
 
 	var f form
@@ -77,7 +78,7 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 
 	data := dataext.ObjectMerge(f, q)
 
-	return h.sendMessageInternal(g, ctx, data.UserID, data.UserKey, langext.Ptr(h.app.DefaultChannel), nil, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp)
+	return h.sendMessageInternal(g, ctx, data.UserID, data.UserKey, nil, nil, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp)
 
 }
 
@@ -101,37 +102,37 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 // @Router      /send [POST]
 func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
-		UserID        *int64   `form:"user_id"`
-		UserKey       *string  `form:"user_key"`
-		Channel       *string  `form:"channel"`
-		ChanKey       *string  `form:"chan_key"`
-		Title         *string  `form:"title"`
-		Content       *string  `form:"content"`
-		Priority      *int     `form:"priority"`
-		UserMessageID *string  `form:"msg_id"`
-		SendTimestamp *float64 `form:"timestamp"`
+		UserID        *models.UserID `form:"user_id"`
+		UserKey       *string        `form:"user_key"`
+		Channel       *string        `form:"channel"`
+		ChanKey       *string        `form:"chan_key"`
+		Title         *string        `form:"title"`
+		Content       *string        `form:"content"`
+		Priority      *int           `form:"priority"`
+		UserMessageID *string        `form:"msg_id"`
+		SendTimestamp *float64       `form:"timestamp"`
 	}
 	type body struct {
-		UserID        *int64   `json:"user_id"`
-		UserKey       *string  `json:"user_key"`
-		Channel       *string  `json:"channel"`
-		ChanKey       *string  `json:"chan_key"`
-		Title         *string  `json:"title"`
-		Content       *string  `json:"content"`
-		Priority      *int     `json:"priority"`
-		UserMessageID *string  `json:"msg_id"`
-		SendTimestamp *float64 `json:"timestamp"`
+		UserID        *models.UserID `json:"user_id"`
+		UserKey       *string        `json:"user_key"`
+		Channel       *string        `json:"channel"`
+		ChanKey       *string        `json:"chan_key"`
+		Title         *string        `json:"title"`
+		Content       *string        `json:"content"`
+		Priority      *int           `json:"priority"`
+		UserMessageID *string        `json:"msg_id"`
+		SendTimestamp *float64       `json:"timestamp"`
 	}
 	type form struct {
-		UserID        *int64   `form:"user_id"`
-		UserKey       *string  `form:"user_key"`
-		Channel       *string  `form:"channel"`
-		ChanKey       *string  `form:"chan_key"`
-		Title         *string  `form:"title"`
-		Content       *string  `form:"content"`
-		Priority      *int     `form:"priority"`
-		UserMessageID *string  `form:"msg_id"`
-		SendTimestamp *float64 `form:"timestamp"`
+		UserID        *models.UserID `form:"user_id"`
+		UserKey       *string        `form:"user_key"`
+		Channel       *string        `form:"channel"`
+		ChanKey       *string        `form:"chan_key"`
+		Title         *string        `form:"title"`
+		Content       *string        `form:"content"`
+		Priority      *int           `form:"priority"`
+		UserMessageID *string        `form:"msg_id"`
+		SendTimestamp *float64       `form:"timestamp"`
 	}
 
 	var b body
@@ -149,18 +150,18 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 
 }
 
-func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContext, UserID *int64, UserKey *string, Channel *string, ChanKey *string, Title *string, Content *string, Priority *int, UserMessageID *string, SendTimestamp *float64) ginresp.HTTPResponse {
+func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContext, UserID *models.UserID, UserKey *string, Channel *string, ChanKey *string, Title *string, Content *string, Priority *int, UserMessageID *string, SendTimestamp *float64) ginresp.HTTPResponse {
 	type response struct {
-		Success        bool            `json:"success"`
-		ErrorID        apierr.APIError `json:"error"`
-		ErrorHighlight int             `json:"errhighlight"`
-		Message        string          `json:"message"`
-		SuppressSend   bool            `json:"suppress_send"`
-		MessageCount   int             `json:"messagecount"`
-		Quota          int             `json:"quota"`
-		IsPro          bool            `json:"is_pro"`
-		QuotaMax       int             `json:"quota_max"`
-		SCNMessageID   int64           `json:"scn_msg_id"`
+		Success        bool                `json:"success"`
+		ErrorID        apierr.APIError     `json:"error"`
+		ErrorHighlight int                 `json:"errhighlight"`
+		Message        string              `json:"message"`
+		SuppressSend   bool                `json:"suppress_send"`
+		MessageCount   int                 `json:"messagecount"`
+		Quota          int                 `json:"quota"`
+		IsPro          bool                `json:"is_pro"`
+		QuotaMax       int                 `json:"quota_max"`
+		SCNMessageID   models.SCNMessageID `json:"scn_msg_id"`
 	}
 
 	if Title != nil {
@@ -192,17 +193,17 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 		return ginresp.SendAPIError(g, 400, apierr.USR_MSG_ID_TOO_LONG, -1, "MessageID too long (64 characters)", nil)
 	}
 
-	channelName := h.app.DefaultChannel
-	if Channel != nil {
-		channelName = h.app.NormalizeChannelName(*Channel)
-	}
-
 	user, err := h.database.GetUser(ctx, *UserID)
 	if err == sql.ErrNoRows {
 		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, -1, "User not found", nil)
 	}
 	if err != nil {
 		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to query user", err)
+	}
+
+	channelName := user.DefaultChannel()
+	if Channel != nil {
+		channelName = h.app.NormalizeChannelName(*Channel)
 	}
 
 	if len(*Title) > user.MaxTitleLength() {

@@ -24,18 +24,16 @@ import (
 )
 
 type Application struct {
-	Config         scn.Config
-	Gin            *gin.Engine
-	Database       *db.Database
-	Firebase       *firebase.FBConnector
-	DefaultChannel string
-	Jobs           []Job
+	Config   scn.Config
+	Gin      *gin.Engine
+	Database *db.Database
+	Firebase *firebase.FBConnector
+	Jobs     []Job
 }
 
 func NewApp(db *db.Database) *Application {
 	return &Application{
-		Database:       db,
-		DefaultChannel: "main",
+		Database: db,
 	}
 }
 
@@ -194,7 +192,7 @@ func (app *Application) getPermissions(ctx *AppContext, hdr string) (PermissionS
 	return NewEmptyPermissions(), nil
 }
 
-func (app *Application) GetOrCreateChannel(ctx *AppContext, userid int64, chanName string) (models.Channel, error) {
+func (app *Application) GetOrCreateChannel(ctx *AppContext, userid models.UserID, chanName string) (models.Channel, error) {
 	chanName = app.NormalizeChannelName(chanName)
 
 	existingChan, err := app.Database.GetChannelByName(ctx, userid, chanName)
@@ -245,7 +243,7 @@ func (app *Application) DeliverMessage(ctx context.Context, client models.Client
 	if client.FCMToken != nil {
 		fcmDelivID, err := app.Firebase.SendNotification(ctx, client, msg)
 		if err != nil {
-			log.Warn().Int64("SCNMessageID", msg.SCNMessageID).Int64("ClientID", client.ClientID).Err(err).Msg("FCM Delivery failed")
+			log.Warn().Int64("SCNMessageID", msg.SCNMessageID.IntID()).Int64("ClientID", client.ClientID.IntID()).Err(err).Msg("FCM Delivery failed")
 			return nil, err
 		}
 		return langext.Ptr(fcmDelivID), nil

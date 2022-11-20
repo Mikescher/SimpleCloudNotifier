@@ -129,7 +129,7 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api-v2/users/{uid} [GET]
 func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID int64 `uri:"uid"`
+		UserID models.UserID `uri:"uid"`
 	}
 
 	var u uri
@@ -177,7 +177,7 @@ func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 // @Router      /api-v2/users/{uid} [PATCH]
 func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID int64 `uri:"uid"`
+		UserID models.UserID `uri:"uid"`
 	}
 	type body struct {
 		Username        *string `json:"username"`
@@ -283,7 +283,7 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api-v2/users/{uid}/clients [GET]
 func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID int64 `uri:"uid"`
+		UserID models.UserID `uri:"uid"`
 	}
 	type response struct {
 		Clients []models.ClientJSON `json:"clients"`
@@ -327,8 +327,8 @@ func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api-v2/users/{uid}/clients/{cid} [GET]
 func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID   int64 `uri:"uid"`
-		ClientID int64 `uri:"cid"`
+		UserID   models.UserID   `uri:"uid"`
+		ClientID models.ClientID `uri:"cid"`
 	}
 
 	var u uri
@@ -371,7 +371,7 @@ func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api-v2/users/{uid}/clients [POST]
 func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID int64 `uri:"uid"`
+		UserID models.UserID `uri:"uid"`
 	}
 	type body struct {
 		FCMToken     string `json:"fcm_token" binding:"required"`
@@ -426,8 +426,8 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api-v2/users/{uid}/clients [POST]
 func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID   int64 `uri:"uid"`
-		ClientID int64 `uri:"cid"`
+		UserID   models.UserID   `uri:"uid"`
+		ClientID models.ClientID `uri:"cid"`
 	}
 
 	var u uri
@@ -480,7 +480,7 @@ func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 // @Router      /api-v2/users/{uid}/channels [GET]
 func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID int64 `uri:"uid"`
+		UserID models.UserID `uri:"uid"`
 	}
 	type query struct {
 		Selector *string `form:"selector"`
@@ -559,8 +559,8 @@ func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api-v2/users/{uid}/channels/{cid} [GET]
 func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID    int64 `uri:"uid"`
-		ChannelID int64 `uri:"cid"`
+		UserID    models.UserID    `uri:"uid"`
+		ChannelID models.ChannelID `uri:"cid"`
 	}
 
 	var u uri
@@ -605,8 +605,8 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api-v2/users/{uid}/channels/{cid} [PATCH]
 func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID    int64 `uri:"uid"`
-		ChannelID int64 `uri:"cid"`
+		UserID    models.UserID    `uri:"uid"`
+		ChannelID models.ChannelID `uri:"cid"`
 	}
 	type body struct {
 		RefreshSubscribeKey *bool `json:"subscribe_key"`
@@ -679,8 +679,8 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 // @Router      /api-v2/users/{uid}/channels/{cid}/messages [GET]
 func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		ChannelUserID int64 `uri:"uid"`
-		ChannelID     int64 `uri:"cid"`
+		ChannelUserID models.UserID    `uri:"uid"`
+		ChannelID     models.ChannelID `uri:"cid"`
 	}
 	type query struct {
 		PageSize      *int    `form:"page_size"`
@@ -769,7 +769,7 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api-v2/users/{uid}/subscriptions [GET]
 func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID int64 `uri:"uid"`
+		UserID models.UserID `uri:"uid"`
 	}
 	type response struct {
 		Subscriptions []models.SubscriptionJSON `json:"subscriptions"`
@@ -813,8 +813,8 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api-v2/users/{uid}/channels/{cid}/subscriptions [GET]
 func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID    int64 `uri:"uid"`
-		ChannelID int64 `uri:"cid"`
+		UserID    models.UserID    `uri:"uid"`
+		ChannelID models.ChannelID `uri:"cid"`
 	}
 	type response struct {
 		Subscriptions []models.SubscriptionJSON `json:"subscriptions"`
@@ -866,8 +866,8 @@ func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPRespons
 // @Router  /api-v2/users/{uid}/subscriptions/{sid} [GET]
 func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID         int64 `uri:"uid"`
-		SubscriptionID int64 `uri:"sid"`
+		UserID         models.UserID         `uri:"uid"`
+		SubscriptionID models.SubscriptionID `uri:"sid"`
 	}
 
 	var u uri
@@ -913,8 +913,8 @@ func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api-v2/users/{uid}/subscriptions/{sid} [DELETE]
 func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID         int64 `uri:"uid"`
-		SubscriptionID int64 `uri:"sid"`
+		UserID         models.UserID         `uri:"uid"`
+		SubscriptionID models.SubscriptionID `uri:"sid"`
 	}
 
 	var u uri
@@ -966,11 +966,11 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api-v2/users/{uid}/subscriptions [POST]
 func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID int64 `uri:"uid"`
+		UserID models.UserID `uri:"uid"`
 	}
 	type body struct {
-		ChannelOwnerUserID int64  `form:"channel_owner_user_id" binding:"required"`
-		Channel            string `form:"channel_name" binding:"required"`
+		ChannelOwnerUserID models.UserID `form:"channel_owner_user_id" binding:"required"`
+		Channel            string        `form:"channel_name" binding:"required"`
 	}
 	type query struct {
 		ChanSubscribeKey *string `form:"chan_subscribe_key"`
@@ -1026,8 +1026,8 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api-v2/users/{uid}/subscriptions/{sid} [PATCH]
 func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID         int64 `uri:"uid"`
-		SubscriptionID int64 `uri:"sid"`
+		UserID         models.UserID         `uri:"uid"`
+		SubscriptionID models.SubscriptionID `uri:"sid"`
 	}
 	type body struct {
 		Confirmed *bool `form:"confirmed"`
@@ -1166,7 +1166,7 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 // @Router      /api-v2/messages/{mid} [PATCH]
 func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		MessageID int64 `uri:"mid"`
+		MessageID models.SCNMessageID `uri:"mid"`
 	}
 
 	var u uri
@@ -1235,7 +1235,7 @@ func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 // @Router      /api-v2/messages/{mid} [PATCH]
 func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		MessageID int64 `uri:"mid"`
+		MessageID models.SCNMessageID `uri:"mid"`
 	}
 
 	var u uri
@@ -1337,17 +1337,17 @@ func (h APIHandler) CreateMessage(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.SendAPIError(g, 400, apierr.USR_MSG_ID_TOO_LONG, -1, "MessageID too long (64 characters)", nil)
 	}
 
-	channelName := h.app.DefaultChannel
-	if b.Channel != nil {
-		channelName = h.app.NormalizeChannelName(*b.Channel)
-	}
-
 	user, err := h.database.GetUser(ctx, userID)
 	if err == sql.ErrNoRows {
 		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, -1, "User not found", nil)
 	}
 	if err != nil {
 		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to query user", err)
+	}
+
+	channelName := user.DefaultChannel()
+	if b.Channel != nil {
+		channelName = h.app.NormalizeChannelName(*b.Channel)
 	}
 
 	if len(*b.Title) > user.MaxTitleLength() {

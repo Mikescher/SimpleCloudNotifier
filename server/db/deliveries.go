@@ -35,7 +35,7 @@ func (db *Database) CreateRetryDelivery(ctx TxContext, client models.Client, msg
 	}
 
 	return models.Delivery{
-		DeliveryID:         liid,
+		DeliveryID:         models.DeliveryID(liid),
 		SCNMessageID:       msg.SCNMessageID,
 		ReceiverUserID:     client.UserID,
 		ReceiverClientID:   client.ClientID,
@@ -75,7 +75,7 @@ func (db *Database) CreateSuccessDelivery(ctx TxContext, client models.Client, m
 	}
 
 	return models.Delivery{
-		DeliveryID:         liid,
+		DeliveryID:         models.DeliveryID(liid),
 		SCNMessageID:       msg.SCNMessageID,
 		ReceiverUserID:     client.UserID,
 		ReceiverClientID:   client.ClientID,
@@ -161,7 +161,7 @@ func (db *Database) SetDeliveryRetry(ctx TxContext, delivery models.Delivery) er
 	return nil
 }
 
-func (db *Database) CancelPendingDeliveries(ctx TxContext, scnMessageID int64) error {
+func (db *Database) CancelPendingDeliveries(ctx TxContext, scnMessageID models.SCNMessageID) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err

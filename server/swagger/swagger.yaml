@@ -408,6 +408,8 @@ definitions:
     properties:
       admin_key:
         type: string
+      default_channel:
+        type: string
       is_pro:
         type: boolean
       messages_sent:

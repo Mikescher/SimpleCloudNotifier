@@ -17,7 +17,7 @@ const (
 )
 
 type PermissionSet struct {
-	UserID  *int64
+	UserID  *models.UserID
 	KeyType PermKeyType
 }
 
@@ -28,7 +28,7 @@ func NewEmptyPermissions() PermissionSet {
 	}
 }
 
-func (ac *AppContext) CheckPermissionUserRead(userid int64) *ginresp.HTTPResponse {
+func (ac *AppContext) CheckPermissionUserRead(userid models.UserID) *ginresp.HTTPResponse {
 	p := ac.permissions
 	if p.UserID != nil && *p.UserID == userid && p.KeyType == PermKeyTypeUserRead {
 		return nil
@@ -52,7 +52,7 @@ func (ac *AppContext) CheckPermissionRead() *ginresp.HTTPResponse {
 	return langext.Ptr(ginresp.APIError(ac.ginContext, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil))
 }
 
-func (ac *AppContext) CheckPermissionUserAdmin(userid int64) *ginresp.HTTPResponse {
+func (ac *AppContext) CheckPermissionUserAdmin(userid models.UserID) *ginresp.HTTPResponse {
 	p := ac.permissions
 	if p.UserID != nil && *p.UserID == userid && p.KeyType == PermKeyTypeUserAdmin {
 		return nil
@@ -94,7 +94,7 @@ func (ac *AppContext) CheckPermissionMessageReadDirect(msg models.Message) bool 
 	return false
 }
 
-func (ac *AppContext) GetPermissionUserID() *int64 {
+func (ac *AppContext) GetPermissionUserID() *models.UserID {
 	if ac.permissions.UserID == nil {
 		return nil
 	} else {

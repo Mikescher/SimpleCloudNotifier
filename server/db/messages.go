@@ -30,7 +30,7 @@ func (db *Database) GetMessageByUserMessageID(ctx TxContext, usrMsgId string) (*
 	return &msg, nil
 }
 
-func (db *Database) GetMessage(ctx TxContext, scnMessageID int64) (models.Message, error) {
+func (db *Database) GetMessage(ctx TxContext, scnMessageID models.SCNMessageID) (models.Message, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Message{}, err
@@ -49,7 +49,7 @@ func (db *Database) GetMessage(ctx TxContext, scnMessageID int64) (models.Messag
 	return msg, nil
 }
 
-func (db *Database) CreateMessage(ctx TxContext, senderUserID int64, channel models.Channel, timestampSend *time.Time, title string, content *string, priority int, userMsgId *string) (models.Message, error) {
+func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, channel models.Channel, timestampSend *time.Time, title string, content *string, priority int, userMsgId *string) (models.Message, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Message{}, err
@@ -78,7 +78,7 @@ func (db *Database) CreateMessage(ctx TxContext, senderUserID int64, channel mod
 	}
 
 	return models.Message{
-		SCNMessageID:    liid,
+		SCNMessageID:    models.SCNMessageID(liid),
 		SenderUserID:    senderUserID,
 		OwnerUserID:     channel.OwnerUserID,
 		ChannelName:     channel.Name,
@@ -92,7 +92,7 @@ func (db *Database) CreateMessage(ctx TxContext, senderUserID int64, channel mod
 	}, nil
 }
 
-func (db *Database) DeleteMessage(ctx TxContext, scnMessageID int64) error {
+func (db *Database) DeleteMessage(ctx TxContext, scnMessageID models.SCNMessageID) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -106,7 +106,7 @@ func (db *Database) DeleteMessage(ctx TxContext, scnMessageID int64) error {
 	return nil
 }
 
-func (db *Database) ListMessages(ctx TxContext, userid int64, pageSize int, inTok cursortoken.CursorToken) ([]models.Message, cursortoken.CursorToken, error) {
+func (db *Database) ListMessages(ctx TxContext, userid models.UserID, pageSize int, inTok cursortoken.CursorToken) ([]models.Message, cursortoken.CursorToken, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, cursortoken.CursorToken{}, err
@@ -136,12 +136,12 @@ func (db *Database) ListMessages(ctx TxContext, userid int64, pageSize int, inTo
 	if len(data) <= pageSize {
 		return data, cursortoken.End(), nil
 	} else {
-		outToken := cursortoken.Normal(data[pageSize-1].TimestampReal, data[pageSize-1].SCNMessageID, "DESC")
+		outToken := cursortoken.Normal(data[pageSize-1].TimestampReal, data[pageSize-1].SCNMessageID.IntID(), "DESC")
 		return data[0:pageSize], outToken, nil
 	}
 }
 
-func (db *Database) ListChannelMessages(ctx TxContext, channelid int64, pageSize int, inTok cursortoken.CursorToken) ([]models.Message, cursortoken.CursorToken, error) {
+func (db *Database) ListChannelMessages(ctx TxContext, channelid models.ChannelID, pageSize int, inTok cursortoken.CursorToken) ([]models.Message, cursortoken.CursorToken, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, cursortoken.CursorToken{}, err
@@ -171,7 +171,7 @@ func (db *Database) ListChannelMessages(ctx TxContext, channelid int64, pageSize
 	if len(data) <= pageSize {
 		return data, cursortoken.End(), nil
 	} else {
-		outToken := cursortoken.Normal(data[pageSize-1].TimestampReal, data[pageSize-1].SCNMessageID, "DESC")
+		outToken := cursortoken.Normal(data[pageSize-1].TimestampReal, data[pageSize-1].SCNMessageID.IntID(), "DESC")
 		return data[0:pageSize], outToken, nil
 	}
 }

@@ -8,8 +8,8 @@ import (
 )
 
 type Channel struct {
-	ChannelID         int64
-	OwnerUserID       int64
+	ChannelID         ChannelID
+	OwnerUserID       UserID
 	Name              string
 	SubscribeKey      string
 	SendKey           string
@@ -32,26 +32,26 @@ func (c Channel) JSON(includeKey bool) ChannelJSON {
 }
 
 type ChannelJSON struct {
-	ChannelID         int64   `json:"channel_id"`
-	OwnerUserID       int64   `json:"owner_user_id"`
-	Name              string  `json:"name"`
-	SubscribeKey      *string `json:"subscribe_key"` // can be nil, depending on endpoint
-	SendKey           *string `json:"send_key"`      // can be nil, depending on endpoint
-	TimestampCreated  string  `json:"timestamp_created"`
-	TimestampLastSent *string `json:"timestamp_last_sent"`
-	MessagesSent      int     `json:"messages_sent"`
+	ChannelID         ChannelID `json:"channel_id"`
+	OwnerUserID       UserID    `json:"owner_user_id"`
+	Name              string    `json:"name"`
+	SubscribeKey      *string   `json:"subscribe_key"` // can be nil, depending on endpoint
+	SendKey           *string   `json:"send_key"`      // can be nil, depending on endpoint
+	TimestampCreated  string    `json:"timestamp_created"`
+	TimestampLastSent *string   `json:"timestamp_last_sent"`
+	MessagesSent      int       `json:"messages_sent"`
 }
 
 type ChannelDB struct {
-	ChannelID         int64  `db:"channel_id"`
-	OwnerUserID       int64  `db:"owner_user_id"`
-	Name              string `db:"name"`
-	SubscribeKey      string `db:"subscribe_key"`
-	SendKey           string `db:"send_key"`
-	TimestampCreated  int64  `db:"timestamp_created"`
-	TimestampLastRead *int64 `db:"timestamp_last_read"`
-	TimestampLastSent *int64 `db:"timestamp_last_sent"`
-	MessagesSent      int    `db:"messages_sent"`
+	ChannelID         ChannelID `db:"channel_id"`
+	OwnerUserID       UserID    `db:"owner_user_id"`
+	Name              string    `db:"name"`
+	SubscribeKey      string    `db:"subscribe_key"`
+	SendKey           string    `db:"send_key"`
+	TimestampCreated  int64     `db:"timestamp_created"`
+	TimestampLastRead *int64    `db:"timestamp_last_read"`
+	TimestampLastSent *int64    `db:"timestamp_last_sent"`
+	MessagesSent      int       `db:"messages_sent"`
 }
 
 func (c ChannelDB) Model() Channel {

@@ -16,10 +16,10 @@ const (
 )
 
 type Delivery struct {
-	DeliveryID         int64
-	SCNMessageID       int64
-	ReceiverUserID     int64
-	ReceiverClientID   int64
+	DeliveryID         DeliveryID
+	SCNMessageID       SCNMessageID
+	ReceiverUserID     UserID
+	ReceiverClientID   ClientID
 	TimestampCreated   time.Time
 	TimestampFinalized *time.Time
 	Status             DeliveryStatus
@@ -48,10 +48,10 @@ func (d Delivery) MaxRetryCount() int {
 }
 
 type DeliveryJSON struct {
-	DeliveryID         int64          `json:"delivery_id"`
-	SCNMessageID       int64          `json:"scn_message_id"`
-	ReceiverUserID     int64          `json:"receiver_user_id"`
-	ReceiverClientID   int64          `json:"receiver_client_id"`
+	DeliveryID         DeliveryID     `json:"delivery_id"`
+	SCNMessageID       SCNMessageID   `json:"scn_message_id"`
+	ReceiverUserID     UserID         `json:"receiver_user_id"`
+	ReceiverClientID   ClientID       `json:"receiver_client_id"`
 	TimestampCreated   string         `json:"timestamp_created"`
 	TimestampFinalized *string        `json:"tiestamp_finalized"`
 	Status             DeliveryStatus `json:"status"`
@@ -61,10 +61,10 @@ type DeliveryJSON struct {
 }
 
 type DeliveryDB struct {
-	DeliveryID         int64          `db:"delivery_id"`
-	SCNMessageID       int64          `db:"scn_message_id"`
-	ReceiverUserID     int64          `db:"receiver_user_id"`
-	ReceiverClientID   int64          `db:"receiver_client_id"`
+	DeliveryID         DeliveryID     `db:"delivery_id"`
+	SCNMessageID       SCNMessageID   `db:"scn_message_id"`
+	ReceiverUserID     UserID         `db:"receiver_user_id"`
+	ReceiverClientID   ClientID       `db:"receiver_client_id"`
 	TimestampCreated   int64          `db:"timestamp_created"`
 	TimestampFinalized *int64         `db:"tiestamp_finalized"`
 	Status             DeliveryStatus `db:"status"`
