@@ -22,7 +22,6 @@ func (j jsonHTTPResponse) Write(g *gin.Context) {
 
 type emptyHTTPResponse struct {
 	statusCode int
-	data       any
 }
 
 func (j emptyHTTPResponse) Write(g *gin.Context) {
@@ -48,15 +47,6 @@ func (j dataHTTPResponse) Write(g *gin.Context) {
 	g.Data(j.statusCode, j.contentType, j.data)
 }
 
-type errHTTPResponse struct {
-	statusCode int
-	data       any
-}
-
-func (j errHTTPResponse) Write(g *gin.Context) {
-	g.JSON(j.statusCode, j.data)
-}
-
 func Status(sc int) HTTPResponse {
 	return &emptyHTTPResponse{statusCode: sc}
 }
@@ -74,21 +64,25 @@ func Text(sc int, data string) HTTPResponse {
 }
 
 func InternalError(e error) HTTPResponse {
-	return &errHTTPResponse{statusCode: http.StatusInternalServerError, data: apiError{Success: false, Error: int(apierr.INTERNAL_EXCEPTION), Message: e.Error()}}
+	return &jsonHTTPResponse{statusCode: http.StatusInternalServerError, data: apiError{Success: false, Error: int(apierr.INTERNAL_EXCEPTION), Message: e.Error()}}
 }
 
 func InternAPIError(status int, errorid apierr.APIError, msg string, e error) HTTPResponse {
 	if scn.Conf.ReturnRawErrors {
-		return &errHTTPResponse{statusCode: status, data: apiError{Success: false, Error: int(errorid), Message: msg, RawError: e}}
+		return &jsonHTTPResponse{statusCode: status, data: apiError{Success: false, Error: int(errorid), Message: msg, RawError: e}}
 	} else {
-		return &errHTTPResponse{statusCode: status, data: apiError{Success: false, Error: int(errorid), Message: msg}}
+		return &jsonHTTPResponse{statusCode: status, data: apiError{Success: false, Error: int(errorid), Message: msg}}
 	}
 }
 
+func CompatAPIError(errid int, msg string) HTTPResponse {
+	return &jsonHTTPResponse{statusCode: 200, data: compatAPIError{Success: false, ErrorID: errid, Message: msg}}
+}
+
 func SendAPIError(status int, errorid apierr.APIError, highlight int, msg string) HTTPResponse {
-	return &errHTTPResponse{statusCode: status, data: apiError{Success: false, Error: int(errorid), ErrorHighlight: highlight, Message: msg}}
+	return &jsonHTTPResponse{statusCode: status, data: apiError{Success: false, Error: int(errorid), ErrorHighlight: highlight, Message: msg}}
 }
 
 func NotImplemented() HTTPResponse {
-	return &errHTTPResponse{statusCode: http.StatusInternalServerError, data: apiError{Success: false, Error: -1, ErrorHighlight: 0, Message: "Not Implemented"}}
+	return &jsonHTTPResponse{statusCode: http.StatusInternalServerError, data: apiError{Success: false, Error: -1, ErrorHighlight: 0, Message: "Not Implemented"}}
 }

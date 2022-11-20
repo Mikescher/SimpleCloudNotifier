@@ -12,6 +12,15 @@ definitions:
       success:
         type: boolean
     type: object
+  ginresp.compatAPIError:
+    properties:
+      errid:
+        type: integer
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
   handler.Ack.response:
     properties:
       message:
@@ -21,7 +30,7 @@ definitions:
       prev_ack:
         type: integer
       success:
-        type: string
+        type: boolean
     type: object
   handler.AddClient.body:
     properties:
@@ -70,11 +79,11 @@ definitions:
   handler.Expand.response:
     properties:
       data:
-        $ref: '#/definitions/models.ShortCompatMessage'
+        $ref: '#/definitions/models.CompatMessage'
       message:
         type: string
       success:
-        type: string
+        type: boolean
     type: object
   handler.Health.response:
     properties:
@@ -86,19 +95,19 @@ definitions:
       fcm_token_set:
         type: boolean
       is_pro:
-        type: string
+        type: integer
       message:
         type: string
       quota:
-        type: string
+        type: integer
       quota_max:
-        type: string
+        type: integer
       success:
-        type: string
+        type: boolean
       unack_count:
         type: integer
       user_id:
-        type: string
+        type: integer
       user_key:
         type: string
     type: object
@@ -165,7 +174,7 @@ definitions:
       success:
         type: boolean
       user_id:
-        type: string
+        type: integer
       user_key:
         type: string
     type: object
@@ -180,7 +189,7 @@ definitions:
       message:
         type: string
       success:
-        type: string
+        type: boolean
     type: object
   handler.SendMessage.body:
     properties:
@@ -229,17 +238,17 @@ definitions:
   handler.Update.response:
     properties:
       is_pro:
-        type: string
+        type: integer
       message:
         type: string
       quota:
-        type: string
+        type: integer
       quota_max:
-        type: string
+        type: integer
       success:
-        type: string
+        type: boolean
       user_id:
-        type: string
+        type: integer
       user_key:
         type: string
     type: object
@@ -252,12 +261,18 @@ definitions:
     type: object
   handler.Upgrade.response:
     properties:
-      data:
-        $ref: '#/definitions/models.ShortCompatMessage'
+      is_pro:
+        type: boolean
       message:
         type: string
+      quota:
+        type: integer
+      quota_max:
+        type: integer
       success:
-        type: string
+        type: boolean
+      user_id:
+        type: integer
     type: object
   handler.pingResponse:
     properties:
@@ -326,11 +341,13 @@ definitions:
       priority:
         type: integer
       scn_msg_id:
-        type: string
+        type: integer
       timestamp:
         type: integer
       title:
         type: string
+      trimmed:
+        type: boolean
       usr_msg_id:
         type: string
     type: object
@@ -357,23 +374,6 @@ definitions:
       trimmed:
         type: boolean
       usr_message_id:
-        type: string
-    type: object
-  models.ShortCompatMessage:
-    properties:
-      body:
-        type: string
-      priority:
-        type: integer
-      scn_msg_id:
-        type: string
-      timestamp:
-        type: integer
-      title:
-        type: string
-      trimmed:
-        type: boolean
-      usr_msg_id:
         type: string
     type: object
   models.SubscriptionJSON:
@@ -1076,6 +1076,7 @@ paths:
       summary: Update a subscription (e.g. confirm)
   /api/ack.php:
     get:
+      deprecated: true
       operationId: compat-ack
       parameters:
       - description: the user_id
@@ -1097,27 +1098,21 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.Ack.response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
+            $ref: '#/definitions/ginresp.compatAPIError'
       summary: Acknowledge that a message was received
   /api/expand.php:
     get:
+      deprecated: true
       operationId: compat-expand
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.Expand.response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
+            $ref: '#/definitions/ginresp.compatAPIError'
       summary: Get a whole (potentially truncated) message
   /api/info.php:
     get:
+      deprecated: true
       operationId: compat-info
       parameters:
       - description: the user_id
@@ -1134,14 +1129,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.Info.response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
+            $ref: '#/definitions/ginresp.compatAPIError'
       summary: Get information about the current user
   /api/register.php:
     get:
+      deprecated: true
       operationId: compat-register
       parameters:
       - description: the (android) fcm token
@@ -1166,14 +1158,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.Register.response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
+            $ref: '#/definitions/ginresp.compatAPIError'
       summary: Register a new account
   /api/requery.php:
     get:
+      deprecated: true
       operationId: compat-requery
       parameters:
       - description: the user_id
@@ -1190,14 +1179,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.Requery.response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
+            $ref: '#/definitions/ginresp.compatAPIError'
       summary: Return all not-acknowledged messages
   /api/update.php:
     get:
+      deprecated: true
       operationId: compat-update
       parameters:
       - description: the user_id
@@ -1219,14 +1205,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.Update.response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
+            $ref: '#/definitions/ginresp.compatAPIError'
       summary: Set the fcm-token (android)
   /api/upgrade.php:
     get:
+      deprecated: true
       operationId: compat-upgrade
       parameters:
       - description: the user_id
@@ -1256,11 +1239,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.Upgrade.response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
+            $ref: '#/definitions/ginresp.compatAPIError'
       summary: Upgrade a free account to a paid account
   /db-test:
     get:

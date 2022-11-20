@@ -7,3 +7,9 @@ type apiError struct {
 	Message        string `json:"message"`
 	RawError       error  `json:"errorObject,omitempty"`
 }
+
+type compatAPIError struct {
+	Success bool   `json:"success"`
+	ErrorID int    `json:"errid,omitempty"`
+	Message string `json:"message"`
+}

@@ -983,6 +983,7 @@
             "get": {
                 "summary": "Acknowledge that a message was received",
                 "operationId": "compat-ack",
+                "deprecated": true,
                 "parameters": [
                     {
                         "type": "string",
@@ -1010,13 +1011,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.Ack.response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
+                            "$ref": "#/definitions/ginresp.compatAPIError"
                         }
                     }
                 }
@@ -1026,17 +1021,12 @@
             "get": {
                 "summary": "Get a whole (potentially truncated) message",
                 "operationId": "compat-expand",
+                "deprecated": true,
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.Expand.response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
+                            "$ref": "#/definitions/ginresp.compatAPIError"
                         }
                     }
                 }
@@ -1046,6 +1036,7 @@
             "get": {
                 "summary": "Get information about the current user",
                 "operationId": "compat-info",
+                "deprecated": true,
                 "parameters": [
                     {
                         "type": "string",
@@ -1066,13 +1057,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.Info.response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
+                            "$ref": "#/definitions/ginresp.compatAPIError"
                         }
                     }
                 }
@@ -1082,6 +1067,7 @@
             "get": {
                 "summary": "Register a new account",
                 "operationId": "compat-register",
+                "deprecated": true,
                 "parameters": [
                     {
                         "type": "string",
@@ -1113,13 +1099,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.Register.response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
+                            "$ref": "#/definitions/ginresp.compatAPIError"
                         }
                     }
                 }
@@ -1129,6 +1109,7 @@
             "get": {
                 "summary": "Return all not-acknowledged messages",
                 "operationId": "compat-requery",
+                "deprecated": true,
                 "parameters": [
                     {
                         "type": "string",
@@ -1149,13 +1130,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.Requery.response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
+                            "$ref": "#/definitions/ginresp.compatAPIError"
                         }
                     }
                 }
@@ -1165,6 +1140,7 @@
             "get": {
                 "summary": "Set the fcm-token (android)",
                 "operationId": "compat-update",
+                "deprecated": true,
                 "parameters": [
                     {
                         "type": "string",
@@ -1192,13 +1168,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.Update.response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
+                            "$ref": "#/definitions/ginresp.compatAPIError"
                         }
                     }
                 }
@@ -1208,6 +1178,7 @@
             "get": {
                 "summary": "Upgrade a free account to a paid account",
                 "operationId": "compat-upgrade",
+                "deprecated": true,
                 "parameters": [
                     {
                         "type": "string",
@@ -1246,13 +1217,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.Upgrade.response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
+                            "$ref": "#/definitions/ginresp.compatAPIError"
                         }
                     }
                 }
@@ -1495,6 +1460,20 @@
                 }
             }
         },
+        "ginresp.compatAPIError": {
+            "type": "object",
+            "properties": {
+                "errid": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "handler.Ack.response": {
             "type": "object",
             "properties": {
@@ -1508,7 +1487,7 @@
                     "type": "integer"
                 },
                 "success": {
-                    "type": "string"
+                    "type": "boolean"
                 }
             }
         },
@@ -1584,13 +1563,13 @@
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/models.ShortCompatMessage"
+                    "$ref": "#/definitions/models.CompatMessage"
                 },
                 "message": {
                     "type": "string"
                 },
                 "success": {
-                    "type": "string"
+                    "type": "boolean"
                 }
             }
         },
@@ -1609,25 +1588,25 @@
                     "type": "boolean"
                 },
                 "is_pro": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "message": {
                     "type": "string"
                 },
                 "quota": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "quota_max": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "success": {
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "unack_count": {
                     "type": "integer"
                 },
                 "user_id": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "user_key": {
                     "type": "string"
@@ -1731,7 +1710,7 @@
                     "type": "boolean"
                 },
                 "user_id": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "user_key": {
                     "type": "string"
@@ -1754,7 +1733,7 @@
                     "type": "string"
                 },
                 "success": {
-                    "type": "string"
+                    "type": "boolean"
                 }
             }
         },
@@ -1829,22 +1808,22 @@
             "type": "object",
             "properties": {
                 "is_pro": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "message": {
                     "type": "string"
                 },
                 "quota": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "quota_max": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "success": {
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "user_id": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "user_key": {
                     "type": "string"
@@ -1865,14 +1844,23 @@
         "handler.Upgrade.response": {
             "type": "object",
             "properties": {
-                "data": {
-                    "$ref": "#/definitions/models.ShortCompatMessage"
+                "is_pro": {
+                    "type": "boolean"
                 },
                 "message": {
                     "type": "string"
                 },
+                "quota": {
+                    "type": "integer"
+                },
+                "quota_max": {
+                    "type": "integer"
+                },
                 "success": {
-                    "type": "string"
+                    "type": "boolean"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -1978,13 +1966,16 @@
                     "type": "integer"
                 },
                 "scn_msg_id": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "timestamp": {
                     "type": "integer"
                 },
                 "title": {
                     "type": "string"
+                },
+                "trimmed": {
+                    "type": "boolean"
                 },
                 "usr_msg_id": {
                     "type": "string"
@@ -2025,32 +2016,6 @@
                     "type": "boolean"
                 },
                 "usr_message_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.ShortCompatMessage": {
-            "type": "object",
-            "properties": {
-                "body": {
-                    "type": "string"
-                },
-                "priority": {
-                    "type": "integer"
-                },
-                "scn_msg_id": {
-                    "type": "string"
-                },
-                "timestamp": {
-                    "type": "integer"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "trimmed": {
-                    "type": "boolean"
-                },
-                "usr_msg_id": {
                     "type": "string"
                 }
             }

@@ -13,3 +13,4 @@
  - Dockerfile
  - php in html
  - full-text-search: https://www.sqlite.org/fts5.html#contentless_tables
+ - route to re-create keys 

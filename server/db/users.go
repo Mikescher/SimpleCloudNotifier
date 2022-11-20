@@ -110,7 +110,9 @@ func (db *Database) UpdateUserUsername(ctx TxContext, userid int64, username *st
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE users SET username = ? WHERE user_id = ?", username, userid)
+	_, err = tx.ExecContext(ctx, "UPDATE users SET username = ? WHERE user_id = ?",
+		username,
+		userid)
 	if err != nil {
 		return err
 	}
@@ -124,7 +126,10 @@ func (db *Database) UpdateUserProToken(ctx TxContext, userid int64, protoken *st
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE users SET pro_token = ? AND is_pro = ? WHERE user_id = ?", protoken, bool2DB(protoken != nil), userid)
+	_, err = tx.ExecContext(ctx, "UPDATE users SET pro_token = ? AND is_pro = ? WHERE user_id = ?",
+		protoken,
+		bool2DB(protoken != nil),
+		userid)
 	if err != nil {
 		return err
 	}
@@ -161,6 +166,24 @@ func (db *Database) UpdateUserLastRead(ctx TxContext, userid int64) error {
 
 	_, err = tx.ExecContext(ctx, "UPDATE users SET timestamp_lastread = ? WHERE user_id = ?",
 		time2DB(time.Now()),
+		userid)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *Database) UpdateUserKeys(ctx TxContext, userid int64, sendKey string, readKey string, adminKey string) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, "UPDATE users SET send_key = ? AND read_key = ? AND admin_key = ? WHERE user_id = ?",
+		sendKey,
+		readKey,
+		adminKey,
 		userid)
 	if err != nil {
 		return err

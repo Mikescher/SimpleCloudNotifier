@@ -52,6 +52,7 @@ func (fb App) SendNotification(ctx context.Context, client models.Client, msg mo
 		Data: map[string]string{
 			"scn_msg_id": strconv.FormatInt(msg.SCNMessageID, 10),
 			"usr_msg_id": langext.Coalesce(msg.UserMessageID, ""),
+			"client_id":  strconv.FormatInt(client.ClientID, 10),
 			"timestamp":  strconv.FormatInt(msg.Timestamp().Unix(), 10),
 			"priority":   strconv.Itoa(msg.Priority),
 			"trimmed":    langext.Conditional(msg.NeedsTrim(), "true", "false"),
