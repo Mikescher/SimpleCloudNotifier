@@ -1,7 +1,4 @@
-FROM alpine:latest
-
-RUN apk update
-RUN apk add --no-cache libc6-compat tzdata ca-certificates sqlite
+FROM debian:bookworm
 
 COPY _build/scn_backend /app/scnserver
 COPY DOCKER_GIT_INFO    /app/DOCKER_GIT_INFO
