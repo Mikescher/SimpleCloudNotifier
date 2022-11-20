@@ -160,7 +160,13 @@ func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 // @Description The body-values are optional, only send the ones you want to update
 // @ID          api-user-update
 //
-// @Param       post_body body     handler.UpdateUser.body false " "
+// @Param       uid       path     int    true  "UserID"
+//
+// @Param       username  body     string false "Change the username (send an empty string to clear it)"
+// @Param       pro_token body     string false "Send a verification of permium purchase"
+// @Param       read_key  body     string false "Send `true` to create a new read_key"
+// @Param       send_key  body     string false "Send `true` to create a new send_key"
+// @Param       admin_key body     string false "Send `true` to create a new admin_key"
 //
 // @Success     200       {object} models.UserJSON
 // @Failure     400       {object} ginresp.apiError
@@ -174,8 +180,11 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 		UserID int64 `uri:"uid"`
 	}
 	type body struct {
-		Username *string `json:"username"`
-		ProToken *string `json:"pro_token"`
+		Username        *string `json:"username"`
+		ProToken        *string `json:"pro_token"`
+		RefreshReadKey  *bool   `json:"read_key"`
+		RefreshSendKey  *bool   `json:"send_key"`
+		RefreshAdminKey *bool   `json:"admin_key"`
 	}
 
 	var u uri
@@ -218,6 +227,33 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 		}
 
 		err = h.database.UpdateUserProToken(ctx, u.UserID, b.ProToken)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update user", err)
+		}
+	}
+
+	if langext.Coalesce(b.RefreshSendKey, false) {
+		newkey := h.app.GenerateRandomAuthKey()
+
+		err := h.database.UpdateUserSendKey(ctx, u.UserID, newkey)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update user", err)
+		}
+	}
+
+	if langext.Coalesce(b.RefreshReadKey, false) {
+		newkey := h.app.GenerateRandomAuthKey()
+
+		err := h.database.UpdateUserReadKey(ctx, u.UserID, newkey)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update user", err)
+		}
+	}
+
+	if langext.Coalesce(b.RefreshAdminKey, false) {
+		newkey := h.app.GenerateRandomAuthKey()
+
+		err := h.database.UpdateUserAdminKey(ctx, u.UserID, newkey)
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update user", err)
 		}
@@ -547,6 +583,80 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, channel.JSON(true)))
+}
+
+// UpdateChannel swaggerdoc
+//
+// @Summary (Partially) update a channel
+// @ID      api-channels-update
+//
+// @Param   uid           path     int    true  "UserID"
+// @Param   cid           path     int    true  "ChannelID"
+//
+// @Param   subscribe_key body     string false "Send `true` to create a new subscribe_key"
+// @Param   send_key      body     string false "Send `true` to create a new send_key"
+//
+// @Success 200           {object} models.ChannelJSON
+// @Failure 400           {object} ginresp.apiError
+// @Failure 401           {object} ginresp.apiError
+// @Failure 404           {object} ginresp.apiError
+// @Failure 500           {object} ginresp.apiError
+//
+// @Router  /api-v2/users/{uid}/channels/{cid} [PATCH]
+func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
+	type uri struct {
+		UserID    int64 `uri:"uid"`
+		ChannelID int64 `uri:"cid"`
+	}
+	type body struct {
+		RefreshSubscribeKey *bool `json:"subscribe_key"`
+		RefreshSendKey      *bool `json:"send_key"`
+	}
+
+	var u uri
+	var b body
+	ctx, errResp := h.app.StartRequest(g, &u, nil, &b, nil)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+		return *permResp
+	}
+
+	_, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID)
+	if err == sql.ErrNoRows {
+		return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
+	}
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
+	}
+
+	if langext.Coalesce(b.RefreshSendKey, false) {
+		newkey := h.app.GenerateRandomAuthKey()
+
+		err := h.database.UpdateChannelSendKey(ctx, u.ChannelID, newkey)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update user", err)
+		}
+	}
+
+	if langext.Coalesce(b.RefreshSubscribeKey, false) {
+		newkey := h.app.GenerateRandomAuthKey()
+
+		err := h.database.UpdateChannelSubscribeKey(ctx, u.ChannelID, newkey)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update user", err)
+		}
+	}
+
+	user, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID)
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query (updated) user", err)
+	}
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, user.JSON(true)))
 }
 
 // ListChannelMessages swaggerdoc

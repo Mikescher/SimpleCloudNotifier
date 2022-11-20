@@ -424,11 +424,50 @@
                 "operationId": "api-user-update",
                 "parameters": [
                     {
-                        "description": " ",
-                        "name": "post_body",
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Change the username (send an empty string to clear it)",
+                        "name": "username",
                         "in": "body",
                         "schema": {
-                            "$ref": "#/definitions/handler.UpdateUser.body"
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Send a verification of permium purchase",
+                        "name": "pro_token",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Send `true` to create a new read_key",
+                        "name": "read_key",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Send `true` to create a new send_key",
+                        "name": "send_key",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Send `true` to create a new admin_key",
+                        "name": "admin_key",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -469,7 +508,7 @@
         "/api-v2/users/{uid}/channels": {
             "get": {
                 "description": "The possible values for 'selector' are:\n- \"owned\" Return all channels of the user\n- \"subscribed\" Return all channels that the user is subscribing to\n- \"all\" Return channels that the user owns or is subscribing\n- \"subscribed_any\" Return all channels that the user is subscribing to (even unconfirmed)\n- \"all_any\" Return channels that the user owns or is subscribing (even unconfirmed)",
-                "summary": "List all channels of a user",
+                "summary": "List channels of a user (subscribed/owned)",
                 "operationId": "api-channels-list",
                 "parameters": [
                     {
@@ -546,6 +585,74 @@
                         "name": "cid",
                         "in": "path",
                         "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ChannelJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "(Partially) update a channel",
+                "operationId": "api-channels-update",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ChannelID",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Send `true` to create a new subscribe_key",
+                        "name": "subscribe_key",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Send `true` to create a new send_key",
+                        "name": "send_key",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
@@ -2283,17 +2390,6 @@
                 }
             }
         },
-        "handler.UpdateUser.body": {
-            "type": "object",
-            "properties": {
-                "pro_token": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
         "handler.Upgrade.response": {
             "type": "object",
             "properties": {
@@ -2403,6 +2499,10 @@
                 },
                 "owner_user_id": {
                     "type": "integer"
+                },
+                "send_key": {
+                    "description": "can be nil, depending on endpoint",
+                    "type": "string"
                 },
                 "subscribe_key": {
                     "description": "can be nil, depending on endpoint",

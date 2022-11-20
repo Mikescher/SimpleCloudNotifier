@@ -167,3 +167,35 @@ func (db *Database) IncChannelMessageCounter(ctx TxContext, channel models.Chann
 
 	return nil
 }
+
+func (db *Database) UpdateChannelSendKey(ctx TxContext, channelid int64, newkey string) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, "UPDATE channels SET send_key = ? WHERE channel_id = ?",
+		newkey,
+		channelid)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *Database) UpdateChannelSubscribeKey(ctx TxContext, channelid int64, newkey string) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, "UPDATE channels SET subscribe_key = ? WHERE channel_id = ?",
+		newkey,
+		channelid)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

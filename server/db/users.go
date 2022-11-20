@@ -191,3 +191,51 @@ func (db *Database) UpdateUserKeys(ctx TxContext, userid int64, sendKey string, 
 
 	return nil
 }
+
+func (db *Database) UpdateUserSendKey(ctx TxContext, userid int64, newkey string) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, "UPDATE users SET send_key = ? WHERE user_id = ?",
+		newkey,
+		userid)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *Database) UpdateUserReadKey(ctx TxContext, userid int64, newkey string) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, "UPDATE users SET read_key = ? WHERE user_id = ?",
+		newkey,
+		userid)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *Database) UpdateUserAdminKey(ctx TxContext, userid int64, newkey string) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, "UPDATE users SET admin_key = ? WHERE user_id = ?",
+		newkey,
+		userid)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

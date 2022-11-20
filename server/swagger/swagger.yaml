@@ -245,13 +245,6 @@ definitions:
       user_key:
         type: string
     type: object
-  handler.UpdateUser.body:
-    properties:
-      pro_token:
-        type: string
-      username:
-        type: string
-    type: object
   handler.Upgrade.response:
     properties:
       is_pro:
@@ -324,6 +317,9 @@ definitions:
         type: string
       owner_user_id:
         type: integer
+      send_key:
+        description: can be nil, depending on endpoint
+        type: string
       subscribe_key:
         description: can be nil, depending on endpoint
         type: string
@@ -715,11 +711,36 @@ paths:
       description: The body-values are optional, only send the ones you want to update
       operationId: api-user-update
       parameters:
-      - description: ' '
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: Change the username (send an empty string to clear it)
         in: body
-        name: post_body
+        name: username
         schema:
-          $ref: '#/definitions/handler.UpdateUser.body'
+          type: string
+      - description: Send a verification of permium purchase
+        in: body
+        name: pro_token
+        schema:
+          type: string
+      - description: Send `true` to create a new read_key
+        in: body
+        name: read_key
+        schema:
+          type: string
+      - description: Send `true` to create a new send_key
+        in: body
+        name: send_key
+        schema:
+          type: string
+      - description: Send `true` to create a new admin_key
+        in: body
+        name: admin_key
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -790,7 +811,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/ginresp.apiError'
-      summary: List all channels of a user
+      summary: List channels of a user (subscribed/owned)
   /api-v2/users/{uid}/channels/{cid}:
     get:
       operationId: api-channels-get
@@ -827,6 +848,51 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: List all channels of a user
+    patch:
+      operationId: api-channels-update
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: ChannelID
+        in: path
+        name: cid
+        required: true
+        type: integer
+      - description: Send `true` to create a new subscribe_key
+        in: body
+        name: subscribe_key
+        schema:
+          type: string
+      - description: Send `true` to create a new send_key
+        in: body
+        name: send_key
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ChannelJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: (Partially) update a channel
   /api-v2/users/{uid}/channels/{cid}/messages:
     get:
       description: |-
