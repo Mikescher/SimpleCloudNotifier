@@ -29,6 +29,7 @@ type Application struct {
 	Database       *db.Database
 	Firebase       *firebase.App
 	DefaultChannel string
+	Jobs           []Job
 }
 
 func NewApp(db *db.Database) *Application {
@@ -38,10 +39,11 @@ func NewApp(db *db.Database) *Application {
 	}
 }
 
-func (app *Application) Init(cfg scn.Config, g *gin.Engine, fb *firebase.App) {
+func (app *Application) Init(cfg scn.Config, g *gin.Engine, fb *firebase.App, jobs []Job) {
 	app.Config = cfg
 	app.Gin = g
 	app.Firebase = fb
+	app.Jobs = jobs
 }
 
 func (app *Application) Run() {
@@ -59,22 +61,33 @@ func (app *Application) Run() {
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+	for _, job := range app.Jobs {
+		job.Start()
+	}
+
 	select {
 	case <-stop:
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
+
 		log.Info().Msg("Stopping HTTP-Server")
+
 		err := httpserver.Shutdown(ctx)
+
 		if err != nil {
 			log.Info().Err(err).Msg("Error while stopping the http-server")
-			return
+		} else {
+			log.Info().Msg("Stopped HTTP-Server")
 		}
-		log.Info().Msg("Stopped HTTP-Server")
 
 	case err := <-errChan:
 		log.Error().Err(err).Msg("HTTP-Server failed")
 	}
 
+	for _, job := range app.Jobs {
+		job.Start()
+	}
 }
 
 func (app *Application) GenerateRandomAuthKey() string {
@@ -145,6 +158,11 @@ func (app *Application) StartRequest(g *gin.Context, uri any, query any, body an
 	actx.permissions = perm
 
 	return actx, nil
+}
+
+func (app *Application) NewSimpleTransactionContext(timeout time.Duration) *SimpleContext {
+	ictx, cancel := context.WithTimeout(context.Background(), timeout)
+	return CreateSimpleContext(ictx, cancel)
 }
 
 func (app *Application) getPermissions(ctx *AppContext, hdr string) (PermissionSet, error) {
@@ -221,4 +239,16 @@ func (app *Application) NormalizeUsername(v string) string {
 	v = rex.ReplaceAllString(v, "")
 
 	return v
+}
+
+func (app *Application) DeliverMessage(ctx context.Context, client models.Client, msg models.Message) (*string, error) {
+	if client.FCMToken != nil {
+		fcmDelivID, err := app.Firebase.SendNotification(ctx, client, msg)
+		if err != nil {
+			return nil, err
+		}
+		return langext.Ptr(fcmDelivID), nil
+	} else {
+		return langext.Ptr(""), nil
+	}
 }

@@ -3,9 +3,8 @@
 //TODO
 
 
- - background job for re-delivery
  - POST::/messages
- - https://firebase.google.com/docs/cloud-messaging/send-message#rest
+ - https://firebase.google.com/docs/cloud-messaging/send-message#rest  !!
  - List subscriptions on all owned channels (RESTful?)
  - deploy
  - full-text-search: https://www.sqlite.org/fts5.html#contentless_tables

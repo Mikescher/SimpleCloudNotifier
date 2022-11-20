@@ -1110,6 +1110,11 @@ func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to delete message", err)
 	}
 
+	err = h.database.CancelPendingDeliveries(ctx, msg.SCNMessageID)
+	if err != nil {
+		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to cancel deliveries", err)
+	}
+
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, msg.FullJSON()))
 }
 

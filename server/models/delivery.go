@@ -43,6 +43,10 @@ func (d Delivery) JSON() DeliveryJSON {
 	}
 }
 
+func (d Delivery) MaxRetryCount() int {
+	return 5
+}
+
 type DeliveryJSON struct {
 	DeliveryID         int64          `json:"delivery_id"`
 	SCNMessageID       int64          `json:"scn_message_id"`

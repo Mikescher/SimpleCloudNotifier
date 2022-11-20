@@ -5,7 +5,6 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/logic"
-	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -277,7 +276,7 @@ func (h MessageHandler) sendMessageInternal(ctx *logic.AppContext, UserID *int64
 
 		for _, client := range clients {
 
-			fcmDelivID, err := h.deliverMessage(ctx, client, msg)
+			fcmDelivID, err := h.app.DeliverMessage(ctx, client, msg)
 			if err != nil {
 				_, err = h.database.CreateRetryDelivery(ctx, client, msg)
 				if err != nil {
@@ -305,16 +304,4 @@ func (h MessageHandler) sendMessageInternal(ctx *logic.AppContext, UserID *int64
 		QuotaMax:       user.QuotaPerDay(),
 		SCNMessageID:   msg.SCNMessageID,
 	}))
-}
-
-func (h MessageHandler) deliverMessage(ctx *logic.AppContext, client models.Client, msg models.Message) (*string, error) {
-	if client.FCMToken != nil {
-		fcmDelivID, err := h.app.Firebase.SendNotification(ctx, client, msg)
-		if err != nil {
-			return nil, err
-		}
-		return langext.Ptr(fcmDelivID), nil
-	} else {
-		return langext.Ptr(""), nil
-	}
 }
