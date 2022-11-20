@@ -18,12 +18,22 @@ type Config struct {
 
 var Conf Config
 
-var configLoc = Config{
-	Namespace:       "local",
+var configLocHost = Config{
+	Namespace:       "local-host",
 	GinDebug:        true,
 	ServerIP:        "0.0.0.0",
 	ServerPort:      "8080",
 	DBFile:          ".run-data/db.sqlite3",
+	RequestTimeout:  16 * time.Second,
+	ReturnRawErrors: true,
+}
+
+var configLocDocker = Config{
+	Namespace:       "local-docker",
+	GinDebug:        true,
+	ServerIP:        "0.0.0.0",
+	ServerPort:      "80",
+	DBFile:          "/data/scn_docker.sqlite3",
 	RequestTimeout:  16 * time.Second,
 	ReturnRawErrors: true,
 }
@@ -59,7 +69,8 @@ var configProd = Config{
 }
 
 var allConfig = []Config{
-	configLoc,
+	configLocHost,
+	configLocDocker,
 	configDev,
 	configStag,
 	configProd,
@@ -67,7 +78,7 @@ var allConfig = []Config{
 
 func getConfig(ns string) (Config, bool) {
 	if ns == "" {
-		return configLoc, true
+		return configLocHost, true
 	}
 	for _, c := range allConfig {
 		if c.Namespace == ns {

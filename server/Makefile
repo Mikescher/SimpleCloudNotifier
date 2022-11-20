@@ -7,13 +7,13 @@ HASH=$(shell git rev-parse HEAD)
 
 build:
 	rm -f ./_build/scn_backend
-	go build -v -o _build/scn_backend ./cmd/scnserver
+	CGO_ENABLED=1 go build -v -ldflags "-linkmode external -extldflags -static" -o _build/scn_backend ./cmd/scnserver
 
 run: build
 	mkdir -p .run-data
 	_build/scn_backend
 
-build-docker:
+docker:
 	[ ! -f "DOCKER_GIT_INFO" ] || rm DOCKER_GIT_INFO
 	git rev-parse --abbrev-ref HEAD    >> DOCKER_GIT_INFO
 	git rev-parse              HEAD    >> DOCKER_GIT_INFO
@@ -37,9 +37,9 @@ run-docker-local:
 	mkdir -p .run-data
 	docker run --rm \
 	           --init \
-	           --env "CONF_NS=local" \
+	           --env "CONF_NS=local-docker" \
 			   --volume "$(shell pwd)/.run-data/docker-local:/data" \
-			   --network host \
+			   --publish "8080:80" \
 			   $(DOCKER_NAME):latest
 
 inspect-docker:
