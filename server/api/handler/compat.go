@@ -29,17 +29,24 @@ func NewCompatHandler(app *logic.Application) CompatHandler {
 // @Summary Register a new account
 // @ID      compat-register
 // @Deprecated
+//
 // @Param   fcm_token query    string true "the (android) fcm token"
 // @Param   pro       query    string true "if the user is a paid account" Enums(true, false)
 // @Param   pro_token query    string true "the (android) IAP token"
+//
+// @Param   fcm_token formData string true "the (android) fcm token"
+// @Param   pro       formData string true "if the user is a paid account" Enums(true, false)
+// @Param   pro_token formData string true "the (android) IAP token"
+//
 // @Success 200       {object} handler.Register.response
 // @Failure 200       {object} ginresp.compatAPIError
+//
 // @Router  /api/register.php [get]
 func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
-		FCMToken *string `form:"fcm_token" json:"fcm_token"`
-		Pro      *string `form:"pro" json:"pro"`
-		ProToken *string `form:"pro_token" json:"pro_token"`
+		FCMToken *string `form:"fcm_token"`
+		Pro      *string `form:"pro"`
+		ProToken *string `form:"pro_token"`
 	}
 	type response struct {
 		Success   bool   `json:"success"`
@@ -53,7 +60,7 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb, nil)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb)
 	if errResp != nil {
 		return *errResp
 	}
@@ -128,10 +135,16 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 // @Summary Get information about the current user
 // @ID      compat-info
 // @Deprecated
+//
 // @Param   user_id  query    string true "the user_id"
 // @Param   user_key query    string true "the user_key"
+//
+// @Param   user_id  formData string true "the user_id"
+// @Param   user_key formData string true "the user_key"
+//
 // @Success 200      {object} handler.Info.response
 // @Failure 200      {object} ginresp.compatAPIError
+//
 // @Router  /api/info.php [get]
 func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
@@ -152,7 +165,7 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb, nil)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb)
 	if errResp != nil {
 		return *errResp
 	}
@@ -204,11 +217,18 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 // @Summary Acknowledge that a message was received
 // @ID      compat-ack
 // @Deprecated
+//
 // @Param   user_id    query    string true "the user_id"
 // @Param   user_key   query    string true "the user_key"
 // @Param   scn_msg_id query    string true "the message id"
+//
+// @Param   user_id    formData string true "the user_id"
+// @Param   user_key   formData string true "the user_key"
+// @Param   scn_msg_id formData string true "the message id"
+//
 // @Success 200        {object} handler.Ack.response
 // @Failure 200        {object} ginresp.compatAPIError
+//
 // @Router  /api/ack.php [get]
 func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
@@ -225,7 +245,7 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb, nil)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb)
 	if errResp != nil {
 		return *errResp
 	}
@@ -268,10 +288,16 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 // @Summary Return all not-acknowledged messages
 // @ID      compat-requery
 // @Deprecated
+//
 // @Param   user_id  query    string true "the user_id"
 // @Param   user_key query    string true "the user_key"
+//
+// @Param   user_id  formData string true "the user_id"
+// @Param   user_key formData string true "the user_key"
+//
 // @Success 200      {object} handler.Requery.response
 // @Failure 200      {object} ginresp.compatAPIError
+//
 // @Router  /api/requery.php [get]
 func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
@@ -287,7 +313,7 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb, nil)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb)
 	if errResp != nil {
 		return *errResp
 	}
@@ -327,11 +353,18 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 // @Summary Set the fcm-token (android)
 // @ID      compat-update
 // @Deprecated
+//
 // @Param   user_id   query    string true "the user_id"
 // @Param   user_key  query    string true "the user_key"
 // @Param   fcm_token query    string true "the (android) fcm token"
+//
+// @Param   user_id   formData string true "the user_id"
+// @Param   user_key  formData string true "the user_key"
+// @Param   fcm_token formData string true "the (android) fcm token"
+//
 // @Success 200       {object} handler.Update.response
 // @Failure 200       {object} ginresp.compatAPIError
+//
 // @Router  /api/update.php [get]
 func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
@@ -351,7 +384,7 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb, nil)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb)
 	if errResp != nil {
 		return *errResp
 	}
@@ -431,8 +464,18 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 // @Summary Get a whole (potentially truncated) message
 // @ID      compat-expand
 // @Deprecated
-// @Success 200 {object} handler.Expand.response
-// @Failure 200 {object} ginresp.compatAPIError
+//
+// @Param   user_id    query    string true "The user_id"
+// @Param   user_key   query    string true "The user_key"
+// @Param   scn_msg_id query    string true "The message-id"
+//
+// @Param   user_id    formData string true "The user_id"
+// @Param   user_key   formData string true "The user_key"
+// @Param   scn_msg_id formData string true "The message-id"
+//
+// @Success 200        {object} handler.Expand.response
+// @Failure 200        {object} ginresp.compatAPIError
+//
 // @Router  /api/expand.php [get]
 func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
@@ -448,7 +491,7 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb, nil)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb)
 	if errResp != nil {
 		return *errResp
 	}
@@ -505,14 +548,22 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Summary Upgrade a free account to a paid account
 // @ID      compat-upgrade
+// @Deprecated
+//
 // @Param   user_id   query    string true "the user_id"
 // @Param   user_key  query    string true "the user_key"
 // @Param   pro       query    string true "if the user is a paid account" Enums(true, false)
 // @Param   pro_token query    string true "the (android) IAP token"
+//
+// @Param   user_id   formData string true "the user_id"
+// @Param   user_key  formData string true "the user_key"
+// @Param   pro       formData string true "if the user is a paid account" Enums(true, false)
+// @Param   pro_token formData string true "the (android) IAP token"
+//
 // @Success 200       {object} handler.Upgrade.response
 // @Failure 200       {object} ginresp.compatAPIError
+//
 // @Router  /api/upgrade.php [get]
-// @Deprecated
 func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
 		UserID   *int64  `form:"user_id"`
@@ -531,7 +582,7 @@ func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb, nil)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb)
 	if errResp != nil {
 		return *errResp
 	}

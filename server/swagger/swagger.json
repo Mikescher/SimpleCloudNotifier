@@ -1005,6 +1005,27 @@
                         "name": "scn_msg_id",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the message id",
+                        "name": "scn_msg_id",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1022,6 +1043,50 @@
                 "summary": "Get a whole (potentially truncated) message",
                 "operationId": "compat-expand",
                 "deprecated": true,
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The user_id",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The user_key",
+                        "name": "user_key",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The message-id",
+                        "name": "scn_msg_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The user_id",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The user_key",
+                        "name": "user_key",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The message-id",
+                        "name": "scn_msg_id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1050,6 +1115,20 @@
                         "description": "the user_key",
                         "name": "user_key",
                         "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "formData",
                         "required": true
                     }
                 ],
@@ -1093,6 +1172,31 @@
                         "name": "pro_token",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the (android) fcm token",
+                        "name": "fcm_token",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "true",
+                            "false"
+                        ],
+                        "type": "string",
+                        "description": "if the user is a paid account",
+                        "name": "pro",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the (android) IAP token",
+                        "name": "pro_token",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1123,6 +1227,20 @@
                         "description": "the user_key",
                         "name": "user_key",
                         "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "formData",
                         "required": true
                     }
                 ],
@@ -1161,6 +1279,27 @@
                         "description": "the (android) fcm token",
                         "name": "fcm_token",
                         "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the (android) fcm token",
+                        "name": "fcm_token",
+                        "in": "formData",
                         "required": true
                     }
                 ],
@@ -1210,6 +1349,38 @@
                         "description": "the (android) IAP token",
                         "name": "pro_token",
                         "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "true",
+                            "false"
+                        ],
+                        "type": "string",
+                        "description": "if the user is a paid account",
+                        "name": "pro",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the (android) IAP token",
+                        "name": "pro_token",
+                        "in": "formData",
                         "required": true
                     }
                 ],
@@ -1448,16 +1619,6 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "name": "chanKey",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "channel",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
                         "name": "content",
                         "in": "query"
                     },
@@ -1490,16 +1651,6 @@
                         "type": "string",
                         "name": "userMessageID",
                         "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "chanKey",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "name": "channel",
-                        "in": "formData"
                     },
                     {
                         "type": "string",
