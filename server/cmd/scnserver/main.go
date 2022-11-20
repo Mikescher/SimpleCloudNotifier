@@ -28,18 +28,23 @@ func main() {
 	app := logic.NewApp(sqlite)
 
 	if err := app.Migrate(); err != nil {
-		panic(err)
+		log.Fatal().Err(err).Msg("failed to migrate DB")
+		return
 	}
 
 	ginengine := ginext.NewEngine(conf)
 
 	router := api.NewRouter(app)
 
-	fb := firebase.NewFirebaseApp()
+	fb, err := firebase.NewFirebase(conf)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to init firebase")
+		return
+	}
 
 	jobRetry := jobs.NewDeliveryRetryJob(app)
 
-	app.Init(conf, ginengine, &fb, []logic.Job{jobRetry})
+	app.Init(conf, ginengine, fb, []logic.Job{jobRetry})
 
 	router.Init(ginengine)
 

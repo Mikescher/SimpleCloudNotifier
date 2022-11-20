@@ -27,7 +27,7 @@ type Application struct {
 	Config         scn.Config
 	Gin            *gin.Engine
 	Database       *db.Database
-	Firebase       *firebase.App
+	Firebase       *firebase.FBConnector
 	DefaultChannel string
 	Jobs           []Job
 }
@@ -39,7 +39,7 @@ func NewApp(db *db.Database) *Application {
 	}
 }
 
-func (app *Application) Init(cfg scn.Config, g *gin.Engine, fb *firebase.App, jobs []Job) {
+func (app *Application) Init(cfg scn.Config, g *gin.Engine, fb *firebase.FBConnector, jobs []Job) {
 	app.Config = cfg
 	app.Gin = g
 	app.Firebase = fb
@@ -122,37 +122,37 @@ func (app *Application) StartRequest(g *gin.Context, uri any, query any, body an
 
 	if uri != nil {
 		if err := g.ShouldBindUri(uri); err != nil {
-			return nil, langext.Ptr(ginresp.InternAPIError(400, apierr.BINDFAIL_URI_PARAM, "Failed to read uri", err))
+			return nil, langext.Ptr(ginresp.InternAPIError(g, 400, apierr.BINDFAIL_URI_PARAM, "Failed to read uri", err))
 		}
 	}
 
 	if query != nil {
 		if err := g.ShouldBindQuery(query); err != nil {
-			return nil, langext.Ptr(ginresp.InternAPIError(400, apierr.BINDFAIL_QUERY_PARAM, "Failed to read query", err))
+			return nil, langext.Ptr(ginresp.InternAPIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Failed to read query", err))
 		}
 	}
 
-	if body != nil {
+	if body != nil && g.Request.Header.Get("Content-Type") == "application/javascript" {
 		if err := g.ShouldBindJSON(body); err != nil {
-			return nil, langext.Ptr(ginresp.InternAPIError(400, apierr.BINDFAIL_BODY_PARAM, "Failed to read body", err))
+			return nil, langext.Ptr(ginresp.InternAPIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Failed to read body", err))
 		}
 	}
 
-	if form != nil {
+	if form != nil && g.Request.Header.Get("Content-Type") == "multipart/form-data" {
 		if err := g.ShouldBindWith(form, binding.Form); err != nil {
-			return nil, langext.Ptr(ginresp.InternAPIError(400, apierr.BINDFAIL_BODY_PARAM, "Failed to read multipart-form", err))
+			return nil, langext.Ptr(ginresp.InternAPIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Failed to read multipart-form", err))
 		}
 	}
 
 	ictx, cancel := context.WithTimeout(context.Background(), app.Config.RequestTimeout)
-	actx := CreateAppContext(ictx, cancel)
+	actx := CreateAppContext(g, ictx, cancel)
 
 	authheader := g.GetHeader("Authorization")
 
 	perm, err := app.getPermissions(actx, authheader)
 	if err != nil {
 		cancel()
-		return nil, langext.Ptr(ginresp.InternAPIError(400, apierr.PERM_QUERY_FAIL, "Failed to determine permissions", err))
+		return nil, langext.Ptr(ginresp.InternAPIError(g, 400, apierr.PERM_QUERY_FAIL, "Failed to determine permissions", err))
 	}
 
 	actx.permissions = perm
@@ -245,6 +245,7 @@ func (app *Application) DeliverMessage(ctx context.Context, client models.Client
 	if client.FCMToken != nil {
 		fcmDelivID, err := app.Firebase.SendNotification(ctx, client, msg)
 		if err != nil {
+			log.Warn().Int64("SCNMessageID", msg.SCNMessageID).Int64("ClientID", client.ClientID).Err(err).Msg("FCM Delivery failed")
 			return nil, err
 		}
 		return langext.Ptr(fcmDelivID), nil

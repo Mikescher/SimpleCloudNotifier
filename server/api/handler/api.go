@@ -61,17 +61,17 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 	} else if b.ClientType == string(models.ClientTypeIOS) {
 		clientType = models.ClientTypeIOS
 	} else {
-		return ginresp.InternAPIError(400, apierr.INVALID_CLIENTTYPE, "Invalid ClientType", nil)
+		return ginresp.InternAPIError(g, 400, apierr.INVALID_CLIENTTYPE, "Invalid ClientType", nil)
 	}
 
 	if b.ProToken != nil {
 		ptok, err := h.app.VerifyProToken(*b.ProToken)
 		if err != nil {
-			return ginresp.InternAPIError(500, apierr.FAILED_VERIFY_PRO_TOKEN, "Failed to query purchase status", err)
+			return ginresp.InternAPIError(g, 500, apierr.FAILED_VERIFY_PRO_TOKEN, "Failed to query purchase status", err)
 		}
 
 		if !ptok {
-			return ginresp.InternAPIError(400, apierr.INVALID_PRO_TOKEN, "Purchase token could not be verified", nil)
+			return ginresp.InternAPIError(g, 400, apierr.INVALID_PRO_TOKEN, "Purchase token could not be verified", nil)
 		}
 	}
 
@@ -81,13 +81,13 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 
 	err := h.database.ClearFCMTokens(ctx, b.FCMToken)
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
 	}
 
 	if b.ProToken != nil {
 		err := h.database.ClearProTokens(ctx, *b.ProToken)
 		if err != nil {
-			return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
+			return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
 		}
 	}
 
@@ -98,12 +98,12 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 
 	userobj, err := h.database.CreateUser(ctx, readKey, sendKey, adminKey, b.ProToken, username)
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to create user in db", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to create user in db", err)
 	}
 
 	_, err = h.database.CreateClient(ctx, userobj.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion)
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to create user in db", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to create user in db", err)
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, userobj.JSON()))
@@ -141,10 +141,10 @@ func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 
 	user, err := h.database.GetUser(ctx, u.UserID)
 	if err == sql.ErrNoRows {
-		return ginresp.InternAPIError(404, apierr.USER_NOT_FOUND, "User not found", err)
+		return ginresp.InternAPIError(g, 404, apierr.USER_NOT_FOUND, "User not found", err)
 	}
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query user", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query user", err)
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, user.JSON()))
@@ -194,34 +194,34 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 
 		err := h.database.UpdateUserUsername(ctx, u.UserID, b.Username)
 		if err != nil {
-			return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to update user", err)
+			return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to update user", err)
 		}
 	}
 
 	if b.ProToken != nil {
 		ptok, err := h.app.VerifyProToken(*b.ProToken)
 		if err != nil {
-			return ginresp.InternAPIError(500, apierr.FAILED_VERIFY_PRO_TOKEN, "Failed to query purchase status", err)
+			return ginresp.InternAPIError(g, 500, apierr.FAILED_VERIFY_PRO_TOKEN, "Failed to query purchase status", err)
 		}
 
 		if !ptok {
-			return ginresp.InternAPIError(400, apierr.INVALID_PRO_TOKEN, "Purchase token could not be verified", nil)
+			return ginresp.InternAPIError(g, 400, apierr.INVALID_PRO_TOKEN, "Purchase token could not be verified", nil)
 		}
 
 		err = h.database.ClearProTokens(ctx, *b.ProToken)
 		if err != nil {
-			return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
+			return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
 		}
 
 		err = h.database.UpdateUserProToken(ctx, u.UserID, b.ProToken)
 		if err != nil {
-			return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to update user", err)
+			return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to update user", err)
 		}
 	}
 
 	user, err := h.database.GetUser(ctx, u.UserID)
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query (updated) user", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query (updated) user", err)
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, user.JSON()))
@@ -262,7 +262,7 @@ func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
 
 	clients, err := h.database.ListClients(ctx, u.UserID)
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query clients", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query clients", err)
 	}
 
 	res := langext.ArrMap(clients, func(v models.Client) models.ClientJSON { return v.JSON() })
@@ -304,10 +304,10 @@ func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
 
 	client, err := h.database.GetClient(ctx, u.UserID, u.ClientID)
 	if err == sql.ErrNoRows {
-		return ginresp.InternAPIError(404, apierr.CLIENT_NOT_FOUND, "Client not found", err)
+		return ginresp.InternAPIError(g, 404, apierr.CLIENT_NOT_FOUND, "Client not found", err)
 	}
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query client", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, client.JSON()))
@@ -354,7 +354,7 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 	} else if b.ClientType == string(models.ClientTypeIOS) {
 		clientType = models.ClientTypeIOS
 	} else {
-		return ginresp.InternAPIError(400, apierr.INVALID_CLIENTTYPE, "Invalid ClientType", nil)
+		return ginresp.InternAPIError(g, 400, apierr.INVALID_CLIENTTYPE, "Invalid ClientType", nil)
 	}
 
 	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
@@ -363,7 +363,7 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 
 	client, err := h.database.CreateClient(ctx, u.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion)
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to create user in db", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to create user in db", err)
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, client.JSON()))
@@ -403,15 +403,15 @@ func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 
 	client, err := h.database.GetClient(ctx, u.UserID, u.ClientID)
 	if err == sql.ErrNoRows {
-		return ginresp.InternAPIError(404, apierr.CLIENT_NOT_FOUND, "Client not found", err)
+		return ginresp.InternAPIError(g, 404, apierr.CLIENT_NOT_FOUND, "Client not found", err)
 	}
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query client", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
 	}
 
 	err = h.database.DeleteClient(ctx, u.ClientID)
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to delete client", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete client", err)
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, client.JSON()))
@@ -452,7 +452,7 @@ func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 
 	clients, err := h.database.ListChannels(ctx, u.UserID)
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query channels", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
 	}
 
 	res := langext.ArrMap(clients, func(v models.Channel) models.ChannelJSON { return v.JSON() })
@@ -494,10 +494,10 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 
 	channel, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID)
 	if err == sql.ErrNoRows {
-		return ginresp.InternAPIError(404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
+		return ginresp.InternAPIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
 	}
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query channel", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, channel.JSON()))
@@ -558,33 +558,33 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 
 	channel, err := h.database.GetChannel(ctx, u.ChannelUserID, u.ChannelID)
 	if err == sql.ErrNoRows {
-		return ginresp.InternAPIError(404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
+		return ginresp.InternAPIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
 	}
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query channel", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
 	}
 
 	userid := *ctx.GetPermissionUserID()
 
 	sub, err := h.database.GetSubscriptionBySubscriber(ctx, userid, channel.ChannelID)
 	if err == sql.ErrNoRows {
-		return ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+		return ginresp.InternAPIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 	}
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
 	}
 	if !sub.Confirmed {
-		return ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+		return ginresp.InternAPIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 	}
 
 	tok, err := cursortoken.Decode(langext.Coalesce(q.NextPageToken, ""))
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.PAGETOKEN_ERROR, "Failed to decode next_page_token", err)
+		return ginresp.InternAPIError(g, 500, apierr.PAGETOKEN_ERROR, "Failed to decode next_page_token", err)
 	}
 
 	messages, npt, err := h.database.ListChannelMessages(ctx, channel.ChannelID, pageSize, tok)
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query messages", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query messages", err)
 	}
 
 	var res []models.MessageJSON
@@ -632,7 +632,7 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 
 	clients, err := h.database.ListSubscriptionsByOwner(ctx, u.UserID)
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query channels", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
 	}
 
 	res := langext.ArrMap(clients, func(v models.Subscription) models.SubscriptionJSON { return v.JSON() })
@@ -677,15 +677,15 @@ func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPRespons
 
 	_, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID)
 	if err == sql.ErrNoRows {
-		return ginresp.InternAPIError(404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
+		return ginresp.InternAPIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
 	}
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query channels", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
 	}
 
 	clients, err := h.database.ListSubscriptionsByChannel(ctx, u.ChannelID)
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query channels", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
 	}
 
 	res := langext.ArrMap(clients, func(v models.Subscription) models.SubscriptionJSON { return v.JSON() })
@@ -727,14 +727,14 @@ func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 
 	subscription, err := h.database.GetSubscription(ctx, u.SubscriptionID)
 	if err == sql.ErrNoRows {
-		return ginresp.InternAPIError(404, apierr.SUBSCRIPTION_NOT_FOUND, "Subscription not found", err)
+		return ginresp.InternAPIError(g, 404, apierr.SUBSCRIPTION_NOT_FOUND, "Subscription not found", err)
 	}
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
 	}
 
 	if subscription.SubscriberUserID != u.UserID {
-		return ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+		return ginresp.InternAPIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, subscription.JSON()))
@@ -774,19 +774,19 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 
 	subscription, err := h.database.GetSubscription(ctx, u.SubscriptionID)
 	if err == sql.ErrNoRows {
-		return ginresp.InternAPIError(404, apierr.SUBSCRIPTION_NOT_FOUND, "Subscription not found", err)
+		return ginresp.InternAPIError(g, 404, apierr.SUBSCRIPTION_NOT_FOUND, "Subscription not found", err)
 	}
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
 	}
 
 	if subscription.SubscriberUserID != u.UserID && subscription.ChannelOwnerUserID != u.UserID {
-		return ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+		return ginresp.InternAPIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 	}
 
 	err = h.database.DeleteSubscription(ctx, u.SubscriptionID)
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to delete subscription", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete subscription", err)
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, subscription.JSON()))
@@ -835,19 +835,19 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 
 	channel, err := h.database.GetChannelByName(ctx, b.ChannelOwnerUserID, h.app.NormalizeChannelName(b.Channel))
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query channel", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
 	}
 	if channel == nil {
-		return ginresp.InternAPIError(400, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
+		return ginresp.InternAPIError(g, 400, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
 	}
 
 	if channel.OwnerUserID != u.UserID && (q.ChanSubscribeKey == nil || *q.ChanSubscribeKey != channel.SubscribeKey) {
-		ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+		ginresp.InternAPIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 	}
 
 	sub, err := h.database.CreateSubscription(ctx, u.UserID, *channel, channel.OwnerUserID == u.UserID)
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to create subscription", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to create subscription", err)
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, sub.JSON()))
@@ -891,26 +891,26 @@ func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 
 	subscription, err := h.database.GetSubscription(ctx, u.SubscriptionID)
 	if err == sql.ErrNoRows {
-		return ginresp.InternAPIError(404, apierr.SUBSCRIPTION_NOT_FOUND, "Subscription not found", err)
+		return ginresp.InternAPIError(g, 404, apierr.SUBSCRIPTION_NOT_FOUND, "Subscription not found", err)
 	}
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
 	}
 
 	if subscription.ChannelOwnerUserID != u.UserID {
-		return ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+		return ginresp.InternAPIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 	}
 
 	if b.Confirmed != nil {
 		err = h.database.UpdateSubscriptionConfirmed(ctx, u.SubscriptionID, *b.Confirmed)
 		if err != nil {
-			return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to update subscription", err)
+			return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to update subscription", err)
 		}
 	}
 
 	subscription, err = h.database.GetSubscription(ctx, u.SubscriptionID)
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, subscription.JSON()))
@@ -968,17 +968,17 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 
 	tok, err := cursortoken.Decode(langext.Coalesce(q.NextPageToken, ""))
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.PAGETOKEN_ERROR, "Failed to decode next_page_token", err)
+		return ginresp.InternAPIError(g, 500, apierr.PAGETOKEN_ERROR, "Failed to decode next_page_token", err)
 	}
 
 	err = h.database.UpdateUserLastRead(ctx, userid)
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to update last-read", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to update last-read", err)
 	}
 
 	messages, npt, err := h.database.ListMessages(ctx, userid, pageSize, tok)
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query messages", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query messages", err)
 	}
 
 	var res []models.MessageJSON
@@ -1026,10 +1026,10 @@ func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 
 	msg, err := h.database.GetMessage(ctx, u.MessageID)
 	if err == sql.ErrNoRows {
-		return ginresp.InternAPIError(404, apierr.MESSAGE_NOT_FOUND, "message not found", err)
+		return ginresp.InternAPIError(g, 404, apierr.MESSAGE_NOT_FOUND, "message not found", err)
 	}
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query message", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query message", err)
 	}
 
 	if !ctx.CheckPermissionMessageReadDirect(msg) {
@@ -1040,21 +1040,21 @@ func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 		if uid := ctx.GetPermissionUserID(); uid != nil && ctx.IsPermissionUserRead() {
 			sub, err := h.database.GetSubscriptionBySubscriber(ctx, *uid, msg.ChannelID)
 			if err != nil {
-				return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
+				return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
 			}
 			if sub == nil {
 				// not subbed
-				return ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+				return ginresp.InternAPIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 			}
 			if !sub.Confirmed {
 				// sub not confirmed
-				return ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+				return ginresp.InternAPIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 			}
 			// => perm okay
 
 		} else {
 			// auth-key is not set or not a user:x variant
-			return ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+			return ginresp.InternAPIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 		}
 
 	}
@@ -1095,29 +1095,29 @@ func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 
 	msg, err := h.database.GetMessage(ctx, u.MessageID)
 	if err == sql.ErrNoRows {
-		return ginresp.InternAPIError(404, apierr.MESSAGE_NOT_FOUND, "message not found", err)
+		return ginresp.InternAPIError(g, 404, apierr.MESSAGE_NOT_FOUND, "message not found", err)
 	}
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to query message", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to query message", err)
 	}
 
 	if !ctx.CheckPermissionMessageReadDirect(msg) {
-		return ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+		return ginresp.InternAPIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 	}
 
 	err = h.database.DeleteMessage(ctx, msg.SCNMessageID)
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to delete message", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete message", err)
 	}
 
 	err = h.database.CancelPendingDeliveries(ctx, msg.SCNMessageID)
 	if err != nil {
-		return ginresp.InternAPIError(500, apierr.DATABASE_ERROR, "Failed to cancel deliveries", err)
+		return ginresp.InternAPIError(g, 500, apierr.DATABASE_ERROR, "Failed to cancel deliveries", err)
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, msg.FullJSON()))
 }
 
 func (h APIHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
-	return ginresp.NotImplemented() //TODO
+	return ginresp.NotImplemented(g) //TODO
 }

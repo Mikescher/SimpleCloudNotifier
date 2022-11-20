@@ -4,6 +4,8 @@ type APIError int
 
 //goland:noinspection GoSnakeCaseUsage
 const (
+	UNDEFINED APIError = -1
+
 	NO_ERROR APIError = 0000
 
 	MISSING_UID          APIError = 1101

@@ -28,8 +28,6 @@ func NewEmptyPermissions() PermissionSet {
 	}
 }
 
-var respoNotAuthorized = ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
-
 func (ac *AppContext) CheckPermissionUserRead(userid int64) *ginresp.HTTPResponse {
 	p := ac.permissions
 	if p.UserID != nil && *p.UserID == userid && p.KeyType == PermKeyTypeUserRead {
@@ -39,7 +37,7 @@ func (ac *AppContext) CheckPermissionUserRead(userid int64) *ginresp.HTTPRespons
 		return nil
 	}
 
-	return langext.Ptr(respoNotAuthorized)
+	return langext.Ptr(ginresp.InternAPIError(ac.ginContext, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil))
 }
 
 func (ac *AppContext) CheckPermissionRead() *ginresp.HTTPResponse {
@@ -51,7 +49,7 @@ func (ac *AppContext) CheckPermissionRead() *ginresp.HTTPResponse {
 		return nil
 	}
 
-	return langext.Ptr(respoNotAuthorized)
+	return langext.Ptr(ginresp.InternAPIError(ac.ginContext, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil))
 }
 
 func (ac *AppContext) CheckPermissionUserAdmin(userid int64) *ginresp.HTTPResponse {
@@ -60,13 +58,13 @@ func (ac *AppContext) CheckPermissionUserAdmin(userid int64) *ginresp.HTTPRespon
 		return nil
 	}
 
-	return langext.Ptr(respoNotAuthorized)
+	return langext.Ptr(ginresp.InternAPIError(ac.ginContext, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil))
 }
 
 func (ac *AppContext) CheckPermissionAny() *ginresp.HTTPResponse {
 	p := ac.permissions
 	if p.KeyType == PermKeyTypeNone {
-		return langext.Ptr(respoNotAuthorized)
+		return langext.Ptr(ginresp.InternAPIError(ac.ginContext, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil))
 	}
 
 	return nil

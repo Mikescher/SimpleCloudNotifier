@@ -7,6 +7,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"time"
 )
@@ -17,15 +18,17 @@ type AppContext struct {
 	cancelled   bool
 	transaction *sql.Tx
 	permissions PermissionSet
+	ginContext  *gin.Context
 }
 
-func CreateAppContext(innerCtx context.Context, cancelFn context.CancelFunc) *AppContext {
+func CreateAppContext(g *gin.Context, innerCtx context.Context, cancelFn context.CancelFunc) *AppContext {
 	return &AppContext{
 		inner:       innerCtx,
 		cancelFunc:  cancelFn,
 		cancelled:   false,
 		transaction: nil,
 		permissions: NewEmptyPermissions(),
+		ginContext:  g,
 	}
 }
 
@@ -48,14 +51,22 @@ func (ac *AppContext) Value(key any) any {
 func (ac *AppContext) Cancel() {
 	ac.cancelled = true
 	if ac.transaction != nil {
-		log.Error().Msg("Rollback transaction")
+		log.Error().Str("uri", ac.RequestURI()).Msg("Rollback transaction (ctx-cancel)")
 		err := ac.transaction.Rollback()
 		if err != nil {
-			panic("failed to rollback transaction: " + err.Error())
+			log.Err(err).Stack().Msg("Failed to rollback transaction")
 		}
 		ac.transaction = nil
 	}
 	ac.cancelFunc()
+}
+
+func (ac *AppContext) RequestURI() string {
+	if ac.ginContext != nil && ac.ginContext.Request != nil {
+		return ac.ginContext.Request.Method + " :: " + ac.ginContext.Request.RequestURI
+	} else {
+		return ""
+	}
 }
 
 func (ac *AppContext) FinishSuccess(res ginresp.HTTPResponse) ginresp.HTTPResponse {
@@ -65,7 +76,7 @@ func (ac *AppContext) FinishSuccess(res ginresp.HTTPResponse) ginresp.HTTPRespon
 	if ac.transaction != nil {
 		err := ac.transaction.Commit()
 		if err != nil {
-			return ginresp.InternAPIError(500, apierr.COMMIT_FAILED, "Failed to comit changes to DB", err)
+			return ginresp.InternAPIError(ac.ginContext, 500, apierr.COMMIT_FAILED, "Failed to comit changes to DB", err)
 		}
 		ac.transaction = nil
 	}

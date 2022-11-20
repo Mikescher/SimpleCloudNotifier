@@ -87,6 +87,7 @@ func (sc *SimpleContext) RollbackTransaction() {
 	}
 	err := sc.transaction.Rollback()
 	if err != nil {
+		log.Err(err).Stack().Msg("Failed to rollback transaction")
 		panic(err)
 	}
 	sc.transaction = nil

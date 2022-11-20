@@ -54,7 +54,7 @@ func (j *DeliveryRetryJob) mainLoop() {
 func (j *DeliveryRetryJob) run() bool {
 	defer func() {
 		if rec := recover(); rec != nil {
-			log.Error().Interface("rec", rec).Msg("Recovered panic in DeliveryRetryJob")
+			log.Error().Interface("recover", rec).Msg("Recovered panic in DeliveryRetryJob")
 		}
 	}()
 
@@ -101,7 +101,7 @@ func (j *DeliveryRetryJob) redeliver(ctx *logic.SimpleContext, delivery models.D
 	}
 
 	fcmDelivID, err := j.app.DeliverMessage(ctx, client, msg)
-	if err != nil {
+	if err == nil {
 		err = j.app.Database.SetDeliverySuccess(ctx, delivery, *fcmDelivID)
 		if err != nil {
 			log.Err(err).Int64("SCNMessageID", delivery.SCNMessageID).Int64("DeliveryID", delivery.DeliveryID).Msg("Failed to update delivery")
@@ -115,6 +115,7 @@ func (j *DeliveryRetryJob) redeliver(ctx *logic.SimpleContext, delivery models.D
 			ctx.RollbackTransaction()
 			return
 		}
+		log.Warn().Int64("SCNMessageID", delivery.SCNMessageID).Int64("DeliveryID", delivery.DeliveryID).Msg("Delivery failed after <max> retries (set to FAILURE)")
 	} else {
 		err = j.app.Database.SetDeliveryRetry(ctx, delivery)
 		if err != nil {
