@@ -28,7 +28,7 @@ function send()
 	data.append('priority', pio.value);
 
 	let xhr = new XMLHttpRequest();
-	xhr.open('POST', '/', true);
+	xhr.open('POST', '/send.php', true);
 	xhr.onreadystatechange = function ()
 	{
 		if (xhr.readyState !== 4) return;
@@ -81,10 +81,27 @@ function send()
 	xhr.send(data);
 }
 
-window.addEventListener("load",function ()
+window.addEventListener("load", function ()
 {
-	let btnSend = document.getElementById("btnSend");
+	const qp = new URLSearchParams(window.location.search);
 
-	if (btnSend !== undefined) btnSend.onclick = function () { send(); return false; };
+	const btnSend = document.getElementById("btnSend");
+	const selPrio = document.getElementById("prio");
+	const txtKey  = document.getElementById("ukey");
+	const txtUID  = document.getElementById("uid");
+	const txtTitl = document.getElementById("msg");
+	const txtCont = document.getElementById("txt");
 
-},false);
+	btnSend.onclick = function () { send(); return false; };
+
+	if (qp.has('preset_priority')) selPrio.selectedIndex = parseInt(qp.get("preset_priority"));
+
+	if (qp.has('preset_user_key')) txtKey.value = qp.get("preset_user_key");
+
+	if (qp.has('preset_user_id'))  txtUID.value = qp.get("preset_user_id");
+
+	if (qp.has('preset_title'))    txtTitl.value = qp.get("preset_title");
+
+	if (qp.has('preset_content'))  txtCont.value = qp.get("preset_content");
+
+}, false);

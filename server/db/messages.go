@@ -57,7 +57,7 @@ func (db *Database) CreateMessage(ctx TxContext, senderUserID int64, channel mod
 
 	now := time.Now().UTC()
 
-	res, err := tx.ExecContext(ctx, "INSERT INTO messages (sender_user_id, owner_user_id, channel_name, channel_id, timestamp_real, timestamp_client, title, content, priority, usr_message_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+	res, err := tx.ExecContext(ctx, "INSERT INTO messages (sender_user_id, owner_user_id, channel_name, channel_id, timestamp_real, timestamp_client, title, content, priority, usr_message_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		senderUserID,
 		channel.OwnerUserID,
 		channel.Name,

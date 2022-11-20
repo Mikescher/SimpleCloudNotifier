@@ -72,7 +72,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.SendMessage.response"
+                            "$ref": "#/definitions/handler.sendMessageInternal.response"
                         }
                     },
                     "400": {
@@ -1404,7 +1404,144 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.SendMessage.response"
+                            "$ref": "#/definitions/handler.sendMessageInternal.response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/send.php": {
+            "post": {
+                "description": "All parameter can be set via query-parameter or form-data body. Only UserID, UserKey and Title are required",
+                "summary": "Send a new message (compatibility)",
+                "deprecated": true,
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "chanKey",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "channel",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "content",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "priority",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "name": "sendTimestamp",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "userID",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "userKey",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "userMessageID",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "chanKey",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "channel",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "content",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "priority",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "name": "sendTimestamp",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "title",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "userID",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "userKey",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "userMessageID",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.sendMessageInternal.response"
                         }
                     },
                     "400": {
@@ -1451,12 +1588,17 @@
                 "error": {
                     "type": "integer"
                 },
-                "errorObject": {},
+                "errorObj": {
+                    "type": "string"
+                },
                 "message": {
                     "type": "string"
                 },
                 "success": {
                     "type": "boolean"
+                },
+                "traceObj": {
+                    "type": "string"
                 }
             }
         },
@@ -1493,6 +1635,12 @@
         },
         "handler.AddClient.body": {
             "type": "object",
+            "required": [
+                "agent_model",
+                "agent_version",
+                "client_type",
+                "fcm_token"
+            ],
             "properties": {
                 "agent_model": {
                     "type": "string"
@@ -1510,6 +1658,10 @@
         },
         "handler.CreateSubscription.body": {
             "type": "object",
+            "required": [
+                "channel",
+                "channelOwnerUserID"
+            ],
             "properties": {
                 "channel": {
                     "type": "string"
@@ -1521,6 +1673,12 @@
         },
         "handler.CreateUser.body": {
             "type": "object",
+            "required": [
+                "agent_model",
+                "agent_version",
+                "client_type",
+                "fcm_token"
+            ],
             "properties": {
                 "agent_model": {
                     "type": "string"
@@ -1746,10 +1904,7 @@
                 "channel": {
                     "type": "string"
                 },
-                "message_content": {
-                    "type": "string"
-                },
-                "message_title": {
+                "content": {
                     "type": "string"
                 },
                 "msg_id": {
@@ -1761,46 +1916,14 @@
                 "timestamp": {
                     "type": "number"
                 },
+                "title": {
+                    "type": "string"
+                },
                 "user_id": {
                     "type": "integer"
                 },
                 "user_key": {
                     "type": "string"
-                }
-            }
-        },
-        "handler.SendMessage.response": {
-            "type": "object",
-            "properties": {
-                "errhighlight": {
-                    "type": "integer"
-                },
-                "error": {
-                    "type": "integer"
-                },
-                "is_pro": {
-                    "type": "boolean"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "messagecount": {
-                    "type": "integer"
-                },
-                "quota": {
-                    "type": "integer"
-                },
-                "quota_max": {
-                    "type": "integer"
-                },
-                "scn_msg_id": {
-                    "type": "integer"
-                },
-                "success": {
-                    "type": "boolean"
-                },
-                "suppress_send": {
-                    "type": "boolean"
                 }
             }
         },
@@ -1898,6 +2021,41 @@
                 },
                 "uri": {
                     "type": "string"
+                }
+            }
+        },
+        "handler.sendMessageInternal.response": {
+            "type": "object",
+            "properties": {
+                "errhighlight": {
+                    "type": "integer"
+                },
+                "error": {
+                    "type": "integer"
+                },
+                "is_pro": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "messagecount": {
+                    "type": "integer"
+                },
+                "quota": {
+                    "type": "integer"
+                },
+                "quota_max": {
+                    "type": "integer"
+                },
+                "scn_msg_id": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "suppress_send": {
+                    "type": "boolean"
                 }
             }
         },

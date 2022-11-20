@@ -103,7 +103,7 @@ CREATE TABLE deliveries
     receiver_client_id  INTEGER                                                  NOT NULL,
 
     timestamp_created   INTEGER                                                  NOT NULL,
-    timestamp_finalized INTEGER                                                  NOT NULL,
+    timestamp_finalized INTEGER                                                      NULL,
 
 
     status              TEXT     CHECK(status IN ('RETRY','SUCCESS','FAILED'))   NOT NULL,

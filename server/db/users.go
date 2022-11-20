@@ -126,7 +126,7 @@ func (db *Database) UpdateUserProToken(ctx TxContext, userid int64, protoken *st
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE users SET pro_token = ? AND is_pro = ? WHERE user_id = ?",
+	_, err = tx.ExecContext(ctx, "UPDATE users SET pro_token = ?, is_pro = ? WHERE user_id = ?",
 		protoken,
 		bool2DB(protoken != nil),
 		userid)
@@ -145,7 +145,7 @@ func (db *Database) IncUserMessageCounter(ctx TxContext, user models.User) error
 
 	quota := user.QuotaUsedToday() + 1
 
-	_, err = tx.ExecContext(ctx, "UPDATE users SET timestamp_lastsent = ? AND messages_sent = ? AND quota_used = ? AND quota_used_day = ? WHERE user_id = ?",
+	_, err = tx.ExecContext(ctx, "UPDATE users SET timestamp_lastsent = ?, messages_sent = ?, quota_used = ?, quota_used_day = ? WHERE user_id = ?",
 		time2DB(time.Now()),
 		user.MessagesSent+1,
 		quota,
@@ -180,7 +180,7 @@ func (db *Database) UpdateUserKeys(ctx TxContext, userid int64, sendKey string, 
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE users SET send_key = ? AND read_key = ? AND admin_key = ? WHERE user_id = ?",
+	_, err = tx.ExecContext(ctx, "UPDATE users SET send_key = ?, read_key = ?, admin_key = ? WHERE user_id = ?",
 		sendKey,
 		readKey,
 		adminKey,

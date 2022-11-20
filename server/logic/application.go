@@ -9,6 +9,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"math/rand"
@@ -100,23 +101,29 @@ func (app *Application) Migrate() error {
 	return app.Database.Migrate(ctx)
 }
 
-func (app *Application) StartRequest(g *gin.Context, uri any, query any, body any) (*AppContext, *ginresp.HTTPResponse) {
+func (app *Application) StartRequest(g *gin.Context, uri any, query any, body any, form any) (*AppContext, *ginresp.HTTPResponse) {
 
-	if body != nil {
-		if err := g.ShouldBindJSON(&body); err != nil {
-			return nil, langext.Ptr(ginresp.InternAPIError(400, apierr.BINDFAIL_BODY_PARAM, "Failed to read body", err))
+	if uri != nil {
+		if err := g.ShouldBindUri(uri); err != nil {
+			return nil, langext.Ptr(ginresp.InternAPIError(400, apierr.BINDFAIL_URI_PARAM, "Failed to read uri", err))
 		}
 	}
 
 	if query != nil {
-		if err := g.ShouldBindQuery(&query); err != nil {
+		if err := g.ShouldBindQuery(query); err != nil {
 			return nil, langext.Ptr(ginresp.InternAPIError(400, apierr.BINDFAIL_QUERY_PARAM, "Failed to read query", err))
 		}
 	}
 
-	if uri != nil {
-		if err := g.ShouldBindUri(&uri); err != nil {
-			return nil, langext.Ptr(ginresp.InternAPIError(400, apierr.BINDFAIL_URI_PARAM, "Failed to read uri", err))
+	if body != nil {
+		if err := g.ShouldBindJSON(body); err != nil {
+			return nil, langext.Ptr(ginresp.InternAPIError(400, apierr.BINDFAIL_BODY_PARAM, "Failed to read body", err))
+		}
+	}
+
+	if form != nil {
+		if err := g.ShouldBindWith(form, binding.Form); err != nil {
+			return nil, langext.Ptr(ginresp.InternAPIError(400, apierr.BINDFAIL_BODY_PARAM, "Failed to read multipart-form", err))
 		}
 	}
 

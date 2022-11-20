@@ -3,8 +3,11 @@ package ginresp
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 	"net/http"
+	"runtime/debug"
 )
 
 type HTTPResponse interface {
@@ -64,25 +67,39 @@ func Text(sc int, data string) HTTPResponse {
 }
 
 func InternalError(e error) HTTPResponse {
+	log.Error().Err(e).Msg("[InternalError] " + e.Error())
+
 	return &jsonHTTPResponse{statusCode: http.StatusInternalServerError, data: apiError{Success: false, Error: int(apierr.INTERNAL_EXCEPTION), Message: e.Error()}}
 }
 
 func InternAPIError(status int, errorid apierr.APIError, msg string, e error) HTTPResponse {
+	log.Error().Int("errorid", int(errorid)).Err(e).Msg("[InternAPIError] " + msg)
+
 	if scn.Conf.ReturnRawErrors {
-		return &jsonHTTPResponse{statusCode: status, data: apiError{Success: false, Error: int(errorid), Message: msg, RawError: e}}
+		return &jsonHTTPResponse{statusCode: status, data: apiError{Success: false, Error: int(errorid), Message: msg, RawError: fmt.Sprintf("%+v", e), Trace: string(debug.Stack())}}
 	} else {
 		return &jsonHTTPResponse{statusCode: status, data: apiError{Success: false, Error: int(errorid), Message: msg}}
 	}
 }
 
 func CompatAPIError(errid int, msg string) HTTPResponse {
+	log.Error().Int("errid", errid).Msg("[CompatAPIError] " + msg)
+
 	return &jsonHTTPResponse{statusCode: 200, data: compatAPIError{Success: false, ErrorID: errid, Message: msg}}
 }
 
-func SendAPIError(status int, errorid apierr.APIError, highlight int, msg string) HTTPResponse {
-	return &jsonHTTPResponse{statusCode: status, data: apiError{Success: false, Error: int(errorid), ErrorHighlight: highlight, Message: msg}}
+func SendAPIError(status int, errorid apierr.APIError, highlight int, msg string, e error) HTTPResponse {
+	log.Error().Int("errorid", int(errorid)).Int("highlight", highlight).Err(e).Msg("[SendAPIError] " + msg)
+
+	if scn.Conf.ReturnRawErrors {
+		return &jsonHTTPResponse{statusCode: status, data: apiError{Success: false, Error: int(errorid), ErrorHighlight: highlight, Message: msg, RawError: fmt.Sprintf("%+v", e), Trace: string(debug.Stack())}}
+	} else {
+		return &jsonHTTPResponse{statusCode: status, data: apiError{Success: false, Error: int(errorid), ErrorHighlight: highlight, Message: msg}}
+	}
 }
 
 func NotImplemented() HTTPResponse {
+	log.Error().Msg("[NotImplemented]")
+
 	return &jsonHTTPResponse{statusCode: http.StatusInternalServerError, data: apiError{Success: false, Error: -1, ErrorHighlight: 0, Message: "Not Implemented"}}
 }

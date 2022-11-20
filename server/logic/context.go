@@ -7,6 +7,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/rs/zerolog/log"
 	"time"
 )
 
@@ -47,6 +48,7 @@ func (ac *AppContext) Value(key any) any {
 func (ac *AppContext) Cancel() {
 	ac.cancelled = true
 	if ac.transaction != nil {
+		log.Error().Msg("Rollback transaction")
 		err := ac.transaction.Rollback()
 		if err != nil {
 			panic("failed to rollback transaction: " + err.Error())

@@ -94,7 +94,7 @@ func (r *Router) Init(e *gin.Engine) {
 	apiv2 := e.Group("/api-v2/")
 	{
 
-		apiv2.POST("/users/", ginresp.Wrap(r.apiHandler.CreateUser))
+		apiv2.POST("/users", ginresp.Wrap(r.apiHandler.CreateUser))
 		apiv2.GET("/users/:uid", ginresp.Wrap(r.apiHandler.GetUser))
 		apiv2.PATCH("/users/:uid", ginresp.Wrap(r.apiHandler.UpdateUser))
 
@@ -127,7 +127,7 @@ func (r *Router) Init(e *gin.Engine) {
 	{
 		sendAPI.POST("/", ginresp.Wrap(r.messageHandler.SendMessage))
 		sendAPI.POST("/send", ginresp.Wrap(r.messageHandler.SendMessage))
-		sendAPI.POST("/send.php", ginresp.Wrap(r.messageHandler.SendMessage))
+		sendAPI.POST("/send.php", ginresp.Wrap(r.messageHandler.SendMessageCompat))
 	}
 
 	if r.app.Config.ReturnRawErrors {

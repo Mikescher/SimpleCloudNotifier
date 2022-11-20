@@ -22,35 +22,31 @@
 
         <div class="fullcenterflex">
 
-            <?php if (isset($_GET['ok']) && $_GET['ok'] === "1" ): ?>
+            <a id="succ_link" class="display_none card success" href="/?preset_user_id=<?php echo isset($_GET['preset_user_id'])?$_GET['preset_user_id']:'ERR';?>&preset_user_key=<?php echo isset($_GET['preset_user_key'])?$_GET['preset_user_key']:'ERR';?>">
+                <div class="section">
+                    <h3 class="doc">Message sent</h3>
+                    <p class="doc">Message succesfully sent<br>
+                        <span id="insQuota1">ERR</span>/<span id="insQuota2">ERR</span> remaining</p>
+                </div>
+            </a>
 
-                <a class="card success" href="/index.php?preset_user_id=<?php echo isset($_GET['preset_user_id'])?$_GET['preset_user_id']:'ERR';?>&preset_user_key=<?php echo isset($_GET['preset_user_key'])?$_GET['preset_user_key']:'ERR';?>">
-                    <div class="section">
-                        <h3 class="doc">Message sent</h3>
-                        <p class="doc">Message succesfully sent<br>
-                            <?php echo isset($_GET['quota_remain'])?$_GET['quota_remain']:'ERR';?>/<?php echo isset($_GET['quota_max'])?$_GET['quota_max']:'ERR';?> remaining</p>
-                    </div>
-                </a>
-
-			<?php else: ?>
-
-                <a class="card error" href="/index.php">
-                    <div class="section">
-                        <h3 class="doc">Failure</h3>
-                        <p class="doc">Unknown error</p>
-                    </div>
-                </a>
-
-            <?php endif; ?>
+            <a id="err_link" class="card error" href="/">
+                <div class="section">
+                    <h3 class="doc">Failure</h3>
+                    <p class="doc">Unknown error</p>
+                </div>
+            </a>
 
         </div>
 
         <a tabindex="-1" href="https://play.google.com/store/apps/details?id=com.blackforestbytes.simplecloudnotifier" class="button bordered" id="tl_link"><span class="icn-google-play"></span></a>
-        <a tabindex="-1" href="/index.php" class="button bordered" id="tr_link">Send</a>
+        <a tabindex="-1" href="/" class="button bordered" id="tr_link">Send</a>
 
         <a tabindex="-1" href="/" class="linkcaption"><h1>Simple Cloud Notifier</h1></a>
 
     </div>
+
+    <script src="/js/message_sent.js" type="text/javascript" ></script>
 
 </body>
 </html>

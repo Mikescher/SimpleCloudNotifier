@@ -40,16 +40,16 @@ func NewAPIHandler(app *logic.Application) APIHandler {
 // @Router  /api-v2/users/ [POST]
 func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 	type body struct {
-		FCMToken     string  `json:"fcm_token"`
+		FCMToken     string  `json:"fcm_token" binding:"required"`
 		ProToken     *string `json:"pro_token"`
 		Username     *string `json:"username"`
-		AgentModel   string  `json:"agent_model"`
-		AgentVersion string  `json:"agent_version"`
-		ClientType   string  `json:"client_type"`
+		AgentModel   string  `json:"agent_model" binding:"required"`
+		AgentVersion string  `json:"agent_version" binding:"required"`
+		ClientType   string  `json:"client_type" binding:"required"`
 	}
 
 	var b body
-	ctx, errResp := h.app.StartRequest(g, nil, nil, &b)
+	ctx, errResp := h.app.StartRequest(g, nil, nil, &b, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -129,7 +129,7 @@ func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil)
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -176,7 +176,7 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 
 	var u uri
 	var b body
-	ctx, errResp := h.app.StartRequest(g, &u, nil, &b)
+	ctx, errResp := h.app.StartRequest(g, &u, nil, &b, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -250,7 +250,7 @@ func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil)
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -292,7 +292,7 @@ func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil)
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -334,15 +334,15 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 		UserID int64 `uri:"uid"`
 	}
 	type body struct {
-		FCMToken     string `json:"fcm_token"`
-		AgentModel   string `json:"agent_model"`
-		AgentVersion string `json:"agent_version"`
-		ClientType   string `json:"client_type"`
+		FCMToken     string `json:"fcm_token" binding:"required"`
+		AgentModel   string `json:"agent_model" binding:"required"`
+		AgentVersion string `json:"agent_version" binding:"required"`
+		ClientType   string `json:"client_type" binding:"required"`
 	}
 
 	var u uri
 	var b body
-	ctx, errResp := h.app.StartRequest(g, &u, nil, &b)
+	ctx, errResp := h.app.StartRequest(g, &u, nil, &b, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -391,7 +391,7 @@ func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil)
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -440,7 +440,7 @@ func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil)
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -482,7 +482,7 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil)
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -540,7 +540,7 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 
 	var u uri
 	var q query
-	ctx, errResp := h.app.StartRequest(g, &u, &q, nil)
+	ctx, errResp := h.app.StartRequest(g, &u, &q, nil, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -620,7 +620,7 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil)
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -665,7 +665,7 @@ func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPRespons
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil)
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -715,7 +715,7 @@ func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil)
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -762,7 +762,7 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil)
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -813,8 +813,8 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 		UserID int64 `uri:"uid"`
 	}
 	type body struct {
-		ChannelOwnerUserID int64  `form:"channel_owner_user_id"`
-		Channel            string `form:"channel_name"`
+		ChannelOwnerUserID int64  `form:"channel_owner_user_id" binding:"required"`
+		Channel            string `form:"channel_name" binding:"required"`
 	}
 	type query struct {
 		ChanSubscribeKey *string `form:"chan_subscribe_key"`
@@ -823,7 +823,7 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 	var u uri
 	var q query
 	var b body
-	ctx, errResp := h.app.StartRequest(g, &u, &q, &b)
+	ctx, errResp := h.app.StartRequest(g, &u, &q, &b, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -839,6 +839,10 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 	}
 	if channel == nil {
 		return ginresp.InternAPIError(400, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
+	}
+
+	if channel.OwnerUserID != u.UserID && (q.ChanSubscribeKey == nil || *q.ChanSubscribeKey != channel.SubscribeKey) {
+		ginresp.InternAPIError(401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 	}
 
 	sub, err := h.database.CreateSubscription(ctx, u.UserID, *channel, channel.OwnerUserID == u.UserID)
@@ -875,7 +879,7 @@ func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 
 	var u uri
 	var b body
-	ctx, errResp := h.app.StartRequest(g, &u, nil, &b)
+	ctx, errResp := h.app.StartRequest(g, &u, nil, &b, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -944,7 +948,7 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	var q query
-	ctx, errResp := h.app.StartRequest(g, nil, &q, nil)
+	ctx, errResp := h.app.StartRequest(g, nil, &q, nil, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -1010,7 +1014,7 @@ func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil)
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -1079,7 +1083,7 @@ func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil)
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
 	if errResp != nil {
 		return *errResp
 	}

@@ -69,13 +69,13 @@ func (db *Database) ReadSchema(ctx context.Context) (int, error) {
 		return 0, errors.New("no schema entry in meta table")
 	}
 
-	var schema int
-	err = r2.Scan(&schema)
+	var dbschema int
+	err = r2.Scan(&dbschema)
 	if err != nil {
 		return 0, err
 	}
 
-	return schema, nil
+	return dbschema, nil
 }
 
 func (db *Database) Ping() error {
@@ -83,5 +83,5 @@ func (db *Database) Ping() error {
 }
 
 func (db *Database) BeginTx(ctx context.Context) (*sql.Tx, error) {
-	return db.db.BeginTx(ctx, nil)
+	return db.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelDefault})
 }

@@ -6,11 +6,14 @@ definitions:
         type: integer
       error:
         type: integer
-      errorObject: {}
+      errorObj:
+        type: string
       message:
         type: string
       success:
         type: boolean
+      traceObj:
+        type: string
     type: object
   ginresp.compatAPIError:
     properties:
@@ -42,6 +45,11 @@ definitions:
         type: string
       fcm_token:
         type: string
+    required:
+    - agent_model
+    - agent_version
+    - client_type
+    - fcm_token
     type: object
   handler.CreateSubscription.body:
     properties:
@@ -49,6 +57,9 @@ definitions:
         type: string
       channelOwnerUserID:
         type: integer
+    required:
+    - channel
+    - channelOwnerUserID
     type: object
   handler.CreateUser.body:
     properties:
@@ -64,6 +75,11 @@ definitions:
         type: string
       username:
         type: string
+    required:
+    - agent_model
+    - agent_version
+    - client_type
+    - fcm_token
     type: object
   handler.DatabaseTest.response:
     properties:
@@ -197,9 +213,7 @@ definitions:
         type: string
       channel:
         type: string
-      message_content:
-        type: string
-      message_title:
+      content:
         type: string
       msg_id:
         type: string
@@ -207,33 +221,12 @@ definitions:
         type: integer
       timestamp:
         type: number
+      title:
+        type: string
       user_id:
         type: integer
       user_key:
         type: string
-    type: object
-  handler.SendMessage.response:
-    properties:
-      errhighlight:
-        type: integer
-      error:
-        type: integer
-      is_pro:
-        type: boolean
-      message:
-        type: string
-      messagecount:
-        type: integer
-      quota:
-        type: integer
-      quota_max:
-        type: integer
-      scn_msg_id:
-        type: integer
-      success:
-        type: boolean
-      suppress_send:
-        type: boolean
     type: object
   handler.Update.response:
     properties:
@@ -297,6 +290,29 @@ definitions:
         type: string
       uri:
         type: string
+    type: object
+  handler.sendMessageInternal.response:
+    properties:
+      errhighlight:
+        type: integer
+      error:
+        type: integer
+      is_pro:
+        type: boolean
+      message:
+        type: string
+      messagecount:
+        type: integer
+      quota:
+        type: integer
+      quota_max:
+        type: integer
+      scn_msg_id:
+        type: integer
+      success:
+        type: boolean
+      suppress_send:
+        type: boolean
     type: object
   models.ChannelJSON:
     properties:
@@ -468,7 +484,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.SendMessage.response'
+            $ref: '#/definitions/handler.sendMessageInternal.response'
         "400":
           description: Bad Request
           schema:
@@ -1355,7 +1371,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.SendMessage.response'
+            $ref: '#/definitions/handler.sendMessageInternal.response'
         "400":
           description: Bad Request
           schema:
@@ -1377,4 +1393,90 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Send a new message
+  /send.php:
+    post:
+      deprecated: true
+      description: All parameter can be set via query-parameter or form-data body.
+        Only UserID, UserKey and Title are required
+      parameters:
+      - in: query
+        name: chanKey
+        type: string
+      - in: query
+        name: channel
+        type: string
+      - in: query
+        name: content
+        type: string
+      - in: query
+        name: priority
+        type: integer
+      - in: query
+        name: sendTimestamp
+        type: number
+      - in: query
+        name: title
+        type: string
+      - in: query
+        name: userID
+        type: integer
+      - in: query
+        name: userKey
+        type: string
+      - in: query
+        name: userMessageID
+        type: string
+      - in: formData
+        name: chanKey
+        type: string
+      - in: formData
+        name: channel
+        type: string
+      - in: formData
+        name: content
+        type: string
+      - in: formData
+        name: priority
+        type: integer
+      - in: formData
+        name: sendTimestamp
+        type: number
+      - in: formData
+        name: title
+        type: string
+      - in: formData
+        name: userID
+        type: integer
+      - in: formData
+        name: userKey
+        type: string
+      - in: formData
+        name: userMessageID
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.sendMessageInternal.response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Send a new message (compatibility)
 swagger: "2.0"

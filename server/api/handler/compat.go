@@ -53,7 +53,7 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -152,7 +152,7 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -225,7 +225,7 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -287,7 +287,7 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -351,7 +351,7 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -448,7 +448,7 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -531,7 +531,7 @@ func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, &datb, nil)
 	if errResp != nil {
 		return *errResp
 	}

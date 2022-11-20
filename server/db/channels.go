@@ -129,7 +129,7 @@ func (db *Database) IncChannelMessageCounter(ctx TxContext, channel models.Chann
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE channels SET messages_sent = ? AND timestamp_lastsent = ? WHERE channel_id = ?",
+	_, err = tx.ExecContext(ctx, "UPDATE channels SET messages_sent = ?, timestamp_lastsent = ? WHERE channel_id = ?",
 		channel.MessagesSent+1,
 		time2DB(time.Now()),
 		channel.ChannelID)

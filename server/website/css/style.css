@@ -248,3 +248,7 @@ pre, pre span
     font-family: Menlo, Consolas, monospace;
     background: #F9F9F9;;
 }
+
+.display_none {
+    display: none;
+}

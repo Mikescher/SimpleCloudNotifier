@@ -5,7 +5,8 @@ type apiError struct {
 	Error          int    `json:"error"`
 	ErrorHighlight int    `json:"errhighlight"`
 	Message        string `json:"message"`
-	RawError       error  `json:"errorObject,omitempty"`
+	RawError       string `json:"errorObj,omitempty"`
+	Trace          string `json:"traceObj,omitempty"`
 }
 
 type compatAPIError struct {

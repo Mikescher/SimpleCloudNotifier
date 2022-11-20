@@ -28,33 +28,33 @@
 
 		<div class="row responsive-label">
 			<div class="col-sm-12 col-md-3"><label for="uid" class="doc">UserID</label></div>
-			<div class="col-sm-12 col-md"><input placeholder="UserID" id="uid" class="doc" <?php echo (isset($_GET['preset_user_id']) ? (' value="'.$_GET['preset_user_id'].'" '):(''));?> type="number"></div>
+			<div class="col-sm-12 col-md"><input placeholder="UserID" id="uid" class="doc" type="number"></div>
 		</div>
 
 		<div class="row responsive-label">
 			<div class="col-sm-12 col-md-3"><label for="ukey" class="doc">Authentification Key</label></div>
-			<div class="col-sm-12 col-md"><input placeholder="Key" id="ukey" class="doc" <?php echo (isset($_GET['preset_user_key']) ? (' value="'.$_GET['preset_user_key'].'" '):(''));?> type="text" maxlength="64"></div>
+			<div class="col-sm-12 col-md"><input placeholder="Key" id="ukey" class="doc" type="text" maxlength="64"></div>
 		</div>
 
         <div class="row responsive-label">
             <div class="col-sm-12 col-md-3"><label for="prio" class="doc">Priority</label></div>
             <div class="col-sm-12 col-md">
                 <select id="prio" class="doc" type="text" style="width:100%;">
-                    <option value="0"  <?php echo (( isset($_GET['preset_priority'])&&$_GET['preset_priority']==='0') ? 'selected':'');?>>Low</option>
-                    <option value="1"  <?php echo ((!isset($_GET['preset_priority'])||$_GET['preset_priority']==='1') ? 'selected':'');?>>Normal</option>
-                    <option value="2"  <?php echo (( isset($_GET['preset_priority'])&&$_GET['preset_priority']==='2') ? 'selected':'');?>>High</option>
+                    <option value="0"          >Low</option>
+                    <option value="1"  selected>Normal</option>
+                    <option value="2"          >High</option>
                 </select>
             </div>
         </div>
 
 		<div class="row responsive-label">
 			<div class="col-sm-12 col-md-3"><label for="msg" class="doc">Message Title</label></div>
-			<div class="col-sm-12 col-md"><input placeholder="Message" id="msg" class="doc" <?php echo (isset($_GET['preset_title']) ? (' value="'.$_GET['preset_title'].'" '):(''));?> type="text" maxlength="80"></div>
+			<div class="col-sm-12 col-md"><input placeholder="Message" id="msg" class="doc" type="text" maxlength="80"></div>
 		</div>
 
 		<div class="row responsive-label">
 			<div class="col-sm-12 col-md-3"><label for="txt" class="doc">Message Content</label></div>
-			<div class="col-sm-12 col-md"><textarea id="txt" class="doc" <?php echo (isset($_GET['preset_content']) ? (' value="'.$_GET['preset_content'].'" '):(''));?> rows="8" maxlength="2048"></textarea></div>
+			<div class="col-sm-12 col-md"><textarea id="txt" class="doc" rows="8" maxlength="2048"></textarea></div>
 		</div>
 
 		<div class="row">

@@ -15,7 +15,7 @@ func (db *Database) CreateRetryDelivery(ctx TxContext, client models.Client, msg
 	now := time.Now().UTC()
 	next := now.Add(5 * time.Second)
 
-	res, err := tx.ExecContext(ctx, "INSERT INTO deliveries (scn_message_id, receiver_user_id, receiver_client_id, timestamp_created, timestamp_finalized, status, fcm_message_id, next_delivery) VALUES (?, ?, ?, ?, ?, ?, ?)",
+	res, err := tx.ExecContext(ctx, "INSERT INTO deliveries (scn_message_id, receiver_user_id, receiver_client_id, timestamp_created, timestamp_finalized, status, fcm_message_id, next_delivery) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
 		msg.SCNMessageID,
 		client.UserID,
 		client.ClientID,
@@ -55,7 +55,7 @@ func (db *Database) CreateSuccessDelivery(ctx TxContext, client models.Client, m
 
 	now := time.Now().UTC()
 
-	res, err := tx.ExecContext(ctx, "INSERT INTO deliveries (scn_message_id, receiver_user_id, receiver_client_id, timestamp_created, timestamp_finalized, status, fcm_message_id, next_delivery) VALUES (?, ?, ?, ?, ?, ?, ?)",
+	res, err := tx.ExecContext(ctx, "INSERT INTO deliveries (scn_message_id, receiver_user_id, receiver_client_id, timestamp_created, timestamp_finalized, status, fcm_message_id, next_delivery) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
 		msg.SCNMessageID,
 		client.UserID,
 		client.ClientID,
