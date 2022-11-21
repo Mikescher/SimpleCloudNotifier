@@ -2,6 +2,8 @@
 
 //TODO
 
+ - remove fcm/goog_api keys from repo (and invalidate them !!)
+
  - migration script for existing data
 
  - ack/read deliveries && return ack-count  (? or not, how to query?)
@@ -9,8 +11,8 @@
  - verify pro_token
  - full-text-search: https://www.sqlite.org/fts5.html#contentless_tables
 
- - update html (--channel, api doku, better send route, etc)
  - dark mode toggle for html
+ - app-store link in HTML
 
  - deploy
 

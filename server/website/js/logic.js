@@ -10,22 +10,24 @@ function send()
 
 	let uid = document.getElementById("uid");
 	let key = document.getElementById("ukey");
-	let msg = document.getElementById("msg");
-	let txt = document.getElementById("txt");
+	let tit = document.getElementById("tit");
+	let cnt = document.getElementById("cnt");
 	let pio = document.getElementById("prio");
+	let cha = document.getElementById("chan");
 
 	uid.classList.remove('input-invalid');
 	key.classList.remove('input-invalid');
 	msg.classList.remove('input-invalid');
-	txt.classList.remove('input-invalid');
+	cnt.classList.remove('input-invalid');
 	pio.classList.remove('input-invalid');
 
 	let data = new FormData();
 	data.append('user_id', uid.value);
 	data.append('user_key', key.value);
-	data.append('title', msg.value);
-	data.append('content', txt.value);
-	data.append('priority', pio.value);
+	if (tit.value !== '') data.append('title', tit.value);
+	if (cnt.value !== '') data.append('content', cnt.value);
+	if (pio.value !== '') data.append('priority', pio.value);
+	if (cha.value !== '') data.append('channel', cha.value);
 
 	let xhr = new XMLHttpRequest();
 	xhr.open('POST', '/send.php', true);
@@ -41,9 +43,10 @@ function send()
 			{
 				if (resp.errhighlight === 101) uid.classList.add('input-invalid');
 				if (resp.errhighlight === 102) key.classList.add('input-invalid');
-				if (resp.errhighlight === 103) msg.classList.add('input-invalid');
-				if (resp.errhighlight === 104) txt.classList.add('input-invalid');
+				if (resp.errhighlight === 103) tit.classList.add('input-invalid');
+				if (resp.errhighlight === 104) cnt.classList.add('input-invalid');
 				if (resp.errhighlight === 105) pio.classList.add('input-invalid');
+				if (resp.errhighlight === 106) cha.classList.add('input-invalid');
 
 				Toastify({
 					text: resp.message,
@@ -62,7 +65,8 @@ function send()
 					'&quota_remain=' + (resp.quota_max-resp.quota) +
 					'&quota_max=' + resp.quota_max +
 					'&preset_user_id=' + uid.value +
-					'&preset_user_key=' + key.value;
+					'&preset_user_key=' + key.value +
+					'&preset_channel=' + cha.value;
 			}
 		}
 		else
@@ -85,23 +89,21 @@ window.addEventListener("load", function ()
 {
 	const qp = new URLSearchParams(window.location.search);
 
-	const btnSend = document.getElementById("btnSend");
-	const selPrio = document.getElementById("prio");
-	const txtKey  = document.getElementById("ukey");
-	const txtUID  = document.getElementById("uid");
-	const txtTitl = document.getElementById("msg");
-	const txtCont = document.getElementById("txt");
+	let btn = document.getElementById("btnSend");
+	let uid = document.getElementById("uid");
+	let key = document.getElementById("ukey");
+	let tit = document.getElementById("tit");
+	let cnt = document.getElementById("cnt");
+	let pio = document.getElementById("prio");
+	let cha = document.getElementById("chan");
 
-	btnSend.onclick = function () { send(); return false; };
+	btn.onclick = function () { send(); return false; };
 
-	if (qp.has('preset_priority')) selPrio.selectedIndex = parseInt(qp.get("preset_priority"));
-
-	if (qp.has('preset_user_key')) txtKey.value = qp.get("preset_user_key");
-
-	if (qp.has('preset_user_id'))  txtUID.value = qp.get("preset_user_id");
-
-	if (qp.has('preset_title'))    txtTitl.value = qp.get("preset_title");
-
-	if (qp.has('preset_content'))  txtCont.value = qp.get("preset_content");
+	if (qp.has('preset_priority')) pio.selectedIndex = parseInt(qp.get("preset_priority"));
+	if (qp.has('preset_user_key')) key.value         =          qp.get("preset_user_key");
+	if (qp.has('preset_user_id'))  uid.value         =          qp.get("preset_user_id");
+	if (qp.has('preset_title'))    tit.value         =          qp.get("preset_title");
+	if (qp.has('preset_content'))  cnt.value         =          qp.get("preset_content");
+	if (qp.has('preset_channel'))  cha.value         =          qp.get("preset_channel");
 
 }, false);

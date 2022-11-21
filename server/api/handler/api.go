@@ -1356,6 +1356,9 @@ func (h APIHandler) CreateMessage(g *gin.Context) ginresp.HTTPResponse {
 	if b.Content != nil && len(*b.Content) > user.MaxContentLength() {
 		return ginresp.SendAPIError(g, 400, apierr.CONTENT_TOO_LONG, 104, fmt.Sprintf("Content too long (%d characters; max := %d characters)", len(*b.Content), user.MaxContentLength()), nil)
 	}
+	if len(channelName) > user.MaxChannelNameLength() {
+		return ginresp.SendAPIError(g, 400, apierr.CONTENT_TOO_LONG, 106, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
+	}
 
 	if b.UserMessageID != nil {
 		msg, err := h.database.GetMessageByUserMessageID(ctx, *b.UserMessageID)

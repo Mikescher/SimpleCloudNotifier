@@ -79,6 +79,10 @@ func (u User) DefaultChannel() string {
 	return "main"
 }
 
+func (u User) MaxChannelNameLength() int {
+	return 120
+}
+
 type UserJSON struct {
 	UserID            UserID  `json:"user_id"`
 	Username          *string `json:"username"`

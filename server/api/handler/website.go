@@ -4,43 +4,47 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/website"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"regexp"
 	"strings"
 )
 
 type WebsiteHandler struct {
-	app *logic.Application
+	app         *logic.Application
+	rexTemplate *regexp.Regexp
 }
 
 func NewWebsiteHandler(app *logic.Application) WebsiteHandler {
 	return WebsiteHandler{
-		app: app,
+		app:         app,
+		rexTemplate: regexp.MustCompile("{{template\\|[A-Za-z0-9_\\-.]+}}"),
 	}
 }
 
 func (h WebsiteHandler) Index(g *gin.Context) ginresp.HTTPResponse {
-	return h.serveAsset(g, "index.html")
+	return h.serveAsset(g, "index.html", true)
 }
 
 func (h WebsiteHandler) APIDocs(g *gin.Context) ginresp.HTTPResponse {
-	return h.serveAsset(g, "api.html")
+	return h.serveAsset(g, "api.html", true)
 }
 
 func (h WebsiteHandler) APIDocsMore(g *gin.Context) ginresp.HTTPResponse {
-	return h.serveAsset(g, "api_more.html")
+	return h.serveAsset(g, "api_more.html", true)
 }
 
 func (h WebsiteHandler) MessageSent(g *gin.Context) ginresp.HTTPResponse {
-	return h.serveAsset(g, "message_sent.html")
+	return h.serveAsset(g, "message_sent.html", true)
 }
 
 func (h WebsiteHandler) FaviconIco(g *gin.Context) ginresp.HTTPResponse {
-	return h.serveAsset(g, "favicon.ico")
+	return h.serveAsset(g, "favicon.ico", false)
 }
 
 func (h WebsiteHandler) FaviconPNG(g *gin.Context) ginresp.HTTPResponse {
-	return h.serveAsset(g, "favicon.png")
+	return h.serveAsset(g, "favicon.png", false)
 }
 
 func (h WebsiteHandler) Javascript(g *gin.Context) ginresp.HTTPResponse {
@@ -53,7 +57,7 @@ func (h WebsiteHandler) Javascript(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
-	return h.serveAsset(g, "js/"+u.Filename)
+	return h.serveAsset(g, "js/"+u.Filename, false)
 }
 
 func (h WebsiteHandler) CSS(g *gin.Context) ginresp.HTTPResponse {
@@ -66,13 +70,30 @@ func (h WebsiteHandler) CSS(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
-	return h.serveAsset(g, "css/"+u.Filename)
+	return h.serveAsset(g, "css/"+u.Filename, false)
 }
 
-func (h WebsiteHandler) serveAsset(g *gin.Context, fn string) ginresp.HTTPResponse {
+func (h WebsiteHandler) serveAsset(g *gin.Context, fn string, repl bool) ginresp.HTTPResponse {
 	data, err := website.Assets.ReadFile(fn)
 	if err != nil {
 		return ginresp.Status(http.StatusNotFound)
+	}
+
+	if repl {
+		failed := false
+		data = h.rexTemplate.ReplaceAllFunc(data, func(match []byte) []byte {
+			prefix := len("{{template|")
+			suffix := len("}}")
+			fnSub := match[prefix : len(match)-suffix]
+			subdata, err := website.Assets.ReadFile(string(fnSub))
+			if err != nil {
+				failed = true
+			}
+			return subdata
+		})
+		if failed {
+			return ginresp.InternalError(errors.New("template replacement failed"))
+		}
 	}
 
 	mime := "text/plain"

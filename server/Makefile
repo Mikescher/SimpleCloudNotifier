@@ -5,7 +5,7 @@ PORT=9090
 NAMESPACE=$(shell git rev-parse --abbrev-ref HEAD)
 HASH=$(shell git rev-parse HEAD)
 
-build:
+build: swagger fmt
 	rm -f ./_build/scn_backend
 	CGO_ENABLED=1 go build -v -o _build/scn_backend -tags timetzdata ./cmd/scnserver
 
@@ -13,7 +13,7 @@ run: build
 	mkdir -p .run-data
 	_build/scn_backend
 
-docker:
+docker: build
 	[ ! -f "DOCKER_GIT_INFO" ] || rm DOCKER_GIT_INFO
 	git rev-parse --abbrev-ref HEAD    >> DOCKER_GIT_INFO
 	git rev-parse              HEAD    >> DOCKER_GIT_INFO
@@ -33,7 +33,7 @@ swagger:
 	which swag || go install github.com/swaggo/swag/cmd/swag@latest
 	swag init -generalInfo api/router.go --output ./swagger/ --outputTypes "json,yaml"
 
-run-docker-local:
+run-docker-local: docker
 	mkdir -p .run-data
 	docker run --rm \
 	           --init \
@@ -42,7 +42,7 @@ run-docker-local:
 			   --publish "8080:80" \
 			   $(DOCKER_NAME):latest
 
-inspect-docker:
+inspect-docker: docker
 	mkdir -p .run-data
 	docker run -ti \
 	           --rm \
@@ -50,7 +50,7 @@ inspect-docker:
 	           $(DOCKER_NAME):latest \
 	           bash
 
-push-docker:
+push-docker: docker
 	docker image push "$(DOCKER_REPO)/$(DOCKER_NAME):$(HASH)"
 	docker image push "$(DOCKER_REPO)/$(DOCKER_NAME):$(NAMESPACE)-latest"
 	docker image push "$(DOCKER_REPO)/$(DOCKER_NAME):latest"

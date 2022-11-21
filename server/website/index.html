@@ -21,7 +21,9 @@
 
 	<form id="mainpnl">
 
-		<a tabindex="-1" href="https://play.google.com/store/apps/details?id=com.blackforestbytes.simplecloudnotifier" class="button bordered" id="tl_link"><span class="icn-google-play"></span></a>
+		<a tabindex="-1" href="https://play.google.com/store/apps/details?id=com.blackforestbytes.simplecloudnotifier" class="button bordered" id="tl_link1"><span class="icn-google-play"></span></a>
+		<a tabindex="-1" href="#"                                                                                      class="button bordered" id="tl_link2"><span class="icn-app-store"></span></a>
+
 		<a tabindex="-1" href="/api" class="button bordered" id="tr_link">API</a>
 
         <a tabindex="-1" href="/" class="linkcaption"><h1>Simple Cloud Notifier</h1></a>
@@ -36,6 +38,11 @@
 			<div class="col-sm-12 col-md"><input placeholder="Key" id="ukey" class="doc" type="text" maxlength="64"></div>
 		</div>
 
+		<div class="row responsive-label">
+			<div class="col-sm-12 col-md-3"><label for="chan" class="doc">Channel</label></div>
+			<div class="col-sm-12 col-md"><input placeholder="Channel Name" id="chan" class="doc" type="text" maxlength="80"></div>
+		</div>
+
         <div class="row responsive-label">
             <div class="col-sm-12 col-md-3"><label for="prio" class="doc">Priority</label></div>
             <div class="col-sm-12 col-md">
@@ -48,13 +55,13 @@
         </div>
 
 		<div class="row responsive-label">
-			<div class="col-sm-12 col-md-3"><label for="msg" class="doc">Message Title</label></div>
-			<div class="col-sm-12 col-md"><input placeholder="Message" id="msg" class="doc" type="text" maxlength="80"></div>
+			<div class="col-sm-12 col-md-3"><label for="tit" class="doc">Message Title</label></div>
+			<div class="col-sm-12 col-md"><input placeholder="Message" id="tit" class="doc" type="text" maxlength="80"></div>
 		</div>
 
 		<div class="row responsive-label">
-			<div class="col-sm-12 col-md-3"><label for="txt" class="doc">Message Content</label></div>
-			<div class="col-sm-12 col-md"><textarea id="txt" class="doc" rows="8" maxlength="2048"></textarea></div>
+			<div class="col-sm-12 col-md-3"><label for="cnt" class="doc">Message Content</label></div>
+			<div class="col-sm-12 col-md"><textarea id="cnt" class="doc" rows="8" maxlength="2048"></textarea></div>
 		</div>
 
 		<div class="row">

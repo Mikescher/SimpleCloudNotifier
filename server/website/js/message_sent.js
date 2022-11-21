@@ -14,7 +14,10 @@ window.addEventListener("load", function ()
 	const preset_user_id  = qp.get('preset_user_id')  ?? 'ERR';
 	const preset_user_key = qp.get('preset_user_key') ?? 'ERR';
 
-	linkSucc.setAttribute("href", "/?preset_user_id="+preset_user_id+"&preset_user_key="+preset_user_key);
+	let hrefBack = "/?preset_user_id="+preset_user_id+"&preset_user_key="+preset_user_key
+	if (qp.has('preset_channel') && qp.get('preset_channel') !== '') hrefBack += "&preset_channel="+qp.get('preset_channel')
+
+	linkSucc.setAttribute("href", hrefBack);
 
 	if (qp.get("ok") === "1") {
 

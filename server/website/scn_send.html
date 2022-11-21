@@ -1,0 +1,131 @@
+
+<!-- https://hilite.me/  |  bash  |  borland  -->
+
+<!-- HTML generated using hilite.me --><span style="color: #008800; font-style: italic">#!/usr/bin/env bash</span>
+
+<span style="color: #008800; font-style: italic">#</span>
+<span style="color: #008800; font-style: italic"># Wrapper around SCN ( https://scn.blackforestbytes.com/ )</span>
+<span style="color: #008800; font-style: italic"># ========================================================</span>
+<span style="color: #008800; font-style: italic">#</span>
+<span style="color: #008800; font-style: italic"># ./scn_send [@channel] title [content] [priority]</span>
+<span style="color: #008800; font-style: italic">#</span>
+<span style="color: #008800; font-style: italic">#</span>
+<span style="color: #008800; font-style: italic"># Call with   scn_send              &quot;${title}&quot;</span>
+<span style="color: #008800; font-style: italic">#        or   scn_send              &quot;${title}&quot; ${content}&quot;</span>
+<span style="color: #008800; font-style: italic">#        or   scn_send              &quot;${title}&quot; ${content}&quot; &quot;${priority:0|1|2}&quot;</span>
+<span style="color: #008800; font-style: italic">#        or   scn_send &quot;@${channel} &quot;${title}&quot;</span>
+<span style="color: #008800; font-style: italic">#        or   scn_send &quot;@${channel} &quot;${title}&quot; ${content}&quot;</span>
+<span style="color: #008800; font-style: italic">#        or   scn_send &quot;@${channel} &quot;${title}&quot; ${content}&quot; &quot;${priority:0|1|2}&quot;</span>
+<span style="color: #008800; font-style: italic">#</span>
+<span style="color: #008800; font-style: italic">#</span>
+
+<span style="color: #008800; font-style: italic">################################################################################</span>
+<span style="color: #008800; font-style: italic"># INSERT YOUR DATA HERE                                                        #</span>
+<span style="color: #008800; font-style: italic">################################################################################</span>
+user_id=<span style="color: #0000FF">&quot;999&quot;</span>
+user_key=<span style="color: #0000FF">&quot;??&quot;</span>
+<span style="color: #008800; font-style: italic">################################################################################</span>
+
+usage() {
+    echo <span style="color: #0000FF">&quot;Usage: &quot;</span>
+    echo <span style="color: #0000FF">&quot;  scn_send [@channel] title [content] [priority]&quot;</span>
+    echo <span style="color: #0000FF">&quot;&quot;</span>
+}
+
+args=( <span style="color: #0000FF">&quot;$@&quot;</span> )
+
+title=$1
+content=<span style="color: #0000FF">&quot;&quot;</span>
+channel=<span style="color: #0000FF">&quot;&quot;</span>
+priority=1
+usr_msg_id=<span style="color: #000080; font-weight: bold">$(</span>uuidgen<span style="color: #000080; font-weight: bold">)</span>
+sendtime=<span style="color: #000080; font-weight: bold">$(</span>date +%s<span style="color: #000080; font-weight: bold">)</span>
+
+<span style="color: #000080; font-weight: bold">if</span> [ <span style="color: #000080; font-weight: bold">${#</span>args[@]<span style="color: #000080; font-weight: bold">}</span> -lt 1 ]; <span style="color: #000080; font-weight: bold">then</span>
+<span style="color: #000080; font-weight: bold">    </span>echo <span style="color: #0000FF">&quot;[ERROR]: no title supplied via parameter&quot;</span> 1&gt;&amp;2
+    usage
+    exit 1
+<span style="color: #000080; font-weight: bold">fi</span>
+
+<span style="color: #000080; font-weight: bold">if</span> [[ <span style="color: #0000FF">&quot;${args[0]}&quot;</span> =~ ^@.* ]]; <span style="color: #000080; font-weight: bold">then</span>
+<span style="color: #000080; font-weight: bold">	</span>channel=<span style="color: #0000FF">&quot;${args[0]}&quot;</span>
+    unset <span style="color: #0000FF">&quot;args[0]&quot;</span>
+	channel=<span style="color: #0000FF">&quot;${channel:1}&quot;</span>
+<span style="color: #000080; font-weight: bold">fi</span>
+
+<span style="color: #000080; font-weight: bold">if</span> [ <span style="color: #000080; font-weight: bold">${#</span>args[@]<span style="color: #000080; font-weight: bold">}</span> -lt 1 ]; <span style="color: #000080; font-weight: bold">then</span>
+<span style="color: #000080; font-weight: bold">    </span>echo <span style="color: #0000FF">&quot;[ERROR]: no title supplied via parameter&quot;</span> 1&gt;&amp;2
+    usage
+    exit 1
+<span style="color: #000080; font-weight: bold">fi</span>
+
+title=<span style="color: #0000FF">&quot;${args[0]}&quot;</span>
+content=<span style="color: #0000FF">&quot;&quot;</span>
+sendtime=<span style="color: #000080; font-weight: bold">$(</span>date +%s<span style="color: #000080; font-weight: bold">)</span>
+
+<span style="color: #000080; font-weight: bold">if</span> [ <span style="color: #000080; font-weight: bold">${#</span>args[@]<span style="color: #000080; font-weight: bold">}</span> -gt 1 ]; <span style="color: #000080; font-weight: bold">then</span>
+<span style="color: #000080; font-weight: bold">    </span>content=<span style="color: #0000FF">&quot;${args[0]}&quot;</span>
+    unset <span style="color: #0000FF">&quot;args[0]&quot;</span>
+<span style="color: #000080; font-weight: bold">fi</span>
+
+<span style="color: #000080; font-weight: bold">if</span> [ <span style="color: #000080; font-weight: bold">${#</span>args[@]<span style="color: #000080; font-weight: bold">}</span> -gt 1 ]; <span style="color: #000080; font-weight: bold">then</span>
+<span style="color: #000080; font-weight: bold">    </span>priority=<span style="color: #0000FF">&quot;${args[0]}&quot;</span>
+    unset <span style="color: #0000FF">&quot;args[0]&quot;</span>
+<span style="color: #000080; font-weight: bold">fi</span>
+
+<span style="color: #000080; font-weight: bold">if</span> [ <span style="color: #000080; font-weight: bold">${#</span>args[@]<span style="color: #000080; font-weight: bold">}</span> -gt 1 ]; <span style="color: #000080; font-weight: bold">then</span>
+<span style="color: #000080; font-weight: bold">        </span>echo <span style="color: #0000FF">&quot;Too many arguments to scn_send&quot;</span> 1&gt;&amp;2
+        usage
+        exit 1
+<span style="color: #000080; font-weight: bold">fi</span>
+
+
+<span style="color: #000080; font-weight: bold">while </span>true ; <span style="color: #000080; font-weight: bold">do</span>
+
+<span style="color: #000080; font-weight: bold">    </span>curlresp=<span style="color: #000080; font-weight: bold">$(</span>curl --silent                             <span style="color: #0000FF">\</span>
+                    --output /dev/null                   <span style="color: #0000FF">\</span>
+                    --write-out <span style="color: #0000FF">&quot;%{http_code}&quot;</span>           <span style="color: #0000FF">\</span>
+                    --data <span style="color: #0000FF">&quot;user_id=$user_id&quot;</span>            <span style="color: #0000FF">\</span>
+                    --data <span style="color: #0000FF">&quot;user_key=$user_key&quot;</span>          <span style="color: #0000FF">\</span>
+                    --data <span style="color: #0000FF">&quot;title=$title&quot;</span>                <span style="color: #0000FF">\</span>
+                    --data <span style="color: #0000FF">&quot;timestamp=$sendtime&quot;</span>         <span style="color: #0000FF">\</span>
+                    --data <span style="color: #0000FF">&quot;content=$content&quot;</span>            <span style="color: #0000FF">\</span>
+                    --data <span style="color: #0000FF">&quot;priority=$priority&quot;</span>          <span style="color: #0000FF">\</span>
+                    --data <span style="color: #0000FF">&quot;msg_id=$usr_msg_id&quot;</span>          <span style="color: #0000FF">\</span>
+                    --data <span style="color: #0000FF">&quot;channel=$channel&quot;</span>            <span style="color: #0000FF">\</span>
+                    <span style="color: #0000FF">&quot;https://scn.blackforestbytes.com/&quot;</span>  <span style="color: #000080; font-weight: bold">)</span>
+
+    <span style="color: #000080; font-weight: bold">if</span> [ <span style="color: #0000FF">&quot;$curlresp&quot;</span> == 200 ] ; <span style="color: #000080; font-weight: bold">then</span>
+<span style="color: #000080; font-weight: bold">        </span>echo <span style="color: #0000FF">&quot;Successfully send&quot;</span>
+        exit 0
+    <span style="color: #000080; font-weight: bold">fi</span>
+
+<span style="color: #000080; font-weight: bold">    if</span> [ <span style="color: #0000FF">&quot;$curlresp&quot;</span> == 400 ] ; <span style="color: #000080; font-weight: bold">then</span>
+<span style="color: #000080; font-weight: bold">        </span>echo <span style="color: #0000FF">&quot;Bad request - something went wrong&quot;</span> 1&gt;&amp;2
+        exit 1
+    <span style="color: #000080; font-weight: bold">fi</span>
+
+<span style="color: #000080; font-weight: bold">    if</span> [ <span style="color: #0000FF">&quot;$curlresp&quot;</span> == 401 ] ; <span style="color: #000080; font-weight: bold">then</span>
+<span style="color: #000080; font-weight: bold">        </span>echo <span style="color: #0000FF">&quot;Unauthorized - wrong userid/userkey&quot;</span> 1&gt;&amp;2
+        exit 1
+    <span style="color: #000080; font-weight: bold">fi</span>
+
+<span style="color: #000080; font-weight: bold">    if</span> [ <span style="color: #0000FF">&quot;$curlresp&quot;</span> == 403 ] ; <span style="color: #000080; font-weight: bold">then</span>
+<span style="color: #000080; font-weight: bold">        </span>echo <span style="color: #0000FF">&quot;Quota exceeded - wait one hour before re-try&quot;</span> 1&gt;&amp;2
+        sleep 3600
+    <span style="color: #000080; font-weight: bold">fi</span>
+
+<span style="color: #000080; font-weight: bold">    if</span> [ <span style="color: #0000FF">&quot;$curlresp&quot;</span> == 412 ] ; <span style="color: #000080; font-weight: bold">then</span>
+<span style="color: #000080; font-weight: bold">        </span>echo <span style="color: #0000FF">&quot;Precondition Failed - No device linked&quot;</span> 1&gt;&amp;2
+        exit 1
+    <span style="color: #000080; font-weight: bold">fi</span>
+
+<span style="color: #000080; font-weight: bold">    if</span> [ <span style="color: #0000FF">&quot;$curlresp&quot;</span> == 500 ] ; <span style="color: #000080; font-weight: bold">then</span>
+<span style="color: #000080; font-weight: bold">        </span>echo <span style="color: #0000FF">&quot;Internal server error - waiting for better times&quot;</span> 1&gt;&amp;2
+        sleep 60
+    <span style="color: #000080; font-weight: bold">fi</span>
+
+    <span style="color: #008800; font-style: italic"># if none of the above matched we probably hav no network ...</span>
+    echo <span style="color: #0000FF">&quot;Send failed (response code $curlresp) ... try again in 5s&quot;</span> 1&gt;&amp;2
+    sleep 5
+<span style="color: #000080; font-weight: bold">done</span>

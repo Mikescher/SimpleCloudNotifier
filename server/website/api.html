@@ -19,22 +19,27 @@
     </div>
 
 	<div id="mainpnl">
-        <a tabindex="-1" href="https://play.google.com/store/apps/details?id=com.blackforestbytes.simplecloudnotifier" class="button bordered" id="tl_link"><span class="icn-google-play"></span></a>
+        <a tabindex="-1" href="/documentation/swagger" class="button bordered" id="tl_linkDocs"><span class="icn-openapi"></span><span class="tl_btntxt">API Documentation</span></a>
+
         <a tabindex="-1" href="/" class="button bordered" id="tr_link">Send</a>
 
         <a tabindex="-1" href="/" class="linkcaption"><h1>Simple Cloud Notifier</h1></a>
 
         <p>Get your user-id and user-key from the app and send notifications to your phone by performing a POST request against <code>https://simplecloudnotifier.blackforestbytes.com/</code></p>
-        <pre>curl                                          \
-    --data "user_id={userid}"                 \
-    --data "user_key={userkey}"               \
-    --data "title={message_title}"            \
-    --data "content={message_body}"           \
-    --data "priority={0|1|2}"                 \
-    --data "msg_id={unique_message_id}"       \
+        <pre>
+curl                                           \
+    --data "user_id=${userid}"                 \
+    --data "user_key=${userkey}"               \
+    --data "title=${message_title}"            \
+    --data "content=${message_body}"           \
+    --data "priority=${0|1|2}"                 \
+    --data "msg_id=$(uuidgen)"                 \
+    --data "timestamp=$(date +%s)"             \
+    --data "channel={channel_name}"            \
     https://scn.blackforestbytes.com/</pre>
-    <p>The <code>content</code>, <code>priority</code> and <code>msg_id</code> parameters are optional, you can also send message with only a title and the default priority</p>
-        <pre>curl                                          \
+    <p>Most parameters are optional, you can send a message with only a title (default priority and channel will be used)</p>
+        <pre>
+curl                                          \
     --data "user_id={userid}"                 \
     --data "user_key={userkey}"               \
     --data "title={message_title}"            \

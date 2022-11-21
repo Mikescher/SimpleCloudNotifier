@@ -44,7 +44,6 @@ func NewMessageHandler(app *logic.Application) MessageHandler {
 // @Failure     400        {object} ginresp.apiError
 // @Failure     401        {object} ginresp.apiError
 // @Failure     403        {object} ginresp.apiError
-// @Failure     404        {object} ginresp.apiError
 // @Failure     500        {object} ginresp.apiError
 //
 // @Router      /send.php [POST]
@@ -93,10 +92,9 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Success     200        {object} handler.sendMessageInternal.response
 // @Failure     400        {object} ginresp.apiError
-// @Failure     401        {object} ginresp.apiError
-// @Failure     403        {object} ginresp.apiError
-// @Failure     404        {object} ginresp.apiError
-// @Failure     500        {object} ginresp.apiError
+// @Failure     401        {object} ginresp.apiError "The user_id was not found or the user_key is wrong"
+// @Failure     403        {object} ginresp.apiError "The user has exceeded its daily quota - wait 24 hours or upgrade your account"
+// @Failure     500        {object} ginresp.apiError "An internal server error occurred - try again later"
 //
 // @Router      /     [POST]
 // @Router      /send [POST]
@@ -211,6 +209,9 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 	}
 	if Content != nil && len(*Content) > user.MaxContentLength() {
 		return ginresp.SendAPIError(g, 400, apierr.CONTENT_TOO_LONG, 104, fmt.Sprintf("Content too long (%d characters; max := %d characters)", len(*Content), user.MaxContentLength()), nil)
+	}
+	if len(channelName) > user.MaxChannelNameLength() {
+		return ginresp.SendAPIError(g, 400, apierr.CONTENT_TOO_LONG, 106, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
 	}
 
 	if UserMessageID != nil {

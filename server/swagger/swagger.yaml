@@ -514,19 +514,16 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
+          description: The user_id was not found or the user_key is wrong
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
+          description: The user has exceeded its daily quota - wait 24 hours or upgrade
+            your account
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: An internal server error occurred - try again later
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Send a new message
@@ -1687,19 +1684,16 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
+          description: The user_id was not found or the user_key is wrong
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
+          description: The user has exceeded its daily quota - wait 24 hours or upgrade
+            your account
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: An internal server error occurred - try again later
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Send a new message
@@ -1766,10 +1760,6 @@ paths:
             $ref: '#/definitions/ginresp.apiError'
         "403":
           description: Forbidden
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
