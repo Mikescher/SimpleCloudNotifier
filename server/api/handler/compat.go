@@ -28,6 +28,8 @@ func NewCompatHandler(app *logic.Application) CompatHandler {
 //
 // @Summary Register a new account
 // @ID      compat-register
+// @Tags    API-v1
+//
 // @Deprecated
 //
 // @Param   fcm_token query    string true "the (android) fcm token"
@@ -134,6 +136,8 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Summary Get information about the current user
 // @ID      compat-info
+// @Tags    API-v1
+//
 // @Deprecated
 //
 // @Param   user_id  query    string true "the user_id"
@@ -216,6 +220,8 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Summary Acknowledge that a message was received
 // @ID      compat-ack
+// @Tags    API-v1
+//
 // @Deprecated
 //
 // @Param   user_id    query    string true "the user_id"
@@ -287,6 +293,8 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Summary Return all not-acknowledged messages
 // @ID      compat-requery
+// @Tags    API-v1
+//
 // @Deprecated
 //
 // @Param   user_id  query    string true "the user_id"
@@ -352,6 +360,8 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Summary Set the fcm-token (android)
 // @ID      compat-update
+// @Tags    API-v1
+//
 // @Deprecated
 //
 // @Param   user_id   query    string true "the user_id"
@@ -463,6 +473,8 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Summary Get a whole (potentially truncated) message
 // @ID      compat-expand
+// @Tags    API-v1
+//
 // @Deprecated
 //
 // @Param   user_id    query    string true "The user_id"
@@ -548,6 +560,8 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Summary Upgrade a free account to a paid account
 // @ID      compat-upgrade
+// @Tags    API-v1
+//
 // @Deprecated
 //
 // @Param   user_id   query    string true "the user_id"

@@ -1,4 +1,4 @@
-package firebase
+package push
 
 import (
 	"context"
@@ -22,7 +22,7 @@ import (
 	"time"
 )
 
-type FBOAuth2 struct {
+type FirebaseOAuth2 struct {
 	client *http.Client
 
 	scopes       []string
@@ -35,14 +35,14 @@ type FBOAuth2 struct {
 	privateKey  *rsa.PrivateKey
 }
 
-func NewAuth(tokenURL string, privKeyID string, cmail string, pemstr string) (*FBOAuth2, error) {
+func NewAuth(tokenURL string, privKeyID string, cmail string, pemstr string) (*FirebaseOAuth2, error) {
 
 	pkey, err := decodePemKey(pemstr)
 	if err != nil {
 		return nil, err
 	}
 
-	return &FBOAuth2{
+	return &FirebaseOAuth2{
 		client:       &http.Client{Timeout: 3 * time.Second},
 		tokenURL:     tokenURL,
 		privateKey:   pkey,
@@ -87,7 +87,7 @@ func decodePemKey(pemstr string) (*rsa.PrivateKey, error) {
 	return nil, errors.New(fmt.Sprintf("failed to parse private-key: [ %v | %v ]", err1, err2))
 }
 
-func (a *FBOAuth2) Token(ctx context.Context) (string, error) {
+func (a *FirebaseOAuth2) Token(ctx context.Context) (string, error) {
 	if a.currToken == nil || a.tokenExpiry == nil || a.tokenExpiry.Before(time.Now()) {
 		err := a.Refresh(ctx)
 		if err != nil {
@@ -98,7 +98,7 @@ func (a *FBOAuth2) Token(ctx context.Context) (string, error) {
 	return *a.currToken, nil
 }
 
-func (a *FBOAuth2) Refresh(ctx context.Context) error {
+func (a *FirebaseOAuth2) Refresh(ctx context.Context) error {
 
 	assertion, err := a.encodeAssertion(a.privateKey)
 	if err != nil {
@@ -153,7 +153,7 @@ func (a *FBOAuth2) Refresh(ctx context.Context) error {
 	return nil
 }
 
-func (a *FBOAuth2) encodeAssertion(key *rsa.PrivateKey) (string, error) {
+func (a *FirebaseOAuth2) encodeAssertion(key *rsa.PrivateKey) (string, error) {
 	headBin, err := json.Marshal(gin.H{"alg": "RS256", "typ": "JWT", "kid": a.privateKeyID})
 	if err != nil {
 		return "", err

@@ -527,7 +527,158 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Send a new message
-  /api-v2/messages:
+      tags:
+      - External
+  /api/ack.php:
+    get:
+      deprecated: true
+      operationId: compat-ack
+      parameters:
+      - description: the user_id
+        in: query
+        name: user_id
+        required: true
+        type: string
+      - description: the user_key
+        in: query
+        name: user_key
+        required: true
+        type: string
+      - description: the message id
+        in: query
+        name: scn_msg_id
+        required: true
+        type: string
+      - description: the user_id
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      - description: the user_key
+        in: formData
+        name: user_key
+        required: true
+        type: string
+      - description: the message id
+        in: formData
+        name: scn_msg_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ginresp.compatAPIError'
+      summary: Acknowledge that a message was received
+      tags:
+      - API-v1
+  /api/db-test:
+    get:
+      operationId: api-common-dbtest
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.DatabaseTest.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Check for a wroking database connection
+      tags:
+      - Common
+  /api/expand.php:
+    get:
+      deprecated: true
+      operationId: compat-expand
+      parameters:
+      - description: The user_id
+        in: query
+        name: user_id
+        required: true
+        type: string
+      - description: The user_key
+        in: query
+        name: user_key
+        required: true
+        type: string
+      - description: The message-id
+        in: query
+        name: scn_msg_id
+        required: true
+        type: string
+      - description: The user_id
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      - description: The user_key
+        in: formData
+        name: user_key
+        required: true
+        type: string
+      - description: The message-id
+        in: formData
+        name: scn_msg_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ginresp.compatAPIError'
+      summary: Get a whole (potentially truncated) message
+      tags:
+      - API-v1
+  /api/health:
+    get:
+      operationId: api-common-health
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.Health.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Server Health-checks
+      tags:
+      - Common
+  /api/info.php:
+    get:
+      deprecated: true
+      operationId: compat-info
+      parameters:
+      - description: the user_id
+        in: query
+        name: user_id
+        required: true
+        type: string
+      - description: the user_key
+        in: query
+        name: user_key
+        required: true
+        type: string
+      - description: the user_id
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      - description: the user_key
+        in: formData
+        name: user_key
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ginresp.compatAPIError'
+      summary: Get information about the current user
+      tags:
+      - API-v1
+  /api/messages:
     get:
       description: |-
         The next_page_token is an opaque token, the special value "@start" (or empty-string) is the beginning and "@end" is the end
@@ -570,6 +721,8 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: List all (subscribed) messages
+      tags:
+      - API-v2
     post:
       description: |-
         This is similar to the main route `POST -> https://scn.blackfrestbytes.com/`
@@ -619,7 +772,9 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Create a new message
-  /api-v2/messages/{mid}:
+      tags:
+      - API-v2
+  /api/messages/{mid}:
     patch:
       description: The user must own the message and request the resource with the
         ADMIN Key
@@ -652,715 +807,79 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Delete a single message
-  /api-v2/users/:
-    post:
-      operationId: api-user-create
-      parameters:
-      - description: ' '
-        in: body
-        name: post_body
-        schema:
-          $ref: '#/definitions/handler.CreateUser.body'
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.UserJSON'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: Create a new user
-  /api-v2/users/{uid}:
-    get:
-      operationId: api-user-get
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.UserJSON'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: Get a user
-    patch:
-      description: The body-values are optional, only send the ones you want to update
-      operationId: api-user-update
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      - description: Change the username (send an empty string to clear it)
-        in: body
-        name: username
-        schema:
-          type: string
-      - description: Send a verification of permium purchase
-        in: body
-        name: pro_token
-        schema:
-          type: string
-      - description: Send `true` to create a new read_key
-        in: body
-        name: read_key
-        schema:
-          type: string
-      - description: Send `true` to create a new send_key
-        in: body
-        name: send_key
-        schema:
-          type: string
-      - description: Send `true` to create a new admin_key
-        in: body
-        name: admin_key
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.UserJSON'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: (Partially) update a user
-  /api-v2/users/{uid}/channels:
-    get:
-      description: |-
-        The possible values for 'selector' are:
-        - "owned" Return all channels of the user
-        - "subscribed" Return all channels that the user is subscribing to
-        - "all" Return channels that the user owns or is subscribing
-        - "subscribed_any" Return all channels that the user is subscribing to (even unconfirmed)
-        - "all_any" Return channels that the user owns or is subscribing (even unconfirmed)
-      operationId: api-channels-list
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      - description: 'Filter channels (default: owned)'
-        enum:
-        - owned
-        - subscribed
-        - all
-        - subscribed_any
-        - all_any
-        in: query
-        name: selector
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.ListChannels.response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: List channels of a user (subscribed/owned)
-  /api-v2/users/{uid}/channels/{cid}:
-    get:
-      operationId: api-channels-get
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      - description: ChannelID
-        in: path
-        name: cid
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.ChannelJSON'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: List all channels of a user
-    patch:
-      operationId: api-channels-update
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      - description: ChannelID
-        in: path
-        name: cid
-        required: true
-        type: integer
-      - description: Send `true` to create a new subscribe_key
-        in: body
-        name: subscribe_key
-        schema:
-          type: string
-      - description: Send `true` to create a new send_key
-        in: body
-        name: send_key
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.ChannelJSON'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: (Partially) update a channel
-  /api-v2/users/{uid}/channels/{cid}/messages:
-    get:
-      description: |-
-        The next_page_token is an opaque token, the special value "@start" (or empty-string) is the beginning and "@end" is the end
-        Simply start the pagination without a next_page_token and get the next page by calling this endpoint with the returned next_page_token of the last query
-        If there are no more entries the token "@end" will be returned
-        By default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)
-      operationId: api-channel-messages
-      parameters:
-      - in: query
-        name: filter
-        type: string
-      - in: query
-        name: nextPageToken
-        type: string
-      - in: query
-        name: pageSize
-        type: integer
-      - in: query
-        name: trimmed
-        type: boolean
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.ListChannelMessages.response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: List messages of a channel
-  /api-v2/users/{uid}/channels/{cid}/subscriptions:
-    get:
-      operationId: api-chan-subscriptions-list
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      - description: ChannelID
-        in: path
-        name: cid
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.ListChannelSubscriptions.response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: List all subscriptions of a channel
-  /api-v2/users/{uid}/clients:
-    get:
-      operationId: api-clients-list
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.ListClients.response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: List all clients
-    post:
-      operationId: api-clients-delete
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      - description: ClientID
-        in: path
-        name: cid
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.ClientJSON'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: Delete a client
-  /api-v2/users/{uid}/clients/{cid}:
-    get:
-      operationId: api-clients-get
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      - description: ClientID
-        in: path
-        name: cid
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.ClientJSON'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: Get a single clients
-  /api-v2/users/{uid}/subscriptions:
-    get:
-      operationId: api-user-subscriptions-list
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.ListUserSubscriptions.response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: List all channels of a user
-    post:
-      operationId: api-subscriptions-create
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      - in: query
-        name: chanSubscribeKey
-        type: string
-      - description: ' '
-        in: body
-        name: post_data
-        schema:
-          $ref: '#/definitions/handler.CreateSubscription.body'
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.SubscriptionJSON'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: Creare/Request a subscription
-  /api-v2/users/{uid}/subscriptions/{sid}:
+      tags:
+      - API-v2
+  /api/ping:
     delete:
-      operationId: api-subscriptions-delete
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      - description: SubscriptionID
-        in: path
-        name: sid
-        required: true
-        type: integer
+      operationId: api-common-ping
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.SubscriptionJSON'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
+            $ref: '#/definitions/handler.pingResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/ginresp.apiError'
-      summary: Cancel (delete) subscription
+      summary: Simple endpoint to test connection (any http method)
+      tags:
+      - Common
     get:
-      operationId: api-subscriptions-get
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      - description: SubscriptionID
-        in: path
-        name: sid
-        required: true
-        type: integer
+      operationId: api-common-ping
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.SubscriptionJSON'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
+            $ref: '#/definitions/handler.pingResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/ginresp.apiError'
-      summary: Get a single subscription
+      summary: Simple endpoint to test connection (any http method)
+      tags:
+      - Common
     patch:
-      operationId: api-subscriptions-update
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      - description: SubscriptionID
-        in: path
-        name: sid
-        required: true
-        type: integer
+      operationId: api-common-ping
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.SubscriptionJSON'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
+            $ref: '#/definitions/handler.pingResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/ginresp.apiError'
-      summary: Update a subscription (e.g. confirm)
-  /api/ack.php:
-    get:
-      deprecated: true
-      operationId: compat-ack
-      parameters:
-      - description: the user_id
-        in: query
-        name: user_id
-        required: true
-        type: string
-      - description: the user_key
-        in: query
-        name: user_key
-        required: true
-        type: string
-      - description: the message id
-        in: query
-        name: scn_msg_id
-        required: true
-        type: string
-      - description: the user_id
-        in: formData
-        name: user_id
-        required: true
-        type: string
-      - description: the user_key
-        in: formData
-        name: user_key
-        required: true
-        type: string
-      - description: the message id
-        in: formData
-        name: scn_msg_id
-        required: true
-        type: string
+      summary: Simple endpoint to test connection (any http method)
+      tags:
+      - Common
+    post:
+      operationId: api-common-ping
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ginresp.compatAPIError'
-      summary: Acknowledge that a message was received
-  /api/expand.php:
-    get:
-      deprecated: true
-      operationId: compat-expand
-      parameters:
-      - description: The user_id
-        in: query
-        name: user_id
-        required: true
-        type: string
-      - description: The user_key
-        in: query
-        name: user_key
-        required: true
-        type: string
-      - description: The message-id
-        in: query
-        name: scn_msg_id
-        required: true
-        type: string
-      - description: The user_id
-        in: formData
-        name: user_id
-        required: true
-        type: string
-      - description: The user_key
-        in: formData
-        name: user_key
-        required: true
-        type: string
-      - description: The message-id
-        in: formData
-        name: scn_msg_id
-        required: true
-        type: string
+            $ref: '#/definitions/handler.pingResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Simple endpoint to test connection (any http method)
+      tags:
+      - Common
+    put:
+      operationId: api-common-ping
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ginresp.compatAPIError'
-      summary: Get a whole (potentially truncated) message
-  /api/info.php:
-    get:
-      deprecated: true
-      operationId: compat-info
-      parameters:
-      - description: the user_id
-        in: query
-        name: user_id
-        required: true
-        type: string
-      - description: the user_key
-        in: query
-        name: user_key
-        required: true
-        type: string
-      - description: the user_id
-        in: formData
-        name: user_id
-        required: true
-        type: string
-      - description: the user_key
-        in: formData
-        name: user_key
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
+            $ref: '#/definitions/handler.pingResponse'
+        "500":
+          description: Internal Server Error
           schema:
-            $ref: '#/definitions/ginresp.compatAPIError'
-      summary: Get information about the current user
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Simple endpoint to test connection (any http method)
+      tags:
+      - Common
   /api/register.php:
     get:
       deprecated: true
@@ -1408,6 +927,8 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.compatAPIError'
       summary: Register a new account
+      tags:
+      - API-v1
   /api/requery.php:
     get:
       deprecated: true
@@ -1439,6 +960,8 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.compatAPIError'
       summary: Return all not-acknowledged messages
+      tags:
+      - API-v1
   /api/update.php:
     get:
       deprecated: true
@@ -1480,6 +1003,8 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.compatAPIError'
       summary: Set the fcm-token (android)
+      tags:
+      - API-v1
   /api/upgrade.php:
     get:
       deprecated: true
@@ -1537,79 +1062,636 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.compatAPIError'
       summary: Upgrade a free account to a paid account
-  /db-test:
-    get:
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.DatabaseTest.response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-  /health:
-    get:
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.Health.response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-  /ping:
-    delete:
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.pingResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-    get:
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.pingResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-    patch:
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.pingResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
+      tags:
+      - API-v1
+  /api/users/:
     post:
+      operationId: api-user-create
+      parameters:
+      - description: ' '
+        in: body
+        name: post_body
+        schema:
+          $ref: '#/definitions/handler.CreateUser.body'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.pingResponse'
+            $ref: '#/definitions/handler.sendMessageInternal.response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/ginresp.apiError'
-    put:
+      summary: Create a new user
+      tags:
+      - API-v2
+  /api/users/{uid}:
+    get:
+      operationId: api-user-get
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.pingResponse'
+            $ref: '#/definitions/models.UserJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/ginresp.apiError'
+      summary: Get a user
+      tags:
+      - API-v2
+    patch:
+      description: The body-values are optional, only send the ones you want to update
+      operationId: api-user-update
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: Change the username (send an empty string to clear it)
+        in: body
+        name: username
+        schema:
+          type: string
+      - description: Send a verification of permium purchase
+        in: body
+        name: pro_token
+        schema:
+          type: string
+      - description: Send `true` to create a new read_key
+        in: body
+        name: read_key
+        schema:
+          type: string
+      - description: Send `true` to create a new send_key
+        in: body
+        name: send_key
+        schema:
+          type: string
+      - description: Send `true` to create a new admin_key
+        in: body
+        name: admin_key
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: (Partially) update a user
+      tags:
+      - API-v2
+  /api/users/{uid}/channels:
+    get:
+      description: |-
+        The possible values for 'selector' are:
+        - "owned" Return all channels of the user
+        - "subscribed" Return all channels that the user is subscribing to
+        - "all" Return channels that the user owns or is subscribing
+        - "subscribed_any" Return all channels that the user is subscribing to (even unconfirmed)
+        - "all_any" Return channels that the user owns or is subscribing (even unconfirmed)
+      operationId: api-channels-list
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: 'Filter channels (default: owned)'
+        enum:
+        - owned
+        - subscribed
+        - all
+        - subscribed_any
+        - all_any
+        in: query
+        name: selector
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListChannels.response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: List channels of a user (subscribed/owned)
+      tags:
+      - API-v2
+  /api/users/{uid}/channels/{cid}:
+    get:
+      operationId: api-channels-get
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: ChannelID
+        in: path
+        name: cid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ChannelJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: List all channels of a user
+      tags:
+      - API-v2
+    patch:
+      operationId: api-channels-update
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: ChannelID
+        in: path
+        name: cid
+        required: true
+        type: integer
+      - description: Send `true` to create a new subscribe_key
+        in: body
+        name: subscribe_key
+        schema:
+          type: string
+      - description: Send `true` to create a new send_key
+        in: body
+        name: send_key
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ChannelJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: (Partially) update a channel
+      tags:
+      - API-v2
+  /api/users/{uid}/channels/{cid}/messages:
+    get:
+      description: |-
+        The next_page_token is an opaque token, the special value "@start" (or empty-string) is the beginning and "@end" is the end
+        Simply start the pagination without a next_page_token and get the next page by calling this endpoint with the returned next_page_token of the last query
+        If there are no more entries the token "@end" will be returned
+        By default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)
+      operationId: api-channel-messages
+      parameters:
+      - in: query
+        name: filter
+        type: string
+      - in: query
+        name: nextPageToken
+        type: string
+      - in: query
+        name: pageSize
+        type: integer
+      - in: query
+        name: trimmed
+        type: boolean
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListChannelMessages.response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: List messages of a channel
+      tags:
+      - API-v2
+  /api/users/{uid}/channels/{cid}/subscriptions:
+    get:
+      operationId: api-chan-subscriptions-list
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: ChannelID
+        in: path
+        name: cid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListChannelSubscriptions.response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: List all subscriptions of a channel
+      tags:
+      - API-v2
+  /api/users/{uid}/clients:
+    get:
+      operationId: api-clients-list
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListClients.response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: List all clients
+      tags:
+      - API-v2
+    post:
+      operationId: api-clients-delete
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: ClientID
+        in: path
+        name: cid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ClientJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Delete a client
+      tags:
+      - API-v2
+  /api/users/{uid}/clients/{cid}:
+    get:
+      operationId: api-clients-get
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: ClientID
+        in: path
+        name: cid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ClientJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Get a single clients
+      tags:
+      - API-v2
+  /api/users/{uid}/subscriptions:
+    get:
+      operationId: api-user-subscriptions-list
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListUserSubscriptions.response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: List all channels of a user
+      tags:
+      - API-v2
+    post:
+      operationId: api-subscriptions-create
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - in: query
+        name: chanSubscribeKey
+        type: string
+      - description: ' '
+        in: body
+        name: post_data
+        schema:
+          $ref: '#/definitions/handler.CreateSubscription.body'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SubscriptionJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Creare/Request a subscription
+      tags:
+      - API-v2
+  /api/users/{uid}/subscriptions/{sid}:
+    delete:
+      operationId: api-subscriptions-delete
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: SubscriptionID
+        in: path
+        name: sid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SubscriptionJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Cancel (delete) subscription
+      tags:
+      - API-v2
+    get:
+      operationId: api-subscriptions-get
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: SubscriptionID
+        in: path
+        name: sid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SubscriptionJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Get a single subscription
+      tags:
+      - API-v2
+    patch:
+      operationId: api-subscriptions-update
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: SubscriptionID
+        in: path
+        name: sid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SubscriptionJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Update a subscription (e.g. confirm)
+      tags:
+      - API-v2
   /send:
     post:
       description: All parameter can be set via query-parameter or the json body.
@@ -1697,6 +1779,8 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Send a new message
+      tags:
+      - External
   /send.php:
     post:
       deprecated: true
@@ -1767,4 +1851,11 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Send a new message (compatibility)
+      tags:
+      - External
 swagger: "2.0"
+tags:
+- name: Common
+- name: External
+- name: API-v1
+- name: API-v2

@@ -34,14 +34,15 @@ func NewAPIHandler(app *logic.Application) APIHandler {
 //
 // @Summary Create a new user
 // @ID      api-user-create
+// @Tags    API-v2
 //
 // @Param   post_body body     handler.CreateUser.body false " "
 //
-// @Success 200       {object} models.UserJSON
+// @Success 200       {object} handler.sendMessageInternal.response
 // @Failure 400       {object} ginresp.apiError
 // @Failure 500       {object} ginresp.apiError
 //
-// @Router  /api-v2/users/ [POST]
+// @Router  /api/users/ [POST]
 func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 	type body struct {
 		FCMToken     string  `json:"fcm_token" binding:"required"`
@@ -117,6 +118,7 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Summary Get a user
 // @ID      api-user-get
+// @Tags    API-v2
 //
 // @Param   uid path     int true "UserID"
 //
@@ -126,7 +128,7 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404 {object} ginresp.apiError
 // @Failure 500 {object} ginresp.apiError
 //
-// @Router  /api-v2/users/{uid} [GET]
+// @Router  /api/users/{uid} [GET]
 func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid"`
@@ -159,6 +161,7 @@ func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 // @Summary     (Partially) update a user
 // @Description The body-values are optional, only send the ones you want to update
 // @ID          api-user-update
+// @Tags        API-v2
 //
 // @Param       uid       path     int    true  "UserID"
 //
@@ -174,7 +177,7 @@ func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 // @Failure     404       {object} ginresp.apiError
 // @Failure     500       {object} ginresp.apiError
 //
-// @Router      /api-v2/users/{uid} [PATCH]
+// @Router      /api/users/{uid} [PATCH]
 func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid"`
@@ -271,6 +274,7 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Summary List all clients
 // @ID      api-clients-list
+// @Tags    API-v2
 //
 // @Param   uid path     int true "UserID"
 //
@@ -280,7 +284,7 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404 {object} ginresp.apiError
 // @Failure 500 {object} ginresp.apiError
 //
-// @Router  /api-v2/users/{uid}/clients [GET]
+// @Router  /api/users/{uid}/clients [GET]
 func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid"`
@@ -314,6 +318,7 @@ func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Summary Get a single clients
 // @ID      api-clients-get
+// @Tags    API-v2
 //
 // @Param   uid path     int true "UserID"
 // @Param   cid path     int true "ClientID"
@@ -324,7 +329,7 @@ func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404 {object} ginresp.apiError
 // @Failure 500 {object} ginresp.apiError
 //
-// @Router  /api-v2/users/{uid}/clients/{cid} [GET]
+// @Router  /api/users/{uid}/clients/{cid} [GET]
 func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID   models.UserID   `uri:"uid"`
@@ -357,6 +362,7 @@ func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Summary Add a new clients
 // @ID      api-clients-create
+// @Tags    API-v2
 //
 // @Param   uid       path     int                    true  "UserID"
 //
@@ -368,7 +374,7 @@ func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404       {object} ginresp.apiError
 // @Failure 500       {object} ginresp.apiError
 //
-// @Router  /api-v2/users/{uid}/clients [POST]
+// @Router  /api/users/{uid}/clients [POST]
 func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid"`
@@ -413,6 +419,7 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Summary Delete a client
 // @ID      api-clients-delete
+// @Tags    API-v2
 //
 // @Param   uid path     int true "UserID"
 // @Param   cid path     int true "ClientID"
@@ -423,7 +430,7 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404 {object} ginresp.apiError
 // @Failure 500 {object} ginresp.apiError
 //
-// @Router  /api-v2/users/{uid}/clients [POST]
+// @Router  /api/users/{uid}/clients [POST]
 func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID   models.UserID   `uri:"uid"`
@@ -467,6 +474,7 @@ func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 // @Description - "subscribed_any" Return all channels that the user is subscribing to (even unconfirmed)
 // @Description - "all_any" Return channels that the user owns or is subscribing (even unconfirmed)
 // @ID          api-channels-list
+// @Tags        API-v2
 //
 // @Param       uid      path     int    true "UserID"
 // @Param       selector query    string true "Filter channels (default: owned)" Enums(owned, subscribed, all, subscribed_any, all_any)
@@ -477,7 +485,7 @@ func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 // @Failure     404      {object} ginresp.apiError
 // @Failure     500      {object} ginresp.apiError
 //
-// @Router      /api-v2/users/{uid}/channels [GET]
+// @Router      /api/users/{uid}/channels [GET]
 func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid"`
@@ -546,6 +554,7 @@ func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Summary List all channels of a user
 // @ID      api-channels-get
+// @Tags    API-v2
 //
 // @Param   uid path     int true "UserID"
 // @Param   cid path     int true "ChannelID"
@@ -556,7 +565,7 @@ func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404 {object} ginresp.apiError
 // @Failure 500 {object} ginresp.apiError
 //
-// @Router  /api-v2/users/{uid}/channels/{cid} [GET]
+// @Router  /api/users/{uid}/channels/{cid} [GET]
 func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID    models.UserID    `uri:"uid"`
@@ -589,6 +598,7 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Summary (Partially) update a channel
 // @ID      api-channels-update
+// @Tags    API-v2
 //
 // @Param   uid           path     int    true  "UserID"
 // @Param   cid           path     int    true  "ChannelID"
@@ -602,7 +612,7 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404           {object} ginresp.apiError
 // @Failure 500           {object} ginresp.apiError
 //
-// @Router  /api-v2/users/{uid}/channels/{cid} [PATCH]
+// @Router  /api/users/{uid}/channels/{cid} [PATCH]
 func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID    models.UserID    `uri:"uid"`
@@ -667,6 +677,7 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 // @Description If there are no more entries the token "@end" will be returned
 // @Description By default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)
 // @ID          api-channel-messages
+// @Tags        API-v2
 //
 // @Param       query_data query    handler.ListChannelMessages.query false " "
 //
@@ -676,7 +687,7 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 // @Failure     404        {object} ginresp.apiError
 // @Failure     500        {object} ginresp.apiError
 //
-// @Router      /api-v2/users/{uid}/channels/{cid}/messages [GET]
+// @Router      /api/users/{uid}/channels/{cid}/messages [GET]
 func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		ChannelUserID models.UserID    `uri:"uid"`
@@ -757,6 +768,7 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Summary List all channels of a user
 // @ID      api-user-subscriptions-list
+// @Tags    API-v2
 //
 // @Param   uid path     int true "UserID"
 //
@@ -766,7 +778,7 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404 {object} ginresp.apiError
 // @Failure 500 {object} ginresp.apiError
 //
-// @Router  /api-v2/users/{uid}/subscriptions [GET]
+// @Router  /api/users/{uid}/subscriptions [GET]
 func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid"`
@@ -800,6 +812,7 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Summary List all subscriptions of a channel
 // @ID      api-chan-subscriptions-list
+// @Tags    API-v2
 //
 // @Param   uid path     int true "UserID"
 // @Param   cid path     int true "ChannelID"
@@ -810,7 +823,7 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404 {object} ginresp.apiError
 // @Failure 500 {object} ginresp.apiError
 //
-// @Router  /api-v2/users/{uid}/channels/{cid}/subscriptions [GET]
+// @Router  /api/users/{uid}/channels/{cid}/subscriptions [GET]
 func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID    models.UserID    `uri:"uid"`
@@ -853,6 +866,7 @@ func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPRespons
 //
 // @Summary Get a single subscription
 // @ID      api-subscriptions-get
+// @Tags    API-v2
 //
 // @Param   uid path     int true "UserID"
 // @Param   sid path     int true "SubscriptionID"
@@ -863,7 +877,7 @@ func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPRespons
 // @Failure 404 {object} ginresp.apiError
 // @Failure 500 {object} ginresp.apiError
 //
-// @Router  /api-v2/users/{uid}/subscriptions/{sid} [GET]
+// @Router  /api/users/{uid}/subscriptions/{sid} [GET]
 func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID         models.UserID         `uri:"uid"`
@@ -900,6 +914,7 @@ func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Summary Cancel (delete) subscription
 // @ID      api-subscriptions-delete
+// @Tags    API-v2
 //
 // @Param   uid path     int true "UserID"
 // @Param   sid path     int true "SubscriptionID"
@@ -910,7 +925,7 @@ func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404 {object} ginresp.apiError
 // @Failure 500 {object} ginresp.apiError
 //
-// @Router  /api-v2/users/{uid}/subscriptions/{sid} [DELETE]
+// @Router  /api/users/{uid}/subscriptions/{sid} [DELETE]
 func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID         models.UserID         `uri:"uid"`
@@ -952,6 +967,7 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Summary Creare/Request a subscription
 // @ID      api-subscriptions-create
+// @Tags    API-v2
 //
 // @Param   uid        path     int                              true  "UserID"
 // @Param   query_data query    handler.CreateSubscription.query false " "
@@ -963,7 +979,7 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404        {object} ginresp.apiError
 // @Failure 500        {object} ginresp.apiError
 //
-// @Router  /api-v2/users/{uid}/subscriptions [POST]
+// @Router  /api/users/{uid}/subscriptions [POST]
 func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid"`
@@ -1013,6 +1029,7 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Summary Update a subscription (e.g. confirm)
 // @ID      api-subscriptions-update
+// @Tags    API-v2
 //
 // @Param   uid path     int true "UserID"
 // @Param   sid path     int true "SubscriptionID"
@@ -1023,7 +1040,7 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404 {object} ginresp.apiError
 // @Failure 500 {object} ginresp.apiError
 //
-// @Router  /api-v2/users/{uid}/subscriptions/{sid} [PATCH]
+// @Router  /api/users/{uid}/subscriptions/{sid} [PATCH]
 func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID         models.UserID         `uri:"uid"`
@@ -1080,6 +1097,7 @@ func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Description If there are no more entries the token "@end" will be returned
 // @Description By default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)
 // @ID          api-messages-list
+// @Tags        API-v2
 //
 // @Param       query_data query    handler.ListMessages.query false " "
 //
@@ -1089,7 +1107,7 @@ func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Failure     404        {object} ginresp.apiError
 // @Failure     500        {object} ginresp.apiError
 //
-// @Router      /api-v2/messages [GET]
+// @Router      /api/messages [GET]
 func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
 		PageSize      *int    `form:"page_size"`
@@ -1154,6 +1172,7 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 // @Description Or the user must subscribe to the corresponding channel (and be confirmed) and request the resource with the READ or ADMIN Key
 // @Description The returned message is never trimmed
 // @ID          api-messages-get
+// @Tags        API-v2
 //
 // @Param       mid path     int true "SCNMessageID"
 //
@@ -1163,7 +1182,7 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 // @Failure     404 {object} ginresp.apiError
 // @Failure     500 {object} ginresp.apiError
 //
-// @Router      /api-v2/messages/{mid} [PATCH]
+// @Router      /api/messages/{mid} [PATCH]
 func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		MessageID models.SCNMessageID `uri:"mid"`
@@ -1223,6 +1242,7 @@ func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 // @Summary     Delete a single message
 // @Description The user must own the message and request the resource with the ADMIN Key
 // @ID          api-messages-delete
+// @Tags        API-v2
 //
 // @Param       mid path     int true "SCNMessageID"
 //
@@ -1232,7 +1252,7 @@ func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 // @Failure     404 {object} ginresp.apiError
 // @Failure     500 {object} ginresp.apiError
 //
-// @Router      /api-v2/messages/{mid} [PATCH]
+// @Router      /api/messages/{mid} [PATCH]
 func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		MessageID models.SCNMessageID `uri:"mid"`
@@ -1280,6 +1300,7 @@ func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 // @Description This is similar to the main route `POST -> https://scn.blackfrestbytes.com/`
 // @Description But this route can change in the future, for long-living scripts etc. it's better to use the normal POST route
 // @ID          api-messages-create
+// @Tags        API-v2
 //
 // @Param       post_data query    handler.CreateMessage.body false " "
 //
@@ -1289,7 +1310,7 @@ func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 // @Failure     404       {object} ginresp.apiError
 // @Failure     500       {object} ginresp.apiError
 //
-// @Router      /api-v2/messages [POST]
+// @Router      /api/messages [POST]
 func (h APIHandler) CreateMessage(g *gin.Context) ginresp.HTTPResponse {
 	type body struct {
 		Channel       *string  `json:"channel"`

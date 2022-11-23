@@ -6,9 +6,9 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/common"
 	"blackforestbytes.com/simplecloudnotifier/common/ginext"
 	"blackforestbytes.com/simplecloudnotifier/db"
-	"blackforestbytes.com/simplecloudnotifier/firebase"
 	"blackforestbytes.com/simplecloudnotifier/jobs"
 	"blackforestbytes.com/simplecloudnotifier/logic"
+	"blackforestbytes.com/simplecloudnotifier/push"
 	"fmt"
 	"github.com/rs/zerolog/log"
 )
@@ -36,15 +36,20 @@ func main() {
 
 	router := api.NewRouter(app)
 
-	fb, err := firebase.NewFirebase(conf)
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed to init firebase")
-		return
+	var nc push.NotificationClient
+	if conf.DummyFirebase {
+		nc, err = push.NewDummy()
+	} else {
+		nc, err = push.NewFirebaseConn(conf)
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to init firebase")
+			return
+		}
 	}
 
 	jobRetry := jobs.NewDeliveryRetryJob(app)
 
-	app.Init(conf, ginengine, fb, []logic.Job{jobRetry})
+	app.Init(conf, ginengine, nc, []logic.Job{jobRetry})
 
 	router.Init(ginengine)
 

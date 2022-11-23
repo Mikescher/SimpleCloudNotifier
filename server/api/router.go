@@ -32,49 +32,65 @@ func NewRouter(app *logic.Application) *Router {
 }
 
 // Init swaggerdocs
+//
 // @title       SimpleCloudNotifier API
 // @version     2.0
 // @description API for SCN
 // @host        scn.blackforestbytes.com
+//
+// @tag.name    Common
+// @tag.name    External
+// @tag.name    API-v1
+// @tag.name    API-v2
+//
 // @BasePath    /
 func (r *Router) Init(e *gin.Engine) {
 
 	// ================ General ================
 
-	e.Any("/api/common/ping", ginresp.Wrap(r.commonHandler.Ping))
-	e.POST("/api/common/db-test", ginresp.Wrap(r.commonHandler.DatabaseTest))
-	e.GET("/api/common/health", ginresp.Wrap(r.commonHandler.Health))
+	commonAPI := e.Group("/api")
+	{
+		commonAPI.Any("/ping", ginresp.Wrap(r.commonHandler.Ping))
+		commonAPI.POST("/db-test", ginresp.Wrap(r.commonHandler.DatabaseTest))
+		commonAPI.GET("/health", ginresp.Wrap(r.commonHandler.Health))
+	}
 
 	// ================ Swagger ================
 
-	e.GET("/documentation/swagger", ginext.RedirectTemporary("/documentation/swagger/"))
-	e.GET("/documentation/swagger/", ginresp.Wrap(swagger.Handle))
-	e.GET("/documentation/swagger/:fn", ginresp.Wrap(swagger.Handle))
+	docs := e.Group("/documentation")
+	{
+		docs.GET("/swagger", ginext.RedirectTemporary("/documentation/swagger/"))
+		docs.GET("/swagger/", ginresp.Wrap(swagger.Handle))
+		docs.GET("/swagger/:fn", ginresp.Wrap(swagger.Handle))
+	}
 
 	// ================ Website ================
 
-	e.GET("/", ginresp.Wrap(r.websiteHandler.Index))
-	e.GET("/index.php", ginresp.Wrap(r.websiteHandler.Index))
-	e.GET("/index.html", ginresp.Wrap(r.websiteHandler.Index))
-	e.GET("/index", ginresp.Wrap(r.websiteHandler.Index))
+	frontend := e.Group("")
+	{
+		frontend.GET("/", ginresp.Wrap(r.websiteHandler.Index))
+		frontend.GET("/index.php", ginresp.Wrap(r.websiteHandler.Index))
+		frontend.GET("/index.html", ginresp.Wrap(r.websiteHandler.Index))
+		frontend.GET("/index", ginresp.Wrap(r.websiteHandler.Index))
 
-	e.GET("/api", ginresp.Wrap(r.websiteHandler.APIDocs))
-	e.GET("/api.php", ginresp.Wrap(r.websiteHandler.APIDocs))
-	e.GET("/api.html", ginresp.Wrap(r.websiteHandler.APIDocs))
+		frontend.GET("/api", ginresp.Wrap(r.websiteHandler.APIDocs))
+		frontend.GET("/api.php", ginresp.Wrap(r.websiteHandler.APIDocs))
+		frontend.GET("/api.html", ginresp.Wrap(r.websiteHandler.APIDocs))
 
-	e.GET("/api_more", ginresp.Wrap(r.websiteHandler.APIDocsMore))
-	e.GET("/api_more.php", ginresp.Wrap(r.websiteHandler.APIDocsMore))
-	e.GET("/api_more.html", ginresp.Wrap(r.websiteHandler.APIDocsMore))
+		frontend.GET("/api_more", ginresp.Wrap(r.websiteHandler.APIDocsMore))
+		frontend.GET("/api_more.php", ginresp.Wrap(r.websiteHandler.APIDocsMore))
+		frontend.GET("/api_more.html", ginresp.Wrap(r.websiteHandler.APIDocsMore))
 
-	e.GET("/message_sent", ginresp.Wrap(r.websiteHandler.MessageSent))
-	e.GET("/message_sent.php", ginresp.Wrap(r.websiteHandler.MessageSent))
-	e.GET("/message_sent.html", ginresp.Wrap(r.websiteHandler.MessageSent))
+		frontend.GET("/message_sent", ginresp.Wrap(r.websiteHandler.MessageSent))
+		frontend.GET("/message_sent.php", ginresp.Wrap(r.websiteHandler.MessageSent))
+		frontend.GET("/message_sent.html", ginresp.Wrap(r.websiteHandler.MessageSent))
 
-	e.GET("/favicon.ico", ginresp.Wrap(r.websiteHandler.FaviconIco))
-	e.GET("/favicon.png", ginresp.Wrap(r.websiteHandler.FaviconPNG))
+		frontend.GET("/favicon.ico", ginresp.Wrap(r.websiteHandler.FaviconIco))
+		frontend.GET("/favicon.png", ginresp.Wrap(r.websiteHandler.FaviconPNG))
 
-	e.GET("/js/:fn", ginresp.Wrap(r.websiteHandler.Javascript))
-	e.GET("/css/:fn", ginresp.Wrap(r.websiteHandler.CSS))
+		frontend.GET("/js/:fn", ginresp.Wrap(r.websiteHandler.Javascript))
+		frontend.GET("/css/:fn", ginresp.Wrap(r.websiteHandler.CSS))
+	}
 
 	// ================ Compat (v1) ================
 
@@ -91,7 +107,7 @@ func (r *Router) Init(e *gin.Engine) {
 
 	// ================ Manage API ================
 
-	apiv2 := e.Group("/api-v2/")
+	apiv2 := e.Group("/api/")
 	{
 
 		apiv2.POST("/users", ginresp.Wrap(r.apiHandler.CreateUser))

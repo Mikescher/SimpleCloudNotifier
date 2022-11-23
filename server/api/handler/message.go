@@ -36,6 +36,7 @@ func NewMessageHandler(app *logic.Application) MessageHandler {
 //
 // @Summary     Send a new message (compatibility)
 // @Description All parameter can be set via query-parameter or form-data body. Only UserID, UserKey and Title are required
+// @Tags        External
 //
 // @Param       query_data query    handler.SendMessageCompat.query false " "
 // @Param       form_data  formData handler.SendMessageCompat.form  false " "
@@ -85,6 +86,7 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Summary     Send a new message
 // @Description All parameter can be set via query-parameter or the json body. Only UserID, UserKey and Title are required
+// @Tags        External
 //
 // @Param       query_data query    handler.SendMessage.query false " "
 // @Param       post_body  body     handler.SendMessage.body  false " "

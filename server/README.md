@@ -2,7 +2,8 @@
 
 //TODO
 
- - remove fcm/goog_api keys from repo (and invalidate them !!)
+ - Return client on register
+ - Register with noclient=true
 
  - migration script for existing data
 
@@ -13,6 +14,8 @@
 
  - dark mode toggle for html
  - app-store link in HTML
+
+ - tests
 
  - deploy
 

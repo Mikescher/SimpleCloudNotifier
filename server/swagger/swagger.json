@@ -12,6 +12,9 @@
         "/": {
             "post": {
                 "description": "All parameter can be set via query-parameter or the json body. Only UserID, UserKey and Title are required",
+                "tags": [
+                    "External"
+                ],
                 "summary": "Send a new message",
                 "parameters": [
                     {
@@ -147,9 +150,230 @@
                 }
             }
         },
-        "/api-v2/messages": {
+        "/api/ack.php": {
+            "get": {
+                "tags": [
+                    "API-v1"
+                ],
+                "summary": "Acknowledge that a message was received",
+                "operationId": "compat-ack",
+                "deprecated": true,
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the message id",
+                        "name": "scn_msg_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the message id",
+                        "name": "scn_msg_id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.compatAPIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/db-test": {
+            "get": {
+                "tags": [
+                    "Common"
+                ],
+                "summary": "Check for a wroking database connection",
+                "operationId": "api-common-dbtest",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.DatabaseTest.response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/expand.php": {
+            "get": {
+                "tags": [
+                    "API-v1"
+                ],
+                "summary": "Get a whole (potentially truncated) message",
+                "operationId": "compat-expand",
+                "deprecated": true,
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The user_id",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The user_key",
+                        "name": "user_key",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The message-id",
+                        "name": "scn_msg_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The user_id",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The user_key",
+                        "name": "user_key",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The message-id",
+                        "name": "scn_msg_id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.compatAPIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/health": {
+            "get": {
+                "tags": [
+                    "Common"
+                ],
+                "summary": "Server Health-checks",
+                "operationId": "api-common-health",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Health.response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/info.php": {
+            "get": {
+                "tags": [
+                    "API-v1"
+                ],
+                "summary": "Get information about the current user",
+                "operationId": "compat-info",
+                "deprecated": true,
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.compatAPIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/messages": {
             "get": {
                 "description": "The next_page_token is an opaque token, the special value \"@start\" (or empty-string) is the beginning and \"@end\" is the end\nSimply start the pagination without a next_page_token and get the next page by calling this endpoint with the returned next_page_token of the last query\nIf there are no more entries the token \"@end\" will be returned\nBy default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)",
+                "tags": [
+                    "API-v2"
+                ],
                 "summary": "List all (subscribed) messages",
                 "operationId": "api-messages-list",
                 "parameters": [
@@ -209,6 +433,9 @@
             },
             "post": {
                 "description": "This is similar to the main route `POST -\u003e https://scn.blackfrestbytes.com/`\nBut this route can change in the future, for long-living scripts etc. it's better to use the normal POST route",
+                "tags": [
+                    "API-v2"
+                ],
                 "summary": "Create a new message",
                 "operationId": "api-messages-create",
                 "parameters": [
@@ -282,9 +509,12 @@
                 }
             }
         },
-        "/api-v2/messages/{mid}": {
+        "/api/messages/{mid}": {
             "patch": {
                 "description": "The user must own the message and request the resource with the ADMIN Key",
+                "tags": [
+                    "API-v2"
+                ],
                 "summary": "Delete a single message",
                 "operationId": "api-messages-delete",
                 "parameters": [
@@ -330,8 +560,382 @@
                 }
             }
         },
-        "/api-v2/users/": {
+        "/api/ping": {
+            "get": {
+                "tags": [
+                    "Common"
+                ],
+                "summary": "Simple endpoint to test connection (any http method)",
+                "operationId": "api-common-ping",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.pingResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Common"
+                ],
+                "summary": "Simple endpoint to test connection (any http method)",
+                "operationId": "api-common-ping",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.pingResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
             "post": {
+                "tags": [
+                    "Common"
+                ],
+                "summary": "Simple endpoint to test connection (any http method)",
+                "operationId": "api-common-ping",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.pingResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Common"
+                ],
+                "summary": "Simple endpoint to test connection (any http method)",
+                "operationId": "api-common-ping",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.pingResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Common"
+                ],
+                "summary": "Simple endpoint to test connection (any http method)",
+                "operationId": "api-common-ping",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.pingResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/register.php": {
+            "get": {
+                "tags": [
+                    "API-v1"
+                ],
+                "summary": "Register a new account",
+                "operationId": "compat-register",
+                "deprecated": true,
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the (android) fcm token",
+                        "name": "fcm_token",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "true",
+                            "false"
+                        ],
+                        "type": "string",
+                        "description": "if the user is a paid account",
+                        "name": "pro",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the (android) IAP token",
+                        "name": "pro_token",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the (android) fcm token",
+                        "name": "fcm_token",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "true",
+                            "false"
+                        ],
+                        "type": "string",
+                        "description": "if the user is a paid account",
+                        "name": "pro",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the (android) IAP token",
+                        "name": "pro_token",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.compatAPIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/requery.php": {
+            "get": {
+                "tags": [
+                    "API-v1"
+                ],
+                "summary": "Return all not-acknowledged messages",
+                "operationId": "compat-requery",
+                "deprecated": true,
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.compatAPIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/update.php": {
+            "get": {
+                "tags": [
+                    "API-v1"
+                ],
+                "summary": "Set the fcm-token (android)",
+                "operationId": "compat-update",
+                "deprecated": true,
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the (android) fcm token",
+                        "name": "fcm_token",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the (android) fcm token",
+                        "name": "fcm_token",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.compatAPIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/upgrade.php": {
+            "get": {
+                "tags": [
+                    "API-v1"
+                ],
+                "summary": "Upgrade a free account to a paid account",
+                "operationId": "compat-upgrade",
+                "deprecated": true,
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "true",
+                            "false"
+                        ],
+                        "type": "string",
+                        "description": "if the user is a paid account",
+                        "name": "pro",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the (android) IAP token",
+                        "name": "pro_token",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_id",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the user_key",
+                        "name": "user_key",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "true",
+                            "false"
+                        ],
+                        "type": "string",
+                        "description": "if the user is a paid account",
+                        "name": "pro",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "the (android) IAP token",
+                        "name": "pro_token",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.compatAPIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/": {
+            "post": {
+                "tags": [
+                    "API-v2"
+                ],
                 "summary": "Create a new user",
                 "operationId": "api-user-create",
                 "parameters": [
@@ -348,7 +952,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.UserJSON"
+                            "$ref": "#/definitions/handler.sendMessageInternal.response"
                         }
                     },
                     "400": {
@@ -366,8 +970,11 @@
                 }
             }
         },
-        "/api-v2/users/{uid}": {
+        "/api/users/{uid}": {
             "get": {
+                "tags": [
+                    "API-v2"
+                ],
                 "summary": "Get a user",
                 "operationId": "api-user-get",
                 "parameters": [
@@ -414,6 +1021,9 @@
             },
             "patch": {
                 "description": "The body-values are optional, only send the ones you want to update",
+                "tags": [
+                    "API-v2"
+                ],
                 "summary": "(Partially) update a user",
                 "operationId": "api-user-update",
                 "parameters": [
@@ -499,9 +1109,12 @@
                 }
             }
         },
-        "/api-v2/users/{uid}/channels": {
+        "/api/users/{uid}/channels": {
             "get": {
                 "description": "The possible values for 'selector' are:\n- \"owned\" Return all channels of the user\n- \"subscribed\" Return all channels that the user is subscribing to\n- \"all\" Return channels that the user owns or is subscribing\n- \"subscribed_any\" Return all channels that the user is subscribing to (even unconfirmed)\n- \"all_any\" Return channels that the user owns or is subscribing (even unconfirmed)",
+                "tags": [
+                    "API-v2"
+                ],
                 "summary": "List channels of a user (subscribed/owned)",
                 "operationId": "api-channels-list",
                 "parameters": [
@@ -561,8 +1174,11 @@
                 }
             }
         },
-        "/api-v2/users/{uid}/channels/{cid}": {
+        "/api/users/{uid}/channels/{cid}": {
             "get": {
+                "tags": [
+                    "API-v2"
+                ],
                 "summary": "List all channels of a user",
                 "operationId": "api-channels-get",
                 "parameters": [
@@ -615,6 +1231,9 @@
                 }
             },
             "patch": {
+                "tags": [
+                    "API-v2"
+                ],
                 "summary": "(Partially) update a channel",
                 "operationId": "api-channels-update",
                 "parameters": [
@@ -683,9 +1302,12 @@
                 }
             }
         },
-        "/api-v2/users/{uid}/channels/{cid}/messages": {
+        "/api/users/{uid}/channels/{cid}/messages": {
             "get": {
                 "description": "The next_page_token is an opaque token, the special value \"@start\" (or empty-string) is the beginning and \"@end\" is the end\nSimply start the pagination without a next_page_token and get the next page by calling this endpoint with the returned next_page_token of the last query\nIf there are no more entries the token \"@end\" will be returned\nBy default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)",
+                "tags": [
+                    "API-v2"
+                ],
                 "summary": "List messages of a channel",
                 "operationId": "api-channel-messages",
                 "parameters": [
@@ -744,8 +1366,11 @@
                 }
             }
         },
-        "/api-v2/users/{uid}/channels/{cid}/subscriptions": {
+        "/api/users/{uid}/channels/{cid}/subscriptions": {
             "get": {
+                "tags": [
+                    "API-v2"
+                ],
                 "summary": "List all subscriptions of a channel",
                 "operationId": "api-chan-subscriptions-list",
                 "parameters": [
@@ -798,8 +1423,11 @@
                 }
             }
         },
-        "/api-v2/users/{uid}/clients": {
+        "/api/users/{uid}/clients": {
             "get": {
+                "tags": [
+                    "API-v2"
+                ],
                 "summary": "List all clients",
                 "operationId": "api-clients-list",
                 "parameters": [
@@ -845,6 +1473,9 @@
                 }
             },
             "post": {
+                "tags": [
+                    "API-v2"
+                ],
                 "summary": "Delete a client",
                 "operationId": "api-clients-delete",
                 "parameters": [
@@ -897,8 +1528,11 @@
                 }
             }
         },
-        "/api-v2/users/{uid}/clients/{cid}": {
+        "/api/users/{uid}/clients/{cid}": {
             "get": {
+                "tags": [
+                    "API-v2"
+                ],
                 "summary": "Get a single clients",
                 "operationId": "api-clients-get",
                 "parameters": [
@@ -951,8 +1585,11 @@
                 }
             }
         },
-        "/api-v2/users/{uid}/subscriptions": {
+        "/api/users/{uid}/subscriptions": {
             "get": {
+                "tags": [
+                    "API-v2"
+                ],
                 "summary": "List all channels of a user",
                 "operationId": "api-user-subscriptions-list",
                 "parameters": [
@@ -998,6 +1635,9 @@
                 }
             },
             "post": {
+                "tags": [
+                    "API-v2"
+                ],
                 "summary": "Creare/Request a subscription",
                 "operationId": "api-subscriptions-create",
                 "parameters": [
@@ -1056,8 +1696,11 @@
                 }
             }
         },
-        "/api-v2/users/{uid}/subscriptions/{sid}": {
+        "/api/users/{uid}/subscriptions/{sid}": {
             "get": {
+                "tags": [
+                    "API-v2"
+                ],
                 "summary": "Get a single subscription",
                 "operationId": "api-subscriptions-get",
                 "parameters": [
@@ -1110,6 +1753,9 @@
                 }
             },
             "delete": {
+                "tags": [
+                    "API-v2"
+                ],
                 "summary": "Cancel (delete) subscription",
                 "operationId": "api-subscriptions-delete",
                 "parameters": [
@@ -1162,6 +1808,9 @@
                 }
             },
             "patch": {
+                "tags": [
+                    "API-v2"
+                ],
                 "summary": "Update a subscription (e.g. confirm)",
                 "operationId": "api-subscriptions-update",
                 "parameters": [
@@ -1214,542 +1863,12 @@
                 }
             }
         },
-        "/api/ack.php": {
-            "get": {
-                "summary": "Acknowledge that a message was received",
-                "operationId": "compat-ack",
-                "deprecated": true,
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "the user_id",
-                        "name": "user_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the user_key",
-                        "name": "user_key",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the message id",
-                        "name": "scn_msg_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the user_id",
-                        "name": "user_id",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the user_key",
-                        "name": "user_key",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the message id",
-                        "name": "scn_msg_id",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.compatAPIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/expand.php": {
-            "get": {
-                "summary": "Get a whole (potentially truncated) message",
-                "operationId": "compat-expand",
-                "deprecated": true,
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "The user_id",
-                        "name": "user_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "The user_key",
-                        "name": "user_key",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "The message-id",
-                        "name": "scn_msg_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "The user_id",
-                        "name": "user_id",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "The user_key",
-                        "name": "user_key",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "The message-id",
-                        "name": "scn_msg_id",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.compatAPIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/info.php": {
-            "get": {
-                "summary": "Get information about the current user",
-                "operationId": "compat-info",
-                "deprecated": true,
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "the user_id",
-                        "name": "user_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the user_key",
-                        "name": "user_key",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the user_id",
-                        "name": "user_id",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the user_key",
-                        "name": "user_key",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.compatAPIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/register.php": {
-            "get": {
-                "summary": "Register a new account",
-                "operationId": "compat-register",
-                "deprecated": true,
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "the (android) fcm token",
-                        "name": "fcm_token",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "enum": [
-                            "true",
-                            "false"
-                        ],
-                        "type": "string",
-                        "description": "if the user is a paid account",
-                        "name": "pro",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the (android) IAP token",
-                        "name": "pro_token",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the (android) fcm token",
-                        "name": "fcm_token",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "enum": [
-                            "true",
-                            "false"
-                        ],
-                        "type": "string",
-                        "description": "if the user is a paid account",
-                        "name": "pro",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the (android) IAP token",
-                        "name": "pro_token",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.compatAPIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/requery.php": {
-            "get": {
-                "summary": "Return all not-acknowledged messages",
-                "operationId": "compat-requery",
-                "deprecated": true,
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "the user_id",
-                        "name": "user_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the user_key",
-                        "name": "user_key",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the user_id",
-                        "name": "user_id",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the user_key",
-                        "name": "user_key",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.compatAPIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/update.php": {
-            "get": {
-                "summary": "Set the fcm-token (android)",
-                "operationId": "compat-update",
-                "deprecated": true,
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "the user_id",
-                        "name": "user_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the user_key",
-                        "name": "user_key",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the (android) fcm token",
-                        "name": "fcm_token",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the user_id",
-                        "name": "user_id",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the user_key",
-                        "name": "user_key",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the (android) fcm token",
-                        "name": "fcm_token",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.compatAPIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/upgrade.php": {
-            "get": {
-                "summary": "Upgrade a free account to a paid account",
-                "operationId": "compat-upgrade",
-                "deprecated": true,
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "the user_id",
-                        "name": "user_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the user_key",
-                        "name": "user_key",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "enum": [
-                            "true",
-                            "false"
-                        ],
-                        "type": "string",
-                        "description": "if the user is a paid account",
-                        "name": "pro",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the (android) IAP token",
-                        "name": "pro_token",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the user_id",
-                        "name": "user_id",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the user_key",
-                        "name": "user_key",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "enum": [
-                            "true",
-                            "false"
-                        ],
-                        "type": "string",
-                        "description": "if the user is a paid account",
-                        "name": "pro",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "the (android) IAP token",
-                        "name": "pro_token",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.compatAPIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/db-test": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.DatabaseTest.response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    }
-                }
-            }
-        },
-        "/health": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.Health.response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    }
-                }
-            }
-        },
-        "/ping": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.pingResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.pingResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.pingResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.pingResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.pingResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    }
-                }
-            }
-        },
         "/send": {
             "post": {
                 "description": "All parameter can be set via query-parameter or the json body. Only UserID, UserKey and Title are required",
+                "tags": [
+                    "External"
+                ],
                 "summary": "Send a new message",
                 "parameters": [
                     {
@@ -1888,6 +2007,9 @@
         "/send.php": {
             "post": {
                 "description": "All parameter can be set via query-parameter or form-data body. Only UserID, UserKey and Title are required",
+                "tags": [
+                    "External"
+                ],
                 "summary": "Send a new message (compatibility)",
                 "deprecated": true,
                 "parameters": [
@@ -2658,5 +2780,19 @@
                 }
             }
         }
-    }
+    },
+    "tags": [
+        {
+            "name": "Common"
+        },
+        {
+            "name": "External"
+        },
+        {
+            "name": "API-v1"
+        },
+        {
+            "name": "API-v2"
+        }
+    ]
 }

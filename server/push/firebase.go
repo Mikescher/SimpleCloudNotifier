@@ -1,4 +1,4 @@
-package firebase
+package push
 
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
@@ -21,20 +21,20 @@ import (
 // https://firebase.google.com/docs/cloud-messaging/send-message#rest
 // https://firebase.google.com/docs/cloud-messaging/auth-server
 
-type FBConnector struct {
+type FirebaseConnector struct {
 	fbProject string
 	client    http.Client
-	auth      *FBOAuth2
+	auth      *FirebaseOAuth2
 }
 
-func NewFirebase(conf scn.Config) (*FBConnector, error) {
+func NewFirebaseConn(conf scn.Config) (NotificationClient, error) {
 
 	fbauth, err := NewAuth(conf.FirebaseTokenURI, conf.FirebaseProjectID, conf.FirebaseClientMail, conf.FirebasePrivateKey)
 	if err != nil {
 		return nil, err
 	}
 
-	return &FBConnector{
+	return &FirebaseConnector{
 		fbProject: conf.FirebaseProjectID,
 		client:    http.Client{Timeout: 5 * time.Second},
 		auth:      fbauth,
@@ -50,7 +50,7 @@ type Notification struct {
 	Priority int
 }
 
-func (fb FBConnector) SendNotification(ctx context.Context, client models.Client, msg models.Message) (string, error) {
+func (fb FirebaseConnector) SendNotification(ctx context.Context, client models.Client, msg models.Message) (string, error) {
 
 	uri := "https://fcm.googleapis.com/v1/projects/" + fb.fbProject + "/messages:send"
 
