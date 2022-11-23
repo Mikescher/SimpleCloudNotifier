@@ -510,13 +510,62 @@
             }
         },
         "/api/messages/{mid}": {
-            "patch": {
+            "delete": {
                 "description": "The user must own the message and request the resource with the ADMIN Key",
                 "tags": [
                     "API-v2"
                 ],
                 "summary": "Delete a single message",
                 "operationId": "api-messages-delete",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "SCNMessageID",
+                        "name": "mid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "The user must either own the message and request the resource with the READ or ADMIN Key\nOr the user must subscribe to the corresponding channel (and be confirmed) and request the resource with the READ or ADMIN Key\nThe returned message is never trimmed",
+                "tags": [
+                    "API-v2"
+                ],
+                "summary": "Get a single message (untrimmed)",
+                "operationId": "api-messages-get",
                 "parameters": [
                     {
                         "type": "integer",
@@ -566,7 +615,6 @@
                     "Common"
                 ],
                 "summary": "Simple endpoint to test connection (any http method)",
-                "operationId": "api-common-ping",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -587,7 +635,6 @@
                     "Common"
                 ],
                 "summary": "Simple endpoint to test connection (any http method)",
-                "operationId": "api-common-ping",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -608,7 +655,6 @@
                     "Common"
                 ],
                 "summary": "Simple endpoint to test connection (any http method)",
-                "operationId": "api-common-ping",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -629,7 +675,6 @@
                     "Common"
                 ],
                 "summary": "Simple endpoint to test connection (any http method)",
-                "operationId": "api-common-ping",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -650,7 +695,6 @@
                     "Common"
                 ],
                 "summary": "Simple endpoint to test connection (any http method)",
-                "operationId": "api-common-ping",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -792,6 +836,15 @@
                 ],
                 "summary": "Return 200 after x seconds",
                 "operationId": "api-common-sleep",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "sleep delay (in seconds)",
+                        "name": "secs",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1359,6 +1412,20 @@
                         "type": "boolean",
                         "name": "trimmed",
                         "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ChannelID",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1502,6 +1569,62 @@
                 }
             },
             "post": {
+                "tags": [
+                    "API-v2"
+                ],
+                "summary": "Add a new clients",
+                "operationId": "api-clients-create",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": " ",
+                        "name": "post_body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/handler.AddClient.body"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ClientJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "delete": {
                 "tags": [
                     "API-v2"
                 ],

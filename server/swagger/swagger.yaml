@@ -784,7 +784,7 @@ paths:
       tags:
       - API-v2
   /api/messages/{mid}:
-    patch:
+    delete:
       description: The user must own the message and request the resource with the
         ADMIN Key
       operationId: api-messages-delete
@@ -818,9 +818,44 @@ paths:
       summary: Delete a single message
       tags:
       - API-v2
+    patch:
+      description: |-
+        The user must either own the message and request the resource with the READ or ADMIN Key
+        Or the user must subscribe to the corresponding channel (and be confirmed) and request the resource with the READ or ADMIN Key
+        The returned message is never trimmed
+      operationId: api-messages-get
+      parameters:
+      - description: SCNMessageID
+        in: path
+        name: mid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MessageJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Get a single message (untrimmed)
+      tags:
+      - API-v2
   /api/ping:
     delete:
-      operationId: api-common-ping
       responses:
         "200":
           description: OK
@@ -834,7 +869,6 @@ paths:
       tags:
       - Common
     get:
-      operationId: api-common-ping
       responses:
         "200":
           description: OK
@@ -848,7 +882,6 @@ paths:
       tags:
       - Common
     patch:
-      operationId: api-common-ping
       responses:
         "200":
           description: OK
@@ -862,7 +895,6 @@ paths:
       tags:
       - Common
     post:
-      operationId: api-common-ping
       responses:
         "200":
           description: OK
@@ -876,7 +908,6 @@ paths:
       tags:
       - Common
     put:
-      operationId: api-common-ping
       responses:
         "200":
           description: OK
@@ -974,6 +1005,12 @@ paths:
   /api/sleep/{secs}:
     post:
       operationId: api-common-sleep
+      parameters:
+      - description: sleep delay (in seconds)
+        in: path
+        name: secs
+        required: true
+        type: number
       responses:
         "200":
           description: OK
@@ -1365,6 +1402,16 @@ paths:
       - in: query
         name: trimmed
         type: boolean
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: ChannelID
+        in: path
+        name: cid
+        required: true
+        type: integer
       responses:
         "200":
           description: OK
@@ -1428,39 +1475,7 @@ paths:
       tags:
       - API-v2
   /api/users/{uid}/clients:
-    get:
-      operationId: api-clients-list
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.ListClients.response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: List all clients
-      tags:
-      - API-v2
-    post:
+    delete:
       operationId: api-clients-delete
       parameters:
       - description: UserID
@@ -1495,6 +1510,75 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Delete a client
+      tags:
+      - API-v2
+    get:
+      operationId: api-clients-list
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListClients.response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: List all clients
+      tags:
+      - API-v2
+    post:
+      operationId: api-clients-create
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: ' '
+        in: body
+        name: post_body
+        schema:
+          $ref: '#/definitions/handler.AddClient.body'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ClientJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Add a new clients
       tags:
       - API-v2
   /api/users/{uid}/clients/{cid}:

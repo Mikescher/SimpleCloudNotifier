@@ -430,7 +430,7 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404 {object} ginresp.apiError
 // @Failure 500 {object} ginresp.apiError
 //
-// @Router  /api/users/{uid}/clients [POST]
+// @Router  /api/users/{uid}/clients [DELETE]
 func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID   models.UserID   `uri:"uid"`
@@ -680,6 +680,8 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 // @Tags        API-v2
 //
 // @Param       query_data query    handler.ListChannelMessages.query false " "
+// @Param       uid        path     int true "UserID"
+// @Param       cid        path     int true "ChannelID"
 //
 // @Success     200        {object} handler.ListChannelMessages.response
 // @Failure     400        {object} ginresp.apiError
@@ -1252,7 +1254,7 @@ func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 // @Failure     404 {object} ginresp.apiError
 // @Failure     500 {object} ginresp.apiError
 //
-// @Router      /api/messages/{mid} [PATCH]
+// @Router      /api/messages/{mid} [DELETE]
 func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		MessageID models.SCNMessageID `uri:"mid"`

@@ -38,7 +38,6 @@ type pingResponseInfo struct {
 // Ping swaggerdoc
 //
 // @Summary Simple endpoint to test connection (any http method)
-// @ID      api-common-ping
 // @Tags    Common
 //
 // @Success 200 {object} pingResponse
@@ -133,6 +132,8 @@ func (h CommonHandler) Health(g *gin.Context) ginresp.HTTPResponse {
 // @Summary Return 200 after x seconds
 // @ID      api-common-sleep
 // @Tags    Common
+//
+// @Param   secs path     number true "sleep delay (in seconds)"
 //
 // @Success 200 {object} handler.Sleep.response
 // @Failure 400 {object} ginresp.apiError
