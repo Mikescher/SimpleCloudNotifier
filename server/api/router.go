@@ -53,6 +53,7 @@ func (r *Router) Init(e *gin.Engine) {
 		commonAPI.Any("/ping", ginresp.Wrap(r.commonHandler.Ping))
 		commonAPI.POST("/db-test", ginresp.Wrap(r.commonHandler.DatabaseTest))
 		commonAPI.GET("/health", ginresp.Wrap(r.commonHandler.Health))
+		commonAPI.POST("/sleep/:secs", ginresp.Wrap(r.commonHandler.Sleep))
 	}
 
 	// ================ Swagger ================

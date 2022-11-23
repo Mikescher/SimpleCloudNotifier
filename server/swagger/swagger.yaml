@@ -228,6 +228,15 @@ definitions:
       user_key:
         type: string
     type: object
+  handler.Sleep.response:
+    properties:
+      duration:
+        type: number
+      end:
+        type: string
+      start:
+        type: string
+    type: object
   handler.Update.response:
     properties:
       is_pro:
@@ -962,6 +971,25 @@ paths:
       summary: Return all not-acknowledged messages
       tags:
       - API-v1
+  /api/sleep/{secs}:
+    post:
+      operationId: api-common-sleep
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.Sleep.response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Return 200 after x seconds
+      tags:
+      - Common
   /api/update.php:
     get:
       deprecated: true

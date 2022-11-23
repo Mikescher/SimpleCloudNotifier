@@ -1,7 +1,6 @@
 package db
 
 import (
-	scn "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/db/schema"
 	"context"
 	"database/sql"
@@ -15,8 +14,8 @@ type Database struct {
 	db *sql.DB
 }
 
-func NewDatabase(conf scn.Config) (*Database, error) {
-	db, err := sql.Open("sqlite3", conf.DBFile)
+func NewDatabase(filename string) (*Database, error) {
+	db, err := sql.Open("sqlite3", filename)
 	if err != nil {
 		return nil, err
 	}

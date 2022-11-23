@@ -1,13 +1,16 @@
 package handler
 
 import (
+	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"bytes"
 	"errors"
 	"github.com/gin-gonic/gin"
 	sqlite3 "github.com/mattn/go-sqlite3"
+	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
 	"net/http"
+	"time"
 )
 
 type CommonHandler struct {
@@ -106,7 +109,7 @@ func (h CommonHandler) DatabaseTest(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 500 {object} ginresp.apiError
 //
 // @Router  /api/health [get]
-func (h CommonHandler) Health(*gin.Context) ginresp.HTTPResponse {
+func (h CommonHandler) Health(g *gin.Context) ginresp.HTTPResponse {
 	type response struct {
 		Status string `json:"status"`
 	}
@@ -123,6 +126,45 @@ func (h CommonHandler) Health(*gin.Context) ginresp.HTTPResponse {
 	}
 
 	return ginresp.JSON(http.StatusOK, response{Status: "ok"})
+}
+
+// Sleep swaggerdoc
+//
+// @Summary Return 200 after x seconds
+// @ID      api-common-sleep
+// @Tags    Common
+//
+// @Success 200 {object} handler.Sleep.response
+// @Failure 400 {object} ginresp.apiError
+// @Failure 500 {object} ginresp.apiError
+//
+// @Router  /api/sleep/{secs} [post]
+func (h CommonHandler) Sleep(g *gin.Context) ginresp.HTTPResponse {
+	type uri struct {
+		Seconds float64 `uri:"secs"`
+	}
+	type response struct {
+		Start    string  `json:"start"`
+		End      string  `json:"end"`
+		Duration float64 `json:"duration"`
+	}
+
+	t0 := time.Now().Format(time.RFC3339Nano)
+
+	var u uri
+	if err := g.ShouldBindUri(&u); err != nil {
+		return ginresp.APIError(g, 400, apierr.BINDFAIL_URI_PARAM, "Failed to read uri", err)
+	}
+
+	time.Sleep(timeext.FromSecondsFloat64(u.Seconds))
+
+	t1 := time.Now().Format(time.RFC3339Nano)
+
+	return ginresp.JSON(http.StatusOK, response{
+		Start:    t0,
+		End:      t1,
+		Duration: u.Seconds,
+	})
 }
 
 func (h CommonHandler) NoRoute(g *gin.Context) ginresp.HTTPResponse {

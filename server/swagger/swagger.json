@@ -785,6 +785,35 @@
                 }
             }
         },
+        "/api/sleep/{secs}": {
+            "post": {
+                "tags": [
+                    "Common"
+                ],
+                "summary": "Return 200 after x seconds",
+                "operationId": "api-common-sleep",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Sleep.response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/update.php": {
             "get": {
                 "tags": [
@@ -2464,6 +2493,20 @@
                     "type": "integer"
                 },
                 "user_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.Sleep.response": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "type": "number"
+                },
+                "end": {
+                    "type": "string"
+                },
+                "start": {
                     "type": "string"
                 }
             }

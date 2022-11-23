@@ -29,11 +29,14 @@ type Application struct {
 	Database *db.Database
 	Firebase push.NotificationClient
 	Jobs     []Job
+	stopChan chan bool
+	Port     string
 }
 
 func NewApp(db *db.Database) *Application {
 	return &Application{
 		Database: db,
+		stopChan: make(chan bool, 8),
 	}
 }
 
@@ -42,6 +45,10 @@ func (app *Application) Init(cfg scn.Config, g *gin.Engine, fb push.Notification
 	app.Gin = g
 	app.Firebase = fb
 	app.Jobs = jobs
+}
+
+func (app *Application) Stop() {
+	app.stopChan <- true
 }
 
 func (app *Application) Run() {
@@ -53,8 +60,24 @@ func (app *Application) Run() {
 	errChan := make(chan error)
 
 	go func() {
-		log.Info().Str("address", httpserver.Addr).Msg("HTTP-Server started on http://localhost:" + app.Config.ServerPort)
-		errChan <- httpserver.ListenAndServe()
+
+		ln, err := net.Listen("tcp", httpserver.Addr)
+		if err != nil {
+			errChan <- err
+			return
+		}
+
+		_, port, err := net.SplitHostPort(ln.Addr().String())
+		if err != nil {
+			errChan <- err
+			return
+		}
+
+		log.Info().Str("address", httpserver.Addr).Msg("HTTP-Server started on http://localhost:" + port)
+
+		app.Port = port
+
+		errChan <- httpserver.Serve(ln)
 	}()
 
 	stop := make(chan os.Signal, 1)
@@ -81,10 +104,24 @@ func (app *Application) Run() {
 
 	case err := <-errChan:
 		log.Error().Err(err).Msg("HTTP-Server failed")
+
+	case _ = <-app.stopChan:
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		log.Info().Msg("Manually stopping HTTP-Server")
+
+		err := httpserver.Shutdown(ctx)
+
+		if err != nil {
+			log.Info().Err(err).Msg("Error while stopping the http-server")
+		} else {
+			log.Info().Msg("Manually stopped HTTP-Server")
+		}
 	}
 
 	for _, job := range app.Jobs {
-		job.Start()
+		job.Stop()
 	}
 }
 
