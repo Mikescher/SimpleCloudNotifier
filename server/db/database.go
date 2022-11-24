@@ -35,6 +35,11 @@ func (db *Database) Migrate(ctx context.Context) error {
 			return err
 		}
 
+		err = db.WriteMetaInt(ctx, "schema", 3)
+		if err != nil {
+			return err
+		}
+
 		return nil
 
 	} else if currschema == 1 {
@@ -47,34 +52,6 @@ func (db *Database) Migrate(ctx context.Context) error {
 		return errors.New(fmt.Sprintf("Unknown DB schema: %d", currschema))
 	}
 
-}
-
-func (db *Database) ReadSchema(ctx context.Context) (int, error) {
-
-	r1, err := db.db.QueryContext(ctx, "SELECT name FROM sqlite_master WHERE type='table' AND name='meta'")
-	if err != nil {
-		return 0, err
-	}
-
-	if !r1.Next() {
-		return 0, nil
-	}
-
-	r2, err := db.db.QueryContext(ctx, "SELECT value_int FROM meta WHERE meta_key='schema'")
-	if err != nil {
-		return 0, err
-	}
-	if !r2.Next() {
-		return 0, errors.New("no schema entry in meta table")
-	}
-
-	var dbschema int
-	err = r2.Scan(&dbschema)
-	if err != nil {
-		return 0, err
-	}
-
-	return dbschema, nil
 }
 
 func (db *Database) Ping() error {

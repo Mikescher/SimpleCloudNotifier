@@ -125,4 +125,6 @@ CREATE TABLE `meta`
 
     PRIMARY KEY (meta_key)
 );
+
+
 INSERT INTO meta (meta_key, value_int) VALUES ('schema', 3)

@@ -167,7 +167,7 @@ func (app *Application) StartRequest(g *gin.Context, uri any, query any, body an
 		}
 	}
 
-	if body != nil && g.Request.Header.Get("Content-Type") == "application/javascript" {
+	if body != nil && g.Request.Header.Get("Content-Type") == "application/json" {
 		if err := g.ShouldBindJSON(body); err != nil {
 			return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Failed to read body", err))
 		}

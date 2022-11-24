@@ -38,19 +38,20 @@ func NewAPIHandler(app *logic.Application) APIHandler {
 //
 // @Param   post_body body     handler.CreateUser.body false " "
 //
-// @Success 200       {object} handler.sendMessageInternal.response
+// @Success 200       {object} models.UserJSONWithClients
 // @Failure 400       {object} ginresp.apiError
 // @Failure 500       {object} ginresp.apiError
 //
-// @Router  /api/users/ [POST]
+// @Router  /api/users [POST]
 func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 	type body struct {
-		FCMToken     string  `json:"fcm_token" binding:"required"`
+		FCMToken     string  `json:"fcm_token"`
 		ProToken     *string `json:"pro_token"`
 		Username     *string `json:"username"`
-		AgentModel   string  `json:"agent_model" binding:"required"`
-		AgentVersion string  `json:"agent_version" binding:"required"`
-		ClientType   string  `json:"client_type" binding:"required"`
+		AgentModel   string  `json:"agent_model"`
+		AgentVersion string  `json:"agent_version"`
+		ClientType   string  `json:"client_type"`
+		NoClient     bool    `json:"no_client"`
 	}
 
 	var b body
@@ -61,12 +62,23 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 	defer ctx.Cancel()
 
 	var clientType models.ClientType
-	if b.ClientType == string(models.ClientTypeAndroid) {
-		clientType = models.ClientTypeAndroid
-	} else if b.ClientType == string(models.ClientTypeIOS) {
-		clientType = models.ClientTypeIOS
-	} else {
-		return ginresp.APIError(g, 400, apierr.INVALID_CLIENTTYPE, "Invalid ClientType", nil)
+	if !b.NoClient {
+		if b.FCMToken == "" {
+			return ginresp.APIError(g, 400, apierr.INVALID_CLIENTTYPE, "Missing FCMToken", nil)
+		}
+		if b.AgentVersion == "" {
+			return ginresp.APIError(g, 400, apierr.INVALID_CLIENTTYPE, "Missing AgentVersion", nil)
+		}
+		if b.ClientType == "" {
+			return ginresp.APIError(g, 400, apierr.INVALID_CLIENTTYPE, "Missing ClientType", nil)
+		}
+		if b.ClientType == string(models.ClientTypeAndroid) {
+			clientType = models.ClientTypeAndroid
+		} else if b.ClientType == string(models.ClientTypeIOS) {
+			clientType = models.ClientTypeIOS
+		} else {
+			return ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Invalid ClientType", nil)
+		}
 	}
 
 	if b.ProToken != nil {
@@ -106,12 +118,17 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create user in db", err)
 	}
 
-	_, err = h.database.CreateClient(ctx, userobj.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create user in db", err)
+	if b.NoClient {
+		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, userobj.JSONWithClients(make([]models.Client, 0))))
+	} else {
+		client, err := h.database.CreateClient(ctx, userobj.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create client in db", err)
+		}
+
+		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, userobj.JSONWithClients([]models.Client{client})))
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, userobj.JSON()))
 }
 
 // GetUser swaggerdoc
@@ -409,7 +426,7 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 
 	client, err := h.database.CreateClient(ctx, u.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion)
 	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create user in db", err)
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create client in db", err)
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, client.JSON()))

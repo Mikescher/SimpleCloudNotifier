@@ -60,7 +60,14 @@ clean:
 	rm -rf .run-data/*
 	git clean -fdx
 	go clean
+	go clean -testcache
 
 fmt:
 	go fmt ./...
 	swag fmt
+
+.PHONY: test
+test:
+	go test ./test/...
+
+

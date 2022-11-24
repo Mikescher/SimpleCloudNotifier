@@ -118,7 +118,7 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 
 	_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, *data.FCMToken, "compat", "compat")
 	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to create user in db")
+		return ginresp.CompatAPIError(0, "Failed to create client in db")
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{

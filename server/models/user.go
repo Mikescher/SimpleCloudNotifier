@@ -42,6 +42,13 @@ func (u User) JSON() UserJSON {
 	}
 }
 
+func (u User) JSONWithClients(clients []Client) UserJSONWithClients {
+	return UserJSONWithClients{
+		UserJSON: u.JSON(),
+		Clients:  langext.ArrMap(clients, func(v Client) ClientJSON { return v.JSON() }),
+	}
+}
+
 func (u User) MaxContentLength() int {
 	if u.IsPro {
 		return 16384
@@ -97,6 +104,11 @@ type UserJSON struct {
 	QuotaUsedDay      *string `json:"quota_used_day"`
 	IsPro             bool    `json:"is_pro"`
 	DefaultChannel    string  `json:"default_channel"`
+}
+
+type UserJSONWithClients struct {
+	UserJSON
+	Clients []ClientJSON `json:"clients"`
 }
 
 type UserDB struct {

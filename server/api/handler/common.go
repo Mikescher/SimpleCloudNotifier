@@ -5,9 +5,11 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"bytes"
+	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
 	sqlite3 "github.com/mattn/go-sqlite3"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
 	"net/http"
 	"time"
@@ -74,7 +76,7 @@ func (h CommonHandler) Ping(g *gin.Context) ginresp.HTTPResponse {
 // @Success 200 {object} handler.DatabaseTest.response
 // @Failure 500 {object} ginresp.apiError
 //
-// @Router  /api/db-test [get]
+// @Router  /api/db-test [post]
 func (h CommonHandler) DatabaseTest(g *gin.Context) ginresp.HTTPResponse {
 	type response struct {
 		Success          bool   `json:"success"`
@@ -113,6 +115,9 @@ func (h CommonHandler) Health(g *gin.Context) ginresp.HTTPResponse {
 		Status string `json:"status"`
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
 	_, libVersionNumber, _ := sqlite3.Version()
 
 	if libVersionNumber < 3039000 {
@@ -120,6 +125,28 @@ func (h CommonHandler) Health(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	err := h.app.Database.Ping()
+	if err != nil {
+		return ginresp.InternalError(err)
+	}
+
+	uuidKey, _ := langext.NewHexUUID()
+	uuidWrite, _ := langext.NewHexUUID()
+
+	err = h.app.Database.WriteMetaString(ctx, uuidKey, uuidWrite)
+	if err != nil {
+		return ginresp.InternalError(err)
+	}
+
+	uuidRead, err := h.app.Database.ReadMetaString(ctx, uuidKey)
+	if err != nil {
+		return ginresp.InternalError(err)
+	}
+
+	if uuidRead == nil || uuidWrite != *uuidRead {
+		return ginresp.InternalError(errors.New("writing into DB was not consistent"))
+	}
+
+	err = h.app.Database.DeleteMeta(ctx, uuidKey)
 	if err != nil {
 		return ginresp.InternalError(err)
 	}

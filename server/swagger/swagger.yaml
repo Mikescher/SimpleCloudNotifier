@@ -442,6 +442,39 @@ definitions:
       username:
         type: string
     type: object
+  models.UserJSONWithClients:
+    properties:
+      admin_key:
+        type: string
+      clients:
+        items:
+          $ref: '#/definitions/models.ClientJSON'
+        type: array
+      default_channel:
+        type: string
+      is_pro:
+        type: boolean
+      messages_sent:
+        type: integer
+      quota_used:
+        type: integer
+      quota_used_day:
+        type: string
+      read_key:
+        type: string
+      send_key:
+        type: string
+      timestamp_created:
+        type: string
+      timestamp_last_read:
+        type: string
+      timestamp_last_sent:
+        type: string
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
 host: scn.blackforestbytes.com
 info:
   contact: {}
@@ -1142,7 +1175,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.sendMessageInternal.response'
+            $ref: '#/definitions/models.UserJSONWithClients'
         "400":
           description: Bad Request
           schema:
