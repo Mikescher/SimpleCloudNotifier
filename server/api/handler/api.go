@@ -82,7 +82,7 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	if b.ProToken != nil {
-		ptok, err := h.app.VerifyProToken(*b.ProToken)
+		ptok, err := h.app.VerifyProToken(ctx, *b.ProToken)
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.FAILED_VERIFY_PRO_TOKEN, "Failed to query purchase status", err)
 		}
@@ -232,7 +232,7 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	if b.ProToken != nil {
-		ptok, err := h.app.VerifyProToken(*b.ProToken)
+		ptok, err := h.app.VerifyProToken(ctx, *b.ProToken)
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.FAILED_VERIFY_PRO_TOKEN, "Failed to query purchase status", err)
 		}
@@ -697,8 +697,8 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 // @Tags        API-v2
 //
 // @Param       query_data query    handler.ListChannelMessages.query false " "
-// @Param       uid        path     int true "UserID"
-// @Param       cid        path     int true "ChannelID"
+// @Param       uid        path     int                               true  "UserID"
+// @Param       cid        path     int                               true  "ChannelID"
 //
 // @Success     200        {object} handler.ListChannelMessages.response
 // @Failure     400        {object} ginresp.apiError

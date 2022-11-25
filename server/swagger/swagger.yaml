@@ -71,15 +71,12 @@ definitions:
         type: string
       fcm_token:
         type: string
+      no_client:
+        type: boolean
       pro_token:
         type: string
       username:
         type: string
-    required:
-    - agent_model
-    - agent_version
-    - client_type
-    - fcm_token
     type: object
   handler.DatabaseTest.response:
     properties:
@@ -615,7 +612,7 @@ paths:
       tags:
       - API-v1
   /api/db-test:
-    get:
+    post:
       operationId: api-common-dbtest
       responses:
         "200":
@@ -1162,7 +1159,7 @@ paths:
       summary: Upgrade a free account to a paid account
       tags:
       - API-v1
-  /api/users/:
+  /api/users:
     post:
       operationId: api-user-create
       parameters:

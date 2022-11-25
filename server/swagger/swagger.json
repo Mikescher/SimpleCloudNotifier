@@ -213,7 +213,7 @@
             }
         },
         "/api/db-test": {
-            "get": {
+            "post": {
                 "tags": [
                     "Common"
                 ],
@@ -1013,7 +1013,7 @@
                 }
             }
         },
-        "/api/users/": {
+        "/api/users": {
             "post": {
                 "tags": [
                     "API-v2"
@@ -2366,12 +2366,6 @@
         },
         "handler.CreateUser.body": {
             "type": "object",
-            "required": [
-                "agent_model",
-                "agent_version",
-                "client_type",
-                "fcm_token"
-            ],
             "properties": {
                 "agent_model": {
                     "type": "string"
@@ -2384,6 +2378,9 @@
                 },
                 "fcm_token": {
                     "type": "string"
+                },
+                "no_client": {
+                    "type": "boolean"
                 },
                 "pro_token": {
                     "type": "string"

@@ -6,6 +6,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/common"
 	"blackforestbytes.com/simplecloudnotifier/common/ginext"
 	"blackforestbytes.com/simplecloudnotifier/db"
+	"blackforestbytes.com/simplecloudnotifier/google"
 	"blackforestbytes.com/simplecloudnotifier/jobs"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/push"
@@ -38,7 +39,7 @@ func main() {
 
 	var nc push.NotificationClient
 	if conf.DummyFirebase {
-		nc, err = push.NewDummy()
+		nc = push.NewDummy()
 	} else {
 		nc, err = push.NewFirebaseConn(conf)
 		if err != nil {
@@ -47,9 +48,20 @@ func main() {
 		}
 	}
 
+	var apc google.AndroidPublisherClient
+	if conf.DummyGoogleAPI {
+		apc = google.NewDummy()
+	} else {
+		apc, err = google.NewAndroidPublisherAPI(conf)
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to init google-api")
+			return
+		}
+	}
+
 	jobRetry := jobs.NewDeliveryRetryJob(app)
 
-	app.Init(conf, ginengine, nc, []logic.Job{jobRetry})
+	app.Init(conf, ginengine, nc, apc, []logic.Job{jobRetry})
 
 	router.Init(ginengine)
 

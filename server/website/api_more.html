@@ -54,7 +54,7 @@
         <h2>API Requests</h2>
         <div class="section">
             <p>
-                To send a new notification you send a <code>POST</code> request to the URL <code>https://scn.blackforestbytes.com/</code>.
+                To send a new notification you send a <code>POST</code> request to the URL <code>{{config|baseURL}}/</code>.
                 All Parameters can either directly be submitted as URL parameters or they can be put into the POST body (either multipart/form-data or JSON).
             </p>
             <p>
@@ -141,7 +141,7 @@
     --data "user_key={userkey}"               \
     --data "title={message_title}"            \
     --data "content={message_content}"        \
-    https://scn.blackforestbytes.com/</pre>
+    {{config|baseURL}}/</pre>
         </div>
 
         <h2>Message Priority</h2>
@@ -159,7 +159,7 @@
     --data "user_key={userkey}"               \
     --data "title={message_title}"            \
     --data "priority={0|1|2}"                 \
-    https://scn.blackforestbytes.com/s</pre>
+    {{config|baseURL}}/</pre>
         </div>
 
         <h2>Channels</h2>
@@ -174,7 +174,7 @@
     --data "user_key={userkey}"               \
     --data "title={message_title}"            \
     --data "channel={my_channel}"             \
-    https://scn.blackforestbytes.com/s</pre>
+    {{config|baseURL}}/</pre>
         </div>
 
         <h2>Message Uniqueness</h2>
@@ -194,7 +194,7 @@
     --data "user_key={userkey}"               \
     --data "title={message_title}"            \
     --data "msg_id={message_id}"              \
-    https://scn.blackforestbytes.com/</pre>
+    {{config|baseURL}}/</pre>
             <p>
                 Be aware that the server only saves send messages for a short amount of time. Because of that you can only use this to prevent duplicates in a short time-frame, older messages with the same ID are probably already deleted and the message will be send again.
             </p>
@@ -213,7 +213,7 @@
     --data "user_key={userkey}"               \
     --data "title={message_title}"            \
     --data "timestamp={unix_timestamp}"       \
-    https://scn.blackforestbytes.com/</pre>
+    {{config|baseURL}}/</pre>
         </div>
 
         <h2>Bash script example</h2>

@@ -162,9 +162,9 @@ func (h CommonHandler) Health(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Param   secs path     number true "sleep delay (in seconds)"
 //
-// @Success 200 {object} handler.Sleep.response
-// @Failure 400 {object} ginresp.apiError
-// @Failure 500 {object} ginresp.apiError
+// @Success 200  {object} handler.Sleep.response
+// @Failure 400  {object} ginresp.apiError
+// @Failure 500  {object} ginresp.apiError
 //
 // @Router  /api/sleep/{secs} [post]
 func (h CommonHandler) Sleep(g *gin.Context) ginresp.HTTPResponse {

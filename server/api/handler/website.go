@@ -14,12 +14,14 @@ import (
 type WebsiteHandler struct {
 	app         *logic.Application
 	rexTemplate *regexp.Regexp
+	rexConfig   *regexp.Regexp
 }
 
 func NewWebsiteHandler(app *logic.Application) WebsiteHandler {
 	return WebsiteHandler{
 		app:         app,
 		rexTemplate: regexp.MustCompile("{{template\\|[A-Za-z0-9_\\-.]+}}"),
+		rexConfig:   regexp.MustCompile("{{config\\|[A-Za-z0-9_\\-.]+}}"),
 	}
 }
 
@@ -94,6 +96,21 @@ func (h WebsiteHandler) serveAsset(g *gin.Context, fn string, repl bool) ginresp
 		if failed {
 			return ginresp.InternalError(errors.New("template replacement failed"))
 		}
+
+		data = h.rexConfig.ReplaceAllFunc(data, func(match []byte) []byte {
+			prefix := len("{{config|")
+			suffix := len("}}")
+			cfgKey := match[prefix : len(match)-suffix]
+
+			cval, ok := h.getReplConfig(string(cfgKey))
+			if !ok {
+				failed = true
+			}
+			return []byte(cval)
+		})
+		if failed {
+			return ginresp.InternalError(errors.New("config replacement failed"))
+		}
 	}
 
 	mime := "text/plain"
@@ -116,4 +133,24 @@ func (h WebsiteHandler) serveAsset(g *gin.Context, fn string, repl bool) ginresp
 	}
 
 	return ginresp.Data(http.StatusOK, mime, data)
+}
+
+func (h WebsiteHandler) getReplConfig(key string) (string, bool) {
+	key = strings.TrimSpace(strings.ToLower(key))
+
+	if key == "baseurl" {
+		return h.app.Config.BaseURL, true
+	}
+	if key == "ip" {
+		return h.app.Config.ServerIP, true
+	}
+	if key == "port" {
+		return h.app.Config.ServerPort, true
+	}
+	if key == "namespace" {
+		return h.app.Config.Namespace, true
+	}
+
+	return "", false
+
 }

@@ -85,7 +85,7 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	if data.ProToken != nil {
-		ptok, err := h.app.VerifyProToken(*data.ProToken)
+		ptok, err := h.app.VerifyProToken(ctx, "ANDROID|v2|"+*data.ProToken)
 		if err != nil {
 			return ginresp.CompatAPIError(0, "Failed to query purchase status")
 		}
@@ -634,7 +634,7 @@ func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	if data.ProToken != nil {
-		ptok, err := h.app.VerifyProToken(*data.ProToken)
+		ptok, err := h.app.VerifyProToken(ctx, "ANDROID|v2|"+*data.ProToken)
 		if err != nil {
 			return ginresp.CompatAPIError(0, "Failed to query purchase status")
 		}

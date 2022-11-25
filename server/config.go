@@ -8,110 +8,158 @@ import (
 )
 
 type Config struct {
-	Namespace          string
-	GinDebug           bool
-	ServerIP           string
-	ServerPort         string
-	DBFile             string
-	RequestTimeout     time.Duration
-	ReturnRawErrors    bool
-	DummyFirebase      bool
-	FirebaseTokenURI   string
-	FirebaseProjectID  string
-	FirebasePrivKeyID  string
-	FirebaseClientMail string
-	FirebasePrivateKey string
+	Namespace           string
+	BaseURL             string
+	GinDebug            bool
+	ServerIP            string
+	ServerPort          string
+	DBFile              string
+	RequestTimeout      time.Duration
+	ReturnRawErrors     bool
+	DummyFirebase       bool
+	FirebaseTokenURI    string
+	FirebaseProjectID   string
+	FirebasePrivKeyID   string
+	FirebaseClientMail  string
+	FirebasePrivateKey  string
+	DummyGoogleAPI      bool
+	GoogleAPITokenURI   string
+	GoogleAPIPrivKeyID  string
+	GoogleAPIClientMail string
+	GoogleAPIPrivateKey string
+	GooglePackageName   string
+	GoogleProProductID  string
 }
 
 var Conf Config
 
 var configLocHost = func() Config {
 	return Config{
-		Namespace:          "local-host",
-		GinDebug:           true,
-		ServerIP:           "0.0.0.0",
-		ServerPort:         "8080",
-		DBFile:             ".run-data/db.sqlite3",
-		RequestTimeout:     16 * time.Second,
-		ReturnRawErrors:    true,
-		DummyFirebase:      true,
-		FirebaseTokenURI:   "",
-		FirebaseProjectID:  "",
-		FirebasePrivKeyID:  "",
-		FirebaseClientMail: "",
-		FirebasePrivateKey: "",
+		Namespace:           "local-host",
+		BaseURL:             "http://localhost:8080",
+		GinDebug:            true,
+		ServerIP:            "0.0.0.0",
+		ServerPort:          "8080",
+		DBFile:              ".run-data/db.sqlite3",
+		RequestTimeout:      16 * time.Second,
+		ReturnRawErrors:     true,
+		DummyFirebase:       true,
+		FirebaseTokenURI:    "",
+		FirebaseProjectID:   "",
+		FirebasePrivKeyID:   "",
+		FirebaseClientMail:  "",
+		FirebasePrivateKey:  "",
+		DummyGoogleAPI:      true,
+		GoogleAPITokenURI:   "",
+		GoogleAPIPrivKeyID:  "",
+		GoogleAPIClientMail: "",
+		GoogleAPIPrivateKey: "",
+		GooglePackageName:   "",
+		GoogleProProductID:  "",
 	}
 }
 
 var configLocDocker = func() Config {
 	return Config{
-		Namespace:          "local-docker",
-		GinDebug:           true,
-		ServerIP:           "0.0.0.0",
-		ServerPort:         "80",
-		DBFile:             "/data/scn_docker.sqlite3",
-		RequestTimeout:     16 * time.Second,
-		ReturnRawErrors:    true,
-		DummyFirebase:      true,
-		FirebaseTokenURI:   "",
-		FirebaseProjectID:  "",
-		FirebasePrivKeyID:  "",
-		FirebaseClientMail: "",
-		FirebasePrivateKey: "",
+		Namespace:           "local-docker",
+		BaseURL:             "http://localhost:8080",
+		GinDebug:            true,
+		ServerIP:            "0.0.0.0",
+		ServerPort:          "80",
+		DBFile:              "/data/scn_docker.sqlite3",
+		RequestTimeout:      16 * time.Second,
+		ReturnRawErrors:     true,
+		DummyFirebase:       true,
+		FirebaseTokenURI:    "",
+		FirebaseProjectID:   "",
+		FirebasePrivKeyID:   "",
+		FirebaseClientMail:  "",
+		FirebasePrivateKey:  "",
+		DummyGoogleAPI:      true,
+		GoogleAPITokenURI:   "",
+		GoogleAPIPrivKeyID:  "",
+		GoogleAPIClientMail: "",
+		GoogleAPIPrivateKey: "",
+		GooglePackageName:   "",
+		GoogleProProductID:  "",
 	}
 }
 
 var configDev = func() Config {
 	return Config{
-		Namespace:          "develop",
-		GinDebug:           true,
-		ServerIP:           "0.0.0.0",
-		ServerPort:         "80",
-		DBFile:             "/data/scn.sqlite3",
-		RequestTimeout:     16 * time.Second,
-		ReturnRawErrors:    true,
-		DummyFirebase:      false,
-		FirebaseTokenURI:   "https://oauth2.googleapis.com/token",
-		FirebaseProjectID:  confEnv("FB_PROJECTID"),
-		FirebasePrivKeyID:  confEnv("FB_PRIVATEKEYID"),
-		FirebaseClientMail: confEnv("FB_CLIENTEMAIL"),
-		FirebasePrivateKey: confEnv("FB_PRIVATEKEY"),
+		Namespace:           "develop",
+		BaseURL:             confEnv("BASE_URL"),
+		GinDebug:            true,
+		ServerIP:            "0.0.0.0",
+		ServerPort:          "80",
+		DBFile:              "/data/scn.sqlite3",
+		RequestTimeout:      16 * time.Second,
+		ReturnRawErrors:     true,
+		DummyFirebase:       false,
+		FirebaseTokenURI:    "https://oauth2.googleapis.com/token",
+		FirebaseProjectID:   confEnv("FB_PROJECTID"),
+		FirebasePrivKeyID:   confEnv("FB_PRIVATEKEYID"),
+		FirebaseClientMail:  confEnv("FB_CLIENTEMAIL"),
+		FirebasePrivateKey:  confEnv("FB_PRIVATEKEY"),
+		DummyGoogleAPI:      false,
+		GoogleAPITokenURI:   "https://oauth2.googleapis.com/token",
+		GoogleAPIPrivKeyID:  confEnv("GOOG_PRIVATEKEYID"),
+		GoogleAPIClientMail: confEnv("GOOG_CLIENTEMAIL"),
+		GoogleAPIPrivateKey: confEnv("GOOG_PRIVATEKEY"),
+		GooglePackageName:   confEnv("GOOG_PACKAGENAME"),
+		GoogleProProductID:  confEnv("GOOG_PROPRODUCTID"),
 	}
 }
 
 var configStag = func() Config {
 	return Config{
-		Namespace:          "staging",
-		GinDebug:           true,
-		ServerIP:           "0.0.0.0",
-		ServerPort:         "80",
-		DBFile:             "/data/scn.sqlite3",
-		RequestTimeout:     16 * time.Second,
-		ReturnRawErrors:    true,
-		DummyFirebase:      false,
-		FirebaseTokenURI:   "https://oauth2.googleapis.com/token",
-		FirebaseProjectID:  confEnv("FB_PROJECTID"),
-		FirebasePrivKeyID:  confEnv("FB_PRIVATEKEYID"),
-		FirebaseClientMail: confEnv("FB_CLIENTEMAIL"),
-		FirebasePrivateKey: confEnv("FB_PRIVATEKEY"),
+		Namespace:           "staging",
+		BaseURL:             confEnv("BASE_URL"),
+		GinDebug:            true,
+		ServerIP:            "0.0.0.0",
+		ServerPort:          "80",
+		DBFile:              "/data/scn.sqlite3",
+		RequestTimeout:      16 * time.Second,
+		ReturnRawErrors:     true,
+		DummyFirebase:       false,
+		FirebaseTokenURI:    "https://oauth2.googleapis.com/token",
+		FirebaseProjectID:   confEnv("FB_PROJECTID"),
+		FirebasePrivKeyID:   confEnv("FB_PRIVATEKEYID"),
+		FirebaseClientMail:  confEnv("FB_CLIENTEMAIL"),
+		FirebasePrivateKey:  confEnv("FB_PRIVATEKEY"),
+		DummyGoogleAPI:      false,
+		GoogleAPITokenURI:   "https://oauth2.googleapis.com/token",
+		GoogleAPIPrivKeyID:  confEnv("GOOG_PRIVATEKEYID"),
+		GoogleAPIClientMail: confEnv("GOOG_CLIENTEMAIL"),
+		GoogleAPIPrivateKey: confEnv("GOOG_PRIVATEKEY"),
+		GooglePackageName:   confEnv("GOOG_PACKAGENAME"),
+		GoogleProProductID:  confEnv("GOOG_PROPRODUCTID"),
 	}
 }
 
 var configProd = func() Config {
 	return Config{
-		Namespace:          "production",
-		GinDebug:           false,
-		ServerIP:           "0.0.0.0",
-		ServerPort:         "80",
-		DBFile:             "/data/scn.sqlite3",
-		RequestTimeout:     16 * time.Second,
-		ReturnRawErrors:    false,
-		DummyFirebase:      false,
-		FirebaseTokenURI:   "https://oauth2.googleapis.com/token",
-		FirebaseProjectID:  confEnv("FB_PROJECTID"),
-		FirebasePrivKeyID:  confEnv("FB_PRIVATEKEYID"),
-		FirebaseClientMail: confEnv("FB_CLIENTEMAIL"),
-		FirebasePrivateKey: confEnv("FB_PRIVATEKEY"),
+		Namespace:           "production",
+		BaseURL:             confEnv("BASE_URL"),
+		GinDebug:            false,
+		ServerIP:            "0.0.0.0",
+		ServerPort:          "80",
+		DBFile:              "/data/scn.sqlite3",
+		RequestTimeout:      16 * time.Second,
+		ReturnRawErrors:     false,
+		DummyFirebase:       false,
+		FirebaseTokenURI:    "https://oauth2.googleapis.com/token",
+		FirebaseProjectID:   confEnv("FB_PROJECTID"),
+		FirebasePrivKeyID:   confEnv("FB_PRIVATEKEYID"),
+		FirebaseClientMail:  confEnv("FB_CLIENTEMAIL"),
+		FirebasePrivateKey:  confEnv("FB_PRIVATEKEY"),
+		DummyGoogleAPI:      false,
+		GoogleAPITokenURI:   "https://oauth2.googleapis.com/token",
+		GoogleAPIPrivKeyID:  confEnv("GOOG_PRIVATEKEYID"),
+		GoogleAPIClientMail: confEnv("GOOG_CLIENTEMAIL"),
+		GoogleAPIPrivateKey: confEnv("GOOG_PRIVATEKEY"),
+		GooglePackageName:   confEnv("GOOG_PACKAGENAME"),
+		GoogleProProductID:  confEnv("GOOG_PROPRODUCTID"),
 	}
 }
 

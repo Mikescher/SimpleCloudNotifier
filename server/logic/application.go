@@ -5,6 +5,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/db"
+	"blackforestbytes.com/simplecloudnotifier/google"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"blackforestbytes.com/simplecloudnotifier/push"
 	"context"
@@ -24,13 +25,14 @@ import (
 )
 
 type Application struct {
-	Config   scn.Config
-	Gin      *gin.Engine
-	Database *db.Database
-	Firebase push.NotificationClient
-	Jobs     []Job
-	stopChan chan bool
-	Port     string
+	Config           scn.Config
+	Gin              *gin.Engine
+	Database         *db.Database
+	Firebase         push.NotificationClient
+	AndroidPublisher google.AndroidPublisherClient
+	Jobs             []Job
+	stopChan         chan bool
+	Port             string
 }
 
 func NewApp(db *db.Database) *Application {
@@ -40,10 +42,11 @@ func NewApp(db *db.Database) *Application {
 	}
 }
 
-func (app *Application) Init(cfg scn.Config, g *gin.Engine, fb push.NotificationClient, jobs []Job) {
+func (app *Application) Init(cfg scn.Config, g *gin.Engine, fb push.NotificationClient, apc google.AndroidPublisherClient, jobs []Job) {
 	app.Config = cfg
 	app.Gin = g
 	app.Firebase = fb
+	app.AndroidPublisher = apc
 	app.Jobs = jobs
 }
 
@@ -142,8 +145,41 @@ func (app *Application) QuotaMax(ispro bool) int {
 	}
 }
 
-func (app *Application) VerifyProToken(token string) (bool, error) {
-	return false, nil //TODO implement pro verification
+func (app *Application) VerifyProToken(ctx *AppContext, token string) (bool, error) {
+	if strings.HasPrefix(token, "ANDROID|v2|") {
+		subToken := token[len("ANDROID|v2|"):]
+		return app.VerifyAndroidProToken(ctx, subToken)
+	}
+	if strings.HasPrefix(token, "IOS|v2|") {
+		subToken := token[len("IOS|v2|"):]
+		return app.VerifyIOSProToken(ctx, subToken)
+	}
+
+	return false, nil
+}
+
+func (app *Application) VerifyAndroidProToken(ctx *AppContext, token string) (bool, error) {
+
+	purchase, err := app.AndroidPublisher.GetProductPurchase(ctx, app.Config.GooglePackageName, app.Config.GoogleProProductID, token)
+	if err != nil {
+		return false, err
+	}
+
+	if purchase == nil {
+		return false, nil
+	}
+	if purchase.PurchaseState == nil {
+		return false, nil
+	}
+	if *purchase.PurchaseState != google.PurchaseStatePurchased {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (app *Application) VerifyIOSProToken(ctx *AppContext, token string) (bool, error) {
+	return false, nil //TODO IOS
 }
 
 func (app *Application) Migrate() error {

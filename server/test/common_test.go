@@ -66,8 +66,6 @@ func NewSimpleWebserver() (*logic.Application, func()) {
 		panic(err)
 	}
 
-	//dbfile := "/home/mike/Code/private/SimpleCloudNotifier/server/.run-data/db_test.sqlite3"
-
 	fmt.Println("DatabaseFile: " + dbfile)
 
 	conf := scn.Config{
@@ -98,8 +96,10 @@ func NewSimpleWebserver() (*logic.Application, func()) {
 
 	nc := push.NewTestSink()
 
+	apc := google.NewDummy()
+
 	jobRetry := jobs.NewDeliveryRetryJob(app)
-	app.Init(conf, ginengine, nc, []logic.Job{jobRetry})
+	app.Init(conf, ginengine, nc, apc, []logic.Job{jobRetry})
 
 	router.Init(ginengine)
 
