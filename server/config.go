@@ -185,7 +185,8 @@ func confEnv(key string) string {
 	if v, ok := os.LookupEnv(key); ok {
 		return v
 	} else {
-		panic(fmt.Sprintf("Missing required environment variable '%s'", key))
+		log.Fatal().Msg(fmt.Sprintf("Missing required environment variable '%s'", key))
+		return ""
 	}
 }
 
