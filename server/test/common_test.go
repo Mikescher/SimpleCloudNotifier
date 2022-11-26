@@ -5,6 +5,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/api"
 	"blackforestbytes.com/simplecloudnotifier/common/ginext"
 	"blackforestbytes.com/simplecloudnotifier/db"
+	"blackforestbytes.com/simplecloudnotifier/google"
 	"blackforestbytes.com/simplecloudnotifier/jobs"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/push"

@@ -1,15 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8">
-	<link rel="stylesheet" href="/css/mini-default.min.css"> <!-- https://minicss.org/docs -->
-    <title>Simple Cloud Notifications - API</title>
-    <!--<link rel="stylesheet" href="/css/mini-nord.min.css">-->
-    <!--<link rel="stylesheet" href="/css/mini-dark.min.css">-->
-	<link rel="stylesheet" href="/css/style.css">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="/favicon.png"/>
-    <link rel="icon" type="image/png" href="/favicon.ico"/>
+    {{template|header.[theme].html}}
 </head>
 <body>
 
@@ -18,10 +10,12 @@
         <a tabindex="-1" href="https://www.mikescher.com">made by Mike Schw&ouml;rer</a>
     </div>
 
-	<div id="mainpnl">
-        <a tabindex="-1" href="/documentation/swagger" class="button bordered" id="tl_linkDocs"><span class="icn-openapi"></span><span class="tl_btntxt">API Documentation</span></a>
+    {{template|theme_switch.[theme].html}}
 
-        <a tabindex="-1" href="/" class="button bordered" id="tr_link">Send</a>
+    <div id="mainpnl">
+        <a tabindex="-1" href="/documentation/swagger" class="button bordered edge-btn" id="tl_linkDocs"><span class="icn-openapi"></span><span class="tl_btntxt">API Documentation</span></a>
+
+        <a tabindex="-1" href="/" class="button bordered edge-btn" id="tr_link">Send</a>
 
         <a tabindex="-1" href="/" class="linkcaption"><h1>Simple Cloud Notifier</h1></a>
 
@@ -70,16 +64,10 @@
             <pre class="red-code">{
     "success":true,
     "message":"Message sent",
-    "response":
-    {
-        "multicast_id":8000000000000000006,
-        "success":1,
-        "failure":0,
-        "canonical_ids":0,
-        "results": [{"message_id":"0:10000000000000000000000000000000d"}]
-    },
+    "messagecount": 634,
     "quota":17,
-    "quota_max":100
+    "quota_max":100,
+    "scn_msg_id":993625
 }</pre>
             <p>
                 If the operation is <b>not</b> successful the API will respond with a 4xx or 500 HTTP statuscode.
@@ -116,7 +104,7 @@
             </table>
             <p>
                 There is also always a JSON payload with additional information.
-                The <code>success</code> field is always there and in the error state you the <code>message</code> field to get a descritpion of the problem.
+                The <code>success</code> field is always there and in the error case you can read the <code>message</code> field to get a more information about the problem.
             </p>
             <pre class="red-code">{
     "success": false,
@@ -162,7 +150,7 @@
     {{config|baseURL}}/</pre>
         </div>
 
-        <h2>Channels</h2>
+        <h2>Channel</h2>
         <div class="section">
             <p>
                 By default all messages are sent to the user default channel (typically <code>main</code>)
@@ -222,7 +210,7 @@
                 Depending on your use case it can be useful to create a bash script that handles things like resending messages if you have connection problems or waiting if there is no quota left.<br/>
                 Here is an example how such a scrippt could look like, you can put it into <code>/usr/local/sbin</code> and call it with <code>scn_send "title" "content"</code> (or with more parameters, see the script itself)
             </p>
-            <pre style="color:#000000; margin: 0; line-height: 125%" class="yellow-code">{{template|scn_send.html}}</pre>
+            {{template|scn_send.[theme].html}}
         </div>
     </div>
 

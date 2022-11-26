@@ -1,15 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8">
-    <title>Simple Cloud Notifications</title>
-	<link rel="stylesheet" href="/css/mini-default.min.css">  <!-- https://minicss.org/docs -->
-	<!--<link rel="stylesheet" href="/css/mini-nord.min.css">-->
-	<!--<link rel="stylesheet" href="/css/mini-dark.min.css">-->
-	<link rel="stylesheet" href="/css/style.css">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="/favicon.png"/>
-    <link rel="icon" type="image/png" href="/favicon.ico"/>
+    {{template|header.[theme].html}}
 </head>
 <body>
 
@@ -18,12 +10,14 @@
         <a tabindex="-1" href="https://www.mikescher.com">made by Mike Schw&ouml;rer</a>
     </div>
 
-	<div id="mainpnl">
+    {{template|theme_switch.[theme].html}}
 
-        <a tabindex="-1" href="https://play.google.com/store/apps/details?id=com.blackforestbytes.simplecloudnotifier" class="button bordered" id="tl_link1"><span class="icn-google-play"></span></a>
-        <a tabindex="-1" href="#"                                                                                      class="button bordered" id="tl_link2"><span class="icn-app-store"></span></a>
+    <div id="mainpnl">
 
-        <a tabindex="-1" href="/" class="button bordered" id="tr_link">Send</a>
+        <a tabindex="-1" href="https://play.google.com/store/apps/details?id=com.blackforestbytes.simplecloudnotifier" class="button bordered edge-btn" id="tl_link1"><span class="icn-google-play"></span></a>
+        <a tabindex="-1" href="#"                                                                                      class="button bordered edge-btn" id="tl_link2"><span class="icn-app-store"></span></a>
+
+        <a tabindex="-1" href="/" class="button bordered edge-btn" id="tr_link">Send</a>
 
         <a tabindex="-1" href="/" class="linkcaption"><h1>Simple Cloud Notifier</h1></a>
 

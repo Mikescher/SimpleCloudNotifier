@@ -6,6 +6,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/website"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -20,7 +21,7 @@ type WebsiteHandler struct {
 func NewWebsiteHandler(app *logic.Application) WebsiteHandler {
 	return WebsiteHandler{
 		app:         app,
-		rexTemplate: regexp.MustCompile("{{template\\|[A-Za-z0-9_\\-.]+}}"),
+		rexTemplate: regexp.MustCompile("{{template\\|[A-Za-z0-9_\\-\\[\\].]+}}"),
 		rexConfig:   regexp.MustCompile("{{config\\|[A-Za-z0-9_\\-.]+}}"),
 	}
 }
@@ -86,9 +87,13 @@ func (h WebsiteHandler) serveAsset(g *gin.Context, fn string, repl bool) ginresp
 		data = h.rexTemplate.ReplaceAllFunc(data, func(match []byte) []byte {
 			prefix := len("{{template|")
 			suffix := len("}}")
-			fnSub := match[prefix : len(match)-suffix]
-			subdata, err := website.Assets.ReadFile(string(fnSub))
+			fnSub := string(match[prefix : len(match)-suffix])
+
+			fnSub = strings.ReplaceAll(fnSub, "[theme]", h.getTheme(g))
+
+			subdata, err := website.Assets.ReadFile(fnSub)
 			if err != nil {
+				log.Error().Str("templ", string(match)).Str("fnSub", fnSub).Str("source", fn).Msg("Failed to replace template")
 				failed = true
 			}
 			return subdata
@@ -104,6 +109,7 @@ func (h WebsiteHandler) serveAsset(g *gin.Context, fn string, repl bool) ginresp
 
 			cval, ok := h.getReplConfig(string(cfgKey))
 			if !ok {
+				log.Error().Str("templ", string(match)).Str("source", fn).Msg("Failed to replace config")
 				failed = true
 			}
 			return []byte(cval)
@@ -153,4 +159,16 @@ func (h WebsiteHandler) getReplConfig(key string) (string, bool) {
 
 	return "", false
 
+}
+
+func (h WebsiteHandler) getTheme(g *gin.Context) string {
+	if c, err := g.Cookie("theme"); err != nil {
+		return "light"
+	} else if c == "light" {
+		return "light"
+	} else if c == "dark" {
+		return "dark"
+	} else {
+		return "light"
+	}
 }

@@ -113,9 +113,12 @@ body
     color: #0288D1;
 }
 
+.edge-btn {
+    position: absolute;
+}
+
 #tr_link
 {
-    position: absolute;
     top: 0;
     right: 0;
     margin: -1px -1px 0 0;
@@ -127,7 +130,6 @@ body
 
 #tl_link1
 {
-    position: absolute;
     top: 0;
     left: 0;
     margin: -1px 0 0 -1px;
@@ -138,7 +140,6 @@ body
 
 #tl_link2
 {
-    position: absolute;
     top: 0;
     left: 48px;
     margin: -1px 0 0 -1px;
@@ -149,7 +150,6 @@ body
 
 #tl_linkDocs
 {
-    position: absolute;
     top: 0;
     left: 0;
     margin: -1px 0 0 -1px;
@@ -297,4 +297,17 @@ pre, pre span
 
 .display_none {
     display: none;
+}
+
+#theme-switch {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    cursor: pointer;
+    fill: #000;
+}
+
+#theme-switch:hover {
+    filter: blur(1px);
+    fill: #008;
 }

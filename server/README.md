@@ -10,7 +10,6 @@
 
  - full-text-search: https://www.sqlite.org/fts5.html#contentless_tables
 
- - dark mode toggle for html
  - app-store link in HTML
 
  - route to re-check all pro-token
