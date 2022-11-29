@@ -18,6 +18,8 @@ type Message struct {
 	OwnerUserID     UserID
 	ChannelName     string
 	ChannelID       ChannelID
+	SenderName      *string
+	SenderIP        string
 	TimestampReal   time.Time
 	TimestampClient *time.Time
 	Title           string
@@ -33,6 +35,8 @@ func (m Message) FullJSON() MessageJSON {
 		OwnerUserID:   m.OwnerUserID,
 		ChannelName:   m.ChannelName,
 		ChannelID:     m.ChannelID,
+		SenderName:    m.SenderName,
+		SenderIP:      m.SenderIP,
 		Timestamp:     m.Timestamp().Format(time.RFC3339Nano),
 		Title:         m.Title,
 		Content:       m.Content,
@@ -49,6 +53,8 @@ func (m Message) TrimmedJSON() MessageJSON {
 		OwnerUserID:   m.OwnerUserID,
 		ChannelName:   m.ChannelName,
 		ChannelID:     m.ChannelID,
+		SenderName:    m.SenderName,
+		SenderIP:      m.SenderIP,
 		Timestamp:     m.Timestamp().Format(time.RFC3339Nano),
 		Title:         m.Title,
 		Content:       m.TrimmedContent(),
@@ -92,6 +98,8 @@ type MessageJSON struct {
 	OwnerUserID   UserID       `json:"owner_user_id"`
 	ChannelName   string       `json:"channel_name"`
 	ChannelID     ChannelID    `json:"channel_id"`
+	SenderName    *string      `json:"sender_name"`
+	SenderIP      string       `json:"sender_ip"`
 	Timestamp     string       `json:"timestamp"`
 	Title         string       `json:"title"`
 	Content       *string      `json:"body"`
@@ -106,6 +114,8 @@ type MessageDB struct {
 	OwnerUserID     UserID       `db:"owner_user_id"`
 	ChannelName     string       `db:"channel_name"`
 	ChannelID       ChannelID    `db:"channel_id"`
+	SenderName      *string      `db:"sender_name"`
+	SenderIP        string       `db:"sender_ip"`
 	TimestampReal   int64        `db:"timestamp_real"`
 	TimestampClient *int64       `db:"timestamp_client"`
 	Title           string       `db:"title"`
@@ -121,6 +131,8 @@ func (m MessageDB) Model() Message {
 		OwnerUserID:     m.OwnerUserID,
 		ChannelName:     m.ChannelName,
 		ChannelID:       m.ChannelID,
+		SenderName:      m.SenderName,
+		SenderIP:        m.SenderIP,
 		TimestampReal:   time.UnixMilli(m.TimestampReal),
 		TimestampClient: timeOptFromMilli(m.TimestampClient),
 		Title:           m.Title,

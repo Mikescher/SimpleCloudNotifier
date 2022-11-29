@@ -90,6 +90,14 @@ func (u User) MaxChannelNameLength() int {
 	return 120
 }
 
+func (u User) MaxSenderName() int {
+	return 120
+}
+
+func (u User) MaxUserMessageID() int {
+	return 64
+}
+
 type UserJSON struct {
 	UserID            UserID  `json:"user_id"`
 	Username          *string `json:"username"`

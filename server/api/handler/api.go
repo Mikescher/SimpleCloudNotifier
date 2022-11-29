@@ -8,14 +8,11 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/mathext"
-	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
 	"net/http"
 	"strings"
-	"time"
 )
 
 type APIHandler struct {
@@ -1132,7 +1129,7 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 		PageSize      *int    `form:"page_size"`
 		NextPageToken *string `form:"next_page_token"`
 		Filter        *string `form:"filter"`
-		Trimmed       *bool   `form:"trimmed"`
+		Trimmed       *bool   `form:"trimmed"` //TODO more filter (sender-name, channel, timestamps, prio, )
 	}
 	type response struct {
 		Messages      []models.MessageJSON `json:"messages"`
@@ -1308,170 +1305,6 @@ func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 	err = h.database.CancelPendingDeliveries(ctx, msg.SCNMessageID)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to cancel deliveries", err)
-	}
-
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, msg.FullJSON()))
-}
-
-// CreateMessage swaggerdoc
-//
-// @Summary     Create a new message
-// @Description This is similar to the main route `POST -> https://scn.blackfrestbytes.com/`
-// @Description But this route can change in the future, for long-living scripts etc. it's better to use the normal POST route
-// @ID          api-messages-create
-// @Tags        API-v2
-//
-// @Param       post_data query    handler.CreateMessage.body false " "
-//
-// @Success     200       {object} models.MessageJSON
-// @Failure     400       {object} ginresp.apiError
-// @Failure     401       {object} ginresp.apiError
-// @Failure     404       {object} ginresp.apiError
-// @Failure     500       {object} ginresp.apiError
-//
-// @Router      /api/messages [POST]
-func (h APIHandler) CreateMessage(g *gin.Context) ginresp.HTTPResponse {
-	type body struct {
-		Channel       *string  `json:"channel"`
-		ChanKey       *string  `json:"chan_key"`
-		Title         *string  `json:"title"`
-		Content       *string  `json:"content"`
-		Priority      *int     `json:"priority"`
-		UserMessageID *string  `json:"msg_id"`
-		SendTimestamp *float64 `json:"timestamp"`
-	}
-
-	var b body
-	ctx, errResp := h.app.StartRequest(g, nil, nil, &b, nil)
-	if errResp != nil {
-		return *errResp
-	}
-	defer ctx.Cancel()
-
-	if permResp := ctx.CheckPermissionSend(); permResp != nil {
-		return *permResp
-	}
-
-	userID := *ctx.GetPermissionUserID()
-
-	if b.Title != nil {
-		b.Title = langext.Ptr(strings.TrimSpace(*b.Title))
-	}
-	if b.UserMessageID != nil {
-		b.UserMessageID = langext.Ptr(strings.TrimSpace(*b.UserMessageID))
-	}
-
-	if b.Title == nil {
-		return ginresp.APIError(g, 400, apierr.MISSING_TITLE, "Missing parameter [[title]]", nil)
-	}
-	if b.SendTimestamp != nil && mathext.Abs(*b.SendTimestamp-float64(time.Now().Unix())) > (24*time.Hour).Seconds() {
-		return ginresp.SendAPIError(g, 400, apierr.TIMESTAMP_OUT_OF_RANGE, -1, "The timestamp mus be within 24 hours of now()", nil)
-	}
-	if b.Priority != nil && (*b.Priority != 0 && *b.Priority != 1 && *b.Priority != 2) {
-		return ginresp.SendAPIError(g, 400, apierr.INVALID_PRIO, 105, "Invalid priority", nil)
-	}
-	if len(*b.Title) == 0 {
-		return ginresp.SendAPIError(g, 400, apierr.NO_TITLE, 103, "No title specified", nil)
-	}
-	if b.UserMessageID != nil && len(*b.UserMessageID) > 64 {
-		return ginresp.SendAPIError(g, 400, apierr.USR_MSG_ID_TOO_LONG, -1, "MessageID too long (64 characters)", nil)
-	}
-
-	user, err := h.database.GetUser(ctx, userID)
-	if err == sql.ErrNoRows {
-		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, -1, "User not found", nil)
-	}
-	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to query user", err)
-	}
-
-	channelName := user.DefaultChannel()
-	if b.Channel != nil {
-		channelName = h.app.NormalizeChannelName(*b.Channel)
-	}
-
-	if len(*b.Title) > user.MaxTitleLength() {
-		return ginresp.SendAPIError(g, 400, apierr.TITLE_TOO_LONG, 103, fmt.Sprintf("Title too long (max %d characters)", user.MaxTitleLength()), nil)
-	}
-	if b.Content != nil && len(*b.Content) > user.MaxContentLength() {
-		return ginresp.SendAPIError(g, 400, apierr.CONTENT_TOO_LONG, 104, fmt.Sprintf("Content too long (%d characters; max := %d characters)", len(*b.Content), user.MaxContentLength()), nil)
-	}
-	if len(channelName) > user.MaxChannelNameLength() {
-		return ginresp.SendAPIError(g, 400, apierr.CONTENT_TOO_LONG, 106, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
-	}
-
-	if b.UserMessageID != nil {
-		msg, err := h.database.GetMessageByUserMessageID(ctx, *b.UserMessageID)
-		if err != nil {
-			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to query existing message", err)
-		}
-		if msg != nil {
-			return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, msg.FullJSON()))
-		}
-	}
-
-	if user.QuotaRemainingToday() <= 0 {
-		return ginresp.SendAPIError(g, 403, apierr.QUOTA_REACHED, -1, fmt.Sprintf("Daily quota reached (%d)", user.QuotaPerDay()), nil)
-	}
-
-	channel, err := h.app.GetOrCreateChannel(ctx, userID, channelName)
-	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to query/create channel", err)
-	}
-
-	var sendTimestamp *time.Time = nil
-	if b.SendTimestamp != nil {
-		sendTimestamp = langext.Ptr(timeext.UnixFloatSeconds(*b.SendTimestamp))
-	}
-
-	priority := langext.Coalesce(b.Priority, 1)
-
-	msg, err := h.database.CreateMessage(ctx, userID, channel, sendTimestamp, *b.Title, b.Content, priority, b.UserMessageID)
-	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to create message in db", err)
-	}
-
-	subscriptions, err := h.database.ListSubscriptionsByChannel(ctx, channel.ChannelID)
-	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to query subscriptions", err)
-	}
-
-	err = h.database.IncUserMessageCounter(ctx, user)
-	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to inc user msg-counter", err)
-	}
-
-	err = h.database.IncChannelMessageCounter(ctx, channel)
-	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to inc channel msg-counter", err)
-	}
-
-	for _, sub := range subscriptions {
-		clients, err := h.database.ListClients(ctx, sub.SubscriberUserID)
-		if err != nil {
-			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to query clients", err)
-		}
-
-		if !sub.Confirmed {
-			continue
-		}
-
-		for _, client := range clients {
-
-			fcmDelivID, err := h.app.DeliverMessage(ctx, client, msg)
-			if err != nil {
-				_, err = h.database.CreateRetryDelivery(ctx, client, msg)
-				if err != nil {
-					return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to create delivery", err)
-				}
-			} else {
-				_, err = h.database.CreateSuccessDelivery(ctx, client, msg, *fcmDelivID)
-				if err != nil {
-					return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to create delivery", err)
-				}
-			}
-
-		}
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, msg.FullJSON()))

@@ -49,7 +49,7 @@ func (db *Database) GetMessage(ctx TxContext, scnMessageID models.SCNMessageID) 
 	return msg, nil
 }
 
-func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, channel models.Channel, timestampSend *time.Time, title string, content *string, priority int, userMsgId *string) (models.Message, error) {
+func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, channel models.Channel, timestampSend *time.Time, title string, content *string, priority int, userMsgId *string, senderIP string, senderName *string) (models.Message, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Message{}, err
@@ -57,7 +57,7 @@ func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, cha
 
 	now := time.Now().UTC()
 
-	res, err := tx.ExecContext(ctx, "INSERT INTO messages (sender_user_id, owner_user_id, channel_name, channel_id, timestamp_real, timestamp_client, title, content, priority, usr_message_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+	res, err := tx.ExecContext(ctx, "INSERT INTO messages (sender_user_id, owner_user_id, channel_name, channel_id, timestamp_real, timestamp_client, title, content, priority, usr_message_id, sender_ip, sender_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		senderUserID,
 		channel.OwnerUserID,
 		channel.Name,
@@ -67,7 +67,9 @@ func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, cha
 		title,
 		content,
 		priority,
-		userMsgId)
+		userMsgId,
+		senderIP,
+		senderName)
 	if err != nil {
 		return models.Message{}, err
 	}
@@ -83,6 +85,8 @@ func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, cha
 		OwnerUserID:     channel.OwnerUserID,
 		ChannelName:     channel.Name,
 		ChannelID:       channel.ChannelID,
+		SenderIP:        senderIP,
+		SenderName:      senderName,
 		TimestampReal:   now,
 		TimestampClient: timestampSend,
 		Title:           title,

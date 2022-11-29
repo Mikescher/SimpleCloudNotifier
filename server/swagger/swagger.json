@@ -44,6 +44,11 @@
                     },
                     {
                         "type": "string",
+                        "name": "senderName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "name": "title",
                         "in": "query"
                     },
@@ -93,6 +98,11 @@
                     {
                         "type": "integer",
                         "name": "priority",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "sender_name",
                         "in": "formData"
                     },
                     {
@@ -394,6 +404,7 @@
                     },
                     {
                         "type": "boolean",
+                        "description": "TODO more filter (sender-name, channel, timestamps, prio, )",
                         "name": "trimmed",
                         "in": "query"
                     }
@@ -403,83 +414,6 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/handler.ListMessages.response"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "This is similar to the main route `POST -\u003e https://scn.blackfrestbytes.com/`\nBut this route can change in the future, for long-living scripts etc. it's better to use the normal POST route",
-                "tags": [
-                    "API-v2"
-                ],
-                "summary": "Create a new message",
-                "operationId": "api-messages-create",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "name": "chan_key",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "channel",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "content",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "msg_id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "priority",
-                        "in": "query"
-                    },
-                    {
-                        "type": "number",
-                        "name": "timestamp",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "title",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.MessageJSON"
                         }
                     },
                     "400": {
@@ -2050,6 +1984,11 @@
                     },
                     {
                         "type": "string",
+                        "name": "senderName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "name": "title",
                         "in": "query"
                     },
@@ -2099,6 +2038,11 @@
                     {
                         "type": "integer",
                         "name": "priority",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "sender_name",
                         "in": "formData"
                     },
                     {
@@ -2603,6 +2547,9 @@
                 "priority": {
                     "type": "integer"
                 },
+                "sender_name": {
+                    "type": "string"
+                },
                 "timestamp": {
                     "type": "number"
                 },
@@ -2855,6 +2802,12 @@
                 },
                 "scn_message_id": {
                     "type": "integer"
+                },
+                "sender_ip": {
+                    "type": "string"
+                },
+                "sender_name": {
+                    "type": "string"
                 },
                 "sender_user_id": {
                     "type": "integer"

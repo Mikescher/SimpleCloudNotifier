@@ -78,7 +78,7 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 
 	data := dataext.ObjectMerge(f, q)
 
-	return h.sendMessageInternal(g, ctx, data.UserID, data.UserKey, nil, nil, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp)
+	return h.sendMessageInternal(g, ctx, data.UserID, data.UserKey, nil, nil, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp, nil)
 
 }
 
@@ -111,6 +111,7 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 		Priority      *int           `form:"priority"`
 		UserMessageID *string        `form:"msg_id"`
 		SendTimestamp *float64       `form:"timestamp"`
+		SenderName    *string        `form:"sender_name"`
 	}
 	type body struct {
 		UserID        *models.UserID `json:"user_id"`
@@ -122,6 +123,7 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 		Priority      *int           `json:"priority"`
 		UserMessageID *string        `json:"msg_id"`
 		SendTimestamp *float64       `json:"timestamp"`
+		SenderName    *string        `json:"sender_name"`
 	}
 	type form struct {
 		UserID        *models.UserID `form:"user_id"`
@@ -133,6 +135,7 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 		Priority      *int           `form:"priority"`
 		UserMessageID *string        `form:"msg_id"`
 		SendTimestamp *float64       `form:"timestamp"`
+		SenderName    *string        `form:"sender_name"`
 	}
 
 	var b body
@@ -146,11 +149,11 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 
 	data := dataext.ObjectMerge(dataext.ObjectMerge(b, f), q)
 
-	return h.sendMessageInternal(g, ctx, data.UserID, data.UserKey, data.Channel, data.ChanKey, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp)
+	return h.sendMessageInternal(g, ctx, data.UserID, data.UserKey, data.Channel, data.ChanKey, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp, data.SenderName)
 
 }
 
-func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContext, UserID *models.UserID, UserKey *string, Channel *string, ChanKey *string, Title *string, Content *string, Priority *int, UserMessageID *string, SendTimestamp *float64) ginresp.HTTPResponse {
+func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContext, UserID *models.UserID, UserKey *string, Channel *string, ChanKey *string, Title *string, Content *string, Priority *int, UserMessageID *string, SendTimestamp *float64, SenderName *string) ginresp.HTTPResponse {
 	type response struct {
 		Success        bool                `json:"success"`
 		ErrorID        apierr.APIError     `json:"error"`
@@ -189,9 +192,6 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 	if len(*Title) == 0 {
 		return ginresp.SendAPIError(g, 400, apierr.NO_TITLE, 103, "No title specified", nil)
 	}
-	if UserMessageID != nil && len(*UserMessageID) > 64 {
-		return ginresp.SendAPIError(g, 400, apierr.USR_MSG_ID_TOO_LONG, -1, "MessageID too long (64 characters)", nil)
-	}
 
 	user, err := h.database.GetUser(ctx, *UserID)
 	if err == sql.ErrNoRows {
@@ -214,6 +214,12 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 	}
 	if len(channelName) > user.MaxChannelNameLength() {
 		return ginresp.SendAPIError(g, 400, apierr.CONTENT_TOO_LONG, 106, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
+	}
+	if SenderName != nil && len(*SenderName) > user.MaxSenderName() {
+		return ginresp.SendAPIError(g, 400, apierr.SENDERNAME_TOO_LONG, 107, fmt.Sprintf("SenderName too long (max %d characters)", user.MaxSenderName()), nil)
+	}
+	if UserMessageID != nil && len(*UserMessageID) > user.MaxUserMessageID() {
+		return ginresp.SendAPIError(g, 400, apierr.USR_MSG_ID_TOO_LONG, -1, fmt.Sprintf("MessageID too long (max %d characters)", user.MaxUserMessageID()), nil)
 	}
 
 	if UserMessageID != nil {
@@ -261,7 +267,9 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 
 	priority := langext.Coalesce(Priority, 1)
 
-	msg, err := h.database.CreateMessage(ctx, *UserID, channel, sendTimestamp, *Title, Content, priority, UserMessageID)
+	clientIP := g.ClientIP()
+
+	msg, err := h.database.CreateMessage(ctx, *UserID, channel, sendTimestamp, *Title, Content, priority, UserMessageID, clientIP, SenderName)
 	if err != nil {
 		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to create message in db", err)
 	}

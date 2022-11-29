@@ -81,6 +81,8 @@ CREATE TABLE messages
     owner_user_id      INTEGER                                  NOT NULL,
     channel_name       TEXT                                     NOT NULL,
     channel_id         INTEGER                                  NOT NULL,
+    sender_ip          TEXT                                     NOT NULL,
+    sender_name        TEXT                                         NULL,
 
     timestamp_real     INTEGER                                  NOT NULL,
     timestamp_client   INTEGER                                      NULL,
@@ -90,8 +92,10 @@ CREATE TABLE messages
     priority           INTEGER  CHECK(priority IN (0, 1, 2))    NOT NULL,
     usr_message_id     TEXT                                         NULL
 );
-CREATE INDEX "idx_messages_channel"     ON messages (owner_user_id, channel_name);
-CREATE INDEX "idx_messages_idempotency" ON messages (owner_user_id, usr_message_id);
+CREATE        INDEX "idx_messages_channel"     ON messages (owner_user_id, channel_name);
+CREATE UNIQUE INDEX "idx_messages_idempotency" ON messages (owner_user_id, usr_message_id);
+CREATE        INDEX "idx_messages_senderip"    ON messages (sender_ip);
+CREATE        INDEX "idx_messages_sendername"  ON messages (sender_name);
 
 
 CREATE TABLE deliveries

@@ -30,6 +30,7 @@ curl                                           \
     --data "msg_id=$(uuidgen)"                 \
     --data "timestamp=$(date +%s)"             \
     --data "channel={channel_name}"            \
+    --data "sender_name=$(hostname)"           \
     {{config|baseURL}}/</pre>
     <p>Most parameters are optional, you can send a message with only a title (default priority and channel will be used)</p>
         <pre>

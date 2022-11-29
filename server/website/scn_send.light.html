@@ -41,8 +41,9 @@ title=$1
 content=<span style="color: #0000FF">&quot;&quot;</span>
 channel=<span style="color: #0000FF">&quot;&quot;</span>
 priority=1
-usr_msg_id=<span style="color: #000080; font-weight: bold">$(</span>uuidgen<span style="color: #000080; font-weight: bold">)</span>
-sendtime=<span style="color: #000080; font-weight: bold">$(</span>date +%s<span style="color: #000080; font-weight: bold">)</span>
+usr_msg_id=<span style="color: #0000FF">&quot;$(uuidgen)&quot;</span>
+sendtime=<span style="color: #0000FF">&quot;$(date +%s)&quot;</span>
+sender=<span style="color: #0000FF">&quot;$(hostname)&quot;</span>
 
 <span style="color: #000080; font-weight: bold">if</span> [ <span style="color: #000080; font-weight: bold">${#</span>args[@]<span style="color: #000080; font-weight: bold">}</span> -lt 1 ]; <span style="color: #000080; font-weight: bold">then</span>
 <span style="color: #000080; font-weight: bold">    </span>echo <span style="color: #0000FF">&quot;[ERROR]: no title supplied via parameter&quot;</span> 1&gt;&amp;2
@@ -64,7 +65,6 @@ sendtime=<span style="color: #000080; font-weight: bold">$(</span>date +%s<span 
 
 title=<span style="color: #0000FF">&quot;${args[0]}&quot;</span>
 content=<span style="color: #0000FF">&quot;&quot;</span>
-sendtime=<span style="color: #000080; font-weight: bold">$(</span>date +%s<span style="color: #000080; font-weight: bold">)</span>
 
 <span style="color: #000080; font-weight: bold">if</span> [ <span style="color: #000080; font-weight: bold">${#</span>args[@]<span style="color: #000080; font-weight: bold">}</span> -gt 1 ]; <span style="color: #000080; font-weight: bold">then</span>
 <span style="color: #000080; font-weight: bold">    </span>content=<span style="color: #0000FF">&quot;${args[0]}&quot;</span>
@@ -96,6 +96,7 @@ sendtime=<span style="color: #000080; font-weight: bold">$(</span>date +%s<span 
                     --data <span style="color: #0000FF">&quot;priority=$priority&quot;</span>          <span style="color: #0000FF">\</span>
                     --data <span style="color: #0000FF">&quot;msg_id=$usr_msg_id&quot;</span>          <span style="color: #0000FF">\</span>
                     --data <span style="color: #0000FF">&quot;channel=$channel&quot;</span>            <span style="color: #0000FF">\</span>
+                    --data <span style="color: #0000FF">&quot;sender_name=$sender&quot;</span>         <span style="color: #0000FF">\</span>
                     <span style="color: #0000FF">&quot;https://scn.blackforestbytes.com/&quot;</span>  <span style="color: #000080; font-weight: bold">)</span>
 
     <span style="color: #000080; font-weight: bold">if</span> [ <span style="color: #0000FF">&quot;$curlresp&quot;</span> == 200 ] ; <span style="color: #000080; font-weight: bold">then</span>

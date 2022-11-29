@@ -216,6 +216,8 @@ definitions:
         type: string
       priority:
         type: integer
+      sender_name:
+        type: string
       timestamp:
         type: number
       title:
@@ -382,6 +384,10 @@ definitions:
         type: integer
       scn_message_id:
         type: integer
+      sender_ip:
+        type: string
+      sender_name:
+        type: string
       sender_user_id:
         type: integer
       timestamp:
@@ -500,6 +506,9 @@ paths:
         name: sendTimestamp
         type: number
       - in: query
+        name: senderName
+        type: string
+      - in: query
         name: title
         type: string
       - in: query
@@ -531,6 +540,9 @@ paths:
       - in: formData
         name: priority
         type: integer
+      - in: formData
+        name: sender_name
+        type: string
       - in: formData
         name: timestamp
         type: number
@@ -735,7 +747,8 @@ paths:
       - in: query
         name: pageSize
         type: integer
-      - in: query
+      - description: TODO more filter (sender-name, channel, timestamps, prio, )
+        in: query
         name: trimmed
         type: boolean
       responses:
@@ -760,57 +773,6 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: List all (subscribed) messages
-      tags:
-      - API-v2
-    post:
-      description: |-
-        This is similar to the main route `POST -> https://scn.blackfrestbytes.com/`
-        But this route can change in the future, for long-living scripts etc. it's better to use the normal POST route
-      operationId: api-messages-create
-      parameters:
-      - in: query
-        name: chan_key
-        type: string
-      - in: query
-        name: channel
-        type: string
-      - in: query
-        name: content
-        type: string
-      - in: query
-        name: msg_id
-        type: string
-      - in: query
-        name: priority
-        type: integer
-      - in: query
-        name: timestamp
-        type: number
-      - in: query
-        name: title
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.MessageJSON'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: Create a new message
       tags:
       - API-v2
   /api/messages/{mid}:
@@ -1855,6 +1817,9 @@ paths:
         name: sendTimestamp
         type: number
       - in: query
+        name: senderName
+        type: string
+      - in: query
         name: title
         type: string
       - in: query
@@ -1886,6 +1851,9 @@ paths:
       - in: formData
         name: priority
         type: integer
+      - in: formData
+        name: sender_name
+        type: string
       - in: formData
         name: timestamp
         type: number

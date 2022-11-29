@@ -17,3 +17,7 @@
  - tests
 
  - deploy
+
+ - in my script: use (backupname || hostname) for sendername
+
+ 
