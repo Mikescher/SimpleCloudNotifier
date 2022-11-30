@@ -515,7 +515,7 @@ func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 		UserID models.UserID `uri:"uid"`
 	}
 	type query struct {
-		Selector *string `form:"selector"`
+		Selector *string `json:"selector" form:"selector"`
 	}
 	type response struct {
 		Channels []models.ChannelJSON `json:"channels"`
@@ -720,10 +720,10 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 		ChannelID     models.ChannelID `uri:"cid"`
 	}
 	type query struct {
-		PageSize      *int    `form:"page_size"`
-		NextPageToken *string `form:"next_page_token"`
-		Filter        *string `form:"filter"`
-		Trimmed       *bool   `form:"trimmed"`
+		PageSize      *int    `json:"page_size"       form:"page_size"`
+		NextPageToken *string `json:"next_page_token" form:"next_page_token"`
+		Filter        *string `json:"filter"          form:"filter"`
+		Trimmed       *bool   `json:"trimmed"         form:"trimmed"`
 	}
 	type response struct {
 		Messages      []models.MessageJSON `json:"messages"`
@@ -1015,7 +1015,7 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 		Channel            string        `form:"channel_name" binding:"required"`
 	}
 	type query struct {
-		ChanSubscribeKey *string `form:"chan_subscribe_key"`
+		ChanSubscribeKey *string `json:"chan_subscribe_key" form:"chan_subscribe_key"`
 	}
 
 	var u uri
@@ -1136,10 +1136,10 @@ func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Router      /api/messages [GET]
 func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
-		PageSize      *int    `form:"page_size"`
-		NextPageToken *string `form:"next_page_token"`
-		Filter        *string `form:"filter"`
-		Trimmed       *bool   `form:"trimmed"` //TODO more filter (sender-name, channel, timestamps, prio, )
+		PageSize      *int    `json:"page_size"       form:"page_size"`
+		NextPageToken *string `json:"next_page_token" form:"next_page_token"`
+		Filter        *string `json:"filter"          form:"filter"`
+		Trimmed       *bool   `json:"trimmed"         form:"trimmed"` //TODO more filter (sender-name, channel, timestamps, prio, )
 	}
 	type response struct {
 		Messages      []models.MessageJSON `json:"messages"`

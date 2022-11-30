@@ -50,13 +50,13 @@ func NewMessageHandler(app *logic.Application) MessageHandler {
 // @Router      /send.php [POST]
 func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
-		UserID        *models.UserID `form:"user_id"`
-		UserKey       *string        `form:"user_key"`
-		Title         *string        `form:"title"`
-		Content       *string        `form:"content"`
-		Priority      *int           `form:"priority"`
-		UserMessageID *string        `form:"msg_id"`
-		SendTimestamp *float64       `form:"timestamp"`
+		UserID        *models.UserID `json:"user_id"   form:"user_id"`
+		UserKey       *string        `json:"user_key"  form:"user_key"`
+		Title         *string        `json:"title"     form:"title"`
+		Content       *string        `json:"content"   form:"content"`
+		Priority      *int           `json:"priority"  form:"priority"`
+		UserMessageID *string        `json:"msg_id"    form:"msg_id"`
+		SendTimestamp *float64       `json:"timestamp" form:"timestamp"`
 	}
 	type form struct {
 		UserID        *models.UserID `form:"user_id"`
@@ -102,16 +102,16 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 // @Router      /send [POST]
 func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
-		UserID        *models.UserID `form:"user_id"`
-		UserKey       *string        `form:"user_key"`
-		Channel       *string        `form:"channel"`
-		ChanKey       *string        `form:"chan_key"`
-		Title         *string        `form:"title"`
-		Content       *string        `form:"content"`
-		Priority      *int           `form:"priority"`
-		UserMessageID *string        `form:"msg_id"`
-		SendTimestamp *float64       `form:"timestamp"`
-		SenderName    *string        `form:"sender_name"`
+		UserID        *models.UserID `json:"user_id"     form:"user_id"`
+		UserKey       *string        `json:"user_key"    form:"user_key"`
+		Channel       *string        `json:"channel"     form:"channel"`
+		ChanKey       *string        `json:"chan_key"    form:"chan_key"`
+		Title         *string        `json:"title"       form:"title"`
+		Content       *string        `json:"content"     form:"content"`
+		Priority      *int           `json:"priority"    form:"priority"`
+		UserMessageID *string        `json:"msg_id"      form:"msg_id"`
+		SendTimestamp *float64       `json:"timestamp"   form:"timestamp"`
+		SenderName    *string        `json:"sender_name" form:"sender_name"`
 	}
 	type body struct {
 		UserID        *models.UserID `json:"user_id"`

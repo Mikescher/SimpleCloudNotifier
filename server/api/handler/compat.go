@@ -46,9 +46,9 @@ func NewCompatHandler(app *logic.Application) CompatHandler {
 // @Router  /api/register.php [get]
 func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
-		FCMToken *string `form:"fcm_token"`
-		Pro      *string `form:"pro"`
-		ProToken *string `form:"pro_token"`
+		FCMToken *string `json:"fcm_token" form:"fcm_token"`
+		Pro      *string `json:"pro"       form:"pro"`
+		ProToken *string `json:"pro_token" form:"pro_token"`
 	}
 	type response struct {
 		Success   bool   `json:"success"`
@@ -152,8 +152,8 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api/info.php [get]
 func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
-		UserID  *int64  `form:"user_id" json:"user_id"`
-		UserKey *string `form:"user_key" json:"user_key"`
+		UserID  *int64  `json:"user_id"  form:"user_id"`
+		UserKey *string `json:"user_key" form:"user_key"`
 	}
 	type response struct {
 		Success    bool   `json:"success"`
@@ -238,9 +238,9 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api/ack.php [get]
 func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
-		UserID    *int64  `form:"user_id"`
-		UserKey   *string `form:"user_key"`
-		MessageID *int64  `form:"scn_msg_id"`
+		UserID    *int64  `json:"user_id"    form:"user_id"`
+		UserKey   *string `json:"user_key"   form:"user_key"`
+		MessageID *int64  `json:"scn_msg_id" form:"scn_msg_id"`
 	}
 	type response struct {
 		Success      bool   `json:"success"`
@@ -309,8 +309,8 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api/requery.php [get]
 func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
-		UserID  *int64  `form:"user_id"`
-		UserKey *string `form:"user_key"`
+		UserID  *int64  `json:"user_id"  form:"user_id"`
+		UserKey *string `json:"user_key" form:"user_key"`
 	}
 	type response struct {
 		Success bool                   `json:"success"`
@@ -378,9 +378,9 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api/update.php [get]
 func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
-		UserID   *int64  `form:"user_id"`
-		UserKey  *string `form:"user_key"`
-		FCMToken *string `form:"fcm_token"`
+		UserID   *int64  `json:"user_id"   form:"user_id"`
+		UserKey  *string `json:"user_key"  form:"user_key"`
+		FCMToken *string `json:"fcm_token" form:"fcm_token"`
 	}
 	type response struct {
 		Success   bool   `json:"success"`
@@ -491,9 +491,9 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api/expand.php [get]
 func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
-		UserID    *int64  `form:"user_id"`
-		UserKey   *string `form:"user_key"`
-		MessageID *int64  `form:"scn_msg_id"`
+		UserID    *int64  `json:"user_id"    form:"user_id"`
+		UserKey   *string `json:"user_key"   form:"user_key"`
+		MessageID *int64  `json:"scn_msg_id" form:"scn_msg_id"`
 	}
 	type response struct {
 		Success bool                 `json:"success"`
@@ -580,10 +580,10 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api/upgrade.php [get]
 func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
-		UserID   *int64  `form:"user_id"`
-		UserKey  *string `form:"user_key"`
-		Pro      *string `form:"pro"`
-		ProToken *string `form:"pro_token"`
+		UserID   *int64  `json:"user_id"   form:"user_id"`
+		UserKey  *string `json:"user_key"  form:"user_key"`
+		Pro      *string `json:"pro"       form:"pro"`
+		ProToken *string `json:"pro_token" form:"pro_token"`
 	}
 	type response struct {
 		Success   bool   `json:"success"`

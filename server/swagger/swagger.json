@@ -19,7 +19,7 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "name": "chanKey",
+                        "name": "chan_key",
                         "in": "query"
                     },
                     {
@@ -33,18 +33,23 @@
                         "in": "query"
                     },
                     {
+                        "type": "string",
+                        "name": "msg_id",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "name": "priority",
                         "in": "query"
                     },
                     {
-                        "type": "number",
-                        "name": "sendTimestamp",
+                        "type": "string",
+                        "name": "sender_name",
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "name": "senderName",
+                        "type": "number",
+                        "name": "timestamp",
                         "in": "query"
                     },
                     {
@@ -54,17 +59,12 @@
                     },
                     {
                         "type": "integer",
-                        "name": "userID",
+                        "name": "user_id",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "name": "userKey",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "userMessageID",
+                        "name": "user_key",
                         "in": "query"
                     },
                     {
@@ -394,12 +394,12 @@
                     },
                     {
                         "type": "string",
-                        "name": "nextPageToken",
+                        "name": "next_page_token",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "name": "pageSize",
+                        "name": "page_size",
                         "in": "query"
                     },
                     {
@@ -1334,12 +1334,12 @@
                     },
                     {
                         "type": "string",
-                        "name": "nextPageToken",
+                        "name": "next_page_token",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "name": "pageSize",
+                        "name": "page_size",
                         "in": "query"
                     },
                     {
@@ -1557,13 +1557,15 @@
                         }
                     }
                 }
-            },
-            "delete": {
+            }
+        },
+        "/api/users/{uid}/clients/{cid}": {
+            "get": {
                 "tags": [
                     "API-v2"
                 ],
-                "summary": "Delete a client",
-                "operationId": "api-clients-delete",
+                "summary": "Get a single client",
+                "operationId": "api-clients-get",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1612,15 +1614,13 @@
                         }
                     }
                 }
-            }
-        },
-        "/api/users/{uid}/clients/{cid}": {
-            "get": {
+            },
+            "delete": {
                 "tags": [
                     "API-v2"
                 ],
-                "summary": "Get a single clients",
-                "operationId": "api-clients-get",
+                "summary": "Delete a client",
+                "operationId": "api-clients-delete",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1736,7 +1736,7 @@
                     },
                     {
                         "type": "string",
-                        "name": "chanSubscribeKey",
+                        "name": "chan_subscribe_key",
                         "in": "query"
                     },
                     {
@@ -1959,7 +1959,7 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "name": "chanKey",
+                        "name": "chan_key",
                         "in": "query"
                     },
                     {
@@ -1973,18 +1973,23 @@
                         "in": "query"
                     },
                     {
+                        "type": "string",
+                        "name": "msg_id",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "name": "priority",
                         "in": "query"
                     },
                     {
-                        "type": "number",
-                        "name": "sendTimestamp",
+                        "type": "string",
+                        "name": "sender_name",
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "name": "senderName",
+                        "type": "number",
+                        "name": "timestamp",
                         "in": "query"
                     },
                     {
@@ -1994,17 +1999,12 @@
                     },
                     {
                         "type": "integer",
-                        "name": "userID",
+                        "name": "user_id",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "name": "userKey",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "userMessageID",
+                        "name": "user_key",
                         "in": "query"
                     },
                     {
@@ -2115,13 +2115,18 @@
                         "in": "query"
                     },
                     {
+                        "type": "string",
+                        "name": "msg_id",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "name": "priority",
                         "in": "query"
                     },
                     {
                         "type": "number",
-                        "name": "sendTimestamp",
+                        "name": "timestamp",
                         "in": "query"
                     },
                     {
@@ -2131,17 +2136,12 @@
                     },
                     {
                         "type": "integer",
-                        "name": "userID",
+                        "name": "user_id",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "name": "userKey",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "userMessageID",
+                        "name": "user_key",
                         "in": "query"
                     },
                     {

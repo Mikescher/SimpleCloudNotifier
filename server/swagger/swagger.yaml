@@ -491,7 +491,7 @@ paths:
         Only UserID, UserKey and Title are required
       parameters:
       - in: query
-        name: chanKey
+        name: chan_key
         type: string
       - in: query
         name: channel
@@ -500,25 +500,25 @@ paths:
         name: content
         type: string
       - in: query
+        name: msg_id
+        type: string
+      - in: query
         name: priority
         type: integer
       - in: query
-        name: sendTimestamp
-        type: number
-      - in: query
-        name: senderName
+        name: sender_name
         type: string
+      - in: query
+        name: timestamp
+        type: number
       - in: query
         name: title
         type: string
       - in: query
-        name: userID
+        name: user_id
         type: integer
       - in: query
-        name: userKey
-        type: string
-      - in: query
-        name: userMessageID
+        name: user_key
         type: string
       - description: ' '
         in: body
@@ -742,10 +742,10 @@ paths:
         name: filter
         type: string
       - in: query
-        name: nextPageToken
+        name: next_page_token
         type: string
       - in: query
-        name: pageSize
+        name: page_size
         type: integer
       - description: TODO more filter (sender-name, channel, timestamps, prio, )
         in: query
@@ -1386,10 +1386,10 @@ paths:
         name: filter
         type: string
       - in: query
-        name: nextPageToken
+        name: next_page_token
         type: string
       - in: query
-        name: pageSize
+        name: page_size
         type: integer
       - in: query
         name: trimmed
@@ -1467,43 +1467,6 @@ paths:
       tags:
       - API-v2
   /api/users/{uid}/clients:
-    delete:
-      operationId: api-clients-delete
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      - description: ClientID
-        in: path
-        name: cid
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.ClientJSON'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: Delete a client
-      tags:
-      - API-v2
     get:
       operationId: api-clients-list
       parameters:
@@ -1574,6 +1537,43 @@ paths:
       tags:
       - API-v2
   /api/users/{uid}/clients/{cid}:
+    delete:
+      operationId: api-clients-delete
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: ClientID
+        in: path
+        name: cid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ClientJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Delete a client
+      tags:
+      - API-v2
     get:
       operationId: api-clients-get
       parameters:
@@ -1608,7 +1608,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/ginresp.apiError'
-      summary: Get a single clients
+      summary: Get a single client
       tags:
       - API-v2
   /api/users/{uid}/subscriptions:
@@ -1653,7 +1653,7 @@ paths:
         required: true
         type: integer
       - in: query
-        name: chanSubscribeKey
+        name: chan_subscribe_key
         type: string
       - description: ' '
         in: body
@@ -1802,7 +1802,7 @@ paths:
         Only UserID, UserKey and Title are required
       parameters:
       - in: query
-        name: chanKey
+        name: chan_key
         type: string
       - in: query
         name: channel
@@ -1811,25 +1811,25 @@ paths:
         name: content
         type: string
       - in: query
+        name: msg_id
+        type: string
+      - in: query
         name: priority
         type: integer
       - in: query
-        name: sendTimestamp
-        type: number
-      - in: query
-        name: senderName
+        name: sender_name
         type: string
+      - in: query
+        name: timestamp
+        type: number
       - in: query
         name: title
         type: string
       - in: query
-        name: userID
+        name: user_id
         type: integer
       - in: query
-        name: userKey
-        type: string
-      - in: query
-        name: userMessageID
+        name: user_key
         type: string
       - description: ' '
         in: body
@@ -1901,22 +1901,22 @@ paths:
         name: content
         type: string
       - in: query
+        name: msg_id
+        type: string
+      - in: query
         name: priority
         type: integer
       - in: query
-        name: sendTimestamp
+        name: timestamp
         type: number
       - in: query
         name: title
         type: string
       - in: query
-        name: userID
+        name: user_id
         type: integer
       - in: query
-        name: userKey
-        type: string
-      - in: query
-        name: userMessageID
+        name: user_key
         type: string
       - in: formData
         name: content
