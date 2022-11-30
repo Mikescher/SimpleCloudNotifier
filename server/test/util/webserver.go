@@ -10,9 +10,6 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/push"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"os"
 	"path/filepath"
@@ -23,22 +20,7 @@ import (
 type Void = struct{}
 
 func StartSimpleWebserver(t *testing.T) (*logic.Application, func()) {
-	cw := zerolog.ConsoleWriter{
-		Out:        os.Stdout,
-		TimeFormat: "2006-01-02 15:04:05 Z07:00",
-	}
-
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	multi := zerolog.MultiLevelWriter(cw)
-	logger := zerolog.New(multi).With().
-		Timestamp().
-		Caller().
-		Logger()
-
-	log.Logger = logger
-
-	gin.SetMode(gin.TestMode)
-	zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	InitTests()
 
 	uuid2, _ := langext.NewHexUUID()
 	dbdir := t.TempDir()

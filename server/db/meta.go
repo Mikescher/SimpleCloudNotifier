@@ -6,12 +6,20 @@ import (
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 )
 
-func (db *Database) ReadSchema(ctx context.Context) (int, error) {
+func (db *Database) ReadSchema(ctx context.Context) (retval int, reterr error) {
 
 	r1, err := db.db.QueryContext(ctx, "SELECT name FROM sqlite_master WHERE type='table' AND name='meta'")
 	if err != nil {
 		return 0, err
 	}
+	defer func() {
+		err = r1.Close()
+		if err != nil {
+			// overwrite return values
+			retval = 0
+			reterr = err
+		}
+	}()
 
 	if !r1.Next() {
 		return 0, nil
@@ -21,6 +29,15 @@ func (db *Database) ReadSchema(ctx context.Context) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	defer func() {
+		err = r2.Close()
+		if err != nil {
+			// overwrite return values
+			retval = 0
+			reterr = err
+		}
+	}()
+
 	if !r2.Next() {
 		return 0, errors.New("no schema entry in meta table")
 	}
@@ -78,11 +95,19 @@ func (db *Database) WriteMetaBlob(ctx context.Context, key string, value []byte)
 	return nil
 }
 
-func (db *Database) ReadMetaString(ctx context.Context, key string) (*string, error) {
+func (db *Database) ReadMetaString(ctx context.Context, key string) (retval *string, reterr error) {
 	r2, err := db.db.QueryContext(ctx, "SELECT value_txt FROM meta WHERE meta_key=?", key)
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		err = r2.Close()
+		if err != nil {
+			// overwrite return values
+			retval = nil
+			reterr = err
+		}
+	}()
 	if !r2.Next() {
 		return nil, errors.New("no matching entry in meta table")
 	}
@@ -96,11 +121,20 @@ func (db *Database) ReadMetaString(ctx context.Context, key string) (*string, er
 	return langext.Ptr(value), nil
 }
 
-func (db *Database) ReadMetaInt(ctx context.Context, key string) (*int64, error) {
+func (db *Database) ReadMetaInt(ctx context.Context, key string) (retval *int64, reterr error) {
 	r2, err := db.db.QueryContext(ctx, "SELECT value_int FROM meta WHERE meta_key=?", key)
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		err = r2.Close()
+		if err != nil {
+			// overwrite return values
+			retval = nil
+			reterr = err
+		}
+	}()
+
 	if !r2.Next() {
 		return nil, errors.New("no matching entry in meta table")
 	}
@@ -114,11 +148,20 @@ func (db *Database) ReadMetaInt(ctx context.Context, key string) (*int64, error)
 	return langext.Ptr(value), nil
 }
 
-func (db *Database) ReadMetaReal(ctx context.Context, key string) (*float64, error) {
+func (db *Database) ReadMetaReal(ctx context.Context, key string) (retval *float64, reterr error) {
 	r2, err := db.db.QueryContext(ctx, "SELECT value_real FROM meta WHERE meta_key=?", key)
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		err = r2.Close()
+		if err != nil {
+			// overwrite return values
+			retval = nil
+			reterr = err
+		}
+	}()
+
 	if !r2.Next() {
 		return nil, errors.New("no matching entry in meta table")
 	}
@@ -132,11 +175,20 @@ func (db *Database) ReadMetaReal(ctx context.Context, key string) (*float64, err
 	return langext.Ptr(value), nil
 }
 
-func (db *Database) ReadMetaBlob(ctx context.Context, key string) (*[]byte, error) {
+func (db *Database) ReadMetaBlob(ctx context.Context, key string) (retval *[]byte, reterr error) {
 	r2, err := db.db.QueryContext(ctx, "SELECT value_blob FROM meta WHERE meta_key=?", key)
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		err = r2.Close()
+		if err != nil {
+			// overwrite return values
+			retval = nil
+			reterr = err
+		}
+	}()
+
 	if !r2.Next() {
 		return nil, errors.New("no matching entry in meta table")
 	}
