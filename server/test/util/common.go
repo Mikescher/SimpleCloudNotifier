@@ -56,6 +56,31 @@ func AssertEqual(t *testing.T, key string, expected any, actual any) {
 	}
 }
 
+func AssertNotEqual(t *testing.T, key string, expected any, actual any) {
+	if expected == actual {
+		t.Errorf("Value [%s] does not differ (%T <-> %T):\n", key, expected, actual)
+
+		str1 := fmt.Sprintf("%v", expected)
+		str2 := fmt.Sprintf("%v", actual)
+
+		if strings.Contains(str1, "\n") {
+			t.Errorf("Actual:\n~~~~~~~~~~~~~~~~\n%v\n~~~~~~~~~~~~~~~~\n\n", expected)
+		} else {
+			t.Errorf("Actual       := \"%v\"\n", expected)
+		}
+
+		if strings.Contains(str2, "\n") {
+			t.Errorf("Not Expected:\n~~~~~~~~~~~~~~~~\n%v\n~~~~~~~~~~~~~~~~\n\n", actual)
+		} else {
+			t.Errorf("Not Expected := \"%v\"\n", actual)
+		}
+
+		t.Error(string(debug.Stack()))
+
+		t.FailNow()
+	}
+}
+
 func AssertStrRepEqual(t *testing.T, key string, expected any, actual any) {
 	strExp := fmt.Sprintf("%v", unpointer(expected))
 	strAct := fmt.Sprintf("%v", unpointer(actual))
@@ -81,23 +106,23 @@ func AssertStrRepEqual(t *testing.T, key string, expected any, actual any) {
 	}
 }
 
-func AssertNotEqual(t *testing.T, key string, expected any, actual any) {
-	if expected == actual {
+func AssertNotStrRepEqual(t *testing.T, key string, expected any, actual any) {
+	strExp := fmt.Sprintf("%v", unpointer(expected))
+	strAct := fmt.Sprintf("%v", unpointer(actual))
+
+	if strAct == strExp {
 		t.Errorf("Value [%s] does not differ (%T <-> %T):\n", key, expected, actual)
 
-		str1 := fmt.Sprintf("%v", expected)
-		str2 := fmt.Sprintf("%v", actual)
-
-		if strings.Contains(str1, "\n") {
-			t.Errorf("Actual:\n~~~~~~~~~~~~~~~~\n%v\n~~~~~~~~~~~~~~~~\n\n", expected)
+		if strings.Contains(strAct, "\n") {
+			t.Errorf("Actual:\n~~~~~~~~~~~~~~~~\n%v\n~~~~~~~~~~~~~~~~\n\n", strAct)
 		} else {
-			t.Errorf("Actual       := \"%v\"\n", expected)
+			t.Errorf("Actual    := \"%v\"\n", strAct)
 		}
 
-		if strings.Contains(str2, "\n") {
-			t.Errorf("Not Expected:\n~~~~~~~~~~~~~~~~\n%v\n~~~~~~~~~~~~~~~~\n\n", actual)
+		if strings.Contains(strExp, "\n") {
+			t.Errorf("Expected:\n~~~~~~~~~~~~~~~~\n%v\n~~~~~~~~~~~~~~~~\n\n", strExp)
 		} else {
-			t.Errorf("Not Expected := \"%v\"\n", actual)
+			t.Errorf("Expected  := \"%v\"\n", strExp)
 		}
 
 		t.Error(string(debug.Stack()))

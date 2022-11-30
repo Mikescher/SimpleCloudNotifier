@@ -348,15 +348,78 @@ func TestSendTooLongTitle(t *testing.T) {
 	}, 400, 1202)
 }
 
-//TODO trim too-long content
+func TestSendIdempotent(t *testing.T) {
+	ws, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	pusher := ws.Pusher.(*push.TestSink)
+
+	baseUrl := "http://127.0.0.1:" + ws.Port
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	uid := int(r0["user_id"].(float64))
+	sendtok := r0["send_key"].(string)
+
+	msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"user_key": sendtok,
+		"user_id":  uid,
+		"title":    "Hello SCN",
+		"content":  "mamma mia",
+		"msg_id":   "c0235a49-dabc-4cdc-a0ce-453966e0c2d5",
+	})
+
+	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
+	tt.AssertStrRepEqual(t, "msg.scn_msg_id", msg1["scn_msg_id"], pusher.Last().Message.SCNMessageID)
+	tt.AssertStrRepEqual(t, "msg.suppress_send", msg1["suppress_send"], false)
+	tt.AssertStrRepEqual(t, "msg.msg_id", "c0235a49-dabc-4cdc-a0ce-453966e0c2d5", pusher.Last().Message.UserMessageID)
+	tt.AssertStrRepEqual(t, "msg.title", "Hello SCN", pusher.Last().Message.Title)
+	tt.AssertStrRepEqual(t, "msg.content", "mamma mia", pusher.Last().Message.Content)
+
+	msg2 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"user_key": sendtok,
+		"user_id":  uid,
+		"title":    "Hello again",
+		"content":  "mother mia",
+		"msg_id":   "c0235a49-dabc-4cdc-a0ce-453966e0c2d5",
+	})
+
+	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
+	tt.AssertStrRepEqual(t, "msg.scn_msg_id", msg1["scn_msg_id"], msg2["scn_msg_id"])
+	tt.AssertStrRepEqual(t, "msg.scn_msg_id", msg2["scn_msg_id"], pusher.Last().Message.SCNMessageID)
+	tt.AssertStrRepEqual(t, "msg.suppress_send", msg2["suppress_send"], true)
+	tt.AssertStrRepEqual(t, "msg.msg_id", "c0235a49-dabc-4cdc-a0ce-453966e0c2d5", pusher.Last().Message.UserMessageID)
+	tt.AssertStrRepEqual(t, "msg.title", "Hello SCN", pusher.Last().Message.Title)
+	tt.AssertStrRepEqual(t, "msg.content", "mamma mia", pusher.Last().Message.Content)
+
+	msg3 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"user_key": sendtok,
+		"user_id":  uid,
+		"title":    "Hello third",
+		"content":  "let me go",
+		"msg_id":   "3238e68e-c1ea-44ce-b21b-2576614082b5",
+	})
+
+	tt.AssertEqual(t, "messageCount", 2, len(pusher.Data))
+	tt.AssertNotStrRepEqual(t, "msg.scn_msg_id", msg1["scn_msg_id"], msg3["scn_msg_id"])
+	tt.AssertNotStrRepEqual(t, "msg.scn_msg_id", msg2["scn_msg_id"], msg3["scn_msg_id"])
+	tt.AssertStrRepEqual(t, "msg.suppress_send", msg3["suppress_send"], false)
+	tt.AssertStrRepEqual(t, "msg.msg_id", "3238e68e-c1ea-44ce-b21b-2576614082b5", pusher.Last().Message.UserMessageID)
+	tt.AssertStrRepEqual(t, "msg.title", "Hello third", pusher.Last().Message.Title)
+	tt.AssertStrRepEqual(t, "msg.content", "let me go", pusher.Last().Message.Content)
+
+}
 
 //TODO compat route
 
 //TODO post to channel
 //TODO post to newly-created-channel
 //TODO post to foreign channel via send-key
-
-//TODO usr_msg_id
 
 //TODO quota exceed (+ quota counter)
 
@@ -365,8 +428,6 @@ func TestSendTooLongTitle(t *testing.T) {
 //TODO chan_name normalization
 //TODO custom_timestamp
 //TODO invalid time
-//TODO title too long
-//TODO content too long
 
 //TODO check message_counter + last_sent in channel
 //TODO check message_counter + last_sent in user
