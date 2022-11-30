@@ -1,6 +1,7 @@
 package test
 
 import (
+	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/push"
 	tt "blackforestbytes.com/simplecloudnotifier/test/util"
 	"fmt"
@@ -39,7 +40,7 @@ func TestSendSimpleMessageJSON(t *testing.T) {
 		"user_key": readtok,
 		"user_id":  uid,
 		"title":    "HelloWorld_001",
-	}, 401, 1311)
+	}, 401, apierr.USER_AUTH_FAILED)
 
 	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
 	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_001", pusher.Last().Message.Title)
@@ -360,7 +361,7 @@ func TestSendTooLongContent(t *testing.T) {
 		"user_id":  uid,
 		"title":    "HelloWorld_042",
 		"content":  longContent,
-	}, 400, 1203)
+	}, 400, apierr.CONTENT_TOO_LONG)
 }
 
 func TestSendTooLongTitle(t *testing.T) {
@@ -383,7 +384,7 @@ func TestSendTooLongTitle(t *testing.T) {
 		"user_key": sendtok,
 		"user_id":  uid,
 		"title":    "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
-	}, 400, 1202)
+	}, 400, apierr.TITLE_TOO_LONG)
 }
 
 func TestSendIdempotent(t *testing.T) {
@@ -561,6 +562,126 @@ func TestSendWithPriority(t *testing.T) {
 	}
 }
 
+func TestSendInvalidPriority(t *testing.T) {
+	ws, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	pusher := ws.Pusher.(*push.TestSink)
+
+	baseUrl := "http://127.0.0.1:" + ws.Port
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	uid := int(r0["user_id"].(float64))
+	sendtok := r0["send_key"].(string)
+	admintok := r0["admin_key"].(string)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+		"user_key": sendtok,
+		"user_id":  uid,
+		"title":    "(title)",
+		"content":  "(content)",
+		"priority": -1,
+	}, 400, apierr.INVALID_PRIO)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+		"user_key": sendtok,
+		"user_id":  uid,
+		"title":    "(title)",
+		"content":  "(content)",
+		"priority": 4,
+	}, 400, apierr.INVALID_PRIO)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+		"user_key": sendtok,
+		"user_id":  uid,
+		"title":    "(title)",
+		"content":  "(content)",
+		"priority": 9999,
+	}, 400, apierr.INVALID_PRIO)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+		"user_key": admintok,
+		"user_id":  uid,
+		"title":    "(title)",
+		"content":  "(content)",
+		"priority": -1,
+	}, 400, apierr.INVALID_PRIO)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+		"user_key": admintok,
+		"user_id":  uid,
+		"title":    "(title)",
+		"content":  "(content)",
+		"priority": 4,
+	}, 400, apierr.INVALID_PRIO)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+		"user_key": admintok,
+		"user_id":  uid,
+		"title":    "(title)",
+		"content":  "(content)",
+		"priority": 9999,
+	}, 400, apierr.INVALID_PRIO)
+
+	struid := fmt.Sprintf("%d", uid)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", tt.FormData{
+		"user_key": sendtok,
+		"user_id":  struid,
+		"title":    "(title)",
+		"content":  "(content)",
+		"priority": "-1",
+	}, 400, apierr.INVALID_PRIO)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", tt.FormData{
+		"user_key": sendtok,
+		"user_id":  struid,
+		"title":    "(title)",
+		"content":  "(content)",
+		"priority": "4",
+	}, 400, apierr.INVALID_PRIO)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", tt.FormData{
+		"user_key": sendtok,
+		"user_id":  struid,
+		"title":    "(title)",
+		"content":  "(content)",
+		"priority": "9999",
+	}, 400, apierr.INVALID_PRIO)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", tt.FormData{
+		"user_key": admintok,
+		"user_id":  struid,
+		"title":    "(title)",
+		"content":  "(content)",
+		"priority": "-1",
+	}, 400, apierr.INVALID_PRIO)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", tt.FormData{
+		"user_key": admintok,
+		"user_id":  struid,
+		"title":    "(title)",
+		"content":  "(content)",
+		"priority": "4",
+	}, 400, apierr.INVALID_PRIO)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", tt.FormData{
+		"user_key": admintok,
+		"user_id":  struid,
+		"title":    "(title)",
+		"content":  "(content)",
+		"priority": "9999",
+	}, 400, apierr.INVALID_PRIO)
+
+	tt.AssertEqual(t, "messageCount", 0, len(pusher.Data))
+}
+
 //TODO compat route
 
 //TODO post to channel
@@ -570,8 +691,6 @@ func TestSendWithPriority(t *testing.T) {
 //TODO post to foreign channel via send-key
 
 //TODO quota exceed (+ quota counter)
-
-//TODO invalid priority
 
 //TODO chan_naem too long
 

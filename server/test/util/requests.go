@@ -169,12 +169,32 @@ func RequestAuthAnyShouldFail(t *testing.T, akey string, method string, baseURL 
 	fmt.Printf("[-> REQUEST] (%s) %s%s [%s] (should-fail with %d/%d)\n", method, baseURL, urlSuffix, langext.Conditional(akey == "", "NO AUTH", "AUTH"), statusCode, errcode)
 
 	bytesbody := make([]byte, 0)
+	contentType := ""
 	if body != nil {
-		bjson, err := json.Marshal(body)
-		if err != nil {
-			TestFailErr(t, err)
+		switch bd := body.(type) {
+		case FormData:
+			bodybuffer := &bytes.Buffer{}
+			writer := multipart.NewWriter(bodybuffer)
+			for bdk, bdv := range bd {
+				err := writer.WriteField(bdk, bdv)
+				if err != nil {
+					TestFailErr(t, err)
+				}
+			}
+			err := writer.Close()
+			if err != nil {
+				TestFailErr(t, err)
+			}
+			bytesbody = bodybuffer.Bytes()
+			contentType = writer.FormDataContentType()
+		default:
+			bjson, err := json.Marshal(body)
+			if err != nil {
+				TestFailErr(t, err)
+			}
+			bytesbody = bjson
+			contentType = "application/json"
 		}
-		bytesbody = bjson
 	}
 
 	req, err := http.NewRequest(method, baseURL+urlSuffix, bytes.NewReader(bytesbody))
@@ -182,8 +202,8 @@ func RequestAuthAnyShouldFail(t *testing.T, akey string, method string, baseURL 
 		TestFailErr(t, err)
 	}
 
-	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
+	if contentType != "" {
+		req.Header.Set("Content-Type", contentType)
 	}
 
 	if akey != "" {
@@ -204,13 +224,11 @@ func RequestAuthAnyShouldFail(t *testing.T, akey string, method string, baseURL 
 	fmt.Println("")
 	fmt.Printf("----------------  RESPONSE (%d) ----------------\n", resp.StatusCode)
 	fmt.Println(langext.TryPrettyPrintJson(string(respBodyBin)))
-	TryPrintTraceObj("----------------  --------  ----------------", respBodyBin, "")
+	//TryPrintTraceObj("----------------  --------  ----------------", respBodyBin, "")
 	fmt.Println("----------------  --------  ----------------")
 	fmt.Println("")
 
 	if resp.StatusCode != statusCode {
-		fmt.Println("Request: " + method + " :: " + baseURL + urlSuffix)
-		fmt.Println(string(respBodyBin))
 		TestFailFmt(t, "Statuscode != %d (expected failure)", statusCode)
 	}
 

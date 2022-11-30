@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"runtime/debug"
 )
 
@@ -104,7 +105,7 @@ func createApiError(g *gin.Context, ident string, status int, errorid apierr.API
 				Error:          int(errorid),
 				ErrorHighlight: int(highlight),
 				Message:        msg,
-				RawError:       fmt.Sprintf("%+v", e),
+				RawError:       langext.Ptr(langext.Conditional(e == nil, "", fmt.Sprintf("%+v", e))),
 				Trace:          string(debug.Stack()),
 			},
 		}
