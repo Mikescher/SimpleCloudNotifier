@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>API Documentation</title>
     <link rel="stylesheet" href="swagger-ui.css" />
+    <!-- <link rel="stylesheet" href="themes/theme-feeling-blue.css" /> -->
+    <!-- <link rel="stylesheet" href="themes/theme-flattop.css" /> -->
+    <!-- <link rel="stylesheet" href="themes/theme-material.css" /> -->
+    <!-- <link rel="stylesheet" href="themes/theme-monokai.css" /> -->
+    <!-- <link rel="stylesheet" href="themes/theme-muted.css" /> -->
+    <!-- <link rel="stylesheet" href="themes/theme-newspaper.css" /> -->
+    <!-- <link rel="stylesheet" href="themes/theme-outline.css" /> -->
 </head>
 <body>
 <div id="swagger-ui"></div>
@@ -19,7 +26,8 @@
                 SwaggerUIBundle.presets.apis,
                 SwaggerUIStandalonePreset
             ],
-            layout: "StandaloneLayout"
+            layout: "StandaloneLayout",
+            defaultModelsExpandDepth: 0,
         });
     };
 </script>

@@ -62,7 +62,8 @@ func (r *Router) Init(e *gin.Engine) {
 	{
 		docs.GET("/swagger", ginext.RedirectTemporary("/documentation/swagger/"))
 		docs.GET("/swagger/", ginresp.Wrap(swagger.Handle))
-		docs.GET("/swagger/:fn", ginresp.Wrap(swagger.Handle))
+		docs.GET("/swagger/:fn1", ginresp.Wrap(swagger.Handle))
+		docs.GET("/swagger/:fn1/:fn2", ginresp.Wrap(swagger.Handle))
 	}
 
 	// ================ Website ================
