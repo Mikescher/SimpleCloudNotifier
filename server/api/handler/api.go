@@ -227,7 +227,7 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 			username = nil
 		}
 
-		err := h.database.UpdateUserUsername(ctx, u.UserID, b.Username)
+		err := h.database.UpdateUserUsername(ctx, u.UserID, username)
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update user", err)
 		}
