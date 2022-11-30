@@ -82,10 +82,14 @@ func StartSimpleWebserver(t *testing.T) (*logic.Application, func()) {
 
 	router.Init(ginengine)
 
-	stop := func() { app.Stop(); _ = os.Remove(dbfile) }
+	stop := func() { app.Stop(); _ = os.Remove(dbfile); _ = app.IsRunning.WaitWithTimeout(400*time.Millisecond, false) }
+
 	go func() { app.Run() }()
 
-	time.Sleep(100 * time.Millisecond) // wait until http server is up
+	err = app.IsRunning.WaitWithTimeout(100*time.Millisecond, true)
+	if err != nil {
+		TestFailErr(t, err)
+	}
 
 	return app, stop
 }

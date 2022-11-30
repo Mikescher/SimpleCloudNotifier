@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"gogs.mikescher.com/BlackForestBytes/goext/syncext"
 	"math/rand"
 	"net"
 	"net/http"
@@ -33,12 +34,14 @@ type Application struct {
 	Jobs             []Job
 	stopChan         chan bool
 	Port             string
+	IsRunning        *syncext.AtomicBool
 }
 
 func NewApp(db *db.Database) *Application {
 	return &Application{
-		Database: db,
-		stopChan: make(chan bool, 8),
+		Database:  db,
+		stopChan:  make(chan bool),
+		IsRunning: syncext.NewAtomicBool(false),
 	}
 }
 
@@ -51,7 +54,10 @@ func (app *Application) Init(cfg scn.Config, g *gin.Engine, fb push.Notification
 }
 
 func (app *Application) Stop() {
-	app.stopChan <- true
+	// non-blocking send
+	select {
+	case app.stopChan <- true:
+	}
 }
 
 func (app *Application) Run() {
@@ -79,6 +85,8 @@ func (app *Application) Run() {
 		log.Info().Str("address", httpserver.Addr).Msg("HTTP-Server started on http://localhost:" + port)
 
 		app.Port = port
+
+		app.IsRunning.Set(true) // the net.Listener a few lines above is at this point actually already buffering requests
 
 		errChan <- httpserver.Serve(ln)
 	}()
@@ -126,6 +134,8 @@ func (app *Application) Run() {
 	for _, job := range app.Jobs {
 		job.Stop()
 	}
+
+	app.IsRunning.Set(false)
 }
 
 func (app *Application) GenerateRandomAuthKey() string {
