@@ -52,6 +52,38 @@ func RequestAuthDelete[TResult any](t *testing.T, akey string, baseURL string, u
 	return RequestAny[TResult](t, akey, "DELETE", baseURL, urlSuffix, body)
 }
 
+func RequestGetShouldFail(t *testing.T, baseURL string, urlSuffix string, statusCode int, errcode apierr.APIError) {
+	RequestAuthAnyShouldFail(t, "", "GET", baseURL, urlSuffix, nil, statusCode, errcode)
+}
+
+func RequestPostShouldFail(t *testing.T, baseURL string, urlSuffix string, body any, statusCode int, errcode apierr.APIError) {
+	RequestAuthAnyShouldFail(t, "", "POST", baseURL, urlSuffix, body, statusCode, errcode)
+}
+
+func RequestPatchShouldFail(t *testing.T, baseURL string, urlSuffix string, body any, statusCode int, errcode apierr.APIError) {
+	RequestAuthAnyShouldFail(t, "", "PATCH", baseURL, urlSuffix, body, statusCode, errcode)
+}
+
+func RequestDeleteShouldFail(t *testing.T, baseURL string, urlSuffix string, body any, statusCode int, errcode apierr.APIError) {
+	RequestAuthAnyShouldFail(t, "", "DELETE", baseURL, urlSuffix, body, statusCode, errcode)
+}
+
+func RequestAuthGetShouldFail(t *testing.T, akey string, baseURL string, urlSuffix string, statusCode int, errcode apierr.APIError) {
+	RequestAuthAnyShouldFail(t, akey, "GET", baseURL, urlSuffix, nil, statusCode, errcode)
+}
+
+func RequestAuthPostShouldFail(t *testing.T, akey string, baseURL string, urlSuffix string, body any, statusCode int, errcode apierr.APIError) {
+	RequestAuthAnyShouldFail(t, akey, "POST", baseURL, urlSuffix, body, statusCode, errcode)
+}
+
+func RequestAuthPatchShouldFail(t *testing.T, akey string, baseURL string, urlSuffix string, body any, statusCode int, errcode apierr.APIError) {
+	RequestAuthAnyShouldFail(t, akey, "PATCH", baseURL, urlSuffix, body, statusCode, errcode)
+}
+
+func RequestAuthDeleteShouldFail(t *testing.T, akey string, baseURL string, urlSuffix string, body any, statusCode int, errcode apierr.APIError) {
+	RequestAuthAnyShouldFail(t, akey, "DELETE", baseURL, urlSuffix, body, statusCode, errcode)
+}
+
 func RequestAny[TResult any](t *testing.T, akey string, method string, baseURL string, urlSuffix string, body any) TResult {
 	client := http.Client{}
 
@@ -106,22 +138,6 @@ func RequestAny[TResult any](t *testing.T, akey string, method string, baseURL s
 	}
 
 	return data
-}
-
-func RequestAuthGetShouldFail(t *testing.T, akey string, baseURL string, urlSuffix string, statusCode int, errcode apierr.APIError) {
-	RequestAuthAnyShouldFail(t, akey, "GET", baseURL, urlSuffix, nil, statusCode, errcode)
-}
-
-func RequestAuthPostShouldFail(t *testing.T, akey string, baseURL string, urlSuffix string, body any, statusCode int, errcode apierr.APIError) {
-	RequestAuthAnyShouldFail(t, akey, "POST", baseURL, urlSuffix, body, statusCode, errcode)
-}
-
-func RequestAuthPatchShouldFail(t *testing.T, akey string, baseURL string, urlSuffix string, body any, statusCode int, errcode apierr.APIError) {
-	RequestAuthAnyShouldFail(t, akey, "PATCH", baseURL, urlSuffix, body, statusCode, errcode)
-}
-
-func RequestAuthDeleteShouldFail(t *testing.T, akey string, baseURL string, urlSuffix string, body any, statusCode int, errcode apierr.APIError) {
-	RequestAuthAnyShouldFail(t, akey, "DELETE", baseURL, urlSuffix, body, statusCode, errcode)
 }
 
 func RequestAuthAnyShouldFail(t *testing.T, akey string, method string, baseURL string, urlSuffix string, body any, statusCode int, errcode apierr.APIError) {

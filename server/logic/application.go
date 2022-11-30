@@ -28,7 +28,7 @@ type Application struct {
 	Config           scn.Config
 	Gin              *gin.Engine
 	Database         *db.Database
-	Firebase         push.NotificationClient
+	Pusher           push.NotificationClient
 	AndroidPublisher google.AndroidPublisherClient
 	Jobs             []Job
 	stopChan         chan bool
@@ -45,7 +45,7 @@ func NewApp(db *db.Database) *Application {
 func (app *Application) Init(cfg scn.Config, g *gin.Engine, fb push.NotificationClient, apc google.AndroidPublisherClient, jobs []Job) {
 	app.Config = cfg
 	app.Gin = g
-	app.Firebase = fb
+	app.Pusher = fb
 	app.AndroidPublisher = apc
 	app.Jobs = jobs
 }
@@ -314,7 +314,7 @@ func (app *Application) NormalizeUsername(v string) string {
 
 func (app *Application) DeliverMessage(ctx context.Context, client models.Client, msg models.Message) (*string, error) {
 	if client.FCMToken != nil {
-		fcmDelivID, err := app.Firebase.SendNotification(ctx, client, msg)
+		fcmDelivID, err := app.Pusher.SendNotification(ctx, client, msg)
 		if err != nil {
 			log.Warn().Int64("SCNMessageID", msg.SCNMessageID.IntID()).Int64("ClientID", client.ClientID.IntID()).Err(err).Msg("FCM Delivery failed")
 			return nil, err

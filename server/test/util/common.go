@@ -55,6 +55,31 @@ func AssertEqual(t *testing.T, key string, expected any, actual any) {
 	}
 }
 
+func AssertStrRepEqual(t *testing.T, key string, expected any, actual any) {
+	str1 := fmt.Sprintf("%v", expected)
+	str2 := fmt.Sprintf("%v", actual)
+
+	if str1 != str2 {
+		t.Errorf("Value [%s] differs (%T <-> %T):\n", key, expected, actual)
+
+		if strings.Contains(str1, "\n") {
+			t.Errorf("Actual:\n~~~~~~~~~~~~~~~~\n%v\n~~~~~~~~~~~~~~~~\n\n", expected)
+		} else {
+			t.Errorf("Actual    := \"%v\"\n", expected)
+		}
+
+		if strings.Contains(str2, "\n") {
+			t.Errorf("Expected:\n~~~~~~~~~~~~~~~~\n%v\n~~~~~~~~~~~~~~~~\n\n", actual)
+		} else {
+			t.Errorf("Expected  := \"%v\"\n", actual)
+		}
+
+		t.Error(string(debug.Stack()))
+
+		t.FailNow()
+	}
+}
+
 func AssertNotEqual(t *testing.T, key string, expected any, actual any) {
 	if expected == actual {
 		t.Errorf("Value [%s] does not differ (%T <-> %T):\n", key, expected, actual)

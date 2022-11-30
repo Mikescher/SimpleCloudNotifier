@@ -22,8 +22,13 @@ func TestCreateUserNoClient(t *testing.T) {
 
 	uid := fmt.Sprintf("%v", r0["user_id"])
 	admintok := r0["admin_key"].(string)
+	readtok := r0["read_key"].(string)
+	sendtok := r0["send_key"].(string)
 
-	r1 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/users/"+uid)
+	tt.RequestAuthGetShouldFail(t, sendtok, baseUrl, "/api/users/"+uid, 401, apierr.USER_AUTH_FAILED)
+	tt.RequestAuthGetShouldFail(t, "", baseUrl, "/api/users/"+uid, 401, apierr.USER_AUTH_FAILED)
+
+	r1 := tt.RequestAuthGet[gin.H](t, readtok, baseUrl, "/api/users/"+uid)
 
 	tt.AssertEqual(t, "uid", uid, fmt.Sprintf("%v", r1["user_id"]))
 	tt.AssertEqual(t, "admin_key", admintok, r1["admin_key"])
@@ -213,6 +218,8 @@ func TestDeleteUser(t *testing.T) {
 	admintok := r0["admin_key"].(string)
 
 	tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/users/"+uid)
+
+	tt.RequestAuthDeleteShouldFail(t, admintok, baseUrl, "/api/users/"+uid, nil, 401, apierr.USER_AUTH_FAILED)
 
 	tt.RequestAuthDelete[tt.Void](t, admintok, baseUrl, "/api/users/"+uid, nil)
 

@@ -31,7 +31,7 @@ docker: build
 .PHONY: swagger
 swagger:
 	which swag || go install github.com/swaggo/swag/cmd/swag@latest
-	swag init -generalInfo api/router.go --output ./swagger/ --outputTypes "json,yaml"
+	swag init -generalInfo api/router.go --propertyStrategy snakecase --output ./swagger/ --outputTypes "json,yaml"
 
 run-docker-local: docker
 	mkdir -p .run-data

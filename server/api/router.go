@@ -38,10 +38,10 @@ func NewRouter(app *logic.Application) *Router {
 // @description API for SCN
 // @host        scn.blackforestbytes.com
 //
-// @tag.name    Common
 // @tag.name    External
 // @tag.name    API-v1
 // @tag.name    API-v2
+// @tag.name    Common
 //
 // @BasePath    /
 func (r *Router) Init(e *gin.Engine) {

@@ -3,6 +3,7 @@ package ginresp
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
+	"blackforestbytes.com/simplecloudnotifier/api/apihighlight"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -73,7 +74,7 @@ func APIError(g *gin.Context, status int, errorid apierr.APIError, msg string, e
 	return createApiError(g, "APIError", status, errorid, 0, msg, e)
 }
 
-func SendAPIError(g *gin.Context, status int, errorid apierr.APIError, highlight int, msg string, e error) HTTPResponse {
+func SendAPIError(g *gin.Context, status int, errorid apierr.APIError, highlight apihighlight.ErrHighlight, msg string, e error) HTTPResponse {
 	return createApiError(g, "SendAPIError", status, errorid, highlight, msg, e)
 }
 
@@ -81,7 +82,7 @@ func NotImplemented(g *gin.Context) HTTPResponse {
 	return createApiError(g, "NotImplemented", 500, apierr.UNDEFINED, 0, "Not Implemented", nil)
 }
 
-func createApiError(g *gin.Context, ident string, status int, errorid apierr.APIError, highlight int, msg string, e error) HTTPResponse {
+func createApiError(g *gin.Context, ident string, status int, errorid apierr.APIError, highlight apihighlight.ErrHighlight, msg string, e error) HTTPResponse {
 	reqUri := ""
 	if g != nil && g.Request != nil {
 		reqUri = g.Request.Method + " :: " + g.Request.RequestURI
@@ -89,7 +90,7 @@ func createApiError(g *gin.Context, ident string, status int, errorid apierr.API
 
 	log.Error().
 		Int("errorid", int(errorid)).
-		Int("highlight", highlight).
+		Int("highlight", int(highlight)).
 		Str("uri", reqUri).
 		AnErr("err", e).
 		Stack().
@@ -101,7 +102,7 @@ func createApiError(g *gin.Context, ident string, status int, errorid apierr.API
 			data: apiError{
 				Success:        false,
 				Error:          int(errorid),
-				ErrorHighlight: highlight,
+				ErrorHighlight: int(highlight),
 				Message:        msg,
 				RawError:       fmt.Sprintf("%+v", e),
 				Trace:          string(debug.Stack()),
@@ -113,7 +114,7 @@ func createApiError(g *gin.Context, ident string, status int, errorid apierr.API
 			data: apiError{
 				Success:        false,
 				Error:          int(errorid),
-				ErrorHighlight: highlight,
+				ErrorHighlight: int(highlight),
 				Message:        msg,
 			},
 		}

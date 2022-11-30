@@ -28,6 +28,28 @@ func (db *Database) GetChannelByName(ctx TxContext, userid models.UserID, chanNa
 	return &channel, nil
 }
 
+func (db *Database) GetChannelByNameAndSendKey(ctx TxContext, chanName string, sendKey string) (*models.Channel, error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := tx.QueryContext(ctx, "SELECT * FROM channels WHERE name = ? OR send_key = ? LIMIT 1", chanName, sendKey)
+	if err != nil {
+		return nil, err
+	}
+
+	channel, err := models.DecodeChannel(rows)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &channel, nil
+}
+
 func (db *Database) CreateChannel(ctx TxContext, userid models.UserID, name string, subscribeKey string, sendKey string) (models.Channel, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {

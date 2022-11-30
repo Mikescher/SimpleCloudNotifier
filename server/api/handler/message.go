@@ -2,6 +2,7 @@ package handler
 
 import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
+	hl "blackforestbytes.com/simplecloudnotifier/api/apihighlight"
 	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/logic"
@@ -38,8 +39,8 @@ func NewMessageHandler(app *logic.Application) MessageHandler {
 // @Description All parameter can be set via query-parameter or form-data body. Only UserID, UserKey and Title are required
 // @Tags        External
 //
-// @Param       query_data query    handler.SendMessageCompat.query false " "
-// @Param       form_data  formData handler.SendMessageCompat.form  false " "
+// @Param       query_data query    handler.SendMessageCompat.combined false " "
+// @Param       form_data  formData handler.SendMessageCompat.combined false " "
 //
 // @Success     200        {object} handler.sendMessageInternal.response
 // @Failure     400        {object} ginresp.apiError
@@ -49,7 +50,7 @@ func NewMessageHandler(app *logic.Application) MessageHandler {
 //
 // @Router      /send.php [POST]
 func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
-	type query struct {
+	type combined struct {
 		UserID        *models.UserID `json:"user_id"   form:"user_id"`
 		UserKey       *string        `json:"user_key"  form:"user_key"`
 		Title         *string        `json:"title"     form:"title"`
@@ -58,18 +59,9 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 		UserMessageID *string        `json:"msg_id"    form:"msg_id"`
 		SendTimestamp *float64       `json:"timestamp" form:"timestamp"`
 	}
-	type form struct {
-		UserID        *models.UserID `form:"user_id"`
-		UserKey       *string        `form:"user_key"`
-		Title         *string        `form:"title"`
-		Content       *string        `form:"content"`
-		Priority      *int           `form:"priority"`
-		UserMessageID *string        `form:"msg_id"`
-		SendTimestamp *float64       `form:"timestamp"`
-	}
 
-	var f form
-	var q query
+	var f combined
+	var q combined
 	ctx, errResp := h.app.StartRequest(g, nil, &q, nil, &f)
 	if errResp != nil {
 		return *errResp
@@ -88,9 +80,9 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 // @Description All parameter can be set via query-parameter or the json body. Only UserID, UserKey and Title are required
 // @Tags        External
 //
-// @Param       query_data query    handler.SendMessage.query false " "
-// @Param       post_body  body     handler.SendMessage.body  false " "
-// @Param       form_body  formData handler.SendMessage.body  false " "
+// @Param       query_data query    handler.SendMessage.combined false " "
+// @Param       post_body  body     handler.SendMessage.combined false " "
+// @Param       form_body  formData handler.SendMessage.combined false " "
 //
 // @Success     200        {object} handler.sendMessageInternal.response
 // @Failure     400        {object} ginresp.apiError
@@ -101,46 +93,22 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 // @Router      /     [POST]
 // @Router      /send [POST]
 func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
-	type query struct {
-		UserID        *models.UserID `json:"user_id"     form:"user_id"`
-		UserKey       *string        `json:"user_key"    form:"user_key"`
-		Channel       *string        `json:"channel"     form:"channel"`
-		ChanKey       *string        `json:"chan_key"    form:"chan_key"`
-		Title         *string        `json:"title"       form:"title"`
-		Content       *string        `json:"content"     form:"content"`
-		Priority      *int           `json:"priority"    form:"priority"`
-		UserMessageID *string        `json:"msg_id"      form:"msg_id"`
-		SendTimestamp *float64       `json:"timestamp"   form:"timestamp"`
-		SenderName    *string        `json:"sender_name" form:"sender_name"`
-	}
-	type body struct {
-		UserID        *models.UserID `json:"user_id"`
-		UserKey       *string        `json:"user_key"`
-		Channel       *string        `json:"channel"`
-		ChanKey       *string        `json:"chan_key"`
-		Title         *string        `json:"title"`
-		Content       *string        `json:"content"`
-		Priority      *int           `json:"priority"`
-		UserMessageID *string        `json:"msg_id"`
-		SendTimestamp *float64       `json:"timestamp"`
-		SenderName    *string        `json:"sender_name"`
-	}
-	type form struct {
-		UserID        *models.UserID `form:"user_id"`
-		UserKey       *string        `form:"user_key"`
-		Channel       *string        `form:"channel"`
-		ChanKey       *string        `form:"chan_key"`
-		Title         *string        `form:"title"`
-		Content       *string        `form:"content"`
-		Priority      *int           `form:"priority"`
-		UserMessageID *string        `form:"msg_id"`
-		SendTimestamp *float64       `form:"timestamp"`
-		SenderName    *string        `form:"sender_name"`
+	type combined struct {
+		UserID        *models.UserID `json:"user_id"     form:"user_id"     example:"7725"                               `
+		UserKey       *string        `json:"user_key"    form:"user_key"    example:"P3TNH8mvv14fm"                      `
+		Channel       *string        `json:"channel"     form:"channel"     example:"test"                               `
+		ChanKey       *string        `json:"chan_key"    form:"chan_key"    example:"qhnUbKcLgp6tg"                      `
+		Title         *string        `json:"title"       form:"title"       example:"Hello World"                        `
+		Content       *string        `json:"content"     form:"content"     example:"This is a message"                  `
+		Priority      *int           `json:"priority"    form:"priority"    example:"1"                   enums:"0,1,2"  `
+		UserMessageID *string        `json:"msg_id"      form:"msg_id"      example:"db8b0e6a-a08c-4646"                 `
+		SendTimestamp *float64       `json:"timestamp"   form:"timestamp"   example:"1669824037"                         `
+		SenderName    *string        `json:"sender_name" form:"sender_name" example:"example-server"                     `
 	}
 
-	var b body
-	var q query
-	var f form
+	var b combined
+	var q combined
+	var f combined
 	ctx, errResp := h.app.StartRequest(g, nil, &q, &b, &f)
 	if errResp != nil {
 		return *errResp
@@ -175,30 +143,30 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 	}
 
 	if UserID == nil {
-		return ginresp.SendAPIError(g, 400, apierr.MISSING_UID, 101, "Missing parameter [[user_id]]", nil)
+		return ginresp.SendAPIError(g, 400, apierr.MISSING_UID, hl.USER_ID, "Missing parameter [[user_id]]", nil)
 	}
 	if UserKey == nil {
-		return ginresp.SendAPIError(g, 400, apierr.MISSING_TOK, 102, "Missing parameter [[user_token]]", nil)
+		return ginresp.SendAPIError(g, 400, apierr.MISSING_TOK, hl.USER_KEY, "Missing parameter [[user_token]]", nil)
 	}
 	if Title == nil {
-		return ginresp.SendAPIError(g, 400, apierr.MISSING_TITLE, 103, "Missing parameter [[title]]", nil)
+		return ginresp.SendAPIError(g, 400, apierr.MISSING_TITLE, hl.TITLE, "Missing parameter [[title]]", nil)
 	}
 	if SendTimestamp != nil && mathext.Abs(*SendTimestamp-float64(time.Now().Unix())) > (24*time.Hour).Seconds() {
-		return ginresp.SendAPIError(g, 400, apierr.TIMESTAMP_OUT_OF_RANGE, -1, "The timestamp mus be within 24 hours of now()", nil)
+		return ginresp.SendAPIError(g, 400, apierr.TIMESTAMP_OUT_OF_RANGE, hl.NONE, "The timestamp mus be within 24 hours of now()", nil)
 	}
 	if Priority != nil && (*Priority != 0 && *Priority != 1 && *Priority != 2) {
-		return ginresp.SendAPIError(g, 400, apierr.INVALID_PRIO, 105, "Invalid priority", nil)
+		return ginresp.SendAPIError(g, 400, apierr.INVALID_PRIO, hl.PRIORITY, "Invalid priority", nil)
 	}
 	if len(*Title) == 0 {
-		return ginresp.SendAPIError(g, 400, apierr.NO_TITLE, 103, "No title specified", nil)
+		return ginresp.SendAPIError(g, 400, apierr.NO_TITLE, hl.TITLE, "No title specified", nil)
 	}
 
 	user, err := h.database.GetUser(ctx, *UserID)
 	if err == sql.ErrNoRows {
-		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, -1, "User not found", nil)
+		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found", nil)
 	}
 	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to query user", err)
+		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query user", err)
 	}
 
 	channelName := user.DefaultChannel()
@@ -207,25 +175,25 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 	}
 
 	if len(*Title) > user.MaxTitleLength() {
-		return ginresp.SendAPIError(g, 400, apierr.TITLE_TOO_LONG, 103, fmt.Sprintf("Title too long (max %d characters)", user.MaxTitleLength()), nil)
+		return ginresp.SendAPIError(g, 400, apierr.TITLE_TOO_LONG, hl.TITLE, fmt.Sprintf("Title too long (max %d characters)", user.MaxTitleLength()), nil)
 	}
 	if Content != nil && len(*Content) > user.MaxContentLength() {
-		return ginresp.SendAPIError(g, 400, apierr.CONTENT_TOO_LONG, 104, fmt.Sprintf("Content too long (%d characters; max := %d characters)", len(*Content), user.MaxContentLength()), nil)
+		return ginresp.SendAPIError(g, 400, apierr.CONTENT_TOO_LONG, hl.CONTENT, fmt.Sprintf("Content too long (%d characters; max := %d characters)", len(*Content), user.MaxContentLength()), nil)
 	}
 	if len(channelName) > user.MaxChannelNameLength() {
-		return ginresp.SendAPIError(g, 400, apierr.CONTENT_TOO_LONG, 106, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
+		return ginresp.SendAPIError(g, 400, apierr.CONTENT_TOO_LONG, hl.CHANNEL, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
 	}
 	if SenderName != nil && len(*SenderName) > user.MaxSenderName() {
-		return ginresp.SendAPIError(g, 400, apierr.SENDERNAME_TOO_LONG, 107, fmt.Sprintf("SenderName too long (max %d characters)", user.MaxSenderName()), nil)
+		return ginresp.SendAPIError(g, 400, apierr.SENDERNAME_TOO_LONG, hl.SENDER_NAME, fmt.Sprintf("SenderName too long (max %d characters)", user.MaxSenderName()), nil)
 	}
 	if UserMessageID != nil && len(*UserMessageID) > user.MaxUserMessageID() {
-		return ginresp.SendAPIError(g, 400, apierr.USR_MSG_ID_TOO_LONG, -1, fmt.Sprintf("MessageID too long (max %d characters)", user.MaxUserMessageID()), nil)
+		return ginresp.SendAPIError(g, 400, apierr.USR_MSG_ID_TOO_LONG, hl.USER_MESSAGE_ID, fmt.Sprintf("MessageID too long (max %d characters)", user.MaxUserMessageID()), nil)
 	}
 
 	if UserMessageID != nil {
 		msg, err := h.database.GetMessageByUserMessageID(ctx, *UserMessageID)
 		if err != nil {
-			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to query existing message", err)
+			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query existing message", err)
 		}
 		if msg != nil {
 			return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
@@ -244,12 +212,28 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 	}
 
 	if user.QuotaRemainingToday() <= 0 {
-		return ginresp.SendAPIError(g, 403, apierr.QUOTA_REACHED, -1, fmt.Sprintf("Daily quota reached (%d)", user.QuotaPerDay()), nil)
+		return ginresp.SendAPIError(g, 403, apierr.QUOTA_REACHED, hl.NONE, fmt.Sprintf("Daily quota reached (%d)", user.QuotaPerDay()), nil)
 	}
 
-	channel, err := h.app.GetOrCreateChannel(ctx, *UserID, channelName)
-	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to query/create channel", err)
+	var channel models.Channel
+	if ChanKey != nil {
+		// foreign channel (+ channel send-key)
+
+		foreignChan, err := h.database.GetChannelByNameAndSendKey(ctx, channelName, *ChanKey)
+		if err != nil {
+			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query (foreign) channel", err)
+		}
+		if foreignChan == nil {
+			return ginresp.SendAPIError(g, 400, apierr.CHANNEL_NOT_FOUND, hl.CHANNEL, "(Foreign) Channel not found", err)
+		}
+		channel = *foreignChan
+	} else {
+		// own channel
+
+		channel, err = h.app.GetOrCreateChannel(ctx, *UserID, channelName)
+		if err != nil {
+			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query/create (owned) channel", err)
+		}
 	}
 
 	selfChanAdmin := *UserID == channel.OwnerUserID && *UserKey == user.AdminKey
@@ -257,7 +241,7 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 	forgChanSend := *UserID != channel.OwnerUserID && ChanKey != nil && *ChanKey == channel.SendKey
 
 	if !selfChanAdmin && !selfChanSend && !forgChanSend {
-		return ginresp.SendAPIError(g, 401, apierr.USER_AUTH_FAILED, 102, fmt.Sprintf("Daily quota reached (%d)", user.QuotaPerDay()), nil)
+		return ginresp.SendAPIError(g, 401, apierr.USER_AUTH_FAILED, hl.USER_KEY, "You are not authorized for this action", nil)
 	}
 
 	var sendTimestamp *time.Time = nil
@@ -271,28 +255,28 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 
 	msg, err := h.database.CreateMessage(ctx, *UserID, channel, sendTimestamp, *Title, Content, priority, UserMessageID, clientIP, SenderName)
 	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to create message in db", err)
+		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to create message in db", err)
 	}
 
 	subscriptions, err := h.database.ListSubscriptionsByChannel(ctx, channel.ChannelID)
 	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to query subscriptions", err)
+		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query subscriptions", err)
 	}
 
 	err = h.database.IncUserMessageCounter(ctx, user)
 	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to inc user msg-counter", err)
+		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to inc user msg-counter", err)
 	}
 
 	err = h.database.IncChannelMessageCounter(ctx, channel)
 	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to inc channel msg-counter", err)
+		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to inc channel msg-counter", err)
 	}
 
 	for _, sub := range subscriptions {
 		clients, err := h.database.ListClients(ctx, sub.SubscriberUserID)
 		if err != nil {
-			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to query clients", err)
+			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query clients", err)
 		}
 
 		if !sub.Confirmed {
@@ -305,12 +289,12 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 			if err != nil {
 				_, err = h.database.CreateRetryDelivery(ctx, client, msg)
 				if err != nil {
-					return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to create delivery", err)
+					return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to create delivery", err)
 				}
 			} else {
 				_, err = h.database.CreateSuccessDelivery(ctx, client, msg, *fcmDelivID)
 				if err != nil {
-					return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, -1, "Failed to create delivery", err)
+					return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to create delivery", err)
 				}
 			}
 

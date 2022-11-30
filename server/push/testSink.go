@@ -13,11 +13,15 @@ type SinkData struct {
 }
 
 type TestSink struct {
-	data []SinkData
+	Data []SinkData
 }
 
 func NewTestSink() NotificationClient {
 	return &TestSink{}
+}
+
+func (d *TestSink) Last() SinkData {
+	return d.Data[len(d.Data)-1]
 }
 
 func (d *TestSink) SendNotification(ctx context.Context, client models.Client, msg models.Message) (string, error) {
@@ -28,7 +32,7 @@ func (d *TestSink) SendNotification(ctx context.Context, client models.Client, m
 
 	key := "TestSink[" + id + "]"
 
-	d.data = append(d.data, SinkData{
+	d.Data = append(d.Data, SinkData{
 		Message: msg,
 		Client:  client,
 	})
