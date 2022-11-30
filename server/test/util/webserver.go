@@ -102,6 +102,8 @@ func StartSimpleWebserver(t *testing.T) (*logic.Application, func()) {
 
 	stop := func() { app.Stop(); _ = os.Remove(dbfile) }
 	go func() { app.Run() }()
-	time.Sleep(100 * time.Millisecond)
+
+	time.Sleep(100 * time.Millisecond) // wait until http server is up
+
 	return app, stop
 }

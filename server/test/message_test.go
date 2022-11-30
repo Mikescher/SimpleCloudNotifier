@@ -212,6 +212,7 @@ func TestSendContentMessage(t *testing.T) {
 	})
 
 	uid := int(r0["user_id"].(float64))
+	admintok := r0["admin_key"].(string)
 	sendtok := r0["send_key"].(string)
 
 	msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
@@ -225,6 +226,18 @@ func TestSendContentMessage(t *testing.T) {
 	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_042", pusher.Last().Message.Title)
 	tt.AssertStrRepEqual(t, "msg.content", "I am Content\nasdf", pusher.Last().Message.Content)
 	tt.AssertStrRepEqual(t, "msg.scn_msg_id", msg1["scn_msg_id"], pusher.Last().Message.SCNMessageID)
+
+	type mglist struct {
+		Messages []gin.H `json:"messages"`
+	}
+
+	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/messages")
+	tt.AssertEqual(t, "len(messages)", 1, len(msgList1.Messages))
+
+	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
+	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_042", msg1Get["title"])
+	tt.AssertStrRepEqual(t, "msg.content", "I am Content\nasdf", msg1Get["content"])
+	tt.AssertStrRepEqual(t, "msg.channel_name", "main", msg1Get["channel_name"])
 }
 
 func TestSendWithSendername(t *testing.T) {
@@ -276,6 +289,7 @@ func TestSendLongContent(t *testing.T) {
 	})
 
 	uid := int(r0["user_id"].(float64))
+	admintok := r0["admin_key"].(string)
 	sendtok := r0["send_key"].(string)
 
 	longContent := ""
@@ -294,6 +308,30 @@ func TestSendLongContent(t *testing.T) {
 	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_042", pusher.Last().Message.Title)
 	tt.AssertStrRepEqual(t, "msg.content", longContent, pusher.Last().Message.Content)
 	tt.AssertStrRepEqual(t, "msg.scn_msg_id", msg1["scn_msg_id"], pusher.Last().Message.SCNMessageID)
+
+	type mglist struct {
+		Messages []gin.H `json:"messages"`
+	}
+
+	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/messages")
+	tt.AssertEqual(t, "len(messages)", 1, len(msgList1.Messages))
+	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_042", msgList1.Messages[0]["title"])
+	tt.AssertNotStrRepEqual(t, "msg.content", longContent, msgList1.Messages[0]["content"])
+	tt.AssertStrRepEqual(t, "msg.channel_name", "main", msgList1.Messages[0]["channel_name"])
+	tt.AssertStrRepEqual(t, "msg.trimmmed", true, msgList1.Messages[0]["trimmed"])
+
+	msgList2 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/messages?trimmed=false")
+	tt.AssertEqual(t, "len(messages)", 1, len(msgList2.Messages))
+	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_042", msgList2.Messages[0]["title"])
+	tt.AssertStrRepEqual(t, "msg.content", longContent, msgList2.Messages[0]["content"])
+	tt.AssertStrRepEqual(t, "msg.channel_name", "main", msgList2.Messages[0]["channel_name"])
+	tt.AssertStrRepEqual(t, "msg.trimmmed", false, msgList2.Messages[0]["trimmed"])
+
+	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
+	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_042", msg1Get["title"])
+	tt.AssertStrRepEqual(t, "msg.titcontentle", longContent, msg1Get["content"])
+	tt.AssertStrRepEqual(t, "msg.channel_name", "main", msg1Get["channel_name"])
+	tt.AssertStrRepEqual(t, "msg.trimmmed", false, msg1Get["trimmed"])
 }
 
 func TestSendTooLongContent(t *testing.T) {
@@ -364,6 +402,7 @@ func TestSendIdempotent(t *testing.T) {
 	})
 
 	uid := int(r0["user_id"].(float64))
+	readtok := r0["admin_key"].(string)
 	sendtok := r0["send_key"].(string)
 
 	msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
@@ -381,6 +420,13 @@ func TestSendIdempotent(t *testing.T) {
 	tt.AssertStrRepEqual(t, "msg.title", "Hello SCN", pusher.Last().Message.Title)
 	tt.AssertStrRepEqual(t, "msg.content", "mamma mia", pusher.Last().Message.Content)
 
+	type mglist struct {
+		Messages []gin.H `json:"messages"`
+	}
+
+	msgList1 := tt.RequestAuthGet[mglist](t, readtok, baseUrl, "/api/messages")
+	tt.AssertEqual(t, "len(messages)", 1, len(msgList1.Messages))
+
 	msg2 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
 		"user_key": sendtok,
 		"user_id":  uid,
@@ -396,6 +442,9 @@ func TestSendIdempotent(t *testing.T) {
 	tt.AssertStrRepEqual(t, "msg.msg_id", "c0235a49-dabc-4cdc-a0ce-453966e0c2d5", pusher.Last().Message.UserMessageID)
 	tt.AssertStrRepEqual(t, "msg.title", "Hello SCN", pusher.Last().Message.Title)
 	tt.AssertStrRepEqual(t, "msg.content", "mamma mia", pusher.Last().Message.Content)
+
+	msgList2 := tt.RequestAuthGet[mglist](t, readtok, baseUrl, "/api/messages")
+	tt.AssertEqual(t, "len(messages)", 1, len(msgList2.Messages))
 
 	msg3 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
 		"user_key": sendtok,
@@ -413,21 +462,127 @@ func TestSendIdempotent(t *testing.T) {
 	tt.AssertStrRepEqual(t, "msg.title", "Hello third", pusher.Last().Message.Title)
 	tt.AssertStrRepEqual(t, "msg.content", "let me go", pusher.Last().Message.Content)
 
+	msgList3 := tt.RequestAuthGet[mglist](t, readtok, baseUrl, "/api/messages")
+	tt.AssertEqual(t, "len(messages)", 2, len(msgList3.Messages))
+}
+
+func TestSendWithPriority(t *testing.T) {
+	ws, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	pusher := ws.Pusher.(*push.TestSink)
+
+	baseUrl := "http://127.0.0.1:" + ws.Port
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	uid := int(r0["user_id"].(float64))
+	sendtok := r0["send_key"].(string)
+	admintok := r0["admin_key"].(string)
+
+	{
+		msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+			"user_key": sendtok,
+			"user_id":  uid,
+			"title":    "M_001",
+			"content":  "TestSendWithPriority#001",
+		})
+
+		tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
+
+		tt.AssertStrRepEqual(t, "msg.prio", 1, pusher.Last().Message.Priority)
+
+		msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
+		tt.AssertStrRepEqual(t, "msg.title", "M_001", msg1Get["title"])
+		tt.AssertStrRepEqual(t, "msg.content", "TestSendWithPriority#001", msg1Get["content"])
+		tt.AssertStrRepEqual(t, "msg.content", 1, msg1Get["priority"])
+	}
+
+	{
+		msg2 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+			"user_key": sendtok,
+			"user_id":  uid,
+			"title":    "M_002",
+			"content":  "TestSendWithPriority#002",
+			"priority": 0,
+		})
+
+		tt.AssertEqual(t, "messageCount", 2, len(pusher.Data))
+
+		tt.AssertStrRepEqual(t, "msg.prio", 0, pusher.Last().Message.Priority)
+
+		msg2Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg2["scn_msg_id"]))
+		tt.AssertStrRepEqual(t, "msg.title", "M_002", msg2Get["title"])
+		tt.AssertStrRepEqual(t, "msg.content", "TestSendWithPriority#002", msg2Get["content"])
+		tt.AssertStrRepEqual(t, "msg.content", 0, msg2Get["priority"])
+	}
+
+	{
+		msg3 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+			"user_key": sendtok,
+			"user_id":  uid,
+			"title":    "M_003",
+			"content":  "TestSendWithPriority#003",
+			"priority": 1,
+		})
+
+		tt.AssertEqual(t, "messageCount", 3, len(pusher.Data))
+
+		tt.AssertStrRepEqual(t, "msg.prio", 1, pusher.Last().Message.Priority)
+
+		msg3Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg3["scn_msg_id"]))
+		tt.AssertStrRepEqual(t, "msg.title", "M_003", msg3Get["title"])
+		tt.AssertStrRepEqual(t, "msg.content", "TestSendWithPriority#003", msg3Get["content"])
+		tt.AssertStrRepEqual(t, "msg.content", 1, msg3Get["priority"])
+	}
+
+	{
+		msg4 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+			"user_key": sendtok,
+			"user_id":  uid,
+			"title":    "M_004",
+			"content":  "TestSendWithPriority#004",
+			"priority": 2,
+		})
+
+		tt.AssertEqual(t, "messageCount", 4, len(pusher.Data))
+
+		tt.AssertStrRepEqual(t, "msg.prio", 2, pusher.Last().Message.Priority)
+
+		msg4Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg4["scn_msg_id"]))
+		tt.AssertStrRepEqual(t, "msg.title", "M_004", msg4Get["title"])
+		tt.AssertStrRepEqual(t, "msg.content", "TestSendWithPriority#004", msg4Get["content"])
+		tt.AssertStrRepEqual(t, "msg.content", 2, msg4Get["priority"])
+	}
 }
 
 //TODO compat route
 
 //TODO post to channel
+
 //TODO post to newly-created-channel
+
 //TODO post to foreign channel via send-key
 
 //TODO quota exceed (+ quota counter)
 
 //TODO invalid priority
+
 //TODO chan_naem too long
+
 //TODO chan_name normalization
+
 //TODO custom_timestamp
+
 //TODO invalid time
 
 //TODO check message_counter + last_sent in channel
+
 //TODO check message_counter + last_sent in user
+
+//todo test pagination

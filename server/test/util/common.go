@@ -147,8 +147,15 @@ func TestFailErr(t *testing.T, e error) {
 }
 
 func unpointer(v any) any {
+	if v == nil {
+		return v
+	}
+
 	val := reflect.ValueOf(v)
 	if val.Kind() == reflect.Ptr {
+		if val.IsNil() {
+			return v
+		}
 		val = val.Elem()
 		return unpointer(val.Interface())
 	}

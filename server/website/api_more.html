@@ -165,7 +165,7 @@
     {{config|baseURL}}/</pre>
         </div>
 
-        <h2>Message Uniqueness</h2>
+        <h2>Message Uniqueness (Idempotency)</h2>
         <div class="section">
             <p>
                 Sometimes your script can run in an environment with an unstable connection and you want to implement an automatic re-try mechanism to send a message again if the last try failed due to bad connectivity.

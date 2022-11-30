@@ -102,7 +102,7 @@ type MessageJSON struct {
 	SenderIP      string       `json:"sender_ip"`
 	Timestamp     string       `json:"timestamp"`
 	Title         string       `json:"title"`
-	Content       *string      `json:"body"`
+	Content       *string      `json:"content"`
 	Priority      int          `json:"priority"`
 	UserMessageID *string      `json:"usr_message_id"`
 	Trimmed       bool         `json:"trimmed"`

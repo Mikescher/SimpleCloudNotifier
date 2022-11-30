@@ -250,7 +250,7 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 		sendTimestamp = langext.Ptr(timeext.UnixFloatSeconds(*SendTimestamp))
 	}
 
-	priority := langext.Coalesce(Priority, 1)
+	priority := langext.Coalesce(Priority, user.DefaultPriority())
 
 	clientIP := g.ClientIP()
 

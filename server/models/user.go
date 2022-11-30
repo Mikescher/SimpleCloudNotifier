@@ -86,6 +86,10 @@ func (u User) DefaultChannel() string {
 	return "main"
 }
 
+func (u User) DefaultPriority() int {
+	return 1
+}
+
 func (u User) MaxChannelNameLength() int {
 	return 120
 }
