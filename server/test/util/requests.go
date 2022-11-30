@@ -8,7 +8,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"io"
+	"mime/multipart"
 	"net/http"
+	"strings"
 	"testing"
 )
 
@@ -90,12 +92,32 @@ func RequestAny[TResult any](t *testing.T, akey string, method string, baseURL s
 	fmt.Printf("[-> REQUEST] (%s) %s%s [%s] [%s]\n", method, baseURL, urlSuffix, langext.Conditional(akey == "", "NO AUTH", "AUTH"), langext.Conditional(body == nil, "NO BODY", "BODY"))
 
 	bytesbody := make([]byte, 0)
+	contentType := ""
 	if body != nil {
-		bjson, err := json.Marshal(body)
-		if err != nil {
-			TestFailErr(t, err)
+		switch bd := body.(type) {
+		case FormData:
+			bodybuffer := &bytes.Buffer{}
+			writer := multipart.NewWriter(bodybuffer)
+			for bdk, bdv := range bd {
+				err := writer.WriteField(bdk, bdv)
+				if err != nil {
+					TestFailErr(t, err)
+				}
+			}
+			err := writer.Close()
+			if err != nil {
+				TestFailErr(t, err)
+			}
+			bytesbody = bodybuffer.Bytes()
+			contentType = writer.FormDataContentType()
+		default:
+			bjson, err := json.Marshal(body)
+			if err != nil {
+				TestFailErr(t, err)
+			}
+			bytesbody = bjson
+			contentType = "application/json"
 		}
-		bytesbody = bjson
 	}
 
 	req, err := http.NewRequest(method, baseURL+urlSuffix, bytes.NewReader(bytesbody))
@@ -103,8 +125,8 @@ func RequestAny[TResult any](t *testing.T, akey string, method string, baseURL s
 		TestFailErr(t, err)
 	}
 
-	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
+	if contentType != "" {
+		req.Header.Set("Content-Type", contentType)
 	}
 
 	if akey != "" {
@@ -125,6 +147,7 @@ func RequestAny[TResult any](t *testing.T, akey string, method string, baseURL s
 	fmt.Println("")
 	fmt.Printf("----------------  RESPONSE (%d) ----------------\n", resp.StatusCode)
 	fmt.Println(langext.TryPrettyPrintJson(string(respBodyBin)))
+	TryPrintTraceObj("----------------  --------  ----------------", respBodyBin, "")
 	fmt.Println("----------------  --------  ----------------")
 	fmt.Println("")
 
@@ -181,6 +204,7 @@ func RequestAuthAnyShouldFail(t *testing.T, akey string, method string, baseURL 
 	fmt.Println("")
 	fmt.Printf("----------------  RESPONSE (%d) ----------------\n", resp.StatusCode)
 	fmt.Println(langext.TryPrettyPrintJson(string(respBodyBin)))
+	TryPrintTraceObj("----------------  --------  ----------------", respBodyBin, "")
 	fmt.Println("----------------  --------  ----------------")
 	fmt.Println("")
 
@@ -209,5 +233,24 @@ func RequestAuthAnyShouldFail(t *testing.T, akey string, method string, baseURL 
 		}
 	} else {
 		TestFail(t, "missing response['error']")
+	}
+}
+
+func TryPrintTraceObj(prefix string, body []byte, suffix string) {
+	v1 := gin.H{}
+	if err := json.Unmarshal(body, &v1); err == nil {
+		if v2, ok := v1["traceObj"]; ok {
+			if v3, ok := v2.(string); ok {
+				if prefix != "" {
+					fmt.Println(prefix)
+				}
+
+				fmt.Println(strings.TrimSpace(v3))
+
+				if suffix != "" {
+					fmt.Println(suffix)
+				}
+			}
+		}
 	}
 }

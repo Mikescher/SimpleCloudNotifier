@@ -203,13 +203,13 @@ func (app *Application) StartRequest(g *gin.Context, uri any, query any, body an
 		}
 	}
 
-	if body != nil && g.Request.Header.Get("Content-Type") == "application/json" {
+	if body != nil && g.ContentType() == "application/json" {
 		if err := g.ShouldBindJSON(body); err != nil {
 			return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Failed to read body", err))
 		}
 	}
 
-	if form != nil && g.Request.Header.Get("Content-Type") == "multipart/form-data" {
+	if form != nil && g.ContentType() == "multipart/form-data" {
 		if err := g.ShouldBindWith(form, binding.Form); err != nil {
 			return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Failed to read multipart-form", err))
 		}

@@ -115,6 +115,7 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
+	// query has highest prio, then form, then json
 	data := dataext.ObjectMerge(dataext.ObjectMerge(b, f), q)
 
 	return h.sendMessageInternal(g, ctx, data.UserID, data.UserKey, data.Channel, data.ChanKey, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp, data.SenderName)
