@@ -202,6 +202,29 @@ func requestAny[TResult any](t *testing.T, akey string, method string, baseURL s
 	return data
 }
 
+func assertJsonMapEqual(t *testing.T, key string, expected map[string]any, actual map[string]any) {
+	mkeys := make(map[string]string)
+	for k := range expected {
+		mkeys[k] = k
+	}
+	for k := range actual {
+		mkeys[k] = k
+	}
+
+	for mapkey := range mkeys {
+
+		if _, ok := expected[mapkey]; !ok {
+			testFailFmt(t, "Missing Key expected['%s'] ( assertJsonMapEqual[%s] )", mapkey, key)
+		}
+		if _, ok := actual[mapkey]; !ok {
+			testFailFmt(t, "Missing Key actual['%s'] ( assertJsonMapEqual[%s] )", mapkey, key)
+		}
+
+		assertEqual(t, key+"."+mapkey, expected[mapkey], actual[mapkey])
+	}
+
+}
+
 func assertEqual(t *testing.T, key string, expected any, actual any) {
 	if expected != actual {
 		t.Errorf("Value [%s] differs (%T <-> %T):\n", key, expected, actual)
@@ -210,16 +233,18 @@ func assertEqual(t *testing.T, key string, expected any, actual any) {
 		str2 := fmt.Sprintf("%v", actual)
 
 		if strings.Contains(str1, "\n") {
-			t.Errorf("Actual  :\n~~~~~~~~~~~~~~~~\n%v\n~~~~~~~~~~~~~~~~\n\n", expected)
+			t.Errorf("Actual:\n~~~~~~~~~~~~~~~~\n%v\n~~~~~~~~~~~~~~~~\n\n", expected)
 		} else {
-			t.Errorf("Actual  : \"%v\"\n", expected)
+			t.Errorf("Actual    := \"%v\"\n", expected)
 		}
 
 		if strings.Contains(str2, "\n") {
-			t.Errorf("Expected  :\n~~~~~~~~~~~~~~~~\n%v\n~~~~~~~~~~~~~~~~\n\n", actual)
+			t.Errorf("Expected:\n~~~~~~~~~~~~~~~~\n%v\n~~~~~~~~~~~~~~~~\n\n", actual)
 		} else {
-			t.Errorf("Expected  : \"%v\"\n", actual)
+			t.Errorf("Expected  := \"%v\"\n", actual)
 		}
+
+		t.Error(debug.Stack())
 
 		t.FailNow()
 	}

@@ -106,3 +106,17 @@ func (db *Database) DeleteClient(ctx TxContext, clientid models.ClientID) error 
 
 	return nil
 }
+
+func (db *Database) DeleteClientsByFCM(ctx TxContext, fcmtoken string) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, "DELETE FROM clients WHERE fcm_token = ?", fcmtoken)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

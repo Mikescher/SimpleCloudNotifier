@@ -1,0 +1,152 @@
+package test
+
+import (
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"testing"
+)
+
+func TestGetClient(t *testing.T) {
+	ws, stop := StartSimpleWebserver(t)
+	defer stop()
+
+	baseUrl := "http://127.0.0.1:" + ws.Port
+
+	r0 := requestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	uid := fmt.Sprintf("%v", r0["user_id"])
+
+	assertEqual(t, "len(clients)", 1, len(r0["clients"].([]any)))
+
+	admintok := r0["admin_key"].(string)
+
+	fmt.Printf("uid       := %s\n", uid)
+	fmt.Printf("admin_key := %s\n", admintok)
+
+	r1 := requestAuthGet[gin.H](t, admintok, baseUrl, "/api/users/"+uid)
+
+	assertEqual(t, "uid", uid, fmt.Sprintf("%v", r1["user_id"]))
+	assertEqual(t, "admin_key", admintok, r1["admin_key"])
+	assertEqual(t, "username", nil, r1["username"])
+
+	type rt2 struct {
+		Clients []gin.H `json:"clients"`
+	}
+
+	r2 := requestAuthGet[rt2](t, admintok, baseUrl, "/api/users/"+uid+"/clients")
+
+	assertEqual(t, "len(clients)", 1, len(r2.Clients))
+
+	c0 := r2.Clients[0]
+
+	assertEqual(t, "agent_model", "DUMMY_PHONE", c0["agent_model"])
+	assertEqual(t, "agent_version", "4X", c0["agent_version"])
+	assertEqual(t, "fcm_token", "DUMMY_FCM", c0["fcm_token"])
+	assertEqual(t, "client_type", "ANDROID", c0["type"])
+	assertEqual(t, "user_id", uid, fmt.Sprintf("%v", c0["user_id"]))
+
+	cid := fmt.Sprintf("%v", c0["client_id"])
+
+	r3 := requestAuthGet[gin.H](t, admintok, baseUrl, "/api/users/"+uid+"/clients/"+cid)
+
+	assertJsonMapEqual(t, "client", r3, c0)
+}
+
+func TestCreateAndDeleteClient(t *testing.T) {
+	ws, stop := StartSimpleWebserver(t)
+	defer stop()
+
+	baseUrl := "http://127.0.0.1:" + ws.Port
+
+	r0 := requestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	uid := fmt.Sprintf("%v", r0["user_id"])
+
+	assertEqual(t, "len(clients)", 1, len(r0["clients"].([]any)))
+
+	admintok := r0["admin_key"].(string)
+
+	fmt.Printf("uid       := %s\n", uid)
+	fmt.Printf("admin_key := %s\n", admintok)
+
+	r2 := requestAuthPost[gin.H](t, admintok, baseUrl, "/api/users/"+uid+"/clients", gin.H{
+		"agent_model":   "DUMMY_PHONE_2",
+		"agent_version": "99X",
+		"client_type":   "IOS",
+		"fcm_token":     "DUMMY_FCM_2",
+	})
+
+	cid2 := fmt.Sprintf("%v", r2["client_id"])
+
+	type rt3 struct {
+		Clients []gin.H `json:"clients"`
+	}
+
+	r3 := requestAuthGet[rt3](t, admintok, baseUrl, "/api/users/"+uid+"/clients")
+	assertEqual(t, "len(clients)", 2, len(r3.Clients))
+
+	r4 := requestAuthDelete[gin.H](t, admintok, baseUrl, "/api/users/"+uid+"/clients/"+cid2, nil)
+	assertEqual(t, "client_id", cid2, fmt.Sprintf("%v", r4["client_id"]))
+
+	r5 := requestAuthGet[rt3](t, admintok, baseUrl, "/api/users/"+uid+"/clients")
+	assertEqual(t, "len(clients)", 1, len(r5.Clients))
+}
+
+func TestReuseFCM(t *testing.T) {
+	ws, stop := StartSimpleWebserver(t)
+	defer stop()
+
+	baseUrl := "http://127.0.0.1:" + ws.Port
+
+	r0 := requestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM_001",
+	})
+
+	uid := fmt.Sprintf("%v", r0["user_id"])
+
+	assertEqual(t, "len(clients)", 1, len(r0["clients"].([]any)))
+
+	admintok := r0["admin_key"].(string)
+
+	fmt.Printf("uid       := %s\n", uid)
+	fmt.Printf("admin_key := %s\n", admintok)
+
+	type rt2 struct {
+		Clients []gin.H `json:"clients"`
+	}
+
+	r1 := requestAuthGet[rt2](t, admintok, baseUrl, "/api/users/"+uid+"/clients")
+
+	assertEqual(t, "len(clients)", 1, len(r1.Clients))
+
+	r2 := requestAuthPost[gin.H](t, admintok, baseUrl, "/api/users/"+uid+"/clients", gin.H{
+		"agent_model":   "DUMMY_PHONE_2",
+		"agent_version": "99X",
+		"client_type":   "IOS",
+		"fcm_token":     "DUMMY_FCM_001",
+	})
+
+	cid2 := fmt.Sprintf("%v", r2["client_id"])
+
+	type rt3 struct {
+		Clients []gin.H `json:"clients"`
+	}
+
+	r3 := requestAuthGet[rt3](t, admintok, baseUrl, "/api/users/"+uid+"/clients")
+	assertEqual(t, "len(clients)", 1, len(r3.Clients))
+
+	assertEqual(t, "clients->client_id", cid2, fmt.Sprintf("%v", r3.Clients[0]["client_id"]))
+}

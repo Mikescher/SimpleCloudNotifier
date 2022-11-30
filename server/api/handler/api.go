@@ -118,6 +118,11 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 	if b.NoClient {
 		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, userobj.JSONWithClients(make([]models.Client, 0))))
 	} else {
+		err := h.database.DeleteClientsByFCM(ctx, b.FCMToken)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete existing clients in db", err)
+		}
+
 		client, err := h.database.CreateClient(ctx, userobj.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion)
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create client in db", err)
@@ -330,7 +335,7 @@ func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
 
 // GetClient swaggerdoc
 //
-// @Summary Get a single clients
+// @Summary Get a single client
 // @ID      api-clients-get
 // @Tags    API-v2
 //
@@ -421,6 +426,11 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
+	err := h.database.DeleteClientsByFCM(ctx, b.FCMToken)
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete existing clients in db", err)
+	}
+
 	client, err := h.database.CreateClient(ctx, u.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create client in db", err)
@@ -444,7 +454,7 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404 {object} ginresp.apiError
 // @Failure 500 {object} ginresp.apiError
 //
-// @Router  /api/users/{uid}/clients [DELETE]
+// @Router  /api/users/{uid}/clients/{cid} [DELETE]
 func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID   models.UserID   `uri:"uid"`
