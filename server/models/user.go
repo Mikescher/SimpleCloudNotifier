@@ -102,6 +102,10 @@ func (u User) MaxUserMessageID() int {
 	return 64
 }
 
+func (u User) MaxTimestampDiffHours() int {
+	return 24
+}
+
 type UserJSON struct {
 	UserID            UserID  `json:"user_id"`
 	Username          *string `json:"username"`

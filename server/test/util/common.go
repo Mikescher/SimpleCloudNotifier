@@ -133,17 +133,26 @@ func AssertNotStrRepEqual(t *testing.T, key string, expected any, actual any) {
 
 func TestFail(t *testing.T, msg string) {
 	t.Error(msg)
+	t.Error(string(debug.Stack()))
 	t.FailNow()
 }
 
 func TestFailFmt(t *testing.T, format string, args ...any) {
 	t.Errorf(format, args...)
+	t.Error(string(debug.Stack()))
 	t.FailNow()
 }
 
 func TestFailErr(t *testing.T, e error) {
 	t.Error(fmt.Sprintf("Failed with error:\n%s\n\nError:\n%+v\n\nTrace:\n%s", e.Error(), e, string(debug.Stack())))
+	t.Error(string(debug.Stack()))
 	t.FailNow()
+}
+
+func TestFailIfErr(t *testing.T, e error) {
+	if e != nil {
+		TestFailErr(t, e)
+	}
 }
 
 func unpointer(v any) any {

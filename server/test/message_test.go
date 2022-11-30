@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/url"
 	"testing"
+	"time"
 )
 
 func TestSendSimpleMessageJSON(t *testing.T) {
@@ -234,6 +235,9 @@ func TestSendContentMessage(t *testing.T) {
 
 	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/messages")
 	tt.AssertEqual(t, "len(messages)", 1, len(msgList1.Messages))
+	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_042", msgList1.Messages[0]["title"])
+	tt.AssertStrRepEqual(t, "msg.content", "I am Content\nasdf", msgList1.Messages[0]["content"])
+	tt.AssertStrRepEqual(t, "msg.channel_name", "main", msgList1.Messages[0]["channel_name"])
 
 	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
 	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_042", msg1Get["title"])
@@ -258,6 +262,7 @@ func TestSendWithSendername(t *testing.T) {
 
 	uid := int(r0["user_id"].(float64))
 	sendtok := r0["send_key"].(string)
+	admintok := r0["admin_key"].(string)
 
 	msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
 		"user_key":    sendtok,
@@ -272,6 +277,23 @@ func TestSendWithSendername(t *testing.T) {
 	tt.AssertStrRepEqual(t, "msg.content", "Unicode: 日本 - yäy\000\n\t\x00...", pusher.Last().Message.Content)
 	tt.AssertStrRepEqual(t, "msg.SenderName", "localhorst", pusher.Last().Message.SenderName)
 	tt.AssertStrRepEqual(t, "msg.scn_msg_id", msg1["scn_msg_id"], pusher.Last().Message.SCNMessageID)
+
+	type mglist struct {
+		Messages []gin.H `json:"messages"`
+	}
+
+	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/messages")
+	tt.AssertEqual(t, "len(messages)", 1, len(msgList1.Messages))
+	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_xyz", msgList1.Messages[0]["title"])
+	tt.AssertStrRepEqual(t, "msg.content", "Unicode: 日本 - yäy\000\n\t\x00...", msgList1.Messages[0]["content"])
+	tt.AssertStrRepEqual(t, "msg.sender_name", "localhorst", msgList1.Messages[0]["sender_name"])
+	tt.AssertStrRepEqual(t, "msg.channel_name", "main", msgList1.Messages[0]["channel_name"])
+
+	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
+	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_xyz", msg1Get["title"])
+	tt.AssertStrRepEqual(t, "msg.content", "Unicode: 日本 - yäy\000\n\t\x00...", msg1Get["content"])
+	tt.AssertStrRepEqual(t, "msg.sender_name", "localhorst", msg1Get["sender_name"])
+	tt.AssertStrRepEqual(t, "msg.channel_name", "main", msg1Get["channel_name"])
 }
 
 func TestSendLongContent(t *testing.T) {
@@ -682,6 +704,170 @@ func TestSendInvalidPriority(t *testing.T) {
 	tt.AssertEqual(t, "messageCount", 0, len(pusher.Data))
 }
 
+func TestSendWithTimestamp(t *testing.T) {
+	ws, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	pusher := ws.Pusher.(*push.TestSink)
+
+	baseUrl := "http://127.0.0.1:" + ws.Port
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	uid := int(r0["user_id"].(float64))
+	sendtok := r0["send_key"].(string)
+	admintok := r0["admin_key"].(string)
+
+	ts := time.Now().Unix() - int64(time.Hour.Seconds())
+
+	msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", tt.FormData{
+		"user_key":  sendtok,
+		"user_id":   fmt.Sprintf("%d", uid),
+		"title":     "TTT",
+		"timestamp": fmt.Sprintf("%d", ts),
+	})
+
+	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
+	tt.AssertStrRepEqual(t, "msg.title", "TTT", pusher.Last().Message.Title)
+	tt.AssertStrRepEqual(t, "msg.TimestampClient", ts, pusher.Last().Message.TimestampClient.Unix())
+	tt.AssertStrRepEqual(t, "msg.Timestamp", ts, pusher.Last().Message.Timestamp().Unix())
+	tt.AssertNotStrRepEqual(t, "msg.ts", pusher.Last().Message.TimestampClient, pusher.Last().Message.TimestampReal)
+	tt.AssertStrRepEqual(t, "msg.scn_msg_id", msg1["scn_msg_id"], pusher.Last().Message.SCNMessageID)
+
+	type mglist struct {
+		Messages []gin.H `json:"messages"`
+	}
+
+	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/messages")
+	tt.AssertEqual(t, "len(messages)", 1, len(msgList1.Messages))
+	tt.AssertStrRepEqual(t, "msg.title", "TTT", msgList1.Messages[0]["title"])
+	tt.AssertStrRepEqual(t, "msg.content", nil, msgList1.Messages[0]["sender_name"])
+	tt.AssertStrRepEqual(t, "msg.channel_name", "main", msgList1.Messages[0]["channel_name"])
+
+	tm1, err := time.Parse(time.RFC3339Nano, msgList1.Messages[0]["timestamp"].(string))
+	tt.TestFailIfErr(t, err)
+	tt.AssertStrRepEqual(t, "msg.timestamp", ts, tm1.Unix())
+
+	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
+	tt.AssertStrRepEqual(t, "msg.title", "TTT", msg1Get["title"])
+	tt.AssertStrRepEqual(t, "msg.content", nil, msg1Get["sender_name"])
+	tt.AssertStrRepEqual(t, "msg.channel_name", "main", msg1Get["channel_name"])
+
+	tmg1, err := time.Parse(time.RFC3339Nano, msg1Get["timestamp"].(string))
+	tt.TestFailIfErr(t, err)
+	tt.AssertStrRepEqual(t, "msg.timestamp", ts, tmg1.Unix())
+}
+
+func TestSendInvalidTimestamp(t *testing.T) {
+	ws, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	pusher := ws.Pusher.(*push.TestSink)
+
+	baseUrl := "http://127.0.0.1:" + ws.Port
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	uid := int(r0["user_id"].(float64))
+	sendtok := r0["send_key"].(string)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", tt.FormData{
+		"user_key":  sendtok,
+		"user_id":   fmt.Sprintf("%d", uid),
+		"title":     "TTT",
+		"timestamp": "-10000",
+	}, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", tt.FormData{
+		"user_key":  sendtok,
+		"user_id":   fmt.Sprintf("%d", uid),
+		"title":     "TTT",
+		"timestamp": "0",
+	}, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", tt.FormData{
+		"user_key":  sendtok,
+		"user_id":   fmt.Sprintf("%d", uid),
+		"title":     "TTT",
+		"timestamp": fmt.Sprintf("%d", time.Now().Unix()-int64(25*time.Hour.Seconds())),
+	}, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", tt.FormData{
+		"user_key":  sendtok,
+		"user_id":   fmt.Sprintf("%d", uid),
+		"title":     "TTT",
+		"timestamp": fmt.Sprintf("%d", time.Now().Unix()+int64(25*time.Hour.Seconds())),
+	}, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+		"user_key":  sendtok,
+		"user_id":   uid,
+		"title":     "TTT",
+		"timestamp": -10000,
+	}, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+		"user_key":  sendtok,
+		"user_id":   uid,
+		"title":     "TTT",
+		"timestamp": 0,
+	}, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+		"user_key":  sendtok,
+		"user_id":   uid,
+		"title":     "TTT",
+		"timestamp": time.Now().Unix() - int64(25*time.Hour.Seconds()),
+	}, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+		"user_key":  sendtok,
+		"user_id":   uid,
+		"title":     "TTT",
+		"timestamp": time.Now().Unix() + int64(25*time.Hour.Seconds()),
+	}, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
+
+	tt.RequestPostShouldFail(t, baseUrl, fmt.Sprintf("/?user_key=%s&user_id=%d&title=%s&timestamp=%d",
+		sendtok,
+		uid,
+		"TTT",
+		-10000,
+	), nil, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
+
+	tt.RequestPostShouldFail(t, baseUrl, fmt.Sprintf("/?user_key=%s&user_id=%d&title=%s&timestamp=%d",
+		sendtok,
+		uid,
+		"TTT",
+		0,
+	), nil, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
+
+	tt.RequestPostShouldFail(t, baseUrl, fmt.Sprintf("/?user_key=%s&user_id=%d&title=%s&timestamp=%d",
+		sendtok,
+		uid,
+		"TTT",
+		time.Now().Unix()-int64(25*time.Hour.Seconds()),
+	), nil, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
+
+	tt.RequestPostShouldFail(t, baseUrl, fmt.Sprintf("/?user_key=%s&user_id=%d&title=%s&timestamp=%d",
+		sendtok,
+		uid,
+		"TTT",
+		time.Now().Unix()+int64(25*time.Hour.Seconds()),
+	), nil, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
+
+	tt.AssertEqual(t, "messageCount", 0, len(pusher.Data))
+}
+
 //TODO compat route
 
 //TODO post to channel
@@ -695,10 +881,6 @@ func TestSendInvalidPriority(t *testing.T) {
 //TODO chan_naem too long
 
 //TODO chan_name normalization
-
-//TODO custom_timestamp
-
-//TODO invalid time
 
 //TODO check message_counter + last_sent in channel
 

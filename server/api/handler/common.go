@@ -184,7 +184,7 @@ func (h CommonHandler) Sleep(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 400, apierr.BINDFAIL_URI_PARAM, "Failed to read uri", err)
 	}
 
-	time.Sleep(timeext.FromSecondsFloat64(u.Seconds))
+	time.Sleep(timeext.FromSeconds(u.Seconds))
 
 	t1 := time.Now().Format(time.RFC3339Nano)
 

@@ -224,7 +224,9 @@ func RequestAuthAnyShouldFail(t *testing.T, akey string, method string, baseURL 
 	fmt.Println("")
 	fmt.Printf("----------------  RESPONSE (%d) ----------------\n", resp.StatusCode)
 	fmt.Println(langext.TryPrettyPrintJson(string(respBodyBin)))
-	//TryPrintTraceObj("----------------  --------  ----------------", respBodyBin, "")
+	if resp.StatusCode != statusCode {
+		TryPrintTraceObj("----------------  --------  ----------------", respBodyBin, "")
+	}
 	fmt.Println("----------------  --------  ----------------")
 	fmt.Println("")
 

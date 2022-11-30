@@ -152,9 +152,6 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 	if Title == nil {
 		return ginresp.SendAPIError(g, 400, apierr.MISSING_TITLE, hl.TITLE, "Missing parameter [[title]]", nil)
 	}
-	if SendTimestamp != nil && mathext.Abs(*SendTimestamp-float64(time.Now().Unix())) > (24*time.Hour).Seconds() {
-		return ginresp.SendAPIError(g, 400, apierr.TIMESTAMP_OUT_OF_RANGE, hl.NONE, "The timestamp mus be within 24 hours of now()", nil)
-	}
 	if Priority != nil && (*Priority != 0 && *Priority != 1 && *Priority != 2) {
 		return ginresp.SendAPIError(g, 400, apierr.INVALID_PRIO, hl.PRIORITY, "Invalid priority", nil)
 	}
@@ -189,6 +186,9 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 	}
 	if UserMessageID != nil && len(*UserMessageID) > user.MaxUserMessageID() {
 		return ginresp.SendAPIError(g, 400, apierr.USR_MSG_ID_TOO_LONG, hl.USER_MESSAGE_ID, fmt.Sprintf("MessageID too long (max %d characters)", user.MaxUserMessageID()), nil)
+	}
+	if SendTimestamp != nil && mathext.Abs(*SendTimestamp-float64(time.Now().Unix())) > timeext.FromHours(user.MaxTimestampDiffHours()).Seconds() {
+		return ginresp.SendAPIError(g, 400, apierr.TIMESTAMP_OUT_OF_RANGE, hl.NONE, fmt.Sprintf("The timestamp mus be within %d hours of now()", user.MaxTimestampDiffHours()), nil)
 	}
 
 	if UserMessageID != nil {
