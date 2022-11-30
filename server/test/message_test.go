@@ -260,6 +260,94 @@ func TestSendWithSendername(t *testing.T) {
 	tt.AssertStrRepEqual(t, "msg.scn_msg_id", msg1["scn_msg_id"], pusher.Last().Message.SCNMessageID)
 }
 
+func TestSendLongContent(t *testing.T) {
+	ws, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	pusher := ws.Pusher.(*push.TestSink)
+
+	baseUrl := "http://127.0.0.1:" + ws.Port
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	uid := int(r0["user_id"].(float64))
+	sendtok := r0["send_key"].(string)
+
+	longContent := ""
+	for i := 0; i < 200; i++ {
+		longContent += "123456789\n" // 10 * 200 = 2_000
+	}
+
+	msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"user_key": sendtok,
+		"user_id":  uid,
+		"title":    "HelloWorld_042",
+		"content":  longContent,
+	})
+
+	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
+	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_042", pusher.Last().Message.Title)
+	tt.AssertStrRepEqual(t, "msg.content", longContent, pusher.Last().Message.Content)
+	tt.AssertStrRepEqual(t, "msg.scn_msg_id", msg1["scn_msg_id"], pusher.Last().Message.SCNMessageID)
+}
+
+func TestSendTooLongContent(t *testing.T) {
+	ws, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	baseUrl := "http://127.0.0.1:" + ws.Port
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	uid := int(r0["user_id"].(float64))
+	sendtok := r0["send_key"].(string)
+
+	longContent := ""
+	for i := 0; i < 400; i++ {
+		longContent += "123456789\n" // 10 * 400 = 4_000
+	}
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+		"user_key": sendtok,
+		"user_id":  uid,
+		"title":    "HelloWorld_042",
+		"content":  longContent,
+	}, 400, 1203)
+}
+
+func TestSendTooLongTitle(t *testing.T) {
+	ws, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	baseUrl := "http://127.0.0.1:" + ws.Port
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	uid := int(r0["user_id"].(float64))
+	sendtok := r0["send_key"].(string)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+		"user_key": sendtok,
+		"user_id":  uid,
+		"title":    "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+	}, 400, 1202)
+}
+
 //TODO trim too-long content
 
 //TODO compat route
