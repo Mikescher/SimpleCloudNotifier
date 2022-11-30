@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"reflect"
 	"runtime/debug"
 	"strings"
 	"testing"
@@ -34,19 +35,19 @@ func AssertEqual(t *testing.T, key string, expected any, actual any) {
 	if expected != actual {
 		t.Errorf("Value [%s] differs (%T <-> %T):\n", key, expected, actual)
 
-		str1 := fmt.Sprintf("%v", expected)
-		str2 := fmt.Sprintf("%v", actual)
+		strExp := fmt.Sprintf("%v", expected)
+		strAct := fmt.Sprintf("%v", actual)
 
-		if strings.Contains(str1, "\n") {
-			t.Errorf("Actual:\n~~~~~~~~~~~~~~~~\n%v\n~~~~~~~~~~~~~~~~\n\n", expected)
+		if strings.Contains(strAct, "\n") {
+			t.Errorf("Actual:\n~~~~~~~~~~~~~~~~\n%v\n~~~~~~~~~~~~~~~~\n\n", actual)
 		} else {
-			t.Errorf("Actual    := \"%v\"\n", expected)
+			t.Errorf("Actual    := \"%v\"\n", actual)
 		}
 
-		if strings.Contains(str2, "\n") {
-			t.Errorf("Expected:\n~~~~~~~~~~~~~~~~\n%v\n~~~~~~~~~~~~~~~~\n\n", actual)
+		if strings.Contains(strExp, "\n") {
+			t.Errorf("Expected:\n~~~~~~~~~~~~~~~~\n%v\n~~~~~~~~~~~~~~~~\n\n", expected)
 		} else {
-			t.Errorf("Expected  := \"%v\"\n", actual)
+			t.Errorf("Expected  := \"%v\"\n", expected)
 		}
 
 		t.Error(string(debug.Stack()))
@@ -56,22 +57,22 @@ func AssertEqual(t *testing.T, key string, expected any, actual any) {
 }
 
 func AssertStrRepEqual(t *testing.T, key string, expected any, actual any) {
-	str1 := fmt.Sprintf("%v", expected)
-	str2 := fmt.Sprintf("%v", actual)
+	strExp := fmt.Sprintf("%v", unpointer(expected))
+	strAct := fmt.Sprintf("%v", unpointer(actual))
 
-	if str1 != str2 {
+	if strAct != strExp {
 		t.Errorf("Value [%s] differs (%T <-> %T):\n", key, expected, actual)
 
-		if strings.Contains(str1, "\n") {
-			t.Errorf("Actual:\n~~~~~~~~~~~~~~~~\n%v\n~~~~~~~~~~~~~~~~\n\n", expected)
+		if strings.Contains(strAct, "\n") {
+			t.Errorf("Actual:\n~~~~~~~~~~~~~~~~\n%v\n~~~~~~~~~~~~~~~~\n\n", strAct)
 		} else {
-			t.Errorf("Actual    := \"%v\"\n", expected)
+			t.Errorf("Actual    := \"%v\"\n", strAct)
 		}
 
-		if strings.Contains(str2, "\n") {
-			t.Errorf("Expected:\n~~~~~~~~~~~~~~~~\n%v\n~~~~~~~~~~~~~~~~\n\n", actual)
+		if strings.Contains(strExp, "\n") {
+			t.Errorf("Expected:\n~~~~~~~~~~~~~~~~\n%v\n~~~~~~~~~~~~~~~~\n\n", strExp)
 		} else {
-			t.Errorf("Expected  := \"%v\"\n", actual)
+			t.Errorf("Expected  := \"%v\"\n", strExp)
 		}
 
 		t.Error(string(debug.Stack()))
@@ -118,4 +119,13 @@ func TestFailFmt(t *testing.T, format string, args ...any) {
 func TestFailErr(t *testing.T, e error) {
 	t.Error(fmt.Sprintf("Failed with error:\n%s\n\nError:\n%+v\n\nTrace:\n%s", e.Error(), e, string(debug.Stack())))
 	t.FailNow()
+}
+
+func unpointer(v any) any {
+	val := reflect.ValueOf(v)
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+		return unpointer(val.Interface())
+	}
+	return v
 }
