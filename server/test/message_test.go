@@ -43,6 +43,12 @@ func TestSendSimpleMessageJSON(t *testing.T) {
 		"title":    "HelloWorld_001",
 	}, 401, apierr.USER_AUTH_FAILED)
 
+	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+		"user_key": "asdf",
+		"user_id":  uid,
+		"title":    "HelloWorld_001",
+	}, 401, apierr.USER_AUTH_FAILED)
+
 	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
 	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_001", pusher.Last().Message.Title)
 	tt.AssertStrRepEqual(t, "msg.content", nil, pusher.Last().Message.Content)
@@ -196,6 +202,55 @@ func TestSendSimpleMessageJSONAndQuery(t *testing.T) {
 	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
 	tt.AssertStrRepEqual(t, "msg.title", "1111111", pusher.Last().Message.Title)
 	tt.AssertStrRepEqual(t, "msg.scn_msg_id", msg1["scn_msg_id"], pusher.Last().Message.SCNMessageID)
+}
+
+func TestSendSimpleMessageAlt1(t *testing.T) {
+	ws, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	pusher := ws.Pusher.(*push.TestSink)
+
+	baseUrl := "http://127.0.0.1:" + ws.Port
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	uid := int(r0["user_id"].(float64))
+	admintok := r0["admin_key"].(string)
+	readtok := r0["read_key"].(string)
+	sendtok := r0["send_key"].(string)
+
+	msg1 := tt.RequestPost[gin.H](t, baseUrl, "/send", gin.H{
+		"user_key": sendtok,
+		"user_id":  uid,
+		"title":    "HelloWorld_001",
+	})
+
+	tt.RequestPostShouldFail(t, baseUrl, "/send", gin.H{
+		"user_key": readtok,
+		"user_id":  uid,
+		"title":    "HelloWorld_001",
+	}, 401, apierr.USER_AUTH_FAILED)
+
+	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
+	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_001", pusher.Last().Message.Title)
+	tt.AssertStrRepEqual(t, "msg.content", nil, pusher.Last().Message.Content)
+	tt.AssertStrRepEqual(t, "msg.scn_msg_id", msg1["scn_msg_id"], pusher.Last().Message.SCNMessageID)
+
+	type mglist struct {
+		Messages []gin.H `json:"messages"`
+	}
+
+	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/messages")
+	tt.AssertEqual(t, "len(messages)", 1, len(msgList1.Messages))
+
+	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
+	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_001", msg1Get["title"])
+	tt.AssertStrRepEqual(t, "msg.channel_name", "main", msg1Get["channel_name"])
 }
 
 func TestSendContentMessage(t *testing.T) {
