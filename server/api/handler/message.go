@@ -71,7 +71,6 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 	data := dataext.ObjectMerge(f, q)
 
 	return h.sendMessageInternal(g, ctx, data.UserID, data.UserKey, nil, nil, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp, nil)
-
 }
 
 // SendMessage swaggerdoc

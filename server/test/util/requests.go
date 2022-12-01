@@ -224,14 +224,17 @@ func RequestAuthAnyShouldFail(t *testing.T, akey string, method string, baseURL 
 	fmt.Println("")
 	fmt.Printf("----------------  RESPONSE (%d) ----------------\n", resp.StatusCode)
 	fmt.Println(langext.TryPrettyPrintJson(string(respBodyBin)))
-	if resp.StatusCode != statusCode {
+	if (statusCode != 0 && resp.StatusCode != statusCode) || (statusCode == 0 && resp.StatusCode == 200) {
 		TryPrintTraceObj("----------------  --------  ----------------", respBodyBin, "")
 	}
 	fmt.Println("----------------  --------  ----------------")
 	fmt.Println("")
 
-	if resp.StatusCode != statusCode {
+	if statusCode != 0 && resp.StatusCode != statusCode {
 		TestFailFmt(t, "Statuscode != %d (expected failure)", statusCode)
+	}
+	if statusCode == 0 && resp.StatusCode == 200 {
+		TestFailFmt(t, "Statuscode == %d (expected failure)", resp.StatusCode)
 	}
 
 	var data gin.H
@@ -247,12 +250,14 @@ func RequestAuthAnyShouldFail(t *testing.T, akey string, method string, baseURL 
 		TestFail(t, "missing response['success']")
 	}
 
-	if v, ok := data["error"]; ok {
-		if fmt.Sprintf("%v", v) != fmt.Sprintf("%v", errcode) {
-			TestFailFmt(t, "wrong errorcode (expected: %d), (actual: %v)", errcode, v)
+	if errcode != 0 {
+		if v, ok := data["error"]; ok {
+			if fmt.Sprintf("%v", v) != fmt.Sprintf("%v", errcode) {
+				TestFailFmt(t, "wrong errorcode (expected: %d), (actual: %v)", errcode, v)
+			}
+		} else {
+			TestFail(t, "missing response['error']")
 		}
-	} else {
-		TestFail(t, "missing response['error']")
 	}
 }
 

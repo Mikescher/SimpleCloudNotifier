@@ -923,7 +923,95 @@ func TestSendInvalidTimestamp(t *testing.T) {
 	tt.AssertEqual(t, "messageCount", 0, len(pusher.Data))
 }
 
-//TODO compat route
+func TestSendCompat(t *testing.T) {
+	ws, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	pusher := ws.Pusher.(*push.TestSink)
+
+	baseUrl := "http://127.0.0.1:" + ws.Port
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	uid := int(r0["user_id"].(float64))
+	admintok := r0["admin_key"].(string)
+	readtok := r0["read_key"].(string)
+	sendtok := r0["send_key"].(string)
+
+	msg1 := tt.RequestPost[gin.H](t, baseUrl, "/send.php", tt.FormData{
+		"user_key": sendtok,
+		"user_id":  fmt.Sprintf("%d", uid),
+		"title":    "HelloWorld_001",
+	})
+
+	tt.RequestPostShouldFail(t, baseUrl, "/send.php", gin.H{
+		"user_key": readtok,
+		"user_id":  uid,
+		"title":    "HelloWorld_001",
+	}, 0, 0)
+
+	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
+	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_001", pusher.Last().Message.Title)
+	tt.AssertStrRepEqual(t, "msg.content", nil, pusher.Last().Message.Content)
+	tt.AssertStrRepEqual(t, "msg.scn_msg_id", msg1["scn_msg_id"], pusher.Last().Message.SCNMessageID)
+
+	type mglist struct {
+		Messages []gin.H `json:"messages"`
+	}
+
+	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/messages")
+	tt.AssertEqual(t, "len(messages)", 1, len(msgList1.Messages))
+
+	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
+	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_001", msg1Get["title"])
+	tt.AssertStrRepEqual(t, "msg.channel_name", "main", msg1Get["channel_name"])
+
+	msg2 := tt.RequestPost[gin.H](t, baseUrl, fmt.Sprintf("/send.php?user_key=%s&user_id=%d&title=%s", sendtok, uid, "HelloWorld_002"), nil)
+
+	tt.AssertEqual(t, "messageCount", 2, len(pusher.Data))
+	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_002", pusher.Last().Message.Title)
+	tt.AssertStrRepEqual(t, "msg.content", nil, pusher.Last().Message.Content)
+	tt.AssertStrRepEqual(t, "msg.scn_msg_id", msg2["scn_msg_id"], pusher.Last().Message.SCNMessageID)
+
+	tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg2["scn_msg_id"]))
+
+	content3 := "039c1817-76ee-44ab-972a-4cec0a15a791\n" +
+		"046f59ea-9a49-4060-93e6-8a4e14134faf\n" +
+		"ab566fbe-9020-41b6-afa6-94f3d8d7c7b4\n" +
+		"d52e5f7d-26a8-45b9-befc-da44a3f112da\n" +
+		"d19fae55-d52a-4753-b9f1-66a935d68b1e\n" +
+		"99a4099d-44d5-497a-a69b-18e277400d6e\n" +
+		"a55757aa-afaa-420e-afaf-f3951e9e2434\n" +
+		"ee58f5fc-b384-49f4-bc2c-c5b3c7bd54b7\n" +
+		"5a7008d9-dd15-406a-83d1-fd6209c56141\n"
+	ts3 := time.Now().Unix() - int64(time.Hour.Seconds())
+
+	msg3 := tt.RequestPost[gin.H](t, baseUrl, "/send.php", tt.FormData{
+		"user_key":  sendtok,
+		"user_id":   fmt.Sprintf("%d", uid),
+		"title":     "HelloWorld_003",
+		"content":   content3,
+		"priority":  "2",
+		"msg_id":    "8a2c7e92-86f3-4d69-897a-571286954030",
+		"timestamp": fmt.Sprintf("%d", ts3),
+	})
+
+	tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg3["scn_msg_id"]))
+
+	tt.AssertEqual(t, "messageCount", 3, len(pusher.Data))
+	tt.AssertStrRepEqual(t, "msg.Title", "HelloWorld_003", pusher.Last().Message.Title)
+	tt.AssertStrRepEqual(t, "msg.Content", content3, pusher.Last().Message.Content)
+	tt.AssertStrRepEqual(t, "msg.SCNMessageID", msg3["scn_msg_id"], pusher.Last().Message.SCNMessageID)
+	tt.AssertStrRepEqual(t, "msg.Priority", 2, pusher.Last().Message.Priority)
+	tt.AssertStrRepEqual(t, "msg.UserMessageID", "8a2c7e92-86f3-4d69-897a-571286954030", pusher.Last().Message.UserMessageID)
+	tt.AssertStrRepEqual(t, "msg.UserMessageID", ts3, pusher.Last().Message.Timestamp().Unix())
+
+}
 
 //TODO post to channel
 
