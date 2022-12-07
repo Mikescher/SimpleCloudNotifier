@@ -2,10 +2,10 @@ package logic
 
 import (
 	"blackforestbytes.com/simplecloudnotifier/db"
-	"blackforestbytes.com/simplecloudnotifier/sq"
 	"context"
 	"errors"
 	"github.com/rs/zerolog/log"
+	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
 

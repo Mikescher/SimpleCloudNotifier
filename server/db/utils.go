@@ -2,6 +2,7 @@ package db
 
 import (
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"strings"
 	"time"
 )
 
@@ -22,4 +23,15 @@ func time2DBOpt(t *time.Time) *int64 {
 		return nil
 	}
 	return langext.Ptr(t.UnixMilli())
+}
+
+func fmtSQLPrint(sql string) string {
+	if strings.Contains(sql, ";") {
+		return "(...multi...)"
+	}
+
+	sql = strings.ReplaceAll(sql, "\r", "")
+	sql = strings.ReplaceAll(sql, "\n", " ")
+
+	return sql
 }

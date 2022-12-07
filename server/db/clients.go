@@ -2,8 +2,8 @@ package db
 
 import (
 	"blackforestbytes.com/simplecloudnotifier/models"
-	"blackforestbytes.com/simplecloudnotifier/sq"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
 

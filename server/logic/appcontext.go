@@ -4,11 +4,11 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/db"
-	"blackforestbytes.com/simplecloudnotifier/sq"
 	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
+	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
 

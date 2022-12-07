@@ -1,10 +1,10 @@
 package db
 
 import (
-	"blackforestbytes.com/simplecloudnotifier/sq"
 	"context"
 	"errors"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 )
 
 func (db *Database) ReadSchema(ctx context.Context) (retval int, reterr error) {

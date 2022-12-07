@@ -347,7 +347,7 @@ definitions:
         type: string
       timestamp_created:
         type: string
-      timestamp_last_sent:
+      timestamp_lastsent:
         type: string
     type: object
   models.ClientJSON:
@@ -450,9 +450,9 @@ definitions:
         type: string
       timestamp_created:
         type: string
-      timestamp_last_read:
+      timestamp_lastread:
         type: string
-      timestamp_last_sent:
+      timestamp_lastsent:
         type: string
       user_id:
         type: integer
@@ -483,9 +483,9 @@ definitions:
         type: string
       timestamp_created:
         type: string
-      timestamp_last_read:
+      timestamp_lastread:
         type: string
-      timestamp_last_sent:
+      timestamp_lastsent:
         type: string
       user_id:
         type: integer

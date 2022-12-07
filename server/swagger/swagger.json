@@ -2800,7 +2800,7 @@
                 "timestamp_created": {
                     "type": "string"
                 },
-                "timestamp_last_sent": {
+                "timestamp_lastsent": {
                     "type": "string"
                 }
             }
@@ -2957,10 +2957,10 @@
                 "timestamp_created": {
                     "type": "string"
                 },
-                "timestamp_last_read": {
+                "timestamp_lastread": {
                     "type": "string"
                 },
-                "timestamp_last_sent": {
+                "timestamp_lastsent": {
                     "type": "string"
                 },
                 "user_id": {
@@ -3007,10 +3007,10 @@
                 "timestamp_created": {
                     "type": "string"
                 },
-                "timestamp_last_read": {
+                "timestamp_lastread": {
                     "type": "string"
                 },
-                "timestamp_last_sent": {
+                "timestamp_lastsent": {
                     "type": "string"
                 },
                 "user_id": {

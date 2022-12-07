@@ -3,9 +3,9 @@ package db
 import (
 	"blackforestbytes.com/simplecloudnotifier/db/cursortoken"
 	"blackforestbytes.com/simplecloudnotifier/models"
-	"blackforestbytes.com/simplecloudnotifier/sq"
 	"database/sql"
 	"fmt"
+	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
 

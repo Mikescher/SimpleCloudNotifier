@@ -4,34 +4,37 @@ import (
 	"fmt"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
 	"os"
+	"reflect"
+	"strconv"
 	"time"
 )
 
 type Config struct {
 	Namespace           string
-	BaseURL             string
-	GinDebug            bool
-	LogLevel            zerolog.Level
-	ServerIP            string
-	ServerPort          string
-	DBFile              string
-	DBJournal           string
-	DBTimeout           time.Duration
-	DBMaxOpenConns      int
-	DBMaxIdleConns      int
-	DBConnMaxLifetime   time.Duration
-	DBConnMaxIdleTime   time.Duration
-	DBCheckForeignKeys  bool
-	RequestTimeout      time.Duration
-	ReturnRawErrors     bool
-	DummyFirebase       bool
+	BaseURL             string        `env:"SCN_URL"`
+	GinDebug            bool          `env:"SCN_GINDEBUG"`
+	LogLevel            zerolog.Level `env:"SCN_LOGLEVEL"`
+	ServerIP            string        `env:"SCN_IP"`
+	ServerPort          string        `env:"SCN_PORT"`
+	DBFile              string        `env:"SCN_DB_FILE"`
+	DBJournal           string        `env:"SCN_DB_JOURNAL"`
+	DBTimeout           time.Duration `env:"SCN_DB_TIMEOUT"`
+	DBMaxOpenConns      int           `env:"SCN_DB_MAXOPENCONNECTIONS"`
+	DBMaxIdleConns      int           `env:"SCN_DB_MAXIDLECONNECTIONS"`
+	DBConnMaxLifetime   time.Duration `env:"SCN_DB_CONNEXTIONMAXLIFETIME"`
+	DBConnMaxIdleTime   time.Duration `env:"SCN_DB_CONNEXTIONMAXIDLETIME"`
+	DBCheckForeignKeys  bool          `env:"SCN_DB_CHECKFOREIGNKEYS"`
+	RequestTimeout      time.Duration `env:"SCN_REQUEST_TIMEOUT"`
+	ReturnRawErrors     bool          `env:"SCN_ERROR_RETURN"`
+	DummyFirebase       bool          `env:"SCN_DUMMY_FB"`
+	DummyGoogleAPI      bool          `env:"SCN_DUMMY_GOOG"`
 	FirebaseTokenURI    string
 	FirebaseProjectID   string
 	FirebasePrivKeyID   string
 	FirebaseClientMail  string
 	FirebasePrivateKey  string
-	DummyGoogleAPI      bool
 	GoogleAPITokenURI   string
 	GoogleAPIPrivKeyID  string
 	GoogleAPIClientMail string
@@ -181,7 +184,7 @@ var configStag = func() Config {
 var configProd = func() Config {
 	return Config{
 		Namespace:           "production",
-		BaseURL:             confEnv("BASE_URL"),
+		BaseURL:             confEnv("SCN_URL"),
 		GinDebug:            false,
 		LogLevel:            zerolog.InfoLevel,
 		ServerIP:            "0.0.0.0",
@@ -198,17 +201,17 @@ var configProd = func() Config {
 		ReturnRawErrors:     false,
 		DummyFirebase:       false,
 		FirebaseTokenURI:    "https://oauth2.googleapis.com/token",
-		FirebaseProjectID:   confEnv("FB_PROJECTID"),
-		FirebasePrivKeyID:   confEnv("FB_PRIVATEKEYID"),
-		FirebaseClientMail:  confEnv("FB_CLIENTEMAIL"),
-		FirebasePrivateKey:  confEnv("FB_PRIVATEKEY"),
+		FirebaseProjectID:   confEnv("SCN_FB_PROJECTID"),
+		FirebasePrivKeyID:   confEnv("SCN_FB_PRIVATEKEYID"),
+		FirebaseClientMail:  confEnv("SCN_FB_CLIENTEMAIL"),
+		FirebasePrivateKey:  confEnv("SCN_FB_PRIVATEKEY"),
 		DummyGoogleAPI:      false,
 		GoogleAPITokenURI:   "https://oauth2.googleapis.com/token",
-		GoogleAPIPrivKeyID:  confEnv("GOOG_PRIVATEKEYID"),
-		GoogleAPIClientMail: confEnv("GOOG_CLIENTEMAIL"),
-		GoogleAPIPrivateKey: confEnv("GOOG_PRIVATEKEY"),
-		GooglePackageName:   confEnv("GOOG_PACKAGENAME"),
-		GoogleProProductID:  confEnv("GOOG_PROPRODUCTID"),
+		GoogleAPIPrivKeyID:  confEnv("SCN_GOOG_PRIVATEKEYID"),
+		GoogleAPIClientMail: confEnv("SCN_GOOG_CLIENTEMAIL"),
+		GoogleAPIPrivateKey: confEnv("SCN_GOOG_PRIVATEKEY"),
+		GooglePackageName:   confEnv("SCN_GOOG_PACKAGENAME"),
+		GoogleProProductID:  confEnv("SCN_GOOG_PROPRODUCTID"),
 	}
 }
 
@@ -222,10 +225,12 @@ var allConfig = map[string]func() Config{
 
 func getConfig(ns string) (Config, bool) {
 	if ns == "" {
-		return configLocHost(), true
+		ns = "local-host"
 	}
-	if c, ok := allConfig[ns]; ok {
-		return c(), true
+	if cfn, ok := allConfig[ns]; ok {
+		c := cfn()
+		parseConfOverride(&c)
+		return c, true
 	}
 	return Config{}, false
 }
@@ -248,4 +253,63 @@ func init() {
 	}
 
 	Conf = cfg
+}
+
+func parseConfOverride(c *Config) {
+
+	rval := reflect.ValueOf(c).Elem()
+	rtyp := rval.Type()
+
+	for i := 0; i < rtyp.NumField(); i++ {
+
+		rsfield := rtyp.Field(i)
+		rvfield := rval.Field(i)
+
+		envkey := rsfield.Tag.Get("env")
+		if envkey == "" {
+			continue
+		}
+
+		envval, efound := os.LookupEnv(envkey)
+		if !efound {
+			continue
+		}
+
+		if rvfield.Kind() == reflect.String {
+
+			rvfield.Set(reflect.ValueOf(envval))
+
+			fmt.Printf("[CONF] Overwrite config '%s' with '%s'\n", envkey, envval)
+
+		} else if rvfield.Type() == reflect.TypeOf(zerolog.Level(0)) {
+
+			envint, err := strconv.ParseInt(envval, 10, 8)
+			if err != nil {
+				panic(fmt.Sprintf("Failed to parse env-config variable '%s' to int (value := '%s')", envkey, envval))
+			}
+			if envint < -1 || envint > 7 {
+				panic(fmt.Sprintf("Failed to parse zerolog-level (invalid number: %d)", envint))
+			}
+
+			lvl := zerolog.Level(envint)
+
+			rvfield.Set(reflect.ValueOf(lvl))
+
+			fmt.Printf("[CONF] Overwrite config '%s' with '%s'\n", envkey, lvl.String())
+
+		} else if rvfield.Type() == reflect.TypeOf(time.Duration(0)) {
+
+			dur, err := timeext.ParseDurationShortString(envval)
+			if err != nil {
+				panic(fmt.Sprintf("Failed to parse env-config variable '%s' to duration (value := '%s')", envkey, envval))
+			}
+
+			rvfield.Set(reflect.ValueOf(dur))
+
+			fmt.Printf("[CONF] Overwrite config '%s' with '%s'\n", envkey, dur.String())
+
+		} else {
+			panic(fmt.Sprintf("Unknown kind/type in config: [ %s | %s ]", rvfield.Kind().String(), rvfield.Type().String()))
+		}
+	}
 }

@@ -7,7 +7,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/rs/zerolog v1.28.0
 	github.com/swaggo/swag v1.8.7
-	gogs.mikescher.com/BlackForestBytes/goext v0.0.27
+	gogs.mikescher.com/BlackForestBytes/goext v0.0.31
 	github.com/jmoiron/sqlx v1.3.5
 )
 
