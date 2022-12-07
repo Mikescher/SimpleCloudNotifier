@@ -100,170 +100,27 @@ CREATE        INDEX "idx_messages_sendername"  ON messages (sender_name);
 
 CREATE VIRTUAL TABLE messages_fts USING fts5
 (
-    scn_message_id,
-    sender_user_id,
-    owner_user_id,
     channel_name,
-    channel_id,
-    sender_ip,
     sender_name,
-    timestamp_real,
-    timestamp_client,
     title,
     content,
-    priority,
-    usr_message_id,
 
     tokenize = unicode61,
     content = 'messages',
     content_rowid = 'scn_message_id'
 );
 
-CREATE TRIGGER articles_after_insert AFTER INSERT ON messages BEGIN
-    INSERT INTO messages_fts
-    (
-        rowid,
-        scn_message_id,
-        sender_user_id,
-        owner_user_id,
-        channel_name,
-        channel_id,
-        sender_ip,
-        sender_name,
-        timestamp_real,
-        timestamp_client,
-        title,
-        content,
-        priority,
-        usr_message_id
-    ) VALUES (
-        new.scn_message_id,
-        new.scn_message_id,
-        new.sender_user_id,
-        new.owner_user_id,
-        new.channel_name,
-        new.channel_id,
-        new.sender_ip,
-        new.sender_name,
-        new.timestamp_real,
-        new.timestamp_client,
-        new.title,
-        new.content,
-        new.priority,
-        new.usr_message_id
-    );
+CREATE TRIGGER fts_insert AFTER INSERT ON messages BEGIN
+    INSERT INTO messages_fts (rowid, channel_name, sender_name, title, content) VALUES (new.scn_message_id, new.channel_name, new.sender_name, new.title, new.content);
 END;
 
-CREATE TRIGGER articles_fts_after_update AFTER UPDATE ON messages BEGIN
-    INSERT INTO messages_fts
-    (
-        messages_fts,
-        rowid,
-        scn_message_id,
-        sender_user_id,
-        owner_user_id,
-        channel_name,
-        channel_id,
-        sender_ip,
-        sender_name,
-        timestamp_real,
-        timestamp_client,
-        title,
-        content,
-        priority,
-        usr_message_id
-    )
-    VALUES
-    (
-        'delete',
-        old.scn_message_id,
-        old.scn_message_id,
-        old.sender_user_id,
-        old.owner_user_id,
-        old.channel_name,
-        old.channel_id,
-        old.sender_ip,
-        old.sender_name,
-        old.timestamp_real,
-        old.timestamp_client,
-        old.title,
-        old.content,
-        old.priority,
-        old.usr_message_id
-     );
-    INSERT INTO messages_fts
-    (
-        rowid,
-        scn_message_id,
-        sender_user_id,
-        owner_user_id,
-        channel_name,
-        channel_id,
-        sender_ip,
-        sender_name,
-        timestamp_real,
-        timestamp_client,
-        title,
-        content,
-        priority,
-        usr_message_id
-    )
-    VALUES
-    (
-         new.scn_message_id,
-         new.scn_message_id,
-         new.sender_user_id,
-         new.owner_user_id,
-         new.channel_name,
-         new.channel_id,
-         new.sender_ip,
-         new.sender_name,
-         new.timestamp_real,
-         new.timestamp_client,
-         new.title,
-         new.content,
-         new.priority,
-         new.usr_message_id
-     );
+CREATE TRIGGER fts_update AFTER UPDATE ON messages BEGIN
+    INSERT INTO messages_fts (messages_fts, rowid, channel_name, sender_name, title, content) VALUES ('delete', old.scn_message_id, old.channel_name, old.sender_name, old.title, old.content);
+    INSERT INTO messages_fts (              rowid, channel_name, sender_name, title, content) VALUES (          new.scn_message_id, new.channel_name, new.sender_name, new.title, new.content);
 END;
 
-CREATE TRIGGER articles_fts_after_delete AFTER DELETE ON messages BEGIN
-    INSERT INTO messages_fts
-    (
-        messages_fts,
-        rowid,
-        scn_message_id,
-        sender_user_id,
-        owner_user_id,
-        channel_name,
-        channel_id,
-        sender_ip,
-        sender_name,
-        timestamp_real,
-        timestamp_client,
-        title,
-        content,
-        priority,
-        usr_message_id
-    )
-    VALUES
-    (
-        'delete',
-        old.scn_message_id,
-        old.scn_message_id,
-        old.sender_user_id,
-        old.owner_user_id,
-        old.channel_name,
-        old.channel_id,
-        old.sender_ip,
-        old.sender_name,
-        old.timestamp_real,
-        old.timestamp_client,
-        old.title,
-        old.content,
-        old.priority,
-        old.usr_message_id
-    );
+CREATE TRIGGER fts_delete AFTER DELETE ON messages BEGIN
+    INSERT INTO messages_fts (messages_fts, rowid, channel_name, sender_name, title, content) VALUES ('delete', old.scn_message_id, old.channel_name, old.sender_name, old.title, old.content);
 END;
 
 
