@@ -19,7 +19,7 @@ CREATE TABLE users
 
     is_pro             INTEGER   CHECK(is_pro IN (0, 1))   NOT NULL   DEFAULT 0,
     pro_token          TEXT                                    NULL   DEFAULT NULL
-);
+) STRICT;
 CREATE  UNIQUE INDEX "idx_users_protoken" ON users (pro_token) WHERE pro_token IS NOT NULL;
 
 
@@ -35,7 +35,7 @@ CREATE TABLE clients
 
     agent_model        TEXT                                           NOT NULL,
     agent_version      TEXT                                           NOT NULL
-);
+) STRICT;
 CREATE        INDEX "idx_clients_userid"   ON clients (user_id);
 CREATE UNIQUE INDEX "idx_clients_fcmtoken" ON clients (fcm_token);
 
@@ -55,7 +55,7 @@ CREATE TABLE channels
     timestamp_lastsent INTEGER         NULL   DEFAULT NULL,
 
     messages_sent      INTEGER     NOT NULL   DEFAULT '0'
-);
+) STRICT;
 CREATE UNIQUE INDEX "idx_channels_identity" ON channels (owner_user_id, name);
 
 CREATE TABLE subscriptions
@@ -70,7 +70,7 @@ CREATE TABLE subscriptions
     timestamp_created      INTEGER                                NOT NULL,
 
     confirmed              INTEGER   CHECK(confirmed IN (0, 1))   NOT NULL
-);
+) STRICT;
 CREATE UNIQUE INDEX "idx_subscriptions_ref" ON subscriptions (subscriber_user_id, channel_owner_user_id, channel_name);
 
 
@@ -91,7 +91,7 @@ CREATE TABLE messages
     content            TEXT                                         NULL,
     priority           INTEGER  CHECK(priority IN (0, 1, 2))    NOT NULL,
     usr_message_id     TEXT                                         NULL
-);
+) STRICT;
 CREATE        INDEX "idx_messages_channel"     ON messages (owner_user_id, channel_name);
 CREATE UNIQUE INDEX "idx_messages_idempotency" ON messages (owner_user_id, usr_message_id);
 CREATE        INDEX "idx_messages_senderip"    ON messages (sender_ip);
@@ -285,7 +285,7 @@ CREATE TABLE deliveries
     next_delivery       INTEGER                                                      NULL   DEFAULT NULL,
 
     fcm_message_id      TEXT                                                         NULL
-);
+) STRICT;
 CREATE INDEX "idx_deliveries_receiver" ON deliveries (scn_message_id, receiver_client_id);
 
 
@@ -298,7 +298,7 @@ CREATE TABLE `meta`
     value_blob   BLOB           NULL,
 
     PRIMARY KEY (meta_key)
-);
+) STRICT;
 
 
 INSERT INTO meta (meta_key, value_int) VALUES ('schema', 3)
