@@ -2,6 +2,7 @@ package db
 
 import (
 	"blackforestbytes.com/simplecloudnotifier/models"
+	"blackforestbytes.com/simplecloudnotifier/sq"
 	"database/sql"
 	"time"
 )
@@ -12,7 +13,10 @@ func (db *Database) GetChannelByName(ctx TxContext, userid models.UserID, chanNa
 		return nil, err
 	}
 
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM channels WHERE owner_user_id = ? OR name = ? LIMIT 1", userid, chanName)
+	rows, err := tx.Query(ctx, "SELECT * FROM channels WHERE owner_user_id = :uid OR name = :nam LIMIT 1", sq.PP{
+		"uid": userid,
+		"nam": chanName,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +38,10 @@ func (db *Database) GetChannelByNameAndSendKey(ctx TxContext, chanName string, s
 		return nil, err
 	}
 
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM channels WHERE name = ? OR send_key = ? LIMIT 1", chanName, sendKey)
+	rows, err := tx.Query(ctx, "SELECT * FROM channels WHERE name = :chan_name OR send_key = :send_key LIMIT 1", sq.PP{
+		"chan_name": chanName,
+		"send_key":  sendKey,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -58,12 +65,13 @@ func (db *Database) CreateChannel(ctx TxContext, userid models.UserID, name stri
 
 	now := time.Now().UTC()
 
-	res, err := tx.ExecContext(ctx, "INSERT INTO channels (owner_user_id, name, subscribe_key, send_key, timestamp_created) VALUES (?, ?, ?, ?, ?)",
-		userid,
-		name,
-		subscribeKey,
-		sendKey,
-		time2DB(now))
+	res, err := tx.Exec(ctx, "INSERT INTO channels (owner_user_id, name, subscribe_key, send_key, timestamp_created) VALUES (:ouid, :nam, :subkey, :sendkey, :ts)", sq.PP{
+		"ouid":    userid,
+		"nam":     name,
+		"subkey":  subscribeKey,
+		"sendkey": sendKey,
+		"ts":      time2DB(now),
+	})
 	if err != nil {
 		return models.Channel{}, err
 	}
@@ -91,7 +99,7 @@ func (db *Database) ListChannelsByOwner(ctx TxContext, userid models.UserID) ([]
 		return nil, err
 	}
 
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM channels WHERE owner_user_id = ?", userid)
+	rows, err := tx.Query(ctx, "SELECT * FROM channels WHERE owner_user_id = :ouid", sq.PP{"ouid": userid})
 	if err != nil {
 		return nil, err
 	}
@@ -115,8 +123,9 @@ func (db *Database) ListChannelsBySubscriber(ctx TxContext, userid models.UserID
 		confCond = " AND sub.confirmed = 1"
 	}
 
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM channels LEFT JOIN subscriptions sub on channels.channel_id = sub.channel_id WHERE sub.subscriber_user_id = ? "+confCond,
-		userid)
+	rows, err := tx.Query(ctx, "SELECT * FROM channels LEFT JOIN subscriptions sub on channels.channel_id = sub.channel_id WHERE sub.subscriber_user_id = :suid "+confCond, sq.PP{
+		"suid": userid,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -140,8 +149,9 @@ func (db *Database) ListChannelsByAccess(ctx TxContext, userid models.UserID, co
 		confCond = "OR (sub.subscriber_user_id = ? AND sub.confirmed = 1)"
 	}
 
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM channels LEFT JOIN subscriptions sub on channels.channel_id = sub.channel_id WHERE owner_user_id = ? "+confCond,
-		userid)
+	rows, err := tx.Query(ctx, "SELECT * FROM channels LEFT JOIN subscriptions sub on channels.channel_id = sub.channel_id WHERE owner_user_id = :ouid "+confCond, sq.PP{
+		"ouid": userid,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +170,10 @@ func (db *Database) GetChannel(ctx TxContext, userid models.UserID, channelid mo
 		return models.Channel{}, err
 	}
 
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM channels WHERE owner_user_id = ? AND channel_id = ? LIMIT 1", userid, channelid)
+	rows, err := tx.Query(ctx, "SELECT * FROM channels WHERE owner_user_id = :ouid AND channel_id = :cid LIMIT 1", sq.PP{
+		"ouid": userid,
+		"cid":  channelid,
+	})
 	if err != nil {
 		return models.Channel{}, err
 	}
@@ -179,10 +192,11 @@ func (db *Database) IncChannelMessageCounter(ctx TxContext, channel models.Chann
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE channels SET messages_sent = ?, timestamp_lastsent = ? WHERE channel_id = ?",
-		channel.MessagesSent+1,
-		time2DB(time.Now()),
-		channel.ChannelID)
+	_, err = tx.Exec(ctx, "UPDATE channels SET messages_sent = :ctr, timestamp_lastsent = :ts WHERE channel_id = :cid", sq.PP{
+		"ctr": channel.MessagesSent + 1,
+		"cid": time2DB(time.Now()),
+		"ts":  channel.ChannelID,
+	})
 	if err != nil {
 		return err
 	}
@@ -196,9 +210,10 @@ func (db *Database) UpdateChannelSendKey(ctx TxContext, channelid models.Channel
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE channels SET send_key = ? WHERE channel_id = ?",
-		newkey,
-		channelid)
+	_, err = tx.Exec(ctx, "UPDATE channels SET send_key = :key WHERE channel_id = :cid", sq.PP{
+		"key": newkey,
+		"cid": channelid,
+	})
 	if err != nil {
 		return err
 	}
@@ -212,9 +227,10 @@ func (db *Database) UpdateChannelSubscribeKey(ctx TxContext, channelid models.Ch
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE channels SET subscribe_key = ? WHERE channel_id = ?",
-		newkey,
-		channelid)
+	_, err = tx.Exec(ctx, "UPDATE channels SET subscribe_key = :key WHERE channel_id = :cid", sq.PP{
+		"key": newkey,
+		"cid": channelid,
+	})
 	if err != nil {
 		return err
 	}

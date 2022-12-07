@@ -85,9 +85,12 @@ func (h CommonHandler) DatabaseTest(g *gin.Context) ginresp.HTTPResponse {
 		SourceID         string `json:"sourceID"`
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
 	libVersion, libVersionNumber, sourceID := sqlite3.Version()
 
-	err := h.app.Database.Ping()
+	err := h.app.Database.Ping(ctx)
 	if err != nil {
 		return ginresp.InternalError(err)
 	}
@@ -124,7 +127,7 @@ func (h CommonHandler) Health(g *gin.Context) ginresp.HTTPResponse {
 		ginresp.InternalError(errors.New("sqlite version too low"))
 	}
 
-	err := h.app.Database.Ping()
+	err := h.app.Database.Ping(ctx)
 	if err != nil {
 		return ginresp.InternalError(err)
 	}

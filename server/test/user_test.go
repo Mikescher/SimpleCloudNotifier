@@ -226,3 +226,5 @@ func TestDeleteUser(t *testing.T) {
 	tt.RequestAuthGetShouldFail(t, admintok, baseUrl, "/api/users/"+uid, 404, apierr.USER_NOT_FOUND)
 
 }
+
+//TODO test user /w pro-token

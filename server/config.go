@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"os"
 	"time"
@@ -11,9 +12,17 @@ type Config struct {
 	Namespace           string
 	BaseURL             string
 	GinDebug            bool
+	LogLevel            zerolog.Level
 	ServerIP            string
 	ServerPort          string
 	DBFile              string
+	DBJournal           string
+	DBTimeout           time.Duration
+	DBMaxOpenConns      int
+	DBMaxIdleConns      int
+	DBConnMaxLifetime   time.Duration
+	DBConnMaxIdleTime   time.Duration
+	DBCheckForeignKeys  bool
 	RequestTimeout      time.Duration
 	ReturnRawErrors     bool
 	DummyFirebase       bool
@@ -38,9 +47,17 @@ var configLocHost = func() Config {
 		Namespace:           "local-host",
 		BaseURL:             "http://localhost:8080",
 		GinDebug:            true,
+		LogLevel:            zerolog.DebugLevel,
 		ServerIP:            "0.0.0.0",
 		ServerPort:          "8080",
 		DBFile:              ".run-data/db.sqlite3",
+		DBJournal:           "WAL",
+		DBTimeout:           5 * time.Second,
+		DBCheckForeignKeys:  true,
+		DBMaxOpenConns:      5,
+		DBMaxIdleConns:      5,
+		DBConnMaxLifetime:   60 * time.Minute,
+		DBConnMaxIdleTime:   60 * time.Minute,
 		RequestTimeout:      16 * time.Second,
 		ReturnRawErrors:     true,
 		DummyFirebase:       true,
@@ -64,9 +81,17 @@ var configLocDocker = func() Config {
 		Namespace:           "local-docker",
 		BaseURL:             "http://localhost:8080",
 		GinDebug:            true,
+		LogLevel:            zerolog.DebugLevel,
 		ServerIP:            "0.0.0.0",
 		ServerPort:          "80",
 		DBFile:              "/data/scn_docker.sqlite3",
+		DBJournal:           "WAL",
+		DBTimeout:           5 * time.Second,
+		DBCheckForeignKeys:  true,
+		DBMaxOpenConns:      5,
+		DBMaxIdleConns:      5,
+		DBConnMaxLifetime:   60 * time.Minute,
+		DBConnMaxIdleTime:   60 * time.Minute,
 		RequestTimeout:      16 * time.Second,
 		ReturnRawErrors:     true,
 		DummyFirebase:       true,
@@ -90,9 +115,17 @@ var configDev = func() Config {
 		Namespace:           "develop",
 		BaseURL:             confEnv("BASE_URL"),
 		GinDebug:            true,
+		LogLevel:            zerolog.DebugLevel,
 		ServerIP:            "0.0.0.0",
 		ServerPort:          "80",
 		DBFile:              "/data/scn.sqlite3",
+		DBJournal:           "WAL",
+		DBTimeout:           5 * time.Second,
+		DBCheckForeignKeys:  true,
+		DBMaxOpenConns:      5,
+		DBMaxIdleConns:      5,
+		DBConnMaxLifetime:   60 * time.Minute,
+		DBConnMaxIdleTime:   60 * time.Minute,
 		RequestTimeout:      16 * time.Second,
 		ReturnRawErrors:     true,
 		DummyFirebase:       false,
@@ -116,9 +149,17 @@ var configStag = func() Config {
 		Namespace:           "staging",
 		BaseURL:             confEnv("BASE_URL"),
 		GinDebug:            true,
+		LogLevel:            zerolog.DebugLevel,
 		ServerIP:            "0.0.0.0",
 		ServerPort:          "80",
 		DBFile:              "/data/scn.sqlite3",
+		DBJournal:           "WAL",
+		DBTimeout:           5 * time.Second,
+		DBCheckForeignKeys:  true,
+		DBMaxOpenConns:      5,
+		DBMaxIdleConns:      5,
+		DBConnMaxLifetime:   60 * time.Minute,
+		DBConnMaxIdleTime:   60 * time.Minute,
 		RequestTimeout:      16 * time.Second,
 		ReturnRawErrors:     true,
 		DummyFirebase:       false,
@@ -142,9 +183,17 @@ var configProd = func() Config {
 		Namespace:           "production",
 		BaseURL:             confEnv("BASE_URL"),
 		GinDebug:            false,
+		LogLevel:            zerolog.InfoLevel,
 		ServerIP:            "0.0.0.0",
 		ServerPort:          "80",
 		DBFile:              "/data/scn.sqlite3",
+		DBJournal:           "WAL",
+		DBTimeout:           5 * time.Second,
+		DBCheckForeignKeys:  true,
+		DBMaxOpenConns:      5,
+		DBMaxIdleConns:      5,
+		DBConnMaxLifetime:   60 * time.Minute,
+		DBConnMaxIdleTime:   60 * time.Minute,
 		RequestTimeout:      16 * time.Second,
 		ReturnRawErrors:     false,
 		DummyFirebase:       false,

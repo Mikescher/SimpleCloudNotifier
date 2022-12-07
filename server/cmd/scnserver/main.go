@@ -21,7 +21,7 @@ func main() {
 
 	log.Info().Msg(fmt.Sprintf("Starting with config-namespace <%s>", conf.Namespace))
 
-	sqlite, err := db.NewDatabase(conf.DBFile)
+	sqlite, err := db.NewDatabase(conf)
 	if err != nil {
 		panic(err)
 	}

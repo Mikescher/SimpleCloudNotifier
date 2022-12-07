@@ -1,26 +1,39 @@
 package db
 
 import (
+	server "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/db/schema"
+	"blackforestbytes.com/simplecloudnotifier/sq"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"time"
 )
 
 type Database struct {
-	db *sql.DB
+	db sq.DB
 }
 
-func NewDatabase(filename string) (*Database, error) {
-	db, err := sql.Open("sqlite3", filename)
+func NewDatabase(conf server.Config) (*Database, error) {
+	url := fmt.Sprintf("file:%s?_journal=%s&_timeout=%d&_fk=%s", conf.DBFile, conf.DBJournal, conf.DBTimeout.Milliseconds(), langext.FormatBool(conf.DBCheckForeignKeys, "true", "false"))
+
+	xdb, err := sqlx.Open("sqlite3", url)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Database{db}, nil
+	xdb.SetMaxOpenConns(5)
+	xdb.SetMaxIdleConns(5)
+	xdb.SetConnMaxLifetime(60 * time.Minute)
+	xdb.SetConnMaxIdleTime(60 * time.Minute)
+
+	qqdb := sq.NewDB(xdb)
+
+	return &Database{qqdb}, nil
 }
 
 func (db *Database) Migrate(ctx context.Context) error {
@@ -30,7 +43,7 @@ func (db *Database) Migrate(ctx context.Context) error {
 	currschema, err := db.ReadSchema(ctx)
 	if currschema == 0 {
 
-		_, err = db.db.ExecContext(ctx, schema.Schema3)
+		_, err = db.db.Exec(ctx, schema.Schema3, sq.PP{})
 		if err != nil {
 			return err
 		}
@@ -54,10 +67,10 @@ func (db *Database) Migrate(ctx context.Context) error {
 
 }
 
-func (db *Database) Ping() error {
-	return db.db.Ping()
+func (db *Database) Ping(ctx context.Context) error {
+	return db.db.Ping(ctx)
 }
 
-func (db *Database) BeginTx(ctx context.Context) (*sql.Tx, error) {
-	return db.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelDefault})
+func (db *Database) BeginTx(ctx context.Context) (sq.Tx, error) {
+	return db.db.BeginTransaction(ctx, sql.LevelDefault)
 }

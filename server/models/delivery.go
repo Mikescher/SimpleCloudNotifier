@@ -1,8 +1,7 @@
 package models
 
 import (
-	"database/sql"
-	"github.com/blockloop/scan"
+	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"time"
 )
@@ -88,18 +87,16 @@ func (d DeliveryDB) Model() Delivery {
 	}
 }
 
-func DecodeDelivery(r *sql.Rows) (Delivery, error) {
-	var data DeliveryDB
-	err := scan.RowStrict(&data, r)
+func DecodeDelivery(r *sqlx.Rows) (Delivery, error) {
+	data, err := scanSingle[DeliveryDB](r)
 	if err != nil {
 		return Delivery{}, err
 	}
 	return data.Model(), nil
 }
 
-func DecodeDeliveries(r *sql.Rows) ([]Delivery, error) {
-	var data []DeliveryDB
-	err := scan.RowsStrict(&data, r)
+func DecodeDeliveries(r *sqlx.Rows) ([]Delivery, error) {
+	data, err := scanAll[DeliveryDB](r)
 	if err != nil {
 		return nil, err
 	}

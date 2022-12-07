@@ -3,6 +3,7 @@ package db
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/models"
+	"blackforestbytes.com/simplecloudnotifier/sq"
 	"database/sql"
 	"time"
 )
@@ -15,14 +16,15 @@ func (db *Database) CreateUser(ctx TxContext, readKey string, sendKey string, ad
 
 	now := time.Now().UTC()
 
-	res, err := tx.ExecContext(ctx, "INSERT INTO users (username, read_key, send_key, admin_key, is_pro, pro_token, timestamp_created) VALUES (?, ?, ?, ?, ?, ?, ?)",
-		username,
-		readKey,
-		sendKey,
-		adminKey,
-		bool2DB(protoken != nil),
-		protoken,
-		time2DB(now))
+	res, err := tx.Exec(ctx, "INSERT INTO users (username, read_key, send_key, admin_key, is_pro, pro_token, timestamp_created) VALUES (:un, :rk, :sk, :ak, :pro, :tok, :ts)", sq.PP{
+		"un":  username,
+		"rk":  readKey,
+		"sk":  sendKey,
+		"ak":  adminKey,
+		"pro": bool2DB(protoken != nil),
+		"tok": protoken,
+		"ts":  time2DB(now),
+	})
 	if err != nil {
 		return models.User{}, err
 	}
@@ -55,7 +57,7 @@ func (db *Database) ClearProTokens(ctx TxContext, protoken string) error {
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE users SET is_pro=0, pro_token=NULL WHERE pro_token = ?", protoken)
+	_, err = tx.Exec(ctx, "UPDATE users SET is_pro=0, pro_token=NULL WHERE pro_token = :tok", sq.PP{"tok": protoken})
 	if err != nil {
 		return err
 	}
@@ -69,7 +71,7 @@ func (db *Database) GetUserByKey(ctx TxContext, key string) (*models.User, error
 		return nil, err
 	}
 
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM users WHERE admin_key = ? OR send_key = ? OR read_key = ? LIMIT 1", key, key, key)
+	rows, err := tx.Query(ctx, "SELECT * FROM users WHERE admin_key = :key OR send_key = :key OR read_key = :key LIMIT 1", sq.PP{"key": key})
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +93,7 @@ func (db *Database) GetUser(ctx TxContext, userid models.UserID) (models.User, e
 		return models.User{}, err
 	}
 
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM users WHERE user_id = ? LIMIT 1", userid)
+	rows, err := tx.Query(ctx, "SELECT * FROM users WHERE user_id = :uid LIMIT 1", sq.PP{"uid": userid})
 	if err != nil {
 		return models.User{}, err
 	}
@@ -110,9 +112,10 @@ func (db *Database) UpdateUserUsername(ctx TxContext, userid models.UserID, user
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE users SET username = ? WHERE user_id = ?",
-		username,
-		userid)
+	_, err = tx.Exec(ctx, "UPDATE users SET username = :nam WHERE user_id = :uid", sq.PP{
+		"nam": username,
+		"uid": userid,
+	})
 	if err != nil {
 		return err
 	}
@@ -126,10 +129,11 @@ func (db *Database) UpdateUserProToken(ctx TxContext, userid models.UserID, prot
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE users SET pro_token = ?, is_pro = ? WHERE user_id = ?",
-		protoken,
-		bool2DB(protoken != nil),
-		userid)
+	_, err = tx.Exec(ctx, "UPDATE users SET pro_token = :tok, is_pro = :pro WHERE user_id = :uid", sq.PP{
+		"tok": protoken,
+		"pro": bool2DB(protoken != nil),
+		"uid": userid,
+	})
 	if err != nil {
 		return err
 	}
@@ -145,12 +149,13 @@ func (db *Database) IncUserMessageCounter(ctx TxContext, user models.User) error
 
 	quota := user.QuotaUsedToday() + 1
 
-	_, err = tx.ExecContext(ctx, "UPDATE users SET timestamp_lastsent = ?, messages_sent = ?, quota_used = ?, quota_used_day = ? WHERE user_id = ?",
-		time2DB(time.Now()),
-		user.MessagesSent+1,
-		quota,
-		scn.QuotaDayString(),
-		user.UserID)
+	_, err = tx.Exec(ctx, "UPDATE users SET timestamp_lastsent = :ts, messages_sent = :ctr, quota_used = :qu, quota_used_day = :qd WHERE user_id = :uid", sq.PP{
+		"ts":  time2DB(time.Now()),
+		"ctr": user.MessagesSent + 1,
+		"qu":  quota,
+		"qd":  scn.QuotaDayString(),
+		"uid": user.UserID,
+	})
 	if err != nil {
 		return err
 	}
@@ -164,9 +169,10 @@ func (db *Database) UpdateUserLastRead(ctx TxContext, userid models.UserID) erro
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE users SET timestamp_lastread = ? WHERE user_id = ?",
-		time2DB(time.Now()),
-		userid)
+	_, err = tx.Exec(ctx, "UPDATE users SET timestamp_lastread = :ts WHERE user_id = :uid", sq.PP{
+		"ts":  time2DB(time.Now()),
+		"uid": userid,
+	})
 	if err != nil {
 		return err
 	}
@@ -180,11 +186,12 @@ func (db *Database) UpdateUserKeys(ctx TxContext, userid models.UserID, sendKey 
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE users SET send_key = ?, read_key = ?, admin_key = ? WHERE user_id = ?",
-		sendKey,
-		readKey,
-		adminKey,
-		userid)
+	_, err = tx.Exec(ctx, "UPDATE users SET send_key = :sk, read_key = :rk, admin_key = :ak WHERE user_id = ?", sq.PP{
+		"sk":  sendKey,
+		"rk":  readKey,
+		"ak":  adminKey,
+		"uid": userid,
+	})
 	if err != nil {
 		return err
 	}
@@ -198,9 +205,10 @@ func (db *Database) UpdateUserSendKey(ctx TxContext, userid models.UserID, newke
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE users SET send_key = ? WHERE user_id = ?",
-		newkey,
-		userid)
+	_, err = tx.Exec(ctx, "UPDATE users SET send_key = :sk WHERE user_id = :uid", sq.PP{
+		"sk":  newkey,
+		"uid": userid,
+	})
 	if err != nil {
 		return err
 	}
@@ -214,9 +222,10 @@ func (db *Database) UpdateUserReadKey(ctx TxContext, userid models.UserID, newke
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE users SET read_key = ? WHERE user_id = ?",
-		newkey,
-		userid)
+	_, err = tx.Exec(ctx, "UPDATE users SET read_key = :rk WHERE user_id = :uid", sq.PP{
+		"rk":  newkey,
+		"uid": userid,
+	})
 	if err != nil {
 		return err
 	}
@@ -230,9 +239,10 @@ func (db *Database) UpdateUserAdminKey(ctx TxContext, userid models.UserID, newk
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE users SET admin_key = ? WHERE user_id = ?",
-		newkey,
-		userid)
+	_, err = tx.Exec(ctx, "UPDATE users SET admin_key = :ak WHERE user_id = :uid", sq.PP{
+		"ak":  newkey,
+		"uid": userid,
+	})
 	if err != nil {
 		return err
 	}

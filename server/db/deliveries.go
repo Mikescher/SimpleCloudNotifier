@@ -3,6 +3,7 @@ package db
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/models"
+	"blackforestbytes.com/simplecloudnotifier/sq"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"time"
 )
@@ -16,15 +17,16 @@ func (db *Database) CreateRetryDelivery(ctx TxContext, client models.Client, msg
 	now := time.Now().UTC()
 	next := scn.NextDeliveryTimestamp(now)
 
-	res, err := tx.ExecContext(ctx, "INSERT INTO deliveries (scn_message_id, receiver_user_id, receiver_client_id, timestamp_created, timestamp_finalized, status, fcm_message_id, next_delivery) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-		msg.SCNMessageID,
-		client.UserID,
-		client.ClientID,
-		time2DB(now),
-		nil,
-		models.DeliveryStatusRetry,
-		nil,
-		time2DB(next))
+	res, err := tx.Exec(ctx, "INSERT INTO deliveries (scn_message_id, receiver_user_id, receiver_client_id, timestamp_created, timestamp_finalized, status, fcm_message_id, next_delivery) VALUES (:mid, :ruid, :rcid, :tsc, :tsf, :stat, :fcm, :next)", sq.PP{
+		"mid":  msg.SCNMessageID,
+		"ruid": client.UserID,
+		"rcid": client.ClientID,
+		"tsc":  time2DB(now),
+		"tsf":  nil,
+		"stat": models.DeliveryStatusRetry,
+		"fcm":  nil,
+		"next": time2DB(next),
+	})
 	if err != nil {
 		return models.Delivery{}, err
 	}
@@ -56,15 +58,16 @@ func (db *Database) CreateSuccessDelivery(ctx TxContext, client models.Client, m
 
 	now := time.Now().UTC()
 
-	res, err := tx.ExecContext(ctx, "INSERT INTO deliveries (scn_message_id, receiver_user_id, receiver_client_id, timestamp_created, timestamp_finalized, status, fcm_message_id, next_delivery) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-		msg.SCNMessageID,
-		client.UserID,
-		client.ClientID,
-		time2DB(now),
-		time2DB(now),
-		models.DeliveryStatusSuccess,
-		fcmDelivID,
-		nil)
+	res, err := tx.Exec(ctx, "INSERT INTO deliveries (scn_message_id, receiver_user_id, receiver_client_id, timestamp_created, timestamp_finalized, status, fcm_message_id, next_delivery) VALUES (:mid, :ruid, :rcid, :tsc, :tsf, :stat, :fcm, :next)", sq.PP{
+		"mid":  msg.SCNMessageID,
+		"ruid": client.UserID,
+		"rcid": client.ClientID,
+		"tsc":  time2DB(now),
+		"tsf":  time2DB(now),
+		"stat": models.DeliveryStatusSuccess,
+		"fcm":  fcmDelivID,
+		"next": nil,
+	})
 	if err != nil {
 		return models.Delivery{}, err
 	}
@@ -94,9 +97,10 @@ func (db *Database) ListRetrieableDeliveries(ctx TxContext, pageSize int) ([]mod
 		return nil, err
 	}
 
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM deliveries WHERE status = 'RETRY' AND next_delivery < ? LIMIT ?",
-		time2DB(time.Now()),
-		pageSize)
+	rows, err := tx.Query(ctx, "SELECT * FROM deliveries WHERE status = 'RETRY' AND next_delivery < :next LIMIT :lim", sq.PP{
+		"next": time2DB(time.Now()),
+		"lim":  pageSize,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -115,11 +119,12 @@ func (db *Database) SetDeliverySuccess(ctx TxContext, delivery models.Delivery, 
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE deliveries SET status = 'SUCCESS', next_delivery = NULL, retry_count = ?, timestamp_finalized = ?, fcm_message_id = ? WHERE delivery_id = ?",
-		delivery.RetryCount+1,
-		time2DB(time.Now()),
-		fcmDelivID,
-		delivery.DeliveryID)
+	_, err = tx.Exec(ctx, "UPDATE deliveries SET status = 'SUCCESS', next_delivery = NULL, retry_count = :rc, timestamp_finalized = :ts, fcm_message_id = :fcm WHERE delivery_id = :did", sq.PP{
+		"rc":  delivery.RetryCount + 1,
+		"ts":  time2DB(time.Now()),
+		"fcm": fcmDelivID,
+		"did": delivery.DeliveryID,
+	})
 	if err != nil {
 		return err
 	}
@@ -133,10 +138,12 @@ func (db *Database) SetDeliveryFailed(ctx TxContext, delivery models.Delivery) e
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE deliveries SET status = 'FAILED', next_delivery = NULL, retry_count = ?, timestamp_finalized = ? WHERE delivery_id = ?",
-		delivery.RetryCount+1,
-		time2DB(time.Now()),
-		delivery.DeliveryID)
+	_, err = tx.Exec(ctx, "UPDATE deliveries SET status = 'FAILED', next_delivery = NULL, retry_count = :rc, timestamp_finalized = :ts WHERE delivery_id = :did",
+		sq.PP{
+			"rc":  delivery.RetryCount + 1,
+			"ts":  time2DB(time.Now()),
+			"did": delivery.DeliveryID,
+		})
 	if err != nil {
 		return err
 	}
@@ -150,10 +157,11 @@ func (db *Database) SetDeliveryRetry(ctx TxContext, delivery models.Delivery) er
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE deliveries SET status = 'RETRY', next_delivery = ?, retry_count = ? WHERE delivery_id = ?",
-		scn.NextDeliveryTimestamp(time.Now()),
-		delivery.RetryCount+1,
-		delivery.DeliveryID)
+	_, err = tx.Exec(ctx, "UPDATE deliveries SET status = 'RETRY', next_delivery = :next, retry_count = :rc WHERE delivery_id = :did", sq.PP{
+		"next": scn.NextDeliveryTimestamp(time.Now()),
+		"rc":   delivery.RetryCount + 1,
+		"did":  delivery.DeliveryID,
+	})
 	if err != nil {
 		return err
 	}
@@ -167,9 +175,10 @@ func (db *Database) CancelPendingDeliveries(ctx TxContext, scnMessageID models.S
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE deliveries SET status = 'FAILED', next_delivery = NULL, timestamp_finalized = ? WHERE scn_message_id = ? AND status = 'RETRY'",
-		time.Now(),
-		scnMessageID)
+	_, err = tx.Exec(ctx, "UPDATE deliveries SET status = 'FAILED', next_delivery = NULL, timestamp_finalized = :ts WHERE scn_message_id = :mid AND status = 'RETRY'", sq.PP{
+		"ts":  time.Now(),
+		"mid": scnMessageID,
+	})
 	if err != nil {
 		return err
 	}

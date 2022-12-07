@@ -1,8 +1,7 @@
 package models
 
 import (
-	"database/sql"
-	"github.com/blockloop/scan"
+	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"time"
 )
@@ -142,18 +141,16 @@ func (m MessageDB) Model() Message {
 	}
 }
 
-func DecodeMessage(r *sql.Rows) (Message, error) {
-	var data MessageDB
-	err := scan.RowStrict(&data, r)
+func DecodeMessage(r *sqlx.Rows) (Message, error) {
+	data, err := scanSingle[MessageDB](r)
 	if err != nil {
 		return Message{}, err
 	}
 	return data.Model(), nil
 }
 
-func DecodeMessages(r *sql.Rows) ([]Message, error) {
-	var data []MessageDB
-	err := scan.RowsStrict(&data, r)
+func DecodeMessages(r *sqlx.Rows) ([]Message, error) {
+	data, err := scanAll[MessageDB](r)
 	if err != nil {
 		return nil, err
 	}

@@ -2,8 +2,7 @@ package models
 
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
-	"database/sql"
-	"github.com/blockloop/scan"
+	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"time"
 )
@@ -113,8 +112,8 @@ type UserJSON struct {
 	SendKey           string  `json:"send_key"`
 	AdminKey          string  `json:"admin_key"`
 	TimestampCreated  string  `json:"timestamp_created"`
-	TimestampLastRead *string `json:"timestamp_last_read"`
-	TimestampLastSent *string `json:"timestamp_last_sent"`
+	TimestampLastRead *string `json:"timestamp_lastread"`
+	TimestampLastSent *string `json:"timestamp_lastsent"`
 	MessagesSent      int     `json:"messages_sent"`
 	QuotaUsed         int     `json:"quota_used"`
 	QuotaUsedDay      *string `json:"quota_used_day"`
@@ -160,18 +159,16 @@ func (u UserDB) Model() User {
 	}
 }
 
-func DecodeUser(r *sql.Rows) (User, error) {
-	var data UserDB
-	err := scan.RowStrict(&data, r)
+func DecodeUser(r *sqlx.Rows) (User, error) {
+	data, err := scanSingle[UserDB](r)
 	if err != nil {
 		return User{}, err
 	}
 	return data.Model(), nil
 }
 
-func DecodeUsers(r *sql.Rows) ([]User, error) {
-	var data []UserDB
-	err := scan.RowsStrict(&data, r)
+func DecodeUsers(r *sqlx.Rows) ([]User, error) {
+	data, err := scanAll[UserDB](r)
 	if err != nil {
 		return nil, err
 	}

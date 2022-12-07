@@ -386,11 +386,11 @@ definitions:
     type: object
   models.MessageJSON:
     properties:
-      body:
-        type: string
       channel_id:
         type: integer
       channel_name:
+        type: string
+      content:
         type: string
       owner_user_id:
         type: integer

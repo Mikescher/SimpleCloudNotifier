@@ -4,8 +4,8 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/db"
+	"blackforestbytes.com/simplecloudnotifier/sq"
 	"context"
-	"database/sql"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -16,7 +16,7 @@ type AppContext struct {
 	inner       context.Context
 	cancelFunc  context.CancelFunc
 	cancelled   bool
-	transaction *sql.Tx
+	transaction sq.Tx
 	permissions PermissionSet
 	ginContext  *gin.Context
 }
@@ -83,7 +83,7 @@ func (ac *AppContext) FinishSuccess(res ginresp.HTTPResponse) ginresp.HTTPRespon
 	return res
 }
 
-func (ac *AppContext) GetOrCreateTransaction(db *db.Database) (*sql.Tx, error) {
+func (ac *AppContext) GetOrCreateTransaction(db *db.Database) (sq.Tx, error) {
 	if ac.cancelled {
 		return nil, errors.New("context cancelled")
 	}

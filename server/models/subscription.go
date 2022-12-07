@@ -1,8 +1,7 @@
 package models
 
 import (
-	"database/sql"
-	"github.com/blockloop/scan"
+	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"time"
 )
@@ -61,18 +60,16 @@ func (s SubscriptionDB) Model() Subscription {
 	}
 }
 
-func DecodeSubscription(r *sql.Rows) (Subscription, error) {
-	var data SubscriptionDB
-	err := scan.RowStrict(&data, r)
+func DecodeSubscription(r *sqlx.Rows) (Subscription, error) {
+	data, err := scanSingle[SubscriptionDB](r)
 	if err != nil {
 		return Subscription{}, err
 	}
 	return data.Model(), nil
 }
 
-func DecodeSubscriptions(r *sql.Rows) ([]Subscription, error) {
-	var data []SubscriptionDB
-	err := scan.RowsStrict(&data, r)
+func DecodeSubscriptions(r *sqlx.Rows) ([]Subscription, error) {
+	data, err := scanAll[SubscriptionDB](r)
 	if err != nil {
 		return nil, err
 	}

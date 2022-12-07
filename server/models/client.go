@@ -1,8 +1,7 @@
 package models
 
 import (
-	"database/sql"
-	"github.com/blockloop/scan"
+	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"time"
 )
@@ -68,18 +67,16 @@ func (c ClientDB) Model() Client {
 	}
 }
 
-func DecodeClient(r *sql.Rows) (Client, error) {
-	var data ClientDB
-	err := scan.RowStrict(&data, r)
+func DecodeClient(r *sqlx.Rows) (Client, error) {
+	data, err := scanSingle[ClientDB](r)
 	if err != nil {
 		return Client{}, err
 	}
 	return data.Model(), nil
 }
 
-func DecodeClients(r *sql.Rows) ([]Client, error) {
-	var data []ClientDB
-	err := scan.RowsStrict(&data, r)
+func DecodeClients(r *sqlx.Rows) ([]Client, error) {
+	data, err := scanAll[ClientDB](r)
 	if err != nil {
 		return nil, err
 	}

@@ -2,6 +2,7 @@ package db
 
 import (
 	"blackforestbytes.com/simplecloudnotifier/models"
+	"blackforestbytes.com/simplecloudnotifier/sq"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"time"
 )
@@ -14,13 +15,14 @@ func (db *Database) CreateClient(ctx TxContext, userid models.UserID, ctype mode
 
 	now := time.Now().UTC()
 
-	res, err := tx.ExecContext(ctx, "INSERT INTO clients (user_id, type, fcm_token, timestamp_created, agent_model, agent_version) VALUES (?, ?, ?, ?, ?, ?)",
-		userid,
-		string(ctype),
-		fcmToken,
-		time2DB(now),
-		agentModel,
-		agentVersion)
+	res, err := tx.Exec(ctx, "INSERT INTO clients (user_id, type, fcm_token, timestamp_created, agent_model, agent_version) VALUES (:uid, :typ, :fcm, :ts, :am, :av)", sq.PP{
+		"uid": userid,
+		"typ": string(ctype),
+		"fcm": fcmToken,
+		"ts":  time2DB(now),
+		"am":  agentModel,
+		"av":  agentVersion,
+	})
 	if err != nil {
 		return models.Client{}, err
 	}
@@ -47,7 +49,7 @@ func (db *Database) ClearFCMTokens(ctx TxContext, fcmtoken string) error {
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "DELETE FROM clients WHERE fcm_token = ?", fcmtoken)
+	_, err = tx.Exec(ctx, "DELETE FROM clients WHERE fcm_token = :fcm", sq.PP{"fcm": fcmtoken})
 	if err != nil {
 		return err
 	}
@@ -61,7 +63,7 @@ func (db *Database) ListClients(ctx TxContext, userid models.UserID) ([]models.C
 		return nil, err
 	}
 
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM clients WHERE user_id = ?", userid)
+	rows, err := tx.Query(ctx, "SELECT * FROM clients WHERE user_id = :uid", sq.PP{"uid": userid})
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +82,10 @@ func (db *Database) GetClient(ctx TxContext, userid models.UserID, clientid mode
 		return models.Client{}, err
 	}
 
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM clients WHERE user_id = ? AND client_id = ? LIMIT 1", userid, clientid)
+	rows, err := tx.Query(ctx, "SELECT * FROM clients WHERE user_id = :uid AND client_id = :cid LIMIT 1", sq.PP{
+		"uid": userid,
+		"cid": clientid,
+	})
 	if err != nil {
 		return models.Client{}, err
 	}
@@ -99,7 +104,7 @@ func (db *Database) DeleteClient(ctx TxContext, clientid models.ClientID) error 
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "DELETE FROM clients WHERE client_id = ?", clientid)
+	_, err = tx.Exec(ctx, "DELETE FROM clients WHERE client_id = :cid", sq.PP{"cid": clientid})
 	if err != nil {
 		return err
 	}
@@ -113,7 +118,7 @@ func (db *Database) DeleteClientsByFCM(ctx TxContext, fcmtoken string) error {
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "DELETE FROM clients WHERE fcm_token = ?", fcmtoken)
+	_, err = tx.Exec(ctx, "DELETE FROM clients WHERE fcm_token = :fcm", sq.PP{"fcm": fcmtoken})
 	if err != nil {
 		return err
 	}

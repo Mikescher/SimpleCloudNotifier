@@ -48,17 +48,23 @@ func StartSimpleWebserver(t *testing.T) (*logic.Application, func()) {
 	fmt.Println("DatabaseFile: " + dbfile)
 
 	conf := scn.Config{
-		Namespace:       "test",
-		GinDebug:        true,
-		ServerIP:        "0.0.0.0",
-		ServerPort:      "0", // simply choose a free port
-		DBFile:          dbfile,
-		RequestTimeout:  30 * time.Second,
-		ReturnRawErrors: true,
-		DummyFirebase:   true,
+		Namespace:         "test",
+		GinDebug:          true,
+		ServerIP:          "0.0.0.0",
+		ServerPort:        "0", // simply choose a free port
+		DBFile:            dbfile,
+		DBJournal:         "WAL",
+		DBTimeout:         500 * time.Millisecond,
+		DBMaxOpenConns:    2,
+		DBMaxIdleConns:    2,
+		DBConnMaxLifetime: 1 * time.Second,
+		DBConnMaxIdleTime: 1 * time.Second,
+		RequestTimeout:    30 * time.Second,
+		ReturnRawErrors:   true,
+		DummyFirebase:     true,
 	}
 
-	sqlite, err := db.NewDatabase(dbfile)
+	sqlite, err := db.NewDatabase(conf)
 	if err != nil {
 		TestFailErr(t, err)
 	}
@@ -82,7 +88,11 @@ func StartSimpleWebserver(t *testing.T) (*logic.Application, func()) {
 
 	router.Init(ginengine)
 
-	stop := func() { app.Stop(); _ = os.Remove(dbfile); _ = app.IsRunning.WaitWithTimeout(400*time.Millisecond, false) }
+	stop := func() {
+		app.Stop()
+		_ = os.Remove(dbfile)
+		_ = app.IsRunning.WaitWithTimeout(400*time.Millisecond, false)
+	}
 
 	go func() { app.Run() }()
 

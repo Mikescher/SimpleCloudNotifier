@@ -3,6 +3,7 @@ package db
 import (
 	"blackforestbytes.com/simplecloudnotifier/db/cursortoken"
 	"blackforestbytes.com/simplecloudnotifier/models"
+	"blackforestbytes.com/simplecloudnotifier/sq"
 	"database/sql"
 	"fmt"
 	"time"
@@ -14,7 +15,7 @@ func (db *Database) GetMessageByUserMessageID(ctx TxContext, usrMsgId string) (*
 		return nil, err
 	}
 
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM messages WHERE usr_message_id = ? LIMIT 1", usrMsgId)
+	rows, err := tx.Query(ctx, "SELECT * FROM messages WHERE usr_message_id = :umid LIMIT 1", sq.PP{"umid": usrMsgId})
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +37,7 @@ func (db *Database) GetMessage(ctx TxContext, scnMessageID models.SCNMessageID) 
 		return models.Message{}, err
 	}
 
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM messages WHERE scn_message_id = ? LIMIT 1", scnMessageID)
+	rows, err := tx.Query(ctx, "SELECT * FROM messages WHERE scn_message_id = :mid LIMIT 1", sq.PP{"mid": scnMessageID})
 	if err != nil {
 		return models.Message{}, err
 	}
@@ -57,19 +58,20 @@ func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, cha
 
 	now := time.Now().UTC()
 
-	res, err := tx.ExecContext(ctx, "INSERT INTO messages (sender_user_id, owner_user_id, channel_name, channel_id, timestamp_real, timestamp_client, title, content, priority, usr_message_id, sender_ip, sender_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-		senderUserID,
-		channel.OwnerUserID,
-		channel.Name,
-		channel.ChannelID,
-		time2DB(now),
-		time2DBOpt(timestampSend),
-		title,
-		content,
-		priority,
-		userMsgId,
-		senderIP,
-		senderName)
+	res, err := tx.Exec(ctx, "INSERT INTO messages (sender_user_id, owner_user_id, channel_name, channel_id, timestamp_real, timestamp_client, title, content, priority, usr_message_id, sender_ip, sender_name) VALUES (:suid, :ouid, :cnam, :cid, :tsr, :tsc, :tit, :cnt, :prio, :umid, :ip, :snam)", sq.PP{
+		"suid": senderUserID,
+		"ouid": channel.OwnerUserID,
+		"cnam": channel.Name,
+		"cid":  channel.ChannelID,
+		"tsr":  time2DB(now),
+		"tsc":  time2DBOpt(timestampSend),
+		"tit":  title,
+		"cnt":  content,
+		"prio": priority,
+		"umid": userMsgId,
+		"ip":   senderIP,
+		"snam": senderName,
+	})
 	if err != nil {
 		return models.Message{}, err
 	}
@@ -102,7 +104,7 @@ func (db *Database) DeleteMessage(ctx TxContext, scnMessageID models.SCNMessageI
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "DELETE FROM messages WHERE scn_message_id = ?", scnMessageID)
+	_, err = tx.Exec(ctx, "DELETE FROM messages WHERE scn_message_id = :mid", sq.PP{"mid": scnMessageID})
 	if err != nil {
 		return err
 	}
@@ -125,9 +127,10 @@ func (db *Database) ListMessages(ctx TxContext, userid models.UserID, pageSize i
 		pageCond = fmt.Sprintf("AND ( timestamp_real < %d OR (timestamp_real = %d AND scn_message_id < %d ) )", inTok.Timestamp, inTok.Timestamp, inTok.Id)
 	}
 
-	rows, err := tx.QueryContext(ctx, "SELECT messages.* FROM messages LEFT JOIN subscriptions subs on messages.channel_id = subs.channel_id WHERE subs.subscriber_user_id = ? AND subs.confirmed = 1 "+pageCond+" ORDER BY timestamp_real DESC LIMIT ?",
-		userid,
-		pageSize+1)
+	rows, err := tx.Query(ctx, "SELECT messages.* FROM messages LEFT JOIN subscriptions subs on messages.channel_id = subs.channel_id WHERE subs.subscriber_user_id = :uid AND subs.confirmed = 1 "+pageCond+" ORDER BY timestamp_real DESC LIMIT :lim", sq.PP{
+		"uid": userid,
+		"lim": pageSize + 1,
+	})
 	if err != nil {
 		return nil, cursortoken.CursorToken{}, err
 	}
@@ -157,12 +160,15 @@ func (db *Database) ListChannelMessages(ctx TxContext, channelid models.ChannelI
 
 	pageCond := ""
 	if inTok.Mode == cursortoken.CTMNormal {
-		pageCond = fmt.Sprintf("AND ( timestamp_real < %d OR (timestamp_real = %d AND scn_message_id < %d ) )", inTok.Timestamp, inTok.Timestamp, inTok.Id)
+		pageCond = "AND ( timestamp_real < :tokts OR (timestamp_real = :tokts AND scn_message_id < :tokid ) )"
 	}
 
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM messages WHERE channel_id = ? "+pageCond+" ORDER BY timestamp_real DESC LIMIT ?",
-		channelid,
-		pageSize+1)
+	rows, err := tx.Query(ctx, "SELECT * FROM messages WHERE channel_id = :cid "+pageCond+" ORDER BY timestamp_real DESC LIMIT :lim", sq.PP{
+		"cid":   channelid,
+		"lim":   pageSize + 1,
+		"tokts": inTok.Timestamp,
+		"tokid": inTok.Timestamp,
+	})
 	if err != nil {
 		return nil, cursortoken.CursorToken{}, err
 	}

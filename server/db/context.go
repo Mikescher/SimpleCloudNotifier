@@ -1,7 +1,7 @@
 package db
 
 import (
-	"database/sql"
+	"blackforestbytes.com/simplecloudnotifier/sq"
 	"time"
 )
 
@@ -11,5 +11,5 @@ type TxContext interface {
 	Err() error
 	Value(key any) any
 
-	GetOrCreateTransaction(db *Database) (*sql.Tx, error)
+	GetOrCreateTransaction(db *Database) (sq.Tx, error)
 }

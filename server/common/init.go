@@ -25,11 +25,11 @@ func Init(cfg scn.Config) {
 
 	if cfg.GinDebug {
 		gin.SetMode(gin.DebugMode)
-		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	} else {
 		gin.SetMode(gin.ReleaseMode)
-		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
+
+	zerolog.SetGlobalLevel(cfg.LogLevel)
 
 	log.Debug().Msg("Initialized")
 }

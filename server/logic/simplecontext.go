@@ -2,8 +2,8 @@ package logic
 
 import (
 	"blackforestbytes.com/simplecloudnotifier/db"
+	"blackforestbytes.com/simplecloudnotifier/sq"
 	"context"
-	"database/sql"
 	"errors"
 	"github.com/rs/zerolog/log"
 	"time"
@@ -13,7 +13,7 @@ type SimpleContext struct {
 	inner       context.Context
 	cancelFunc  context.CancelFunc
 	cancelled   bool
-	transaction *sql.Tx
+	transaction sq.Tx
 }
 
 func CreateSimpleContext(innerCtx context.Context, cancelFn context.CancelFunc) *SimpleContext {
@@ -54,7 +54,7 @@ func (sc *SimpleContext) Cancel() {
 	sc.cancelFunc()
 }
 
-func (sc *SimpleContext) GetOrCreateTransaction(db *db.Database) (*sql.Tx, error) {
+func (sc *SimpleContext) GetOrCreateTransaction(db *db.Database) (sq.Tx, error) {
 	if sc.cancelled {
 		return nil, errors.New("context cancelled")
 	}

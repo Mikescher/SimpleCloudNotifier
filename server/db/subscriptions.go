@@ -2,6 +2,7 @@ package db
 
 import (
 	"blackforestbytes.com/simplecloudnotifier/models"
+	"blackforestbytes.com/simplecloudnotifier/sq"
 	"database/sql"
 	"time"
 )
@@ -14,13 +15,14 @@ func (db *Database) CreateSubscription(ctx TxContext, subscriberUID models.UserI
 
 	now := time.Now().UTC()
 
-	res, err := tx.ExecContext(ctx, "INSERT INTO subscriptions (subscriber_user_id, channel_owner_user_id, channel_name, channel_id, timestamp_created, confirmed) VALUES (?, ?, ?, ?, ?, ?)",
-		subscriberUID,
-		channel.OwnerUserID,
-		channel.Name,
-		channel.ChannelID,
-		time2DB(now),
-		confirmed)
+	res, err := tx.Exec(ctx, "INSERT INTO subscriptions (subscriber_user_id, channel_owner_user_id, channel_name, channel_id, timestamp_created, confirmed) VALUES (:suid, :ouid, :cnam, :cid, :ts, :conf)", sq.PP{
+		"suid": subscriberUID,
+		"ouid": channel.OwnerUserID,
+		"cnam": channel.Name,
+		"cid":  channel.ChannelID,
+		"ts":   time2DB(now),
+		"conf": confirmed,
+	})
 	if err != nil {
 		return models.Subscription{}, err
 	}
@@ -47,7 +49,7 @@ func (db *Database) ListSubscriptionsByChannel(ctx TxContext, channelID models.C
 		return nil, err
 	}
 
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM subscriptions WHERE channel_id = ?", channelID)
+	rows, err := tx.Query(ctx, "SELECT * FROM subscriptions WHERE channel_id = :cid", sq.PP{"cid": channelID})
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +68,7 @@ func (db *Database) ListSubscriptionsByOwner(ctx TxContext, ownerUserID models.U
 		return nil, err
 	}
 
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM subscriptions WHERE channel_owner_user_id = ?", ownerUserID)
+	rows, err := tx.Query(ctx, "SELECT * FROM subscriptions WHERE channel_owner_user_id = :ouid", sq.PP{"ouid": ownerUserID})
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +87,7 @@ func (db *Database) GetSubscription(ctx TxContext, subid models.SubscriptionID) 
 		return models.Subscription{}, err
 	}
 
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM subscriptions WHERE subscription_id = ? LIMIT 1", subid)
+	rows, err := tx.Query(ctx, "SELECT * FROM subscriptions WHERE subscription_id = :sid LIMIT 1", sq.PP{"sid": subid})
 	if err != nil {
 		return models.Subscription{}, err
 	}
@@ -104,7 +106,10 @@ func (db *Database) GetSubscriptionBySubscriber(ctx TxContext, subscriberId mode
 		return nil, err
 	}
 
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM subscriptions WHERE subscriber_user_id = ? AND channel_id = ? LIMIT 1", subscriberId, channelId)
+	rows, err := tx.Query(ctx, "SELECT * FROM subscriptions WHERE subscriber_user_id = :suid AND channel_id = :cid LIMIT 1", sq.PP{
+		"suid": subscriberId,
+		"cid":  channelId,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +131,7 @@ func (db *Database) DeleteSubscription(ctx TxContext, subid models.SubscriptionI
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "DELETE FROM subscriptions WHERE subscription_id = ?", subid)
+	_, err = tx.Exec(ctx, "DELETE FROM subscriptions WHERE subscription_id = :sid", sq.PP{"sid": subid})
 	if err != nil {
 		return err
 	}
@@ -140,7 +145,10 @@ func (db *Database) UpdateSubscriptionConfirmed(ctx TxContext, subscriptionID mo
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE subscriptions SET confirmed = ? WHERE subscription_id = ?", confirmed, subscriptionID)
+	_, err = tx.Exec(ctx, "UPDATE subscriptions SET confirmed = :conf WHERE subscription_id = :sid", sq.PP{
+		"conf": confirmed,
+		"sid":  subscriptionID,
+	})
 	if err != nil {
 		return err
 	}

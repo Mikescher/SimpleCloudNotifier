@@ -7,7 +7,7 @@ HASH=$(shell git rev-parse HEAD)
 
 build: swagger fmt
 	rm -f ./_build/scn_backend
-	CGO_ENABLED=1 go build -v -o _build/scn_backend -tags timetzdata ./cmd/scnserver
+	CGO_ENABLED=1 go build -v -o _build/scn_backend -tags "timetzdata sqlite_fts5 sqlite_foreign_keys" ./cmd/scnserver
 
 run: build
 	mkdir -p .run-data

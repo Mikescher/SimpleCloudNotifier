@@ -1,8 +1,7 @@
 package models
 
 import (
-	"database/sql"
-	"github.com/blockloop/scan"
+	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"time"
 )
@@ -38,7 +37,7 @@ type ChannelJSON struct {
 	SubscribeKey      *string   `json:"subscribe_key"` // can be nil, depending on endpoint
 	SendKey           *string   `json:"send_key"`      // can be nil, depending on endpoint
 	TimestampCreated  string    `json:"timestamp_created"`
-	TimestampLastSent *string   `json:"timestamp_last_sent"`
+	TimestampLastSent *string   `json:"timestamp_lastsent"`
 	MessagesSent      int       `json:"messages_sent"`
 }
 
@@ -49,8 +48,8 @@ type ChannelDB struct {
 	SubscribeKey      string    `db:"subscribe_key"`
 	SendKey           string    `db:"send_key"`
 	TimestampCreated  int64     `db:"timestamp_created"`
-	TimestampLastRead *int64    `db:"timestamp_last_read"`
-	TimestampLastSent *int64    `db:"timestamp_last_sent"`
+	TimestampLastRead *int64    `db:"timestamp_lastread"`
+	TimestampLastSent *int64    `db:"timestamp_lastsent"`
 	MessagesSent      int       `db:"messages_sent"`
 }
 
@@ -67,18 +66,16 @@ func (c ChannelDB) Model() Channel {
 	}
 }
 
-func DecodeChannel(r *sql.Rows) (Channel, error) {
-	var data ChannelDB
-	err := scan.RowStrict(&data, r)
+func DecodeChannel(r *sqlx.Rows) (Channel, error) {
+	data, err := scanSingle[ChannelDB](r)
 	if err != nil {
 		return Channel{}, err
 	}
 	return data.Model(), nil
 }
 
-func DecodeChannels(r *sql.Rows) ([]Channel, error) {
-	var data []ChannelDB
-	err := scan.RowsStrict(&data, r)
+func DecodeChannels(r *sqlx.Rows) ([]Channel, error) {
+	data, err := scanAll[ChannelDB](r)
 	if err != nil {
 		return nil, err
 	}
