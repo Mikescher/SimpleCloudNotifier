@@ -26,6 +26,11 @@ func (db *Database) ReadSchema(ctx context.Context) (retval int, reterr error) {
 		return 0, nil
 	}
 
+	err = r1.Close()
+	if err != nil {
+		return 0, err
+	}
+
 	r2, err := db.db.Query(ctx, "SELECT value_int FROM meta WHERE meta_key = :key", sq.PP{"key": "schema"})
 	if err != nil {
 		return 0, err
@@ -45,6 +50,11 @@ func (db *Database) ReadSchema(ctx context.Context) (retval int, reterr error) {
 
 	var dbschema int
 	err = r2.Scan(&dbschema)
+	if err != nil {
+		return 0, err
+	}
+
+	err = r2.Close()
 	if err != nil {
 		return 0, err
 	}
@@ -119,6 +129,11 @@ func (db *Database) ReadMetaString(ctx context.Context, key string) (retval *str
 		return nil, err
 	}
 
+	err = r2.Close()
+	if err != nil {
+		return nil, err
+	}
+
 	return langext.Ptr(value), nil
 }
 
@@ -142,6 +157,11 @@ func (db *Database) ReadMetaInt(ctx context.Context, key string) (retval *int64,
 
 	var value int64
 	err = r2.Scan(&value)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r2.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -173,6 +193,11 @@ func (db *Database) ReadMetaReal(ctx context.Context, key string) (retval *float
 		return nil, err
 	}
 
+	err = r2.Close()
+	if err != nil {
+		return nil, err
+	}
+
 	return langext.Ptr(value), nil
 }
 
@@ -196,6 +221,11 @@ func (db *Database) ReadMetaBlob(ctx context.Context, key string) (retval *[]byt
 
 	var value []byte
 	err = r2.Scan(&value)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r2.Close()
 	if err != nil {
 		return nil, err
 	}

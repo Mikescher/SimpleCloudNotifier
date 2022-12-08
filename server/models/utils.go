@@ -31,10 +31,16 @@ func scanSingle[TData any](rows *sqlx.Rows) (TData, error) {
 			return *new(TData), err
 		}
 		if rows.Next() {
+			_ = rows.Close()
 			return *new(TData), errors.New("sql returned more than onw row")
+		}
+		err = rows.Close()
+		if err != nil {
+			return *new(TData), err
 		}
 		return data, nil
 	} else {
+		_ = rows.Close()
 		return *new(TData), sql.ErrNoRows
 	}
 }
@@ -48,6 +54,10 @@ func scanAll[TData any](rows *sqlx.Rows) ([]TData, error) {
 			return nil, err
 		}
 		res = append(res, data)
+	}
+	err := rows.Close()
+	if err != nil {
+		return nil, err
 	}
 	return res, nil
 }
