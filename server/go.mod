@@ -4,11 +4,11 @@ go 1.19
 
 require (
 	github.com/gin-gonic/gin v1.8.1
+	github.com/jmoiron/sqlx v1.3.5
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/rs/zerolog v1.28.0
 	github.com/swaggo/swag v1.8.7
 	gogs.mikescher.com/BlackForestBytes/goext v0.0.31
-	github.com/jmoiron/sqlx v1.3.5
 )
 
 require (
@@ -41,5 +41,6 @@ require (
 	golang.org/x/text v0.4.0 // indirect
 	golang.org/x/tools v0.1.12 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
+	gopkg.in/loremipsum.v1 v1.1.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

@@ -61,3 +61,5 @@ func scanAll[TData any](rows *sqlx.Rows) ([]TData, error) {
 	}
 	return res, nil
 }
+
+//TODO move scanAll+scanSingle into sq package (?)

@@ -13,7 +13,7 @@ func (db *Database) GetChannelByName(ctx TxContext, userid models.UserID, chanNa
 		return nil, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM channels WHERE owner_user_id = :uid OR name = :nam LIMIT 1", sq.PP{
+	rows, err := tx.Query(ctx, "SELECT * FROM channels WHERE owner_user_id = :uid AND name = :nam LIMIT 1", sq.PP{
 		"uid": userid,
 		"nam": chanName,
 	})

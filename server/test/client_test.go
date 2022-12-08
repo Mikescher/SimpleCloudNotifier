@@ -151,3 +151,5 @@ func TestReuseFCM(t *testing.T) {
 
 	tt.AssertEqual(t, "clients->client_id", cid2, fmt.Sprintf("%v", r3.Clients[0]["client_id"]))
 }
+
+//TODO test missing client-xx methods

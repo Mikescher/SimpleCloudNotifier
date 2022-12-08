@@ -170,3 +170,15 @@ func unpointer(v any) any {
 	}
 	return v
 }
+
+func AssertMultiNonEmpty(t *testing.T, key string, args ...any) {
+	for i := 0; i < len(args); i++ {
+
+		reflval := reflect.ValueOf(args[i])
+
+		if args[i] == nil || reflval.IsZero() {
+			t.Errorf("Value %s[%d] is empty (AssertMultiNonEmpty)", key, i)
+			t.FailNow()
+		}
+	}
+}
