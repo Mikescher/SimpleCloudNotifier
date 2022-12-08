@@ -4,6 +4,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
 	"gopkg.in/loremipsum.v1"
 	"testing"
@@ -266,6 +267,17 @@ var messageExamples = []msgex{
 }
 
 func InitDefaultData(t *testing.T, ws *logic.Application) {
+
+	// set logger to buffer, only output if error occured
+	success := false
+	SetBufLogger()
+	defer func() {
+		ClearBufLogger(!success)
+		if success {
+			log.Info().Msgf("Succesfully initialized default data (%d messages, %d users)", len(messageExamples), len(userExamples))
+		}
+	}()
+
 	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	users := make([]userdat, 0, len(userExamples))
@@ -347,6 +359,8 @@ func InitDefaultData(t *testing.T, ws *logic.Application) {
 
 		RequestPost[gin.H](t, baseUrl, "/", body)
 	}
+
+	success = true
 }
 
 func lipsum(seed int64, paracount int) string {

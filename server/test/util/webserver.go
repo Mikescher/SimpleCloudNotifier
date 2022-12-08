@@ -9,7 +9,6 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/jobs"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/push"
-	"fmt"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"os"
 	"path/filepath"
@@ -45,7 +44,7 @@ func StartSimpleWebserver(t *testing.T) (*logic.Application, func()) {
 		TestFailErr(t, err)
 	}
 
-	fmt.Println("DatabaseFile: " + dbfile)
+	TPrintln("DatabaseFile: " + dbfile)
 
 	conf := scn.Config{
 		Namespace:         "test",

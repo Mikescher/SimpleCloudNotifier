@@ -89,7 +89,7 @@ func RequestAuthDeleteShouldFail(t *testing.T, akey string, baseURL string, urlS
 func RequestAny[TResult any](t *testing.T, akey string, method string, baseURL string, urlSuffix string, body any) TResult {
 	client := http.Client{}
 
-	fmt.Printf("[-> REQUEST] (%s) %s%s [%s] [%s]\n", method, baseURL, urlSuffix, langext.Conditional(akey == "", "NO AUTH", "AUTH"), langext.Conditional(body == nil, "NO BODY", "BODY"))
+	TPrintf("[-> REQUEST] (%s) %s%s [%s] [%s]\n", method, baseURL, urlSuffix, langext.Conditional(akey == "", "NO AUTH", "AUTH"), langext.Conditional(body == nil, "NO BODY", "BODY"))
 
 	bytesbody := make([]byte, 0)
 	contentType := ""
@@ -144,12 +144,12 @@ func RequestAny[TResult any](t *testing.T, akey string, method string, baseURL s
 		TestFailErr(t, err)
 	}
 
-	fmt.Println("")
-	fmt.Printf("----------------  RESPONSE (%d) ----------------\n", resp.StatusCode)
-	fmt.Println(langext.TryPrettyPrintJson(string(respBodyBin)))
+	TPrintln("")
+	TPrintf("----------------  RESPONSE (%d) ----------------\n", resp.StatusCode)
+	TPrintln(langext.TryPrettyPrintJson(string(respBodyBin)))
 	TryPrintTraceObj("----------------  --------  ----------------", respBodyBin, "")
-	fmt.Println("----------------  --------  ----------------")
-	fmt.Println("")
+	TPrintln("----------------  --------  ----------------")
+	TPrintln("")
 
 	if resp.StatusCode != 200 {
 		TestFail(t, "Statuscode != 200")
@@ -166,7 +166,7 @@ func RequestAny[TResult any](t *testing.T, akey string, method string, baseURL s
 func RequestAuthAnyShouldFail(t *testing.T, akey string, method string, baseURL string, urlSuffix string, body any, statusCode int, errcode apierr.APIError) {
 	client := http.Client{}
 
-	fmt.Printf("[-> REQUEST] (%s) %s%s [%s] (should-fail with %d/%d)\n", method, baseURL, urlSuffix, langext.Conditional(akey == "", "NO AUTH", "AUTH"), statusCode, errcode)
+	TPrintf("[-> REQUEST] (%s) %s%s [%s] (should-fail with %d/%d)\n", method, baseURL, urlSuffix, langext.Conditional(akey == "", "NO AUTH", "AUTH"), statusCode, errcode)
 
 	bytesbody := make([]byte, 0)
 	contentType := ""
@@ -221,14 +221,14 @@ func RequestAuthAnyShouldFail(t *testing.T, akey string, method string, baseURL 
 		TestFailErr(t, err)
 	}
 
-	fmt.Println("")
-	fmt.Printf("----------------  RESPONSE (%d) ----------------\n", resp.StatusCode)
-	fmt.Println(langext.TryPrettyPrintJson(string(respBodyBin)))
+	TPrintln("")
+	TPrintf("----------------  RESPONSE (%d) ----------------\n", resp.StatusCode)
+	TPrintln(langext.TryPrettyPrintJson(string(respBodyBin)))
 	if (statusCode != 0 && resp.StatusCode != statusCode) || (statusCode == 0 && resp.StatusCode == 200) {
 		TryPrintTraceObj("----------------  --------  ----------------", respBodyBin, "")
 	}
-	fmt.Println("----------------  --------  ----------------")
-	fmt.Println("")
+	TPrintln("----------------  --------  ----------------")
+	TPrintln("")
 
 	if statusCode != 0 && resp.StatusCode != statusCode {
 		TestFailFmt(t, "Statuscode != %d (expected failure)", statusCode)
@@ -267,13 +267,13 @@ func TryPrintTraceObj(prefix string, body []byte, suffix string) {
 		if v2, ok := v1["traceObj"]; ok {
 			if v3, ok := v2.(string); ok {
 				if prefix != "" {
-					fmt.Println(prefix)
+					TPrintln(prefix)
 				}
 
-				fmt.Println(strings.TrimSpace(v3))
+				TPrintln(strings.TrimSpace(v3))
 
 				if suffix != "" {
-					fmt.Println(suffix)
+					TPrintln(suffix)
 				}
 			}
 		}

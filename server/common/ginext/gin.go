@@ -5,6 +5,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var SuppressGinLogs = false
+
 func NewEngine(cfg scn.Config) *gin.Engine {
 	engine := gin.New()
 
@@ -14,7 +16,13 @@ func NewEngine(cfg scn.Config) *gin.Engine {
 	engine.Use(CorsMiddleware())
 
 	if cfg.GinDebug {
-		engine.Use(gin.Logger())
+		ginlogger := gin.Logger()
+		engine.Use(func(context *gin.Context) {
+			if SuppressGinLogs {
+				return
+			}
+			ginlogger(context)
+		})
 	}
 
 	return engine
