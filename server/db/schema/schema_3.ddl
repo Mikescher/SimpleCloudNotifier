@@ -92,10 +92,16 @@ CREATE TABLE messages
     priority           INTEGER  CHECK(priority IN (0, 1, 2))    NOT NULL,
     usr_message_id     TEXT                                         NULL
 ) STRICT;
-CREATE        INDEX "idx_messages_channel"     ON messages (owner_user_id, channel_name);
-CREATE UNIQUE INDEX "idx_messages_idempotency" ON messages (owner_user_id, usr_message_id);
-CREATE        INDEX "idx_messages_senderip"    ON messages (sender_ip);
-CREATE        INDEX "idx_messages_sendername"  ON messages (sender_name);
+CREATE        INDEX "idx_messages_owner_channel"    ON messages (owner_user_id, channel_name COLLATE BINARY);
+CREATE        INDEX "idx_messages_owner_channel_nc" ON messages (owner_user_id, channel_name COLLATE NOCASE);
+CREATE        INDEX "idx_messages_channel"          ON messages (channel_name COLLATE BINARY);
+CREATE        INDEX "idx_messages_channel_nc"       ON messages (channel_name COLLATE NOCASE);
+CREATE UNIQUE INDEX "idx_messages_idempotency"      ON messages (owner_user_id, usr_message_id COLLATE BINARY);
+CREATE        INDEX "idx_messages_senderip"         ON messages (sender_ip COLLATE BINARY);
+CREATE        INDEX "idx_messages_sendername"       ON messages (sender_name COLLATE BINARY);
+CREATE        INDEX "idx_messages_sendername_nc"    ON messages (sender_name COLLATE NOCASE);
+CREATE        INDEX "idx_messages_title"            ON messages (title COLLATE BINARY);
+CREATE        INDEX "idx_messages_title_nc"         ON messages (title COLLATE NOCASE);
 
 
 CREATE VIRTUAL TABLE messages_fts USING fts5

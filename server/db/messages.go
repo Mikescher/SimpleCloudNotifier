@@ -4,7 +4,6 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/db/cursortoken"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
-	"fmt"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
@@ -112,7 +111,7 @@ func (db *Database) DeleteMessage(ctx TxContext, scnMessageID models.SCNMessageI
 	return nil
 }
 
-func (db *Database) ListMessages(ctx TxContext, userid models.UserID, pageSize int, inTok cursortoken.CursorToken) ([]models.Message, cursortoken.CursorToken, error) {
+func (db *Database) ListMessages(ctx TxContext, filter models.MessageFilter, pageSize int, inTok cursortoken.CursorToken) ([]models.Message, cursortoken.CursorToken, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, cursortoken.CursorToken{}, err
@@ -124,13 +123,20 @@ func (db *Database) ListMessages(ctx TxContext, userid models.UserID, pageSize i
 
 	pageCond := ""
 	if inTok.Mode == cursortoken.CTMNormal {
-		pageCond = fmt.Sprintf("AND ( timestamp_real < %d OR (timestamp_real = %d AND scn_message_id < %d ) )", inTok.Timestamp, inTok.Timestamp, inTok.Id)
+		pageCond = "timestamp_real < :tokts OR (timestamp_real = :tokts AND scn_message_id < :tokid )"
 	}
 
-	rows, err := tx.Query(ctx, "SELECT messages.* FROM messages LEFT JOIN subscriptions subs on messages.channel_id = subs.channel_id WHERE subs.subscriber_user_id = :uid AND subs.confirmed = 1 "+pageCond+" ORDER BY timestamp_real DESC LIMIT :lim", sq.PP{
-		"uid": userid,
-		"lim": pageSize + 1,
-	})
+	filterCond, filterJoin, prepParams, err := filter.SQL()
+
+	orderClause := "ORDER BY COALESCE(timestamp_client, timestamp_real) DESC LIMIT :lim"
+
+	sqlQuery := "SELECT " + "messages.*" + " FROM messages " + filterJoin + " WHERE ( " + filterCond + " ) AND ( " + pageCond + " ) " + orderClause
+
+	prepParams["lim"] = pageSize + 1
+	prepParams["tokts"] = inTok.Timestamp
+	prepParams["tokid"] = inTok.Id
+
+	rows, err := tx.Query(ctx, sqlQuery, prepParams)
 	if err != nil {
 		return nil, cursortoken.CursorToken{}, err
 	}
@@ -143,45 +149,7 @@ func (db *Database) ListMessages(ctx TxContext, userid models.UserID, pageSize i
 	if len(data) <= pageSize {
 		return data, cursortoken.End(), nil
 	} else {
-		outToken := cursortoken.Normal(data[pageSize-1].TimestampReal, data[pageSize-1].SCNMessageID.IntID(), "DESC")
-		return data[0:pageSize], outToken, nil
-	}
-}
-
-func (db *Database) ListChannelMessages(ctx TxContext, channelid models.ChannelID, pageSize int, inTok cursortoken.CursorToken) ([]models.Message, cursortoken.CursorToken, error) {
-	tx, err := ctx.GetOrCreateTransaction(db)
-	if err != nil {
-		return nil, cursortoken.CursorToken{}, err
-	}
-
-	if inTok.Mode == cursortoken.CTMEnd {
-		return make([]models.Message, 0), cursortoken.End(), nil
-	}
-
-	pageCond := ""
-	if inTok.Mode == cursortoken.CTMNormal {
-		pageCond = "AND ( timestamp_real < :tokts OR (timestamp_real = :tokts AND scn_message_id < :tokid ) )"
-	}
-
-	rows, err := tx.Query(ctx, "SELECT * FROM messages WHERE channel_id = :cid "+pageCond+" ORDER BY timestamp_real DESC LIMIT :lim", sq.PP{
-		"cid":   channelid,
-		"lim":   pageSize + 1,
-		"tokts": inTok.Timestamp,
-		"tokid": inTok.Timestamp,
-	})
-	if err != nil {
-		return nil, cursortoken.CursorToken{}, err
-	}
-
-	data, err := models.DecodeMessages(rows)
-	if err != nil {
-		return nil, cursortoken.CursorToken{}, err
-	}
-
-	if len(data) <= pageSize {
-		return data, cursortoken.End(), nil
-	} else {
-		outToken := cursortoken.Normal(data[pageSize-1].TimestampReal, data[pageSize-1].SCNMessageID.IntID(), "DESC")
+		outToken := cursortoken.Normal(data[pageSize-1].Timestamp(), data[pageSize-1].SCNMessageID.IntID(), "DESC", filter.Hash())
 		return data[0:pageSize], outToken, nil
 	}
 }

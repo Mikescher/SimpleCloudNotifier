@@ -775,7 +775,11 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.PAGETOKEN_ERROR, "Failed to decode next_page_token", err)
 	}
 
-	messages, npt, err := h.database.ListChannelMessages(ctx, channel.ChannelID, pageSize, tok)
+	filter := models.MessageFilter{
+		ChannelID: langext.Ptr([]models.ChannelID{channel.ChannelID}),
+	}
+
+	messages, npt, err := h.database.ListMessages(ctx, filter, pageSize, tok)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query messages", err)
 	}
@@ -1176,7 +1180,11 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update last-read", err)
 	}
 
-	messages, npt, err := h.database.ListMessages(ctx, userid, pageSize, tok)
+	filter := models.MessageFilter{
+		ConfirmedSubscriptionBy: langext.Ptr(userid),
+	}
+
+	messages, npt, err := h.database.ListMessages(ctx, filter, pageSize, tok)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query messages", err)
 	}

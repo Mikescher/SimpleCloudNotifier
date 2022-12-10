@@ -17,42 +17,47 @@ const (
 )
 
 type CursorToken struct {
-	Mode      Mode
-	Timestamp int64
-	Id        int64
-	Direction string
+	Mode       Mode
+	Timestamp  int64
+	Id         int64
+	Direction  string
+	FilterHash string
 }
 
 type cursorTokenSerialize struct {
-	Timestamp *int64  `json:"ts,omitempty"`
-	Id        *int64  `json:"id,omitempty"`
-	Direction *string `json:"dir,omitempty"`
+	Timestamp  *int64  `json:"ts,omitempty"`
+	Id         *int64  `json:"id,omitempty"`
+	Direction  *string `json:"dir,omitempty"`
+	FilterHash *string `json:"f,omitempty"`
 }
 
 func Start() CursorToken {
 	return CursorToken{
-		Mode:      CTMStart,
-		Timestamp: 0,
-		Id:        0,
-		Direction: "",
+		Mode:       CTMStart,
+		Timestamp:  0,
+		Id:         0,
+		Direction:  "",
+		FilterHash: "",
 	}
 }
 
 func End() CursorToken {
 	return CursorToken{
-		Mode:      CTMEnd,
-		Timestamp: 0,
-		Id:        0,
-		Direction: "",
+		Mode:       CTMEnd,
+		Timestamp:  0,
+		Id:         0,
+		Direction:  "",
+		FilterHash: "",
 	}
 }
 
-func Normal(ts time.Time, id int64, dir string) CursorToken {
+func Normal(ts time.Time, id int64, dir string, filter string) CursorToken {
 	return CursorToken{
-		Mode:      CTMNormal,
-		Timestamp: ts.UnixMilli(),
-		Id:        id,
-		Direction: dir,
+		Mode:       CTMNormal,
+		Timestamp:  ts.UnixMilli(),
+		Id:         id,
+		Direction:  dir,
+		FilterHash: filter,
 	}
 }
 
@@ -81,6 +86,10 @@ func (c *CursorToken) Token() string {
 
 	if c.Direction != "" {
 		sertok.Direction = &c.Direction
+	}
+
+	if c.FilterHash != "" {
+		sertok.FilterHash = &c.FilterHash
 	}
 
 	body, err := json.Marshal(sertok)
@@ -127,6 +136,9 @@ func Decode(tok string) (CursorToken, error) {
 	}
 	if tokenDeserialize.Direction != nil {
 		token.Direction = *tokenDeserialize.Direction
+	}
+	if tokenDeserialize.FilterHash != nil {
+		token.FilterHash = *tokenDeserialize.FilterHash
 	}
 
 	return token, nil
