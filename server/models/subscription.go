@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
 
@@ -61,7 +62,7 @@ func (s SubscriptionDB) Model() Subscription {
 }
 
 func DecodeSubscription(r *sqlx.Rows) (Subscription, error) {
-	data, err := scanSingle[SubscriptionDB](r)
+	data, err := sq.ScanSingle[SubscriptionDB](r, true)
 	if err != nil {
 		return Subscription{}, err
 	}
@@ -69,7 +70,7 @@ func DecodeSubscription(r *sqlx.Rows) (Subscription, error) {
 }
 
 func DecodeSubscriptions(r *sqlx.Rows) ([]Subscription, error) {
-	data, err := scanAll[SubscriptionDB](r)
+	data, err := sq.ScanAll[SubscriptionDB](r, true)
 	if err != nil {
 		return nil, err
 	}

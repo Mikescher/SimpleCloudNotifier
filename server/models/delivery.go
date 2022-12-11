@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
 
@@ -88,7 +89,7 @@ func (d DeliveryDB) Model() Delivery {
 }
 
 func DecodeDelivery(r *sqlx.Rows) (Delivery, error) {
-	data, err := scanSingle[DeliveryDB](r)
+	data, err := sq.ScanSingle[DeliveryDB](r, true)
 	if err != nil {
 		return Delivery{}, err
 	}
@@ -96,7 +97,7 @@ func DecodeDelivery(r *sqlx.Rows) (Delivery, error) {
 }
 
 func DecodeDeliveries(r *sqlx.Rows) ([]Delivery, error) {
-	data, err := scanAll[DeliveryDB](r)
+	data, err := sq.ScanAll[DeliveryDB](r, true)
 	if err != nil {
 		return nil, err
 	}

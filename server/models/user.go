@@ -4,6 +4,7 @@ import (
 	scn "blackforestbytes.com/simplecloudnotifier"
 	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
 
@@ -160,7 +161,7 @@ func (u UserDB) Model() User {
 }
 
 func DecodeUser(r *sqlx.Rows) (User, error) {
-	data, err := scanSingle[UserDB](r)
+	data, err := sq.ScanSingle[UserDB](r, true)
 	if err != nil {
 		return User{}, err
 	}
@@ -168,7 +169,7 @@ func DecodeUser(r *sqlx.Rows) (User, error) {
 }
 
 func DecodeUsers(r *sqlx.Rows) ([]User, error) {
-	data, err := scanAll[UserDB](r)
+	data, err := sq.ScanAll[UserDB](r, true)
 	if err != nil {
 		return nil, err
 	}

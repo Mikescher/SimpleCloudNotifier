@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
 
@@ -67,7 +68,7 @@ func (c ChannelDB) Model() Channel {
 }
 
 func DecodeChannel(r *sqlx.Rows) (Channel, error) {
-	data, err := scanSingle[ChannelDB](r)
+	data, err := sq.ScanSingle[ChannelDB](r, true)
 	if err != nil {
 		return Channel{}, err
 	}
@@ -75,7 +76,7 @@ func DecodeChannel(r *sqlx.Rows) (Channel, error) {
 }
 
 func DecodeChannels(r *sqlx.Rows) ([]Channel, error) {
-	data, err := scanAll[ChannelDB](r)
+	data, err := sq.ScanAll[ChannelDB](r, true)
 	if err != nil {
 		return nil, err
 	}

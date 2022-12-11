@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
 
@@ -142,7 +143,7 @@ func (m MessageDB) Model() Message {
 }
 
 func DecodeMessage(r *sqlx.Rows) (Message, error) {
-	data, err := scanSingle[MessageDB](r)
+	data, err := sq.ScanSingle[MessageDB](r, true)
 	if err != nil {
 		return Message{}, err
 	}
@@ -150,7 +151,7 @@ func DecodeMessage(r *sqlx.Rows) (Message, error) {
 }
 
 func DecodeMessages(r *sqlx.Rows) ([]Message, error) {
-	data, err := scanAll[MessageDB](r)
+	data, err := sq.ScanAll[MessageDB](r, true)
 	if err != nil {
 		return nil, err
 	}

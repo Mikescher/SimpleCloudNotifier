@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
 
@@ -68,7 +69,7 @@ func (c ClientDB) Model() Client {
 }
 
 func DecodeClient(r *sqlx.Rows) (Client, error) {
-	data, err := scanSingle[ClientDB](r)
+	data, err := sq.ScanSingle[ClientDB](r, true)
 	if err != nil {
 		return Client{}, err
 	}
@@ -76,7 +77,7 @@ func DecodeClient(r *sqlx.Rows) (Client, error) {
 }
 
 func DecodeClients(r *sqlx.Rows) ([]Client, error) {
-	data, err := scanAll[ClientDB](r)
+	data, err := sq.ScanAll[ClientDB](r, true)
 	if err != nil {
 		return nil, err
 	}
