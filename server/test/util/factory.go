@@ -58,7 +58,7 @@ type clientex struct {
 	FCMTok       string
 }
 
-type userdat struct {
+type Userdat struct {
 	UID      int64
 	SendKey  string
 	AdminKey string
@@ -266,7 +266,11 @@ var messageExamples = []msgex{
 	{11, "Promotions", "", P2, SKEY, "Summer Clearance: Save Up to 75% on Your Favorite Products", "It's time for our annual summer clearance sale! Save up to 75% on your favorite products, from clothing and accessories to home decor and more.", timeext.FromHours(1.87)},
 }
 
-func InitDefaultData(t *testing.T, ws *logic.Application) {
+type DefData struct {
+	User []Userdat
+}
+
+func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 
 	// set logger to buffer, only output if error occured
 	success := false
@@ -280,7 +284,7 @@ func InitDefaultData(t *testing.T, ws *logic.Application) {
 
 	baseUrl := "http://127.0.0.1:" + ws.Port
 
-	users := make([]userdat, 0, len(userExamples))
+	users := make([]Userdat, 0, len(userExamples))
 
 	for _, uex := range userExamples {
 		body := gin.H{}
@@ -306,7 +310,7 @@ func InitDefaultData(t *testing.T, ws *logic.Application) {
 		admintok0 := user0["admin_key"].(string)
 		AssertMultiNonEmpty(t, "user0", uid0, readtok0, sendtok0, admintok0)
 
-		users = append(users, userdat{
+		users = append(users, Userdat{
 			UID:      uid0,
 			SendKey:  sendtok0,
 			AdminKey: admintok0,
@@ -361,6 +365,8 @@ func InitDefaultData(t *testing.T, ws *logic.Application) {
 	}
 
 	success = true
+
+	return DefData{User: users}
 }
 
 func lipsum(seed int64, paracount int) string {

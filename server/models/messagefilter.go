@@ -46,7 +46,7 @@ func (f MessageFilter) SQL() (string, string, sq.PP, error) {
 		joinClause += " LEFT JOIN subscriptions subs on messages.channel_id = subs.channel_id "
 	}
 	if f.SearchString != nil {
-		joinClause += " JOIN messages_fts mfts on (mfts.rowid = a.scn_message_id) "
+		joinClause += " JOIN messages_fts mfts on (mfts.rowid = messages.scn_message_id) "
 	}
 
 	sqlClauses := make([]string, 0)
@@ -56,15 +56,6 @@ func (f MessageFilter) SQL() (string, string, sq.PP, error) {
 	if f.ConfirmedSubscriptionBy != nil {
 		sqlClauses = append(sqlClauses, "(subs.subscriber_user_id = :sub_uid AND subs.confirmed = 1)")
 		params["sub_uid"] = *f.ConfirmedSubscriptionBy
-	}
-
-	if f.SearchString != nil {
-		filter := make([]string, 0)
-		for i, v := range *f.SearchString {
-			filter = append(filter, fmt.Sprintf("(messages_fts match :searchstring_%d)", i))
-			params[fmt.Sprintf("searchstring_%d", i)] = v
-		}
-		sqlClauses = append(sqlClauses, "("+strings.Join(filter, " OR ")+")")
 	}
 
 	if f.Sender != nil {
@@ -208,9 +199,20 @@ func (f MessageFilter) SQL() (string, string, sq.PP, error) {
 		sqlClauses = append(sqlClauses, "(usr_message_id IS NOT NULL AND ("+strings.Join(filter, " OR ")+"))")
 	}
 
+	if f.SearchString != nil {
+		filter := make([]string, 0)
+		for i, v := range *f.SearchString {
+			filter = append(filter, fmt.Sprintf("(messages_fts match :searchstring_%d)", i))
+			params[fmt.Sprintf("searchstring_%d", i)] = v
+		}
+		sqlClauses = append(sqlClauses, "("+strings.Join(filter, " OR ")+")")
+	}
+
 	sqlClause := ""
 	if len(sqlClauses) > 0 {
 		sqlClause = strings.Join(sqlClauses, " AND ")
+	} else {
+		sqlClause = "1=1"
 	}
 
 	return sqlClause, joinClause, params, nil

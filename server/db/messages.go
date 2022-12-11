@@ -121,7 +121,7 @@ func (db *Database) ListMessages(ctx TxContext, filter models.MessageFilter, pag
 		return make([]models.Message, 0), cursortoken.End(), nil
 	}
 
-	pageCond := ""
+	pageCond := "1=1"
 	if inTok.Mode == cursortoken.CTMNormal {
 		pageCond = "timestamp_real < :tokts OR (timestamp_real = :tokts AND scn_message_id < :tokid )"
 	}
@@ -130,7 +130,7 @@ func (db *Database) ListMessages(ctx TxContext, filter models.MessageFilter, pag
 
 	orderClause := "ORDER BY COALESCE(timestamp_client, timestamp_real) DESC LIMIT :lim"
 
-	sqlQuery := "SELECT " + "messages.*" + " FROM messages " + filterJoin + " WHERE ( " + filterCond + " ) AND ( " + pageCond + " ) " + orderClause
+	sqlQuery := "SELECT " + "messages.*" + " FROM messages " + filterJoin + " WHERE ( " + pageCond + " ) AND ( " + filterCond + " ) " + orderClause
 
 	prepParams["lim"] = pageSize + 1
 	prepParams["tokts"] = inTok.Timestamp

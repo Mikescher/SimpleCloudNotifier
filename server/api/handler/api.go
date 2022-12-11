@@ -1184,6 +1184,10 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 		ConfirmedSubscriptionBy: langext.Ptr(userid),
 	}
 
+	if q.Filter != nil && strings.TrimSpace(*q.Filter) != "" {
+		filter.SearchString = langext.Ptr([]string{strings.TrimSpace(*q.Filter)})
+	}
+
 	messages, npt, err := h.database.ListMessages(ctx, filter, pageSize, tok)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query messages", err)

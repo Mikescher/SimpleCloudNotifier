@@ -201,7 +201,7 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(0, "Failed to query clients")
 	}
 
-	fcmSet := langext.ArrAny(clients, func(i int) bool { return clients[i].FCMToken != nil })
+	fcmSet := langext.ArrAny(clients, func(c models.Client) bool { return c.FCMToken != nil })
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
 		Success:    true,

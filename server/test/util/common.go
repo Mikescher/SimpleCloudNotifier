@@ -56,6 +56,14 @@ func AssertEqual(t *testing.T, key string, expected any, actual any) {
 	}
 }
 
+func AssertTrue(t *testing.T, key string, v bool) {
+	if !v {
+		t.Errorf("AssertTrue(%s) failed", key)
+		t.Error(string(debug.Stack()))
+		t.FailNow()
+	}
+}
+
 func AssertNotEqual(t *testing.T, key string, expected any, actual any) {
 	if expected == actual {
 		t.Errorf("Value [%s] does not differ (%T <-> %T):\n", key, expected, actual)
