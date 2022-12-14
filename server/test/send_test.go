@@ -1341,6 +1341,42 @@ func TestQuotaExceededPro(t *testing.T) {
 	}, 403, apierr.QUOTA_REACHED)
 }
 
+func TestSendParallel(t *testing.T) {
+	t.SkipNow()
+
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+		"pro_token":     "ANDROID|v2|PURCHASED:DUMMY_TOK_XX",
+	})
+
+	uid := int(r0["user_id"].(float64))
+	sendtok := r0["send_key"].(string)
+
+	sem := make(chan tt.Void, 900) // semaphore pattern
+	for i := 0; i < 900; i++ {
+		go func() {
+			defer func() {
+				sem <- tt.Void{}
+			}()
+			tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+				"user_key": sendtok,
+				"user_id":  uid,
+				"title":    tt.ShortLipsum0(2),
+			})
+		}()
+	}
+	// wait for goroutines to finish
+	for i := 0; i < 900; i++ {
+		<-sem
+	}
+}
+
 //TODO post to foreign channel via send-key
 
 //TODO quota exceed (+ quota counter)
