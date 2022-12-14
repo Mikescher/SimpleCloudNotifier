@@ -137,4 +137,28 @@ func TestChannelNameNormalization(t *testing.T) {
 	}
 }
 
+func TestListChannels(t *testing.T) {
+	t.SkipNow() //TODO
+}
+
+func TestListChannelsOwned(t *testing.T) {
+	t.SkipNow() //TODO
+}
+
+func TestListChannelsSubscribedAny(t *testing.T) {
+	t.SkipNow() //TODO
+}
+
+func TestListChannelsAllAny(t *testing.T) {
+	t.SkipNow() //TODO
+}
+
+func TestListChannelsSubscribed(t *testing.T) {
+	t.SkipNow() //TODO
+}
+
+func TestListChannelsAll(t *testing.T) {
+	t.SkipNow() //TODO
+}
+
 //TODO test missing channel-xx methods

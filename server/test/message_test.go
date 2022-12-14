@@ -35,7 +35,7 @@ func TestSearchMessageFTSMulti(t *testing.T) {
 
 //TODO list messages by chan_key
 
-//TODO list messages from channel that you cannot see
+//TODO (fail to) list messages from channel that you cannot see
 
 func TestDeleteMessage(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)

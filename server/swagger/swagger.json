@@ -1208,6 +1208,64 @@
                 }
             }
         },
+        "/api/users/{uid}/channels/": {
+            "post": {
+                "tags": [
+                    "API-v2"
+                ],
+                "summary": "Create a new (empty) channel",
+                "operationId": "api-channels-create",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": " ",
+                        "name": "post_body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/handler.CreateChannel.body"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ChannelJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "user is not authorized / has missing permissions",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "409": {
+                        "description": "channel already exists",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/users/{uid}/channels/{cid}": {
             "get": {
                 "tags": [
@@ -2317,6 +2375,14 @@
                 }
             }
         },
+        "handler.CreateChannel.body": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "handler.CreateSubscription.body": {
             "type": "object",
             "required": [
@@ -2906,11 +2972,14 @@
                 "messages_sent": {
                     "type": "integer"
                 },
-                "quota_used": {
+                "quota_max": {
                     "type": "integer"
                 },
-                "quota_used_day": {
-                    "type": "string"
+                "quota_remaining": {
+                    "type": "integer"
+                },
+                "quota_used": {
+                    "type": "integer"
                 },
                 "read_key": {
                     "type": "string"
@@ -2956,11 +3025,14 @@
                 "messages_sent": {
                     "type": "integer"
                 },
-                "quota_used": {
+                "quota_max": {
                     "type": "integer"
                 },
-                "quota_used_day": {
-                    "type": "string"
+                "quota_remaining": {
+                    "type": "integer"
+                },
+                "quota_used": {
+                    "type": "integer"
                 },
                 "read_key": {
                     "type": "string"

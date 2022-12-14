@@ -51,6 +51,11 @@ definitions:
     - client_type
     - fcm_token
     type: object
+  handler.CreateChannel.body:
+    properties:
+      name:
+        type: string
+    type: object
   handler.CreateSubscription.body:
     properties:
       channel:
@@ -440,10 +445,12 @@ definitions:
         type: boolean
       messages_sent:
         type: integer
+      quota_max:
+        type: integer
+      quota_remaining:
+        type: integer
       quota_used:
         type: integer
-      quota_used_day:
-        type: string
       read_key:
         type: string
       send_key:
@@ -473,10 +480,12 @@ definitions:
         type: boolean
       messages_sent:
         type: integer
+      quota_max:
+        type: integer
+      quota_remaining:
+        type: integer
       quota_used:
         type: integer
-      quota_used_day:
-        type: string
       read_key:
         type: string
       send_key:
@@ -1320,6 +1329,44 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: List channels of a user (subscribed/owned)
+      tags:
+      - API-v2
+  /api/users/{uid}/channels/:
+    post:
+      operationId: api-channels-create
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: ' '
+        in: body
+        name: post_body
+        schema:
+          $ref: '#/definitions/handler.CreateChannel.body'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ChannelJSON'
+        "400":
+          description: supplied values/parameters cannot be parsed / are invalid
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: user is not authorized / has missing permissions
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "409":
+          description: channel already exists
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Create a new (empty) channel
       tags:
       - API-v2
   /api/users/{uid}/channels/{cid}:

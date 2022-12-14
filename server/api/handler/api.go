@@ -514,7 +514,7 @@ func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 		UserID models.UserID `uri:"uid"`
 	}
 	type query struct {
-		Selector *string `json:"selector" form:"selector"`
+		Selector *string `json:"selector" form:"selector"  enums:"owned,subscribed_any,all_any,subscribed,all"`
 	}
 	type response struct {
 		Channels []models.ChannelJSON `json:"channels"`

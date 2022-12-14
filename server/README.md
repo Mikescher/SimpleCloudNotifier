@@ -25,6 +25,6 @@
 
  - (?) ack/read deliveries && return ack-count  (? or not, how to query?)
 
- - (?) full-text-search: https://www.sqlite.org/fts5.html#contentless_tables
-
  - (?) "login" on website and list/search/filter messages
+
+ - (?) make channels deleteable (soft-delete) (what do with messages in channel?)

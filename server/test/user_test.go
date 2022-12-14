@@ -215,4 +215,48 @@ func TestDeleteUser(t *testing.T) {
 
 }
 
-//TODO test user /w pro-token
+func TestCreateProUser(t *testing.T) {
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	{
+		r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+			"no_client": true,
+		})
+
+		tt.AssertEqual(t, "is_pro", false, r0["is_pro"])
+	}
+
+	{
+		r1 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+			"no_client": true,
+			"pro_token": "ANDROID|v2|PURCHASED:000",
+		})
+
+		tt.AssertEqual(t, "is_pro", true, r1["is_pro"])
+	}
+
+	{
+		r2 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+			"agent_model":   "DUMMY_PHONE",
+			"agent_version": "4X",
+			"client_type":   "ANDROID",
+			"fcm_token":     "DUMMY_FCM",
+		})
+
+		tt.AssertEqual(t, "is_pro", false, r2["is_pro"])
+	}
+
+	{
+		r3 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+			"agent_model":   "DUMMY_PHONE",
+			"agent_version": "4X",
+			"client_type":   "ANDROID",
+			"fcm_token":     "DUMMY_FCM",
+			"pro_token":     "ANDROID|v2|PURCHASED:000",
+		})
+
+		tt.AssertEqual(t, "is_pro", true, r3["is_pro"])
+	}
+
+}
