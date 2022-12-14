@@ -36,8 +36,8 @@ func NewAPIHandler(app *logic.Application) APIHandler {
 // @Param   post_body body     handler.CreateUser.body false " "
 //
 // @Success 200       {object} models.UserJSONWithClients
-// @Failure 400       {object} ginresp.apiError
-// @Failure 500       {object} ginresp.apiError
+// @Failure 400       {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure 500       {object} ginresp.apiError "internal server error"
 //
 // @Router  /api/users [POST]
 func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
@@ -142,10 +142,10 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 // @Param   uid path     int true "UserID"
 //
 // @Success 200 {object} models.UserJSON
-// @Failure 400 {object} ginresp.apiError
-// @Failure 401 {object} ginresp.apiError
-// @Failure 404 {object} ginresp.apiError
-// @Failure 500 {object} ginresp.apiError
+// @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure 404 {object} ginresp.apiError "user not found"
+// @Failure 500 {object} ginresp.apiError "internal server error"
 //
 // @Router  /api/users/{uid} [GET]
 func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
@@ -191,10 +191,10 @@ func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 // @Param       admin_key body     string false "Send `true` to create a new admin_key"
 //
 // @Success     200       {object} models.UserJSON
-// @Failure     400       {object} ginresp.apiError
-// @Failure     401       {object} ginresp.apiError
-// @Failure     404       {object} ginresp.apiError
-// @Failure     500       {object} ginresp.apiError
+// @Failure     400       {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure     401       {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure     404       {object} ginresp.apiError "user not found"
+// @Failure     500       {object} ginresp.apiError "internal server error"
 //
 // @Router      /api/users/{uid} [PATCH]
 func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
@@ -298,10 +298,9 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 // @Param   uid path     int true "UserID"
 //
 // @Success 200 {object} handler.ListClients.response
-// @Failure 400 {object} ginresp.apiError
-// @Failure 401 {object} ginresp.apiError
-// @Failure 404 {object} ginresp.apiError
-// @Failure 500 {object} ginresp.apiError
+// @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure 500 {object} ginresp.apiError "internal server error"
 //
 // @Router  /api/users/{uid}/clients [GET]
 func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
@@ -343,10 +342,10 @@ func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
 // @Param   cid path     int true "ClientID"
 //
 // @Success 200 {object} models.ClientJSON
-// @Failure 400 {object} ginresp.apiError
-// @Failure 401 {object} ginresp.apiError
-// @Failure 404 {object} ginresp.apiError
-// @Failure 500 {object} ginresp.apiError
+// @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure 404 {object} ginresp.apiError "client not found"
+// @Failure 500 {object} ginresp.apiError "internal server error"
 //
 // @Router  /api/users/{uid}/clients/{cid} [GET]
 func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
@@ -388,10 +387,9 @@ func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
 // @Param   post_body body     handler.AddClient.body false " "
 //
 // @Success 200       {object} models.ClientJSON
-// @Failure 400       {object} ginresp.apiError
-// @Failure 401       {object} ginresp.apiError
-// @Failure 404       {object} ginresp.apiError
-// @Failure 500       {object} ginresp.apiError
+// @Failure 400       {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure 401       {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure 500       {object} ginresp.apiError "internal server error"
 //
 // @Router  /api/users/{uid}/clients [POST]
 func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
@@ -449,10 +447,10 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 // @Param   cid path     int true "ClientID"
 //
 // @Success 200 {object} models.ClientJSON
-// @Failure 400 {object} ginresp.apiError
-// @Failure 401 {object} ginresp.apiError
-// @Failure 404 {object} ginresp.apiError
-// @Failure 500 {object} ginresp.apiError
+// @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure 404 {object} ginresp.apiError "client not found"
+// @Failure 500 {object} ginresp.apiError "internal server error"
 //
 // @Router  /api/users/{uid}/clients/{cid} [DELETE]
 func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
@@ -504,10 +502,9 @@ func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 // @Param       selector query    string true "Filter channels (default: owned)" Enums(owned, subscribed, all, subscribed_any, all_any)
 //
 // @Success     200      {object} handler.ListChannels.response
-// @Failure     400      {object} ginresp.apiError
-// @Failure     401      {object} ginresp.apiError
-// @Failure     404      {object} ginresp.apiError
-// @Failure     500      {object} ginresp.apiError
+// @Failure     400      {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure     401      {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure     500      {object} ginresp.apiError "internal server error"
 //
 // @Router      /api/users/{uid}/channels [GET]
 func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
@@ -584,10 +581,10 @@ func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 // @Param   cid path     int true "ChannelID"
 //
 // @Success 200 {object} models.ChannelJSON
-// @Failure 400 {object} ginresp.apiError
-// @Failure 401 {object} ginresp.apiError
-// @Failure 404 {object} ginresp.apiError
-// @Failure 500 {object} ginresp.apiError
+// @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure 404 {object} ginresp.apiError "channel not found"
+// @Failure 500 {object} ginresp.apiError "internal server error"
 //
 // @Router  /api/users/{uid}/channels/{cid} [GET]
 func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
@@ -631,10 +628,10 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 // @Param   send_key      body     string false "Send `true` to create a new send_key"
 //
 // @Success 200           {object} models.ChannelJSON
-// @Failure 400           {object} ginresp.apiError
-// @Failure 401           {object} ginresp.apiError
-// @Failure 404           {object} ginresp.apiError
-// @Failure 500           {object} ginresp.apiError
+// @Failure 400           {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure 401           {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure 404           {object} ginresp.apiError "channel not found"
+// @Failure 500           {object} ginresp.apiError "internal server error"
 //
 // @Router  /api/users/{uid}/channels/{cid} [PATCH]
 func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
@@ -708,10 +705,10 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 // @Param       cid        path     int                               true  "ChannelID"
 //
 // @Success     200        {object} handler.ListChannelMessages.response
-// @Failure     400        {object} ginresp.apiError
-// @Failure     401        {object} ginresp.apiError
-// @Failure     404        {object} ginresp.apiError
-// @Failure     500        {object} ginresp.apiError
+// @Failure     400        {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure     401        {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure     404        {object} ginresp.apiError "channel not found"
+// @Failure     500        {object} ginresp.apiError "internal server error"
 //
 // @Router      /api/users/{uid}/channels/{cid}/messages [GET]
 func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
@@ -803,10 +800,9 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 // @Param   uid path     int true "UserID"
 //
 // @Success 200 {object} handler.ListUserSubscriptions.response
-// @Failure 400 {object} ginresp.apiError
-// @Failure 401 {object} ginresp.apiError
-// @Failure 404 {object} ginresp.apiError
-// @Failure 500 {object} ginresp.apiError
+// @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure 500 {object} ginresp.apiError "internal server error"
 //
 // @Router  /api/users/{uid}/subscriptions [GET]
 func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
@@ -848,10 +844,10 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 // @Param   cid path     int true "ChannelID"
 //
 // @Success 200 {object} handler.ListChannelSubscriptions.response
-// @Failure 400 {object} ginresp.apiError
-// @Failure 401 {object} ginresp.apiError
-// @Failure 404 {object} ginresp.apiError
-// @Failure 500 {object} ginresp.apiError
+// @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure 404 {object} ginresp.apiError "channel not found"
+// @Failure 500 {object} ginresp.apiError "internal server error"
 //
 // @Router  /api/users/{uid}/channels/{cid}/subscriptions [GET]
 func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPResponse {
@@ -902,10 +898,10 @@ func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPRespons
 // @Param   sid path     int true "SubscriptionID"
 //
 // @Success 200 {object} models.SubscriptionJSON
-// @Failure 400 {object} ginresp.apiError
-// @Failure 401 {object} ginresp.apiError
-// @Failure 404 {object} ginresp.apiError
-// @Failure 500 {object} ginresp.apiError
+// @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure 404 {object} ginresp.apiError "subscription not found"
+// @Failure 500 {object} ginresp.apiError "internal server error"
 //
 // @Router  /api/users/{uid}/subscriptions/{sid} [GET]
 func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
@@ -950,10 +946,10 @@ func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Param   sid path     int true "SubscriptionID"
 //
 // @Success 200 {object} models.SubscriptionJSON
-// @Failure 400 {object} ginresp.apiError
-// @Failure 401 {object} ginresp.apiError
-// @Failure 404 {object} ginresp.apiError
-// @Failure 500 {object} ginresp.apiError
+// @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure 404 {object} ginresp.apiError "subscription not found"
+// @Failure 500 {object} ginresp.apiError "internal server error"
 //
 // @Router  /api/users/{uid}/subscriptions/{sid} [DELETE]
 func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
@@ -1004,10 +1000,9 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Param   post_data  body     handler.CreateSubscription.body  false " "
 //
 // @Success 200        {object} models.SubscriptionJSON
-// @Failure 400        {object} ginresp.apiError
-// @Failure 401        {object} ginresp.apiError
-// @Failure 404        {object} ginresp.apiError
-// @Failure 500        {object} ginresp.apiError
+// @Failure 400        {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure 401        {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure 500        {object} ginresp.apiError "internal server error"
 //
 // @Router  /api/users/{uid}/subscriptions [POST]
 func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
@@ -1065,10 +1060,10 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Param   sid path     int true "SubscriptionID"
 //
 // @Success 200 {object} models.SubscriptionJSON
-// @Failure 400 {object} ginresp.apiError
-// @Failure 401 {object} ginresp.apiError
-// @Failure 404 {object} ginresp.apiError
-// @Failure 500 {object} ginresp.apiError
+// @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure 404 {object} ginresp.apiError "subscription not found"
+// @Failure 500 {object} ginresp.apiError "internal server error"
 //
 // @Router  /api/users/{uid}/subscriptions/{sid} [PATCH]
 func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
@@ -1132,10 +1127,9 @@ func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Param       query_data query    handler.ListMessages.query false " "
 //
 // @Success     200        {object} handler.ListMessages.response
-// @Failure     400        {object} ginresp.apiError
-// @Failure     401        {object} ginresp.apiError
-// @Failure     404        {object} ginresp.apiError
-// @Failure     500        {object} ginresp.apiError
+// @Failure     400        {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure     401        {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure     500        {object} ginresp.apiError "internal server error"
 //
 // @Router      /api/messages [GET]
 func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
@@ -1215,10 +1209,10 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 // @Param       mid path     int true "SCNMessageID"
 //
 // @Success     200 {object} models.MessageJSON
-// @Failure     400 {object} ginresp.apiError
-// @Failure     401 {object} ginresp.apiError
-// @Failure     404 {object} ginresp.apiError
-// @Failure     500 {object} ginresp.apiError
+// @Failure     400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure     401 {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure     404 {object} ginresp.apiError "message not found"
+// @Failure     500 {object} ginresp.apiError "internal server error"
 //
 // @Router      /api/messages/{mid} [PATCH]
 func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
@@ -1285,10 +1279,10 @@ func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 // @Param       mid path     int true "SCNMessageID"
 //
 // @Success     200 {object} models.MessageJSON
-// @Failure     400 {object} ginresp.apiError
-// @Failure     401 {object} ginresp.apiError
-// @Failure     404 {object} ginresp.apiError
-// @Failure     500 {object} ginresp.apiError
+// @Failure     400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure     401 {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure     404 {object} ginresp.apiError "message not found"
+// @Failure     500 {object} ginresp.apiError "internal server error"
 //
 // @Router      /api/messages/{mid} [DELETE]
 func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {

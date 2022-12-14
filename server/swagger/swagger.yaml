@@ -799,19 +799,15 @@ paths:
           schema:
             $ref: '#/definitions/handler.ListMessages.response'
         "400":
-          description: Bad Request
+          description: supplied values/parameters cannot be parsed / are invalid
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
+          description: user is not authorized / has missing permissions
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: List all (subscribed) messages
@@ -834,19 +830,19 @@ paths:
           schema:
             $ref: '#/definitions/models.MessageJSON'
         "400":
-          description: Bad Request
+          description: supplied values/parameters cannot be parsed / are invalid
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
+          description: user is not authorized / has missing permissions
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "404":
-          description: Not Found
+          description: message not found
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Delete a single message
@@ -870,19 +866,19 @@ paths:
           schema:
             $ref: '#/definitions/models.MessageJSON'
         "400":
-          description: Bad Request
+          description: supplied values/parameters cannot be parsed / are invalid
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
+          description: user is not authorized / has missing permissions
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "404":
-          description: Not Found
+          description: message not found
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Get a single message (untrimmed)
@@ -1178,11 +1174,11 @@ paths:
           schema:
             $ref: '#/definitions/models.UserJSONWithClients'
         "400":
-          description: Bad Request
+          description: supplied values/parameters cannot be parsed / are invalid
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Create a new user
@@ -1203,19 +1199,19 @@ paths:
           schema:
             $ref: '#/definitions/models.UserJSON'
         "400":
-          description: Bad Request
+          description: supplied values/parameters cannot be parsed / are invalid
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
+          description: user is not authorized / has missing permissions
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "404":
-          description: Not Found
+          description: user not found
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Get a user
@@ -1261,19 +1257,19 @@ paths:
           schema:
             $ref: '#/definitions/models.UserJSON'
         "400":
-          description: Bad Request
+          description: supplied values/parameters cannot be parsed / are invalid
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
+          description: user is not authorized / has missing permissions
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "404":
-          description: Not Found
+          description: user not found
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: (Partially) update a user
@@ -1312,19 +1308,15 @@ paths:
           schema:
             $ref: '#/definitions/handler.ListChannels.response'
         "400":
-          description: Bad Request
+          description: supplied values/parameters cannot be parsed / are invalid
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
+          description: user is not authorized / has missing permissions
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: List channels of a user (subscribed/owned)
@@ -1350,19 +1342,19 @@ paths:
           schema:
             $ref: '#/definitions/models.ChannelJSON'
         "400":
-          description: Bad Request
+          description: supplied values/parameters cannot be parsed / are invalid
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
+          description: user is not authorized / has missing permissions
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "404":
-          description: Not Found
+          description: channel not found
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: List all channels of a user
@@ -1397,19 +1389,19 @@ paths:
           schema:
             $ref: '#/definitions/models.ChannelJSON'
         "400":
-          description: Bad Request
+          description: supplied values/parameters cannot be parsed / are invalid
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
+          description: user is not authorized / has missing permissions
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "404":
-          description: Not Found
+          description: channel not found
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: (Partially) update a channel
@@ -1452,19 +1444,19 @@ paths:
           schema:
             $ref: '#/definitions/handler.ListChannelMessages.response'
         "400":
-          description: Bad Request
+          description: supplied values/parameters cannot be parsed / are invalid
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
+          description: user is not authorized / has missing permissions
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "404":
-          description: Not Found
+          description: channel not found
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: List messages of a channel
@@ -1490,19 +1482,19 @@ paths:
           schema:
             $ref: '#/definitions/handler.ListChannelSubscriptions.response'
         "400":
-          description: Bad Request
+          description: supplied values/parameters cannot be parsed / are invalid
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
+          description: user is not authorized / has missing permissions
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "404":
-          description: Not Found
+          description: channel not found
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: List all subscriptions of a channel
@@ -1523,19 +1515,15 @@ paths:
           schema:
             $ref: '#/definitions/handler.ListClients.response'
         "400":
-          description: Bad Request
+          description: supplied values/parameters cannot be parsed / are invalid
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
+          description: user is not authorized / has missing permissions
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: List all clients
@@ -1560,19 +1548,15 @@ paths:
           schema:
             $ref: '#/definitions/models.ClientJSON'
         "400":
-          description: Bad Request
+          description: supplied values/parameters cannot be parsed / are invalid
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
+          description: user is not authorized / has missing permissions
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Add a new clients
@@ -1598,19 +1582,19 @@ paths:
           schema:
             $ref: '#/definitions/models.ClientJSON'
         "400":
-          description: Bad Request
+          description: supplied values/parameters cannot be parsed / are invalid
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
+          description: user is not authorized / has missing permissions
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "404":
-          description: Not Found
+          description: client not found
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Delete a client
@@ -1635,19 +1619,19 @@ paths:
           schema:
             $ref: '#/definitions/models.ClientJSON'
         "400":
-          description: Bad Request
+          description: supplied values/parameters cannot be parsed / are invalid
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
+          description: user is not authorized / has missing permissions
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "404":
-          description: Not Found
+          description: client not found
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Get a single client
@@ -1668,19 +1652,15 @@ paths:
           schema:
             $ref: '#/definitions/handler.ListUserSubscriptions.response'
         "400":
-          description: Bad Request
+          description: supplied values/parameters cannot be parsed / are invalid
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
+          description: user is not authorized / has missing permissions
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: List all channels of a user
@@ -1708,19 +1688,15 @@ paths:
           schema:
             $ref: '#/definitions/models.SubscriptionJSON'
         "400":
-          description: Bad Request
+          description: supplied values/parameters cannot be parsed / are invalid
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: Not Found
+          description: user is not authorized / has missing permissions
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Creare/Request a subscription
@@ -1746,19 +1722,19 @@ paths:
           schema:
             $ref: '#/definitions/models.SubscriptionJSON'
         "400":
-          description: Bad Request
+          description: supplied values/parameters cannot be parsed / are invalid
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
+          description: user is not authorized / has missing permissions
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "404":
-          description: Not Found
+          description: subscription not found
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Cancel (delete) subscription
@@ -1783,19 +1759,19 @@ paths:
           schema:
             $ref: '#/definitions/models.SubscriptionJSON'
         "400":
-          description: Bad Request
+          description: supplied values/parameters cannot be parsed / are invalid
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
+          description: user is not authorized / has missing permissions
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "404":
-          description: Not Found
+          description: subscription not found
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Get a single subscription
@@ -1820,19 +1796,19 @@ paths:
           schema:
             $ref: '#/definitions/models.SubscriptionJSON'
         "400":
-          description: Bad Request
+          description: supplied values/parameters cannot be parsed / are invalid
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "401":
-          description: Unauthorized
+          description: user is not authorized / has missing permissions
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "404":
-          description: Not Found
+          description: subscription not found
           schema:
             $ref: '#/definitions/ginresp.apiError'
         "500":
-          description: Internal Server Error
+          description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Update a subscription (e.g. confirm)

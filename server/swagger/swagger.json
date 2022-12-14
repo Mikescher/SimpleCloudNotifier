@@ -447,25 +447,19 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
+                        "description": "user is not authorized / has missing permissions",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal server error",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -498,25 +492,25 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "user is not authorized / has missing permissions",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "message not found",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal server error",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -547,25 +541,25 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "user is not authorized / has missing permissions",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "message not found",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal server error",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -1002,13 +996,13 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal server error",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -1040,25 +1034,25 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "user is not authorized / has missing permissions",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "user not found",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal server error",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -1129,25 +1123,25 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "user is not authorized / has missing permissions",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "user not found",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal server error",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -1194,25 +1188,19 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
+                        "description": "user is not authorized / has missing permissions",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal server error",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -1251,25 +1239,25 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "user is not authorized / has missing permissions",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "channel not found",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal server error",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -1322,25 +1310,25 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "user is not authorized / has missing permissions",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "channel not found",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal server error",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -1400,25 +1388,25 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "user is not authorized / has missing permissions",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "channel not found",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal server error",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -1457,25 +1445,25 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "user is not authorized / has missing permissions",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "channel not found",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal server error",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -1507,25 +1495,19 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
+                        "description": "user is not authorized / has missing permissions",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal server error",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -1563,25 +1545,19 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
+                        "description": "user is not authorized / has missing permissions",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal server error",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -1620,25 +1596,25 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "user is not authorized / has missing permissions",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "client not found",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal server error",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -1675,25 +1651,25 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "user is not authorized / has missing permissions",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "client not found",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal server error",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -1725,25 +1701,19 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
+                        "description": "user is not authorized / has missing permissions",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal server error",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -1786,25 +1756,19 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
+                        "description": "user is not authorized / has missing permissions",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal server error",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -1843,25 +1807,25 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "user is not authorized / has missing permissions",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "subscription not found",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal server error",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -1898,25 +1862,25 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "user is not authorized / has missing permissions",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "subscription not found",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal server error",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -1953,25 +1917,25 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "user is not authorized / has missing permissions",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "subscription not found",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal server error",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
