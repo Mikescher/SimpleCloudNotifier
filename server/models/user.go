@@ -35,8 +35,9 @@ func (u User) JSON() UserJSON {
 		TimestampLastRead: timeOptFmt(u.TimestampLastRead, time.RFC3339Nano),
 		TimestampLastSent: timeOptFmt(u.TimestampLastSent, time.RFC3339Nano),
 		MessagesSent:      u.MessagesSent,
-		QuotaUsed:         u.QuotaUsed,
-		QuotaUsedDay:      u.QuotaUsedDay,
+		QuotaUsed:         u.QuotaUsedToday(),
+		QuotaPerDay:       u.QuotaPerDay(),
+		QuotaRemaining:    u.QuotaRemainingToday(),
 		IsPro:             u.IsPro,
 		DefaultChannel:    u.DefaultChannel(),
 	}
@@ -117,7 +118,8 @@ type UserJSON struct {
 	TimestampLastSent *string `json:"timestamp_lastsent"`
 	MessagesSent      int     `json:"messages_sent"`
 	QuotaUsed         int     `json:"quota_used"`
-	QuotaUsedDay      *string `json:"quota_used_day"`
+	QuotaRemaining    int     `json:"quota_remaining"`
+	QuotaPerDay       int     `json:"quota_max"`
 	IsPro             bool    `json:"is_pro"`
 	DefaultChannel    string  `json:"default_channel"`
 }

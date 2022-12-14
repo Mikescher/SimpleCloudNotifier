@@ -1186,6 +1186,83 @@ func TestSendToTooLongChannel(t *testing.T) {
 	}, 400, apierr.CHANNEL_TOO_LONG)
 }
 
+func TestQuotaExceededNoPro(t *testing.T) {
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	uid := int(r0["user_id"].(float64))
+	admintok := r0["admin_key"].(string)
+	sendtok := r0["send_key"].(string)
+
+	tt.AssertStrRepEqual(t, "quota.0", 0, r0["quota_used"])
+	tt.AssertStrRepEqual(t, "quota.0", 50, r0["quota_max"])
+	tt.AssertStrRepEqual(t, "quota.0", 50, r0["quota_remaining"])
+
+	{
+		msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+			"user_key": sendtok,
+			"user_id":  uid,
+			"title":    tt.ShortLipsum0(2),
+		})
+		tt.AssertStrRepEqual(t, "quota.msg.1", 1, msg1["quota"])
+		tt.AssertStrRepEqual(t, "quota.msg.1", 50, msg1["quota_max"])
+	}
+
+	{
+		usr := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d", uid))
+
+		tt.AssertStrRepEqual(t, "quota.1", 1, usr["quota_used"])
+		tt.AssertStrRepEqual(t, "quota.1", 50, usr["quota_max"])
+		tt.AssertStrRepEqual(t, "quota.1", 49, usr["quota_remaining"])
+	}
+
+	for i := 0; i < 48; i++ {
+
+		tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+			"user_key": sendtok,
+			"user_id":  uid,
+			"title":    tt.ShortLipsum0(2),
+		})
+	}
+
+	{
+		usr := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d", uid))
+
+		tt.AssertStrRepEqual(t, "quota.49", 49, usr["quota_used"])
+		tt.AssertStrRepEqual(t, "quota.49", 50, usr["quota_max"])
+		tt.AssertStrRepEqual(t, "quota.49", 1, usr["quota_remaining"])
+	}
+
+	msg50 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"user_key": sendtok,
+		"user_id":  uid,
+		"title":    tt.ShortLipsum0(2),
+	})
+	tt.AssertStrRepEqual(t, "quota.msg.50", 50, msg50["quota"])
+	tt.AssertStrRepEqual(t, "quota.msg.50", 50, msg50["quota_max"])
+
+	{
+		usr := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d", uid))
+
+		tt.AssertStrRepEqual(t, "quota.50", 50, usr["quota_used"])
+		tt.AssertStrRepEqual(t, "quota.50", 50, usr["quota_max"])
+		tt.AssertStrRepEqual(t, "quota.50", 0, usr["quota_remaining"])
+	}
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+		"user_key": sendtok,
+		"user_id":  uid,
+		"title":    tt.ShortLipsum0(2),
+	}, 403, apierr.QUOTA_REACHED)
+}
+
 //TODO post to foreign channel via send-key
 
 //TODO quota exceed (+ quota counter)
