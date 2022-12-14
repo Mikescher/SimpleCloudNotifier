@@ -12,12 +12,10 @@ import (
 )
 
 func TestSendSimpleMessageJSON(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
 	pusher := ws.Pusher.(*push.TestSink)
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -67,12 +65,10 @@ func TestSendSimpleMessageJSON(t *testing.T) {
 }
 
 func TestSendSimpleMessageQuery(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
 	pusher := ws.Pusher.(*push.TestSink)
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -105,12 +101,10 @@ func TestSendSimpleMessageQuery(t *testing.T) {
 }
 
 func TestSendSimpleMessageForm(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
 	pusher := ws.Pusher.(*push.TestSink)
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -147,12 +141,10 @@ func TestSendSimpleMessageForm(t *testing.T) {
 }
 
 func TestSendSimpleMessageFormAndQuery(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
 	pusher := ws.Pusher.(*push.TestSink)
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -176,12 +168,10 @@ func TestSendSimpleMessageFormAndQuery(t *testing.T) {
 }
 
 func TestSendSimpleMessageJSONAndQuery(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
 	pusher := ws.Pusher.(*push.TestSink)
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -205,12 +195,10 @@ func TestSendSimpleMessageJSONAndQuery(t *testing.T) {
 }
 
 func TestSendSimpleMessageAlt1(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
 	pusher := ws.Pusher.(*push.TestSink)
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -254,12 +242,10 @@ func TestSendSimpleMessageAlt1(t *testing.T) {
 }
 
 func TestSendContentMessage(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
 	pusher := ws.Pusher.(*push.TestSink)
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -301,12 +287,10 @@ func TestSendContentMessage(t *testing.T) {
 }
 
 func TestSendWithSendername(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
 	pusher := ws.Pusher.(*push.TestSink)
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -352,12 +336,10 @@ func TestSendWithSendername(t *testing.T) {
 }
 
 func TestSendLongContent(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
 	pusher := ws.Pusher.(*push.TestSink)
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -413,10 +395,8 @@ func TestSendLongContent(t *testing.T) {
 }
 
 func TestSendTooLongContent(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -442,10 +422,8 @@ func TestSendTooLongContent(t *testing.T) {
 }
 
 func TestSendTooLongTitle(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -465,12 +443,10 @@ func TestSendTooLongTitle(t *testing.T) {
 }
 
 func TestSendIdempotent(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
 	pusher := ws.Pusher.(*push.TestSink)
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -545,12 +521,10 @@ func TestSendIdempotent(t *testing.T) {
 }
 
 func TestSendWithPriority(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
 	pusher := ws.Pusher.(*push.TestSink)
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -640,12 +614,10 @@ func TestSendWithPriority(t *testing.T) {
 }
 
 func TestSendInvalidPriority(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
 	pusher := ws.Pusher.(*push.TestSink)
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -760,12 +732,10 @@ func TestSendInvalidPriority(t *testing.T) {
 }
 
 func TestSendWithTimestamp(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
 	pusher := ws.Pusher.(*push.TestSink)
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -819,12 +789,10 @@ func TestSendWithTimestamp(t *testing.T) {
 }
 
 func TestSendInvalidTimestamp(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
 	pusher := ws.Pusher.(*push.TestSink)
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -924,12 +892,10 @@ func TestSendInvalidTimestamp(t *testing.T) {
 }
 
 func TestSendCompat(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
 	pusher := ws.Pusher.(*push.TestSink)
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -1014,10 +980,8 @@ func TestSendCompat(t *testing.T) {
 }
 
 func TestSendToNewChannel(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -1096,10 +1060,8 @@ func TestSendToNewChannel(t *testing.T) {
 }
 
 func TestSendToManualChannel(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -1189,10 +1151,8 @@ func TestSendToManualChannel(t *testing.T) {
 }
 
 func TestSendToTooLongChannel(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",

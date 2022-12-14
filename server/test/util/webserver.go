@@ -18,7 +18,7 @@ import (
 
 type Void = struct{}
 
-func StartSimpleWebserver(t *testing.T) (*logic.Application, func()) {
+func StartSimpleWebserver(t *testing.T) (*logic.Application, string, func()) {
 	InitTests()
 
 	uuid2, _ := langext.NewHexUUID()
@@ -100,5 +100,5 @@ func StartSimpleWebserver(t *testing.T) (*logic.Application, func()) {
 		TestFailErr(t, err)
 	}
 
-	return app, stop
+	return app, "http://127.0.0.1:" + app.Port, stop
 }

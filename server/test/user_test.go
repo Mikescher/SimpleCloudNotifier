@@ -9,10 +9,8 @@ import (
 )
 
 func TestCreateUserNoClient(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"no_client": true,
@@ -35,10 +33,8 @@ func TestCreateUserNoClient(t *testing.T) {
 }
 
 func TestCreateUserDummyClient(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -76,10 +72,8 @@ func TestCreateUserDummyClient(t *testing.T) {
 }
 
 func TestCreateUserWithUsername(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -103,10 +97,8 @@ func TestCreateUserWithUsername(t *testing.T) {
 }
 
 func TestUpdateUsername(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -139,10 +131,8 @@ func TestUpdateUsername(t *testing.T) {
 }
 
 func TestRecreateKeys(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -202,10 +192,8 @@ func TestRecreateKeys(t *testing.T) {
 func TestDeleteUser(t *testing.T) {
 	t.SkipNow() // TODO DeleteUser Not implemented
 
-	ws, stop := tt.StartSimpleWebserver(t)
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",

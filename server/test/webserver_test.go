@@ -7,17 +7,15 @@ import (
 )
 
 func TestWebserver(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
-	fmt.Printf("Port       := %s\n", ws.Port)
+	fmt.Printf("URL       := %s\n", baseUrl)
 }
 
 func TestPing(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	_ = tt.RequestGet[tt.Void](t, baseUrl, "/api/ping")
 	_ = tt.RequestPut[tt.Void](t, baseUrl, "/api/ping", nil)
@@ -27,19 +25,15 @@ func TestPing(t *testing.T) {
 }
 
 func TestMongo(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	_ = tt.RequestPost[tt.Void](t, baseUrl, "/api/db-test", nil)
 }
 
 func TestHealth(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	_ = tt.RequestGet[tt.Void](t, baseUrl, "/api/health")
 }

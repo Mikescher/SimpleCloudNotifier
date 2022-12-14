@@ -8,10 +8,8 @@ import (
 )
 
 func TestGetClient(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -59,10 +57,8 @@ func TestGetClient(t *testing.T) {
 }
 
 func TestCreateAndDeleteClient(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -104,10 +100,8 @@ func TestCreateAndDeleteClient(t *testing.T) {
 }
 
 func TestReuseFCM(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",

@@ -12,10 +12,8 @@ import (
 )
 
 func TestSearchMessageFTSSimple(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	data := tt.InitDefaultData(t, ws)
 
@@ -40,10 +38,8 @@ func TestSearchMessageFTSMulti(t *testing.T) {
 //TODO list messages from channel that you cannot see
 
 func TestDeleteMessage(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -70,10 +66,8 @@ func TestDeleteMessage(t *testing.T) {
 }
 
 func TestDeleteMessageAndResendUsrMsgId(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
@@ -122,10 +116,8 @@ func TestDeleteMessageAndResendUsrMsgId(t *testing.T) {
 }
 
 func TestGetMessageSimple(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	data := tt.InitDefaultData(t, ws)
 
@@ -141,10 +133,8 @@ func TestGetMessageSimple(t *testing.T) {
 }
 
 func TestGetMessageNotFound(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	data := tt.InitDefaultData(t, ws)
 
@@ -152,10 +142,8 @@ func TestGetMessageNotFound(t *testing.T) {
 }
 
 func TestGetMessageFull(t *testing.T) {
-	ws, stop := tt.StartSimpleWebserver(t)
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
-
-	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	data := tt.InitDefaultData(t, ws)
 
