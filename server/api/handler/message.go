@@ -196,6 +196,7 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query existing message", err)
 		}
 		if msg != nil {
+			//the found message can be deleted (!), but we still return NO_ERROR here...
 			return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
 				Success:        true,
 				ErrorID:        apierr.NO_ERROR,

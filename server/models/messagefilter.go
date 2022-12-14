@@ -37,6 +37,8 @@ type MessageFilter struct {
 	TitleCI                 *string // case-insensitive
 	Priority                *[]int
 	UserMessageID           *[]string
+	OnlyDeleted             bool
+	IncludeDeleted          bool
 }
 
 func (f MessageFilter) SQL() (string, string, sq.PP, error) {
@@ -52,6 +54,14 @@ func (f MessageFilter) SQL() (string, string, sq.PP, error) {
 	sqlClauses := make([]string, 0)
 
 	params := sq.PP{}
+
+	if f.OnlyDeleted {
+		sqlClauses = append(sqlClauses, "(deleted=1)")
+	} else if f.IncludeDeleted {
+		// nothing, return all
+	} else {
+		sqlClauses = append(sqlClauses, "(deleted=0)") // default
+	}
 
 	if f.ConfirmedSubscriptionBy != nil {
 		sqlClauses = append(sqlClauses, "(subs.subscriber_user_id = :sub_uid AND subs.confirmed = 1)")

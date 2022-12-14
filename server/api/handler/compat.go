@@ -533,7 +533,7 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 
-	msg, err := h.database.GetMessage(ctx, models.SCNMessageID(*data.MessageID))
+	msg, err := h.database.GetMessage(ctx, models.SCNMessageID(*data.MessageID), false)
 	if err == sql.ErrNoRows {
 		return ginresp.CompatAPIError(301, "Message not found")
 	}

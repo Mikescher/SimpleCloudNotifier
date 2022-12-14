@@ -90,7 +90,9 @@ CREATE TABLE messages
     title              TEXT                                     NOT NULL,
     content            TEXT                                         NULL,
     priority           INTEGER  CHECK(priority IN (0, 1, 2))    NOT NULL,
-    usr_message_id     TEXT                                         NULL
+    usr_message_id     TEXT                                         NULL,
+
+    deleted            INTEGER  CHECK(deleted IN (0, 1))        NOT NULL    DEFAULT '0'
 ) STRICT;
 CREATE        INDEX "idx_messages_owner_channel"    ON messages (owner_user_id, channel_name COLLATE BINARY);
 CREATE        INDEX "idx_messages_owner_channel_nc" ON messages (owner_user_id, channel_name COLLATE NOCASE);
@@ -102,6 +104,7 @@ CREATE        INDEX "idx_messages_sendername"       ON messages (sender_name COL
 CREATE        INDEX "idx_messages_sendername_nc"    ON messages (sender_name COLLATE NOCASE);
 CREATE        INDEX "idx_messages_title"            ON messages (title COLLATE BINARY);
 CREATE        INDEX "idx_messages_title_nc"         ON messages (title COLLATE NOCASE);
+CREATE        INDEX "idx_messages_deleted"          ON messages (deleted);
 
 
 CREATE VIRTUAL TABLE messages_fts USING fts5

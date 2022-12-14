@@ -1237,7 +1237,7 @@ func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	msg, err := h.database.GetMessage(ctx, u.MessageID)
+	msg, err := h.database.GetMessage(ctx, u.MessageID, false)
 	if err == sql.ErrNoRows {
 		return ginresp.APIError(g, 404, apierr.MESSAGE_NOT_FOUND, "message not found", err)
 	}
@@ -1307,7 +1307,7 @@ func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	msg, err := h.database.GetMessage(ctx, u.MessageID)
+	msg, err := h.database.GetMessage(ctx, u.MessageID, false)
 	if err == sql.ErrNoRows {
 		return ginresp.APIError(g, 404, apierr.MESSAGE_NOT_FOUND, "message not found", err)
 	}

@@ -93,36 +93,47 @@ func (j *DeliveryRetryJob) redeliver(ctx *logic.SimpleContext, delivery models.D
 		return
 	}
 
-	msg, err := j.app.Database.GetMessage(ctx, delivery.SCNMessageID)
+	msg, err := j.app.Database.GetMessage(ctx, delivery.SCNMessageID, true)
 	if err != nil {
 		log.Err(err).Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Msg("Failed to get message")
 		ctx.RollbackTransaction()
 		return
 	}
 
-	fcmDelivID, err := j.app.DeliverMessage(ctx, client, msg)
-	if err == nil {
-		err = j.app.Database.SetDeliverySuccess(ctx, delivery, *fcmDelivID)
-		if err != nil {
-			log.Err(err).Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Int64("DeliveryID", delivery.DeliveryID.IntID()).Msg("Failed to update delivery")
-			ctx.RollbackTransaction()
-			return
-		}
-	} else if delivery.RetryCount+1 > delivery.MaxRetryCount() {
+	if msg.Deleted {
 		err = j.app.Database.SetDeliveryFailed(ctx, delivery)
 		if err != nil {
 			log.Err(err).Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Int64("DeliveryID", delivery.DeliveryID.IntID()).Msg("Failed to update delivery")
 			ctx.RollbackTransaction()
 			return
 		}
-		log.Warn().Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Int64("DeliveryID", delivery.DeliveryID.IntID()).Msg("Delivery failed after <max> retries (set to FAILURE)")
 	} else {
-		err = j.app.Database.SetDeliveryRetry(ctx, delivery)
-		if err != nil {
-			log.Err(err).Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Int64("DeliveryID", delivery.DeliveryID.IntID()).Msg("Failed to update delivery")
-			ctx.RollbackTransaction()
-			return
+
+		fcmDelivID, err := j.app.DeliverMessage(ctx, client, msg)
+		if err == nil {
+			err = j.app.Database.SetDeliverySuccess(ctx, delivery, *fcmDelivID)
+			if err != nil {
+				log.Err(err).Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Int64("DeliveryID", delivery.DeliveryID.IntID()).Msg("Failed to update delivery")
+				ctx.RollbackTransaction()
+				return
+			}
+		} else if delivery.RetryCount+1 > delivery.MaxRetryCount() {
+			err = j.app.Database.SetDeliveryFailed(ctx, delivery)
+			if err != nil {
+				log.Err(err).Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Int64("DeliveryID", delivery.DeliveryID.IntID()).Msg("Failed to update delivery")
+				ctx.RollbackTransaction()
+				return
+			}
+			log.Warn().Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Int64("DeliveryID", delivery.DeliveryID.IntID()).Msg("Delivery failed after <max> retries (set to FAILURE)")
+		} else {
+			err = j.app.Database.SetDeliveryRetry(ctx, delivery)
+			if err != nil {
+				log.Err(err).Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Int64("DeliveryID", delivery.DeliveryID.IntID()).Msg("Failed to update delivery")
+				ctx.RollbackTransaction()
+				return
+			}
 		}
+
 	}
 
 	err = ctx.CommitTransaction()

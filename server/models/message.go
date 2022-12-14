@@ -26,6 +26,7 @@ type Message struct {
 	Content         *string
 	Priority        int
 	UserMessageID   *string
+	Deleted         bool
 }
 
 func (m Message) FullJSON() MessageJSON {
@@ -122,6 +123,7 @@ type MessageDB struct {
 	Content         *string      `db:"content"`
 	Priority        int          `db:"priority"`
 	UserMessageID   *string      `db:"usr_message_id"`
+	Deleted         int          `db:"deleted"`
 }
 
 func (m MessageDB) Model() Message {
@@ -139,6 +141,7 @@ func (m MessageDB) Model() Message {
 		Content:         m.Content,
 		Priority:        m.Priority,
 		UserMessageID:   m.UserMessageID,
+		Deleted:         m.Deleted != 0,
 	}
 }
 

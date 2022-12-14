@@ -112,7 +112,7 @@ var messageExamples = []msgex{
 	{0, "", "", P0, SKEY, "Congratulations", "You have been selected as Employee of the Month. Please come to the front desk to pick up your prize", 0},
 	{0, "", "", PX, AKEY, "Attention", "The water cooler is empty. Could someone please refill it?", timeext.FromHours(-11.29)},
 	{0, "Chatting Chamber", "Mobile Mate", P2, SKEY, "Important", "All employees are required to complete a safety training course by the end of the month", 0},
-	{0, "", "", P1, AKEY, "FAQ Update", lipsum(10001, 1), 0},
+	{0, "", "", P1, AKEY, "FAQ Update", Lipsum(10001, 1), 0},
 	{0, "", "", PX, AKEY, "Notice", "There will be a fire drill at 10:00am tomorrow. Please follow the instructions of the fire marshal", 0},
 	{0, "", "Cellular Confidant", P2, SKEY, "Invitation", "You are invited to a celebration in honor of our 10-year anniversary. The party will be held on Friday at 7:00pm", 0},
 	{0, "", "", P0, SKEY, "Deadline reminder", "Please remember to submit your project proposal by the end of the day \U0001f638", 0},
@@ -156,9 +156,9 @@ var messageExamples = []msgex{
 	{3, "", "", PX, AKEY, "Payment confirmation", "Your payment of $100 has been successfully processed. Thank you for your business.", 0},
 	{3, "", "", P2, SKEY, "Task completed", "Your task \"Update website content\" has been completed and is ready for review.", 0},
 	{3, "Innovations", "", PX, AKEY, "Invitation to join a group", "You have been invited to join the \"Marketing Team\" group on our collaboration platform.", 0},
-	{3, "", "", P2, SKEY, "Password reset", lipsum(10002, 1), 0},
-	{3, "", "", P2, SKEY, "Low battery alert", lipsum(10003, 2), 0},
-	{3, "Innovations", "", P2, SKEY, "System update available", lipsum(10004, 5), 0},
+	{3, "", "", P2, SKEY, "Password reset", Lipsum(10002, 1), 0},
+	{3, "", "", P2, SKEY, "Low battery alert", Lipsum(10003, 2), 0},
+	{3, "Innovations", "", P2, SKEY, "System update available", Lipsum(10004, 5), 0},
 	{3, "", "", P2, SKEY, "Appointment confirmation", "Your appointment for a physical exam on Monday, March 15th at 10 AM has been confirmed.", 0},
 	{3, "\U0001f5ff", "", P2, SKEY, "Order shipped", "Your order #123456 has been shipped and is on its way to your address.", 0},
 	{3, "", "", P2, SKEY, "Order cancelled", "Your order #123456 has been cancelled. We apologize for any inconvenience this may have caused.", 0},
@@ -166,7 +166,7 @@ var messageExamples = []msgex{
 	{3, "Reminders", "", PX, AKEY, "Account verification", "", timeext.FromHours(1.15)},
 	{3, "Reminders", "", PX, AKEY, "Overdue payment", "", 0},
 	{3, "Reminders", "", P2, SKEY, "Security alert", "We have detected suspicious activity on your account. Please take the necessary steps to secure your account.", timeext.FromHours(0.80)},
-	{3, "Reminders", "", PX, AKEY, "Product back in stock", lipsum(10001, 6), 0},
+	{3, "Reminders", "", PX, AKEY, "Product back in stock", Lipsum(10001, 6), 0},
 	{3, "", "", PX, AKEY, "Connection lost", "Your device has lost its connection to the internet. Please check your network settings and try again.", 0},
 	{3, "", "", P2, SKEY, "Subscription renewal", "Your subscription is set to renew in one week. Please update your payment information to avoid any interruption in service.", 0},
 	{3, "", "", PX, AKEY, "Work order assigned", "You have been assigned a new work order #123456. Please review the details and complete the task as soon as possible.", 0},
@@ -202,22 +202,22 @@ var messageExamples = []msgex{
 	{6, "", "server1", P2, SKEY, "Server performance improvement", "Thanks to recent upgrades, the server is now performing better than ever", 0},
 	{6, "", "server1", PX, AKEY, "Server security update", "The server has been updated with the latest security patches and enhancements", 0},
 	{6, "", "server1", P1, AKEY, "Server downtime schedule change", "The server downtime schedule has been changed to every other Friday at 8am EST", 0},
-	{6, "Lipsum", "", P2, SKEY, "Lorem Ipsum", lipsum(20001, 1), 0},
-	{6, "Lipsum", "", P0, SKEY, "Lorem Ipsum", lipsum(20002, 1), 0},
-	{6, "Lipsum", "", P2, SKEY, "Lorem Ipsum", lipsum(20003, 1), 0},
-	{6, "Lipsum", "", P0, SKEY, "Lorem Ipsum", lipsum(20004, 1), 0},
-	{6, "Lipsum", "", P2, SKEY, "Lorem Ipsum", lipsum(20005, 1), 0},
-	{6, "Lipsum", "", P1, AKEY, "Lorem Ipsum", lipsum(20006, 1), 0},
-	{6, "Lipsum", "", P1, AKEY, "Lorem Ipsum", lipsum(20007, 1), timeext.FromHours(-3.39)},
-	{6, "Lipsum", "", P0, SKEY, "Lorem Ipsum", lipsum(20008, 1), 0},
-	{6, "Lipsum", "", PX, AKEY, "Lorem Ipsum", lipsum(20009, 1), 0},
-	{6, "Lipsum", "", P0, SKEY, "Lorem Ipsum", lipsum(20010, 1), 0},
-	{6, "Lipsum", "", P2, SKEY, "Lorem Ipsum", lipsum(20011, 1), 0},
-	{6, "Lipsum", "", PX, AKEY, "Lorem Ipsum", lipsum(20012, 1), 0},
-	{6, "Lipsum", "", P2, SKEY, "Lorem Ipsum", lipsum(20013, 1), 0},
-	{6, "Lipsum", "", P2, SKEY, "Lorem Ipsum", lipsum(20014, 1), timeext.FromHours(-2.33)},
-	{6, "Lipsum", "", P0, SKEY, "Lorem Ipsum", lipsum(20015, 1), 0},
-	{6, "Lipsum", "", P0, SKEY, "Lorem Ipsum", lipsum(20016, 1), 0},
+	{6, "Lipsum", "", P2, SKEY, "Lorem Ipsum", Lipsum(20001, 1), 0},
+	{6, "Lipsum", "", P0, SKEY, "Lorem Ipsum", Lipsum(20002, 1), 0},
+	{6, "Lipsum", "", P2, SKEY, "Lorem Ipsum", Lipsum(20003, 1), 0},
+	{6, "Lipsum", "", P0, SKEY, "Lorem Ipsum", Lipsum(20004, 1), 0},
+	{6, "Lipsum", "", P2, SKEY, "Lorem Ipsum", Lipsum(20005, 1), 0},
+	{6, "Lipsum", "", P1, AKEY, "Lorem Ipsum", Lipsum(20006, 1), 0},
+	{6, "Lipsum", "", P1, AKEY, "Lorem Ipsum", Lipsum(20007, 1), timeext.FromHours(-3.39)},
+	{6, "Lipsum", "", P0, SKEY, "Lorem Ipsum", Lipsum(20008, 1), 0},
+	{6, "Lipsum", "", PX, AKEY, "Lorem Ipsum", Lipsum(20009, 1), 0},
+	{6, "Lipsum", "", P0, SKEY, "Lorem Ipsum", Lipsum(20010, 1), 0},
+	{6, "Lipsum", "", P2, SKEY, "Lorem Ipsum", Lipsum(20011, 1), 0},
+	{6, "Lipsum", "", PX, AKEY, "Lorem Ipsum", Lipsum(20012, 1), 0},
+	{6, "Lipsum", "", P2, SKEY, "Lorem Ipsum", Lipsum(20013, 1), 0},
+	{6, "Lipsum", "", P2, SKEY, "Lorem Ipsum", Lipsum(20014, 1), timeext.FromHours(-2.33)},
+	{6, "Lipsum", "", P0, SKEY, "Lorem Ipsum", Lipsum(20015, 1), 0},
+	{6, "Lipsum", "", P0, SKEY, "Lorem Ipsum", Lipsum(20016, 1), 0},
 
 	{7, "", "localhost", P2, SKEY, "Server outage resolution update", "We are still working on resolving the server outage and will provide updates as soon as possible", 0},
 	{7, "", "localhost", P0, SKEY, "New server release update", "A new update for the server has been released. Please update to the latest version for optimal performance", 0},
@@ -369,6 +369,10 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 	return DefData{User: users}
 }
 
-func lipsum(seed int64, paracount int) string {
+func Lipsum(seed int64, paracount int) string {
 	return loremipsum.NewWithSeed(seed).Paragraphs(paracount)
+}
+
+func Lipsum0(paracount int) string {
+	return loremipsum.NewWithSeed(0).Paragraphs(paracount)
 }

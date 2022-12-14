@@ -30,13 +30,20 @@ func (db *Database) GetMessageByUserMessageID(ctx TxContext, usrMsgId string) (*
 	return &msg, nil
 }
 
-func (db *Database) GetMessage(ctx TxContext, scnMessageID models.SCNMessageID) (models.Message, error) {
+func (db *Database) GetMessage(ctx TxContext, scnMessageID models.SCNMessageID, allowDeleted bool) (models.Message, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Message{}, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM messages WHERE scn_message_id = :mid LIMIT 1", sq.PP{"mid": scnMessageID})
+	var sqlcmd string
+	if allowDeleted {
+		sqlcmd = "SELECT * FROM messages WHERE scn_message_id = :mid LIMIT 1"
+	} else {
+		sqlcmd = "SELECT * FROM messages WHERE scn_message_id = :mid AND deleted=0 LIMIT 1"
+	}
+
+	rows, err := tx.Query(ctx, sqlcmd, sq.PP{"mid": scnMessageID})
 	if err != nil {
 		return models.Message{}, err
 	}
@@ -103,7 +110,7 @@ func (db *Database) DeleteMessage(ctx TxContext, scnMessageID models.SCNMessageI
 		return err
 	}
 
-	_, err = tx.Exec(ctx, "DELETE FROM messages WHERE scn_message_id = :mid", sq.PP{"mid": scnMessageID})
+	_, err = tx.Exec(ctx, "UPDATE messages SET deleted=1 WHERE scn_message_id = :mid AND deleted=0", sq.PP{"mid": scnMessageID})
 	if err != nil {
 		return err
 	}
