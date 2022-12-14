@@ -5,7 +5,6 @@ import (
 	tt "blackforestbytes.com/simplecloudnotifier/test/util"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
 	"net/url"
 	"testing"
@@ -26,8 +25,8 @@ func TestSearchMessageFTSSimple(t *testing.T) {
 
 	msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/messages?filter=%s", url.QueryEscape("Friday")))
 	tt.AssertEqual(t, "msgList.len", 2, len(msgList.Messages))
-	tt.AssertTrue(t, "msgList.any<1>", langext.ArrAny(msgList.Messages, func(msg gin.H) bool { return msg["title"].(string) == "Invitation" }))
-	tt.AssertTrue(t, "msgList.any<2>", langext.ArrAny(msgList.Messages, func(msg gin.H) bool { return msg["title"].(string) == "Important notice" }))
+	tt.AssertArrAny(t, "msgList.any<1>", msgList.Messages, func(msg gin.H) bool { return msg["title"].(string) == "Invitation" })
+	tt.AssertArrAny(t, "msgList.any<2>", msgList.Messages, func(msg gin.H) bool { return msg["title"].(string) == "Important notice" })
 }
 
 func TestSearchMessageFTSMulti(t *testing.T) {

@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"reflect"
 	"runtime/debug"
 	"strings"
@@ -160,6 +161,14 @@ func TestFailErr(t *testing.T, e error) {
 func TestFailIfErr(t *testing.T, e error) {
 	if e != nil {
 		TestFailErr(t, e)
+	}
+}
+
+func AssertArrAny[T any](t *testing.T, key string, arr []T, fn func(T) bool) {
+	if !langext.ArrAny(arr, fn) {
+		t.Errorf("AssertArrAny(%s) failed", key)
+		t.Error(string(debug.Stack()))
+		t.FailNow()
 	}
 }
 
