@@ -122,6 +122,7 @@ func (r *Router) Init(e *gin.Engine) {
 		apiv2.DELETE("/users/:uid/clients/:cid", ginresp.Wrap(r.apiHandler.DeleteClient))
 
 		apiv2.GET("/users/:uid/channels", ginresp.Wrap(r.apiHandler.ListChannels))
+		apiv2.POST("/users/:uid/channels", ginresp.Wrap(r.apiHandler.CreateChannel))
 		apiv2.GET("/users/:uid/channels/:cid", ginresp.Wrap(r.apiHandler.GetChannel))
 		apiv2.PATCH("/users/:uid/channels/:cid", ginresp.Wrap(r.apiHandler.UpdateChannel))
 		apiv2.GET("/users/:uid/channels/:cid/messages", ginresp.Wrap(r.apiHandler.ListChannelMessages))

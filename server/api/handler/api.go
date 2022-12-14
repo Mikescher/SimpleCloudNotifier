@@ -615,6 +615,64 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, channel.JSON(true)))
 }
 
+// CreateChannel swaggerdoc
+//
+// @Summary Create a new (empty) channel
+// @ID      api-channels-create
+// @Tags    API-v2
+//
+// @Param   uid       path     int                        true  "UserID"
+// @Param   post_body body     handler.CreateChannel.body false " "
+//
+// @Success 200       {object} models.ChannelJSON
+// @Failure 400       {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure 401       {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure 409       {object} ginresp.apiError "channel already exists"
+// @Failure 500       {object} ginresp.apiError "internal server error"
+//
+// @Router  /api/users/{uid}/channels/ [POST]
+func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
+	type uri struct {
+		UserID models.UserID `uri:"uid"`
+	}
+	type body struct {
+		Name string `json:"name"`
+	}
+
+	var u uri
+	var b body
+	ctx, errResp := h.app.StartRequest(g, &u, nil, &b, nil)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+		return *permResp
+	}
+
+	channelName := h.app.NormalizeChannelName(b.Name)
+
+	channelExisting, err := h.database.GetChannelByName(ctx, u.UserID, channelName)
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
+	}
+
+	if channelExisting != nil {
+		return ginresp.APIError(g, 409, apierr.CHANNEL_ALREADY_EXISTS, "Channel with this name already exists", nil)
+	}
+
+	subscribeKey := h.app.GenerateRandomAuthKey()
+	sendKey := h.app.GenerateRandomAuthKey()
+
+	channel, err := h.database.CreateChannel(ctx, u.UserID, channelName, subscribeKey, sendKey)
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create channel", err)
+	}
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, channel.JSON(true)))
+}
+
 // UpdateChannel swaggerdoc
 //
 // @Summary (Partially) update a channel
