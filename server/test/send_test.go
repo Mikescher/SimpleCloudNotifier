@@ -1466,12 +1466,8 @@ func TestSendParallel(t *testing.T) {
 
 //TODO post to foreign channel via send-key
 
-//TODO chan_name normalization
-
 //TODO check message_counter + last_sent in channel
 
 //TODO check message_counter + last_sent in user
-
-//TODO test pagination
 
 //TODO test delivery-retry
