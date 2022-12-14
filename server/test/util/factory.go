@@ -373,6 +373,6 @@ func Lipsum(seed int64, paracount int) string {
 	return loremipsum.NewWithSeed(seed).Paragraphs(paracount)
 }
 
-func Lipsum0(paracount int) string {
-	return loremipsum.NewWithSeed(0).Paragraphs(paracount)
+func ShortLipsum0(wcount int) string {
+	return loremipsum.NewWithSeed(0).Words(wcount)
 }

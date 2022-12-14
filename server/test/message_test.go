@@ -160,7 +160,7 @@ func TestGetMessageFull(t *testing.T) {
 	data := tt.InitDefaultData(t, ws)
 
 	ts := time.Now().Unix() - 735
-	content := tt.Lipsum0(2)
+	content := tt.ShortLipsum0(2)
 
 	msgOut := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
 		"user_key":    data.User[0].SendKey,
