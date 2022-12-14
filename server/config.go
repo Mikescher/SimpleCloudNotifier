@@ -30,17 +30,17 @@ type Config struct {
 	ReturnRawErrors     bool          `env:"SCN_ERROR_RETURN"`
 	DummyFirebase       bool          `env:"SCN_DUMMY_FB"`
 	DummyGoogleAPI      bool          `env:"SCN_DUMMY_GOOG"`
-	FirebaseTokenURI    string
-	FirebaseProjectID   string
-	FirebasePrivKeyID   string
-	FirebaseClientMail  string
-	FirebasePrivateKey  string
-	GoogleAPITokenURI   string
-	GoogleAPIPrivKeyID  string
-	GoogleAPIClientMail string
-	GoogleAPIPrivateKey string
-	GooglePackageName   string
-	GoogleProProductID  string
+	FirebaseTokenURI    string        `env:"FB_TOKENURI"`
+	FirebaseProjectID   string        `env:"FB_PROJECTID"`
+	FirebasePrivKeyID   string        `env:"FB_PRIVATEKEYID"`
+	FirebaseClientMail  string        `env:"FB_CLIENTEMAIL"`
+	FirebasePrivateKey  string        `env:"FB_PRIVATEKEY"`
+	GoogleAPITokenURI   string        `env:"GOOG_TOKENURI"`
+	GoogleAPIPrivKeyID  string        `env:"GOOG_PRIVATEKEYID"`
+	GoogleAPIClientMail string        `env:"GOOG_CLIENTEMAIL"`
+	GoogleAPIPrivateKey string        `env:"GOOG_PRIVATEKEY"`
+	GooglePackageName   string        `env:"GOOG_PACKAGENAME"`
+	GoogleProProductID  string        `env:"GOOG_PROPRODUCTID"`
 }
 
 var Conf Config
@@ -116,7 +116,7 @@ var configLocDocker = func() Config {
 var configDev = func() Config {
 	return Config{
 		Namespace:           "develop",
-		BaseURL:             confEnv("BASE_URL"),
+		BaseURL:             confEnv("SCN_URL"),
 		GinDebug:            true,
 		LogLevel:            zerolog.DebugLevel,
 		ServerIP:            "0.0.0.0",
@@ -150,7 +150,7 @@ var configDev = func() Config {
 var configStag = func() Config {
 	return Config{
 		Namespace:           "staging",
-		BaseURL:             confEnv("BASE_URL"),
+		BaseURL:             confEnv("SCN_URL"),
 		GinDebug:            true,
 		LogLevel:            zerolog.DebugLevel,
 		ServerIP:            "0.0.0.0",
