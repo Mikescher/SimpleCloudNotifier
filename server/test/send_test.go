@@ -421,6 +421,93 @@ func TestSendTooLongContent(t *testing.T) {
 	}, 400, apierr.CONTENT_TOO_LONG)
 }
 
+func TestSendLongContentPro(t *testing.T) {
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+		"pro_token":     "ANDROID|v2|PURCHASED:DUMMY_TOK_XX",
+	})
+
+	uid := int(r0["user_id"].(float64))
+	sendtok := r0["send_key"].(string)
+
+	{
+		longContent := ""
+		for i := 0; i < 400; i++ {
+			longContent += "123456789\n" // 10 * 400 = 4_000 (max = 16_384)
+		}
+
+		tt.RequestPost[tt.Void](t, baseUrl, "/", gin.H{
+			"user_key": sendtok,
+			"user_id":  uid,
+			"title":    "HelloWorld_042",
+			"content":  longContent,
+		})
+	}
+
+	{
+		longContent := ""
+		for i := 0; i < 800; i++ {
+			longContent += "123456789\n" // 10 * 800 = 8_000 (max = 16_384)
+		}
+
+		tt.RequestPost[tt.Void](t, baseUrl, "/", gin.H{
+			"user_key": sendtok,
+			"user_id":  uid,
+			"title":    "HelloWorld_042",
+			"content":  longContent,
+		})
+
+	}
+
+	{
+		longContent := ""
+		for i := 0; i < 1600; i++ {
+			longContent += "123456789\n" // 10 * 1600 = 16_000 (max = 16_384)
+		}
+
+		tt.RequestPost[tt.Void](t, baseUrl, "/", gin.H{
+			"user_key": sendtok,
+			"user_id":  uid,
+			"title":    "HelloWorld_042",
+			"content":  longContent,
+		})
+	}
+
+	{
+		longContent := ""
+		for i := 0; i < 1630; i++ {
+			longContent += "123456789\n" // 10 * 1630 = 163_000 (max = 16_384)
+		}
+
+		tt.RequestPost[tt.Void](t, baseUrl, "/", gin.H{
+			"user_key": sendtok,
+			"user_id":  uid,
+			"title":    "HelloWorld_042",
+			"content":  longContent,
+		})
+	}
+
+	{
+		longContent := ""
+		for i := 0; i < 1640; i++ {
+			longContent += "123456789\n" // 10 * 1640 = 164_000 (max = 16_384)
+		}
+
+		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+			"user_key": sendtok,
+			"user_id":  uid,
+			"title":    "HelloWorld_042",
+			"content":  longContent,
+		}, 400, apierr.CONTENT_TOO_LONG)
+	}
+}
+
 func TestSendTooLongTitle(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
@@ -1379,10 +1466,6 @@ func TestSendParallel(t *testing.T) {
 
 //TODO post to foreign channel via send-key
 
-//TODO quota exceed (+ quota counter)
-
-//TODO chan_naem too long
-
 //TODO chan_name normalization
 
 //TODO check message_counter + last_sent in channel
@@ -1392,7 +1475,3 @@ func TestSendParallel(t *testing.T) {
 //TODO test pagination
 
 //TODO test delivery-retry
-
-//TODO test content max with pro-user
-
-//TODO test quota with pro-user
