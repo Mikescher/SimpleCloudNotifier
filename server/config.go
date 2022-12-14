@@ -30,17 +30,17 @@ type Config struct {
 	ReturnRawErrors     bool          `env:"SCN_ERROR_RETURN"`
 	DummyFirebase       bool          `env:"SCN_DUMMY_FB"`
 	DummyGoogleAPI      bool          `env:"SCN_DUMMY_GOOG"`
-	FirebaseTokenURI    string        `env:"FB_TOKENURI"`
-	FirebaseProjectID   string        `env:"FB_PROJECTID"`
-	FirebasePrivKeyID   string        `env:"FB_PRIVATEKEYID"`
-	FirebaseClientMail  string        `env:"FB_CLIENTEMAIL"`
-	FirebasePrivateKey  string        `env:"FB_PRIVATEKEY"`
-	GoogleAPITokenURI   string        `env:"GOOG_TOKENURI"`
-	GoogleAPIPrivKeyID  string        `env:"GOOG_PRIVATEKEYID"`
-	GoogleAPIClientMail string        `env:"GOOG_CLIENTEMAIL"`
-	GoogleAPIPrivateKey string        `env:"GOOG_PRIVATEKEY"`
-	GooglePackageName   string        `env:"GOOG_PACKAGENAME"`
-	GoogleProProductID  string        `env:"GOOG_PROPRODUCTID"`
+	FirebaseTokenURI    string        `env:"SCN_FB_TOKENURI"`
+	FirebaseProjectID   string        `env:"SCN_FB_PROJECTID"`
+	FirebasePrivKeyID   string        `env:"SCN_FB_PRIVATEKEYID"`
+	FirebaseClientMail  string        `env:"SCN_FB_CLIENTEMAIL"`
+	FirebasePrivateKey  string        `env:"SCN_FB_PRIVATEKEY"`
+	GoogleAPITokenURI   string        `env:"SCN_GOOG_TOKENURI"`
+	GoogleAPIPrivKeyID  string        `env:"SCN_GOOG_PRIVATEKEYID"`
+	GoogleAPIClientMail string        `env:"SCN_GOOG_CLIENTEMAIL"`
+	GoogleAPIPrivateKey string        `env:"SCN_GOOG_PRIVATEKEY"`
+	GooglePackageName   string        `env:"SCN_GOOG_PACKAGENAME"`
+	GoogleProProductID  string        `env:"SCN_GOOG_PROPRODUCTID"`
 }
 
 var Conf Config
@@ -133,17 +133,17 @@ var configDev = func() Config {
 		ReturnRawErrors:     true,
 		DummyFirebase:       false,
 		FirebaseTokenURI:    "https://oauth2.googleapis.com/token",
-		FirebaseProjectID:   confEnv("FB_PROJECTID"),
-		FirebasePrivKeyID:   confEnv("FB_PRIVATEKEYID"),
-		FirebaseClientMail:  confEnv("FB_CLIENTEMAIL"),
-		FirebasePrivateKey:  confEnv("FB_PRIVATEKEY"),
+		FirebaseProjectID:   confEnv("SCN_FB_PROJECTID"),
+		FirebasePrivKeyID:   confEnv("SCN_FB_PRIVATEKEYID"),
+		FirebaseClientMail:  confEnv("SCN_FB_CLIENTEMAIL"),
+		FirebasePrivateKey:  confEnv("SCN_FB_PRIVATEKEY"),
 		DummyGoogleAPI:      false,
 		GoogleAPITokenURI:   "https://oauth2.googleapis.com/token",
-		GoogleAPIPrivKeyID:  confEnv("GOOG_PRIVATEKEYID"),
-		GoogleAPIClientMail: confEnv("GOOG_CLIENTEMAIL"),
-		GoogleAPIPrivateKey: confEnv("GOOG_PRIVATEKEY"),
-		GooglePackageName:   confEnv("GOOG_PACKAGENAME"),
-		GoogleProProductID:  confEnv("GOOG_PROPRODUCTID"),
+		GoogleAPIPrivKeyID:  confEnv("SCN_GOOG_PRIVATEKEYID"),
+		GoogleAPIClientMail: confEnv("SCN_GOOG_CLIENTEMAIL"),
+		GoogleAPIPrivateKey: confEnv("SCN_GOOG_PRIVATEKEY"),
+		GooglePackageName:   confEnv("SCN_GOOG_PACKAGENAME"),
+		GoogleProProductID:  confEnv("SCN_GOOG_PROPRODUCTID"),
 	}
 }
 
@@ -167,17 +167,17 @@ var configStag = func() Config {
 		ReturnRawErrors:     true,
 		DummyFirebase:       false,
 		FirebaseTokenURI:    "https://oauth2.googleapis.com/token",
-		FirebaseProjectID:   confEnv("FB_PROJECTID"),
-		FirebasePrivKeyID:   confEnv("FB_PRIVATEKEYID"),
-		FirebaseClientMail:  confEnv("FB_CLIENTEMAIL"),
-		FirebasePrivateKey:  confEnv("FB_PRIVATEKEY"),
+		FirebaseProjectID:   confEnv("SCN_FB_PROJECTID"),
+		FirebasePrivKeyID:   confEnv("SCN_FB_PRIVATEKEYID"),
+		FirebaseClientMail:  confEnv("SCN_FB_CLIENTEMAIL"),
+		FirebasePrivateKey:  confEnv("SCN_FB_PRIVATEKEY"),
 		DummyGoogleAPI:      false,
 		GoogleAPITokenURI:   "https://oauth2.googleapis.com/token",
-		GoogleAPIPrivKeyID:  confEnv("GOOG_PRIVATEKEYID"),
-		GoogleAPIClientMail: confEnv("GOOG_CLIENTEMAIL"),
-		GoogleAPIPrivateKey: confEnv("GOOG_PRIVATEKEY"),
-		GooglePackageName:   confEnv("GOOG_PACKAGENAME"),
-		GoogleProProductID:  confEnv("GOOG_PROPRODUCTID"),
+		GoogleAPIPrivKeyID:  confEnv("SCN_GOOG_PRIVATEKEYID"),
+		GoogleAPIClientMail: confEnv("SCN_GOOG_CLIENTEMAIL"),
+		GoogleAPIPrivateKey: confEnv("SCN_GOOG_PRIVATEKEY"),
+		GooglePackageName:   confEnv("SCN_GOOG_PACKAGENAME"),
+		GoogleProProductID:  confEnv("SCN_GOOG_PROPRODUCTID"),
 	}
 }
 
@@ -201,17 +201,17 @@ var configProd = func() Config {
 		ReturnRawErrors:     false,
 		DummyFirebase:       false,
 		FirebaseTokenURI:    "https://oauth2.googleapis.com/token",
-		FirebaseProjectID:   confEnv("SCN_FB_PROJECTID"),
-		FirebasePrivKeyID:   confEnv("SCN_FB_PRIVATEKEYID"),
-		FirebaseClientMail:  confEnv("SCN_FB_CLIENTEMAIL"),
-		FirebasePrivateKey:  confEnv("SCN_FB_PRIVATEKEY"),
+		FirebaseProjectID:   confEnv("SCN_SCN_FB_PROJECTID"),
+		FirebasePrivKeyID:   confEnv("SCN_SCN_FB_PRIVATEKEYID"),
+		FirebaseClientMail:  confEnv("SCN_SCN_FB_CLIENTEMAIL"),
+		FirebasePrivateKey:  confEnv("SCN_SCN_FB_PRIVATEKEY"),
 		DummyGoogleAPI:      false,
 		GoogleAPITokenURI:   "https://oauth2.googleapis.com/token",
-		GoogleAPIPrivKeyID:  confEnv("SCN_GOOG_PRIVATEKEYID"),
-		GoogleAPIClientMail: confEnv("SCN_GOOG_CLIENTEMAIL"),
-		GoogleAPIPrivateKey: confEnv("SCN_GOOG_PRIVATEKEY"),
-		GooglePackageName:   confEnv("SCN_GOOG_PACKAGENAME"),
-		GoogleProProductID:  confEnv("SCN_GOOG_PROPRODUCTID"),
+		GoogleAPIPrivKeyID:  confEnv("SCN_SCN_GOOG_PRIVATEKEYID"),
+		GoogleAPIClientMail: confEnv("SCN_SCN_GOOG_CLIENTEMAIL"),
+		GoogleAPIPrivateKey: confEnv("SCN_SCN_GOOG_PRIVATEKEY"),
+		GooglePackageName:   confEnv("SCN_SCN_GOOG_PACKAGENAME"),
+		GoogleProProductID:  confEnv("SCN_SCN_GOOG_PROPRODUCTID"),
 	}
 }
 
@@ -245,7 +245,7 @@ func confEnv(key string) string {
 }
 
 func init() {
-	ns := os.Getenv("CONF_NS")
+	ns := os.Getenv("SCN_NAMESPACE")
 
 	cfg, ok := getConfig(ns)
 	if !ok {
