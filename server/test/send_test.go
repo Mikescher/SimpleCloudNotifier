@@ -1188,11 +1188,43 @@ func TestSendToManualChannel(t *testing.T) {
 	}
 }
 
-//TODO post to channel
+func TestSendToTooLongChannel(t *testing.T) {
+	ws, stop := tt.StartSimpleWebserver(t)
+	defer stop()
 
-//TODO post to newly-created-channel
+	baseUrl := "http://127.0.0.1:" + ws.Port
 
-//TODO post to existing-channel
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	uid := int(r0["user_id"].(float64))
+	sendtok := r0["send_key"].(string)
+
+	tt.RequestPost[tt.Void](t, baseUrl, "/", gin.H{
+		"user_key": sendtok,
+		"user_id":  uid,
+		"title":    "M3",
+		"channel":  "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+	})
+
+	tt.RequestPost[tt.Void](t, baseUrl, "/", gin.H{
+		"user_key": sendtok,
+		"user_id":  uid,
+		"title":    "M3",
+		"channel":  "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+	})
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+		"user_key": sendtok,
+		"user_id":  uid,
+		"title":    "M3",
+		"channel":  "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901",
+	}, 400, apierr.CHANNEL_TOO_LONG)
+}
 
 //TODO post to foreign channel via send-key
 

@@ -2,12 +2,14 @@ package handler
 
 import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
+	hl "blackforestbytes.com/simplecloudnotifier/api/apihighlight"
 	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/db/cursortoken"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/mathext"
@@ -656,6 +658,18 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 	channelExisting, err := h.database.GetChannelByName(ctx, u.UserID, channelName)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
+	}
+
+	user, err := h.database.GetUser(ctx, u.UserID)
+	if err == sql.ErrNoRows {
+		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found", nil)
+	}
+	if err != nil {
+		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query user", err)
+	}
+
+	if len(channelName) > user.MaxChannelNameLength() {
+		return ginresp.SendAPIError(g, 400, apierr.CHANNEL_TOO_LONG, hl.CHANNEL, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
 	}
 
 	if channelExisting != nil {
