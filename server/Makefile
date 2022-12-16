@@ -1,5 +1,5 @@
 DOCKER_REPO=registry.blackforestbytes.com
-DOCKER_NAME=scn_server
+DOCKER_NAME=mikescher/simplecloudnotifier
 PORT=9090
 
 NAMESPACE=$(shell git rev-parse --abbrev-ref HEAD)
