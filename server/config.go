@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
+	"gogs.mikescher.com/BlackForestBytes/goext/confext"
 	"os"
-	"reflect"
-	"strconv"
 	"time"
 )
 
@@ -229,7 +227,10 @@ func getConfig(ns string) (Config, bool) {
 	}
 	if cfn, ok := allConfig[ns]; ok {
 		c := cfn()
-		parseConfOverride(&c)
+		err := confext.ApplyEnvOverrides(&c)
+		if err != nil {
+			panic(err)
+		}
 		return c, true
 	}
 	return Config{}, false
@@ -253,63 +254,4 @@ func init() {
 	}
 
 	Conf = cfg
-}
-
-func parseConfOverride(c *Config) {
-
-	rval := reflect.ValueOf(c).Elem()
-	rtyp := rval.Type()
-
-	for i := 0; i < rtyp.NumField(); i++ {
-
-		rsfield := rtyp.Field(i)
-		rvfield := rval.Field(i)
-
-		envkey := rsfield.Tag.Get("env")
-		if envkey == "" {
-			continue
-		}
-
-		envval, efound := os.LookupEnv(envkey)
-		if !efound {
-			continue
-		}
-
-		if rvfield.Kind() == reflect.String {
-
-			rvfield.Set(reflect.ValueOf(envval))
-
-			fmt.Printf("[CONF] Overwrite config '%s' with '%s'\n", envkey, envval)
-
-		} else if rvfield.Type() == reflect.TypeOf(zerolog.Level(0)) {
-
-			envint, err := strconv.ParseInt(envval, 10, 8)
-			if err != nil {
-				panic(fmt.Sprintf("Failed to parse env-config variable '%s' to int (value := '%s')", envkey, envval))
-			}
-			if envint < -1 || envint > 7 {
-				panic(fmt.Sprintf("Failed to parse zerolog-level (invalid number: %d)", envint))
-			}
-
-			lvl := zerolog.Level(envint)
-
-			rvfield.Set(reflect.ValueOf(lvl))
-
-			fmt.Printf("[CONF] Overwrite config '%s' with '%s'\n", envkey, lvl.String())
-
-		} else if rvfield.Type() == reflect.TypeOf(time.Duration(0)) {
-
-			dur, err := timeext.ParseDurationShortString(envval)
-			if err != nil {
-				panic(fmt.Sprintf("Failed to parse env-config variable '%s' to duration (value := '%s')", envkey, envval))
-			}
-
-			rvfield.Set(reflect.ValueOf(dur))
-
-			fmt.Printf("[CONF] Overwrite config '%s' with '%s'\n", envkey, dur.String())
-
-		} else {
-			panic(fmt.Sprintf("Unknown kind/type in config: [ %s | %s ]", rvfield.Kind().String(), rvfield.Type().String()))
-		}
-	}
 }
