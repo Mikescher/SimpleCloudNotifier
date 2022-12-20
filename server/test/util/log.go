@@ -1,7 +1,7 @@
 package util
 
 import (
-	"blackforestbytes.com/simplecloudnotifier/common/ginext"
+	"blackforestbytes.com/simplecloudnotifier/api/ginext"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"

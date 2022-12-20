@@ -3,7 +3,7 @@ package handler
 import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	hl "blackforestbytes.com/simplecloudnotifier/api/apihighlight"
-	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
+	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/db/cursortoken"
 	"blackforestbytes.com/simplecloudnotifier/logic"

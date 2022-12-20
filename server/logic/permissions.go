@@ -2,7 +2,7 @@ package logic
 
 import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
-	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
+	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 )

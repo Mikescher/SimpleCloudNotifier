@@ -3,8 +3,7 @@ package main
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/api"
-	"blackforestbytes.com/simplecloudnotifier/common"
-	"blackforestbytes.com/simplecloudnotifier/common/ginext"
+	"blackforestbytes.com/simplecloudnotifier/api/ginext"
 	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/google"
 	"blackforestbytes.com/simplecloudnotifier/jobs"
@@ -17,7 +16,7 @@ import (
 var conf = scn.Conf
 
 func main() {
-	common.Init(conf)
+	scn.Init(conf)
 
 	log.Info().Msg(fmt.Sprintf("Starting with config-namespace <%s>", conf.Namespace))
 

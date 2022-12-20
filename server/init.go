@@ -1,14 +1,13 @@
-package common
+package server
 
 import (
-	scn "blackforestbytes.com/simplecloudnotifier"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"os"
 )
 
-func Init(cfg scn.Config) {
+func Init(cfg Config) {
 	cw := zerolog.ConsoleWriter{
 		Out:        os.Stdout,
 		TimeFormat: "2006-01-02 15:04:05 Z07:00",

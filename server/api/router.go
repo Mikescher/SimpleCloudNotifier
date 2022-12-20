@@ -1,9 +1,9 @@
 package api
 
 import (
+	"blackforestbytes.com/simplecloudnotifier/api/ginext"
+	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/api/handler"
-	"blackforestbytes.com/simplecloudnotifier/common/ginext"
-	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/swagger"
 	"github.com/gin-gonic/gin"

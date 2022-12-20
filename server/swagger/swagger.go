@@ -1,7 +1,7 @@
 package swagger
 
 import (
-	"blackforestbytes.com/simplecloudnotifier/common/ginresp"
+	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	"embed"
 	_ "embed"
 	"github.com/gin-gonic/gin"
