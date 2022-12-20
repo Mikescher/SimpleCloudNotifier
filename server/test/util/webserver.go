@@ -59,10 +59,14 @@ func StartSimpleWebserver(t *testing.T) (*logic.Application, string, func()) {
 		DBConnMaxLifetime: 1 * time.Second,
 		DBConnMaxIdleTime: 1 * time.Second,
 		RequestTimeout:    30 * time.Second,
+		RequestMaxRetry:   32,
+		RequestRetrySleep: 100 * time.Millisecond,
 		ReturnRawErrors:   true,
 		DummyFirebase:     true,
-		DBSingleConn:      true,
+		DBSingleConn:      false,
 	}
+
+	scn.Conf = conf
 
 	sqlite, err := db.NewDatabase(conf)
 	if err != nil {
