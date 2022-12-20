@@ -24,6 +24,7 @@ type Config struct {
 	DBConnMaxLifetime   time.Duration `env:"SCN_DB_CONNEXTIONMAXLIFETIME"`
 	DBConnMaxIdleTime   time.Duration `env:"SCN_DB_CONNEXTIONMAXIDLETIME"`
 	DBCheckForeignKeys  bool          `env:"SCN_DB_CHECKFOREIGNKEYS"`
+	DBSingleConn        bool          `env:"SCN_DB_SINGLECONNECTION"`
 	RequestTimeout      time.Duration `env:"SCN_REQUEST_TIMEOUT"`
 	ReturnRawErrors     bool          `env:"SCN_ERROR_RETURN"`
 	DummyFirebase       bool          `env:"SCN_DUMMY_FB"`
@@ -39,6 +40,7 @@ type Config struct {
 	GoogleAPIPrivateKey string        `env:"SCN_GOOG_PRIVATEKEY"`
 	GooglePackageName   string        `env:"SCN_GOOG_PACKAGENAME"`
 	GoogleProProductID  string        `env:"SCN_GOOG_PROPRODUCTID"`
+	Cors                bool          `env:"SCN_CORS"`
 }
 
 var Conf Config
@@ -55,6 +57,7 @@ var configLocHost = func() Config {
 		DBJournal:           "WAL",
 		DBTimeout:           5 * time.Second,
 		DBCheckForeignKeys:  false,
+		DBSingleConn:        true,
 		DBMaxOpenConns:      5,
 		DBMaxIdleConns:      5,
 		DBConnMaxLifetime:   60 * time.Minute,
@@ -74,6 +77,7 @@ var configLocHost = func() Config {
 		GoogleAPIPrivateKey: "",
 		GooglePackageName:   "",
 		GoogleProProductID:  "",
+		Cors:                true,
 	}
 }
 
@@ -89,6 +93,7 @@ var configLocDocker = func() Config {
 		DBJournal:           "WAL",
 		DBTimeout:           5 * time.Second,
 		DBCheckForeignKeys:  false,
+		DBSingleConn:        true,
 		DBMaxOpenConns:      5,
 		DBMaxIdleConns:      5,
 		DBConnMaxLifetime:   60 * time.Minute,
@@ -108,6 +113,7 @@ var configLocDocker = func() Config {
 		GoogleAPIPrivateKey: "",
 		GooglePackageName:   "",
 		GoogleProProductID:  "",
+		Cors:                true,
 	}
 }
 
@@ -123,6 +129,7 @@ var configDev = func() Config {
 		DBJournal:           "WAL",
 		DBTimeout:           5 * time.Second,
 		DBCheckForeignKeys:  false,
+		DBSingleConn:        true,
 		DBMaxOpenConns:      5,
 		DBMaxIdleConns:      5,
 		DBConnMaxLifetime:   60 * time.Minute,
@@ -142,6 +149,7 @@ var configDev = func() Config {
 		GoogleAPIPrivateKey: confEnv("SCN_GOOG_PRIVATEKEY"),
 		GooglePackageName:   confEnv("SCN_GOOG_PACKAGENAME"),
 		GoogleProProductID:  confEnv("SCN_GOOG_PROPRODUCTID"),
+		Cors:                true,
 	}
 }
 
@@ -157,6 +165,7 @@ var configStag = func() Config {
 		DBJournal:           "WAL",
 		DBTimeout:           5 * time.Second,
 		DBCheckForeignKeys:  false,
+		DBSingleConn:        true,
 		DBMaxOpenConns:      5,
 		DBMaxIdleConns:      5,
 		DBConnMaxLifetime:   60 * time.Minute,
@@ -176,6 +185,7 @@ var configStag = func() Config {
 		GoogleAPIPrivateKey: confEnv("SCN_GOOG_PRIVATEKEY"),
 		GooglePackageName:   confEnv("SCN_GOOG_PACKAGENAME"),
 		GoogleProProductID:  confEnv("SCN_GOOG_PROPRODUCTID"),
+		Cors:                true,
 	}
 }
 
@@ -191,6 +201,7 @@ var configProd = func() Config {
 		DBJournal:           "WAL",
 		DBTimeout:           5 * time.Second,
 		DBCheckForeignKeys:  false,
+		DBSingleConn:        true,
 		DBMaxOpenConns:      5,
 		DBMaxIdleConns:      5,
 		DBConnMaxLifetime:   60 * time.Minute,
@@ -210,6 +221,7 @@ var configProd = func() Config {
 		GoogleAPIPrivateKey: confEnv("SCN_SCN_GOOG_PRIVATEKEY"),
 		GooglePackageName:   confEnv("SCN_SCN_GOOG_PACKAGENAME"),
 		GoogleProProductID:  confEnv("SCN_SCN_GOOG_PROPRODUCTID"),
+		Cors:                true,
 	}
 }
 

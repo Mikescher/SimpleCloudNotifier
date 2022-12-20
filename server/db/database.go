@@ -27,10 +27,14 @@ func NewDatabase(conf server.Config) (*Database, error) {
 		return nil, err
 	}
 
-	xdb.SetMaxOpenConns(5)
-	xdb.SetMaxIdleConns(5)
-	xdb.SetConnMaxLifetime(60 * time.Minute)
-	xdb.SetConnMaxIdleTime(60 * time.Minute)
+	if conf.DBSingleConn {
+		xdb.SetMaxOpenConns(1)
+	} else {
+		xdb.SetMaxOpenConns(5)
+		xdb.SetMaxIdleConns(5)
+		xdb.SetConnMaxLifetime(60 * time.Minute)
+		xdb.SetConnMaxIdleTime(60 * time.Minute)
+	}
 
 	qqdb := sq.NewDB(xdb)
 

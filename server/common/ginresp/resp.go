@@ -51,6 +51,16 @@ func (j dataHTTPResponse) Write(g *gin.Context) {
 	g.Data(j.statusCode, j.contentType, j.data)
 }
 
+type errorHTTPResponse struct {
+	statusCode int
+	data       any
+	error      error
+}
+
+func (j errorHTTPResponse) Write(g *gin.Context) {
+	g.JSON(j.statusCode, j.data)
+}
+
 func Status(sc int) HTTPResponse {
 	return &emptyHTTPResponse{statusCode: sc}
 }
@@ -98,7 +108,7 @@ func createApiError(g *gin.Context, ident string, status int, errorid apierr.API
 		Msg(fmt.Sprintf("[%s] %s", ident, msg))
 
 	if scn.Conf.ReturnRawErrors {
-		return &jsonHTTPResponse{
+		return &errorHTTPResponse{
 			statusCode: status,
 			data: apiError{
 				Success:        false,
@@ -108,9 +118,10 @@ func createApiError(g *gin.Context, ident string, status int, errorid apierr.API
 				RawError:       langext.Ptr(langext.Conditional(e == nil, "", fmt.Sprintf("%+v", e))),
 				Trace:          string(debug.Stack()),
 			},
+			error: e,
 		}
 	} else {
-		return &jsonHTTPResponse{
+		return &errorHTTPResponse{
 			statusCode: status,
 			data: apiError{
 				Success:        false,
@@ -118,6 +129,7 @@ func createApiError(g *gin.Context, ident string, status int, errorid apierr.API
 				ErrorHighlight: int(highlight),
 				Message:        msg,
 			},
+			error: e,
 		}
 	}
 }

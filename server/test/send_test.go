@@ -1429,8 +1429,6 @@ func TestQuotaExceededPro(t *testing.T) {
 }
 
 func TestSendParallel(t *testing.T) {
-	t.SkipNow()
-
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 

@@ -61,6 +61,7 @@ func StartSimpleWebserver(t *testing.T) (*logic.Application, string, func()) {
 		RequestTimeout:    30 * time.Second,
 		ReturnRawErrors:   true,
 		DummyFirebase:     true,
+		DBSingleConn:      true,
 	}
 
 	sqlite, err := db.NewDatabase(conf)

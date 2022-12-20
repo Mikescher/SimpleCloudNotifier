@@ -15,6 +15,8 @@
 
  - deploy
 
+ - diff my currently used scnsend script vs the one in the docs here
+
 -------------------------------------------------------------------------------------------------------------------------------
 
  - in my script: use (backupname || hostname) for sendername

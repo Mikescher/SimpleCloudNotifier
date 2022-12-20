@@ -13,7 +13,9 @@ func NewEngine(cfg scn.Config) *gin.Engine {
 	engine.RedirectFixedPath = false
 	engine.RedirectTrailingSlash = false
 
-	engine.Use(CorsMiddleware())
+	if cfg.Cors {
+		engine.Use(CorsMiddleware())
+	}
 
 	if cfg.GinDebug {
 		ginlogger := gin.Logger()
