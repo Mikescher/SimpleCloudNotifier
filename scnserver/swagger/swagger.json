@@ -1151,11 +1151,11 @@
         },
         "/api/users/{uid}/channels": {
             "get": {
-                "description": "The possible values for 'selector' are:\n- \"owned\" Return all channels of the user\n- \"subscribed\" Return all channels that the user is subscribing to\n- \"all\" Return channels that the user owns or is subscribing\n- \"subscribed_any\" Return all channels that the user is subscribing to (even unconfirmed)\n- \"all_any\" Return channels that the user owns or is subscribing (even unconfirmed)",
+                "description": "The possible values for 'selector' are:\n- \"owned\"          Return all channels of the user\n- \"subscribed\"     Return all channels that the user is subscribing to\n- \"all\"            Return channels that the user owns or is subscribing\n- \"subscribed_any\" Return all channels that the user is subscribing to (even unconfirmed)\n- \"all_any\"        Return channels that the user owns or is subscribing (even unconfirmed)",
                 "tags": [
                     "API-v2"
                 ],
-                "summary": "List channels of a user (subscribed/owned)",
+                "summary": "List channels of a user (subscribed/owned/all)",
                 "operationId": "api-channels-list",
                 "parameters": [
                     {
@@ -1206,9 +1206,7 @@
                         }
                     }
                 }
-            }
-        },
-        "/api/users/{uid}/channels/": {
+            },
             "post": {
                 "tags": [
                     "API-v2"
@@ -1236,7 +1234,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.ChannelJSON"
+                            "$ref": "#/definitions/models.ChannelWithSubscriptionJSON"
                         }
                     },
                     "400": {
@@ -1271,7 +1269,7 @@
                 "tags": [
                     "API-v2"
                 ],
-                "summary": "List all channels of a user",
+                "summary": "Get a single channel",
                 "operationId": "api-channels-get",
                 "parameters": [
                     {
@@ -1293,7 +1291,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.ChannelJSON"
+                            "$ref": "#/definitions/models.ChannelWithSubscriptionJSON"
                         }
                     },
                     "400": {
@@ -1364,7 +1362,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.ChannelJSON"
+                            "$ref": "#/definitions/models.ChannelWithSubscriptionJSON"
                         }
                     },
                     "400": {
@@ -1740,7 +1738,7 @@
                 "tags": [
                     "API-v2"
                 ],
-                "summary": "List all channels of a user",
+                "summary": "List all subscriptions of a user (incoming/owned)",
                 "operationId": "api-user-subscriptions-list",
                 "parameters": [
                     {
@@ -1748,6 +1746,21 @@
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "owner_all",
+                            "owner_confirmed",
+                            "owner_unconfirmed",
+                            "incoming_all",
+                            "incoming_confirmed",
+                            "incoming_unconfirmed"
+                        ],
+                        "type": "string",
+                        "description": "Filter subscribptions (default: owner_all)",
+                        "name": "selector",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -2380,6 +2393,9 @@
             "properties": {
                 "name": {
                     "type": "string"
+                },
+                "subscribe": {
+                    "type": "boolean"
                 }
             }
         },
@@ -2529,7 +2545,7 @@
                 "channels": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.ChannelJSON"
+                        "$ref": "#/definitions/models.ChannelWithSubscriptionJSON"
                     }
                 }
             }
@@ -2804,7 +2820,7 @@
                 }
             }
         },
-        "models.ChannelJSON": {
+        "models.ChannelWithSubscriptionJSON": {
             "type": "object",
             "properties": {
                 "channel_id": {
@@ -2826,6 +2842,9 @@
                 "subscribe_key": {
                     "description": "can be nil, depending on endpoint",
                     "type": "string"
+                },
+                "subscription": {
+                    "$ref": "#/definitions/models.SubscriptionJSON"
                 },
                 "timestamp_created": {
                     "type": "string"

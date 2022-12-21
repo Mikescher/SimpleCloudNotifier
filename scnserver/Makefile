@@ -5,6 +5,8 @@ PORT=9090
 NAMESPACE=$(shell git rev-parse --abbrev-ref HEAD)
 HASH=$(shell git rev-parse HEAD)
 
+.PHONY: test swagger
+
 build: swagger fmt
 	mkdir -p _build
 	rm -f ./_build/scn_backend
@@ -29,7 +31,6 @@ docker: build
             -t "$(DOCKER_REPO)/$(DOCKER_NAME):latest" \
             .
 
-.PHONY: swagger
 swagger:
 	which swag || go install github.com/swaggo/swag/cmd/swag@latest
 	swag init -generalInfo api/router.go --propertyStrategy snakecase --output ./swagger/ --outputTypes "json,yaml"
@@ -67,7 +68,6 @@ fmt:
 	go fmt ./...
 	swag fmt
 
-.PHONY: test
 test:
 	go test ./test/...
 

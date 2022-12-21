@@ -186,7 +186,7 @@ func (db *Database) UpdateUserKeys(ctx TxContext, userid models.UserID, sendKey 
 		return err
 	}
 
-	_, err = tx.Exec(ctx, "UPDATE users SET send_key = :sk, read_key = :rk, admin_key = :ak WHERE user_id = ?", sq.PP{
+	_, err = tx.Exec(ctx, "UPDATE users SET send_key = :sk, read_key = :rk, admin_key = :ak WHERE user_id = :uid", sq.PP{
 		"sk":  sendKey,
 		"rk":  readKey,
 		"ak":  adminKey,

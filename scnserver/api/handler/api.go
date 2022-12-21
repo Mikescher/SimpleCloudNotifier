@@ -490,13 +490,14 @@ func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 
 // ListChannels swaggerdoc
 //
-// @Summary     List channels of a user (subscribed/owned)
+// @Summary     List channels of a user (subscribed/owned/all)
 // @Description The possible values for 'selector' are:
-// @Description - "owned" Return all channels of the user
-// @Description - "subscribed" Return all channels that the user is subscribing to
-// @Description - "all" Return channels that the user owns or is subscribing
+// @Description - "owned"          Return all channels of the user
+// @Description - "subscribed"     Return all channels that the user is subscribing to
+// @Description - "all"            Return channels that the user owns or is subscribing
 // @Description - "subscribed_any" Return all channels that the user is subscribing to (even unconfirmed)
-// @Description - "all_any" Return channels that the user owns or is subscribing (even unconfirmed)
+// @Description - "all_any"        Return channels that the user owns or is subscribing (even unconfirmed)
+//
 // @ID          api-channels-list
 // @Tags        API-v2
 //
@@ -517,7 +518,7 @@ func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 		Selector *string `json:"selector" form:"selector"  enums:"owned,subscribed_any,all_any,subscribed,all"`
 	}
 	type response struct {
-		Channels []models.ChannelJSON `json:"channels"`
+		Channels []models.ChannelWithSubscriptionJSON `json:"channels"`
 	}
 
 	var u uri
@@ -534,40 +535,52 @@ func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 
 	sel := strings.ToLower(langext.Coalesce(q.Selector, "owned"))
 
-	var res []models.ChannelJSON
+	var res []models.ChannelWithSubscriptionJSON
 
 	if sel == "owned" {
-		channels, err := h.database.ListChannelsByOwner(ctx, u.UserID)
+
+		channels, err := h.database.ListChannelsByOwner(ctx, u.UserID, u.UserID)
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
 		}
-		res = langext.ArrMap(channels, func(v models.Channel) models.ChannelJSON { return v.JSON(true) })
+		res = langext.ArrMap(channels, func(v models.ChannelWithSubscription) models.ChannelWithSubscriptionJSON { return v.JSON(true) })
+
 	} else if sel == "subscribed_any" {
-		channels, err := h.database.ListChannelsBySubscriber(ctx, u.UserID, false)
+
+		channels, err := h.database.ListChannelsBySubscriber(ctx, u.UserID, nil)
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
 		}
-		res = langext.ArrMap(channels, func(v models.Channel) models.ChannelJSON { return v.JSON(false) })
+		res = langext.ArrMap(channels, func(v models.ChannelWithSubscription) models.ChannelWithSubscriptionJSON { return v.JSON(false) })
+
 	} else if sel == "all_any" {
-		channels, err := h.database.ListChannelsByAccess(ctx, u.UserID, false)
+
+		channels, err := h.database.ListChannelsByAccess(ctx, u.UserID, nil)
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
 		}
-		res = langext.ArrMap(channels, func(v models.Channel) models.ChannelJSON { return v.JSON(false) })
+		res = langext.ArrMap(channels, func(v models.ChannelWithSubscription) models.ChannelWithSubscriptionJSON { return v.JSON(false) })
+
 	} else if sel == "subscribed" {
-		channels, err := h.database.ListChannelsBySubscriber(ctx, u.UserID, true)
+
+		channels, err := h.database.ListChannelsBySubscriber(ctx, u.UserID, langext.Ptr(true))
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
 		}
-		res = langext.ArrMap(channels, func(v models.Channel) models.ChannelJSON { return v.JSON(false) })
+		res = langext.ArrMap(channels, func(v models.ChannelWithSubscription) models.ChannelWithSubscriptionJSON { return v.JSON(false) })
+
 	} else if sel == "all" {
-		channels, err := h.database.ListChannelsByAccess(ctx, u.UserID, true)
+
+		channels, err := h.database.ListChannelsByAccess(ctx, u.UserID, langext.Ptr(true))
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
 		}
-		res = langext.ArrMap(channels, func(v models.Channel) models.ChannelJSON { return v.JSON(false) })
+		res = langext.ArrMap(channels, func(v models.ChannelWithSubscription) models.ChannelWithSubscriptionJSON { return v.JSON(false) })
+
 	} else {
+
 		return ginresp.APIError(g, 400, apierr.INVALID_ENUM_VALUE, "Invalid value for the [selector] parameter", nil)
+
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{Channels: res}))
@@ -575,14 +588,14 @@ func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 
 // GetChannel swaggerdoc
 //
-// @Summary List all channels of a user
+// @Summary Get a single channel
 // @ID      api-channels-get
 // @Tags    API-v2
 //
 // @Param   uid path     int true "UserID"
 // @Param   cid path     int true "ChannelID"
 //
-// @Success 200 {object} models.ChannelJSON
+// @Success 200 {object} models.ChannelWithSubscriptionJSON
 // @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
 // @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
 // @Failure 404 {object} ginresp.apiError "channel not found"
@@ -626,19 +639,20 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 // @Param   uid       path     int                        true  "UserID"
 // @Param   post_body body     handler.CreateChannel.body false " "
 //
-// @Success 200       {object} models.ChannelJSON
+// @Success 200       {object} models.ChannelWithSubscriptionJSON
 // @Failure 400       {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
 // @Failure 401       {object} ginresp.apiError "user is not authorized / has missing permissions"
 // @Failure 409       {object} ginresp.apiError "channel already exists"
 // @Failure 500       {object} ginresp.apiError "internal server error"
 //
-// @Router  /api/users/{uid}/channels/ [POST]
+// @Router  /api/users/{uid}/channels [POST]
 func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid"`
 	}
 	type body struct {
-		Name string `json:"name"`
+		Name      string `json:"name"`
+		Subscribe *bool  `json:"subscribe"`
 	}
 
 	var u uri
@@ -684,7 +698,21 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create channel", err)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, channel.JSON(true)))
+	if langext.Coalesce(b.Subscribe, true) {
+
+		sub, err := h.database.CreateSubscription(ctx, u.UserID, channel, true)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create subscription", err)
+		}
+
+		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, channel.WithSubscription(langext.Ptr(sub)).JSON(true)))
+
+	} else {
+
+		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, channel.WithSubscription(nil).JSON(true)))
+
+	}
+
 }
 
 // UpdateChannel swaggerdoc
@@ -699,7 +727,7 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 // @Param   subscribe_key body     string false "Send `true` to create a new subscribe_key"
 // @Param   send_key      body     string false "Send `true` to create a new send_key"
 //
-// @Success 200           {object} models.ChannelJSON
+// @Success 200           {object} models.ChannelWithSubscriptionJSON
 // @Failure 400           {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
 // @Failure 401           {object} ginresp.apiError "user is not authorized / has missing permissions"
 // @Failure 404           {object} ginresp.apiError "channel not found"
@@ -754,12 +782,12 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 		}
 	}
 
-	user, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID)
+	channel, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query (updated) user", err)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, user.JSON(true)))
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, channel.JSON(true)))
 }
 
 // ListChannelMessages swaggerdoc
@@ -865,28 +893,41 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 
 // ListUserSubscriptions swaggerdoc
 //
-// @Summary List all channels of a user
+// @Summary List all subscriptions of a user (incoming/owned)
+// // @Description The possible values for 'selector' are:
+// // @Description - "owner_all"            All subscriptions (confirmed/unconfirmed) with the user as owner (= subscriptions he can use to read channels)
+// // @Description - "owner_confirmed"      Confirmed subscriptions with the user as owner
+// // @Description - "owner_unconfirmed"    Unconfirmed (Pending) subscriptions with the user as owner
+// // @Description - "incoming_all"         All subscriptions (confirmed/unconfirmed) from other users to channels of this user (= incoming subscriptions and subscription requests)
+// // @Description - "incoming_confirmed"   Confirmed subscriptions from other users to channels of this user
+// // @Description - "incoming_unconfirmed" Unconfirmed subscriptions from other users to channels of this user (= requests)
+// //
 // @ID      api-user-subscriptions-list
 // @Tags    API-v2
 //
-// @Param   uid path     int true "UserID"
+// @Param   uid      path     int    true "UserID"
+// @Param   selector query    string true "Filter subscribptions (default: owner_all)" Enums(owner_all, owner_confirmed, owner_unconfirmed, incoming_all, incoming_confirmed, incoming_unconfirmed)
 //
-// @Success 200 {object} handler.ListUserSubscriptions.response
-// @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure 500 {object} ginresp.apiError "internal server error"
+// @Success 200      {object} handler.ListUserSubscriptions.response
+// @Failure 400      {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure 401      {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure 500      {object} ginresp.apiError "internal server error"
 //
 // @Router  /api/users/{uid}/subscriptions [GET]
 func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid"`
 	}
+	type query struct {
+		Selector *string `json:"selector" form:"selector"  enums:"owner_all,owner_confirmed,owner_unconfirmed,incoming_all,incoming_confirmed,incoming_unconfirmed"`
+	}
 	type response struct {
 		Subscriptions []models.SubscriptionJSON `json:"subscriptions"`
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	var q query
+	ctx, errResp := h.app.StartRequest(g, &u, &q, nil, nil)
 	if errResp != nil {
 		return *errResp
 	}
@@ -896,14 +937,62 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	clients, err := h.database.ListSubscriptionsByOwner(ctx, u.UserID)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
+	sel := strings.ToLower(langext.Coalesce(q.Selector, "owner_all"))
+
+	var res []models.Subscription
+	var err error
+
+	if sel == "owner_all" {
+
+		res, err = h.database.ListSubscriptionsByOwner(ctx, u.UserID, nil)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
+		}
+
+	} else if sel == "owner_confirmed" {
+
+		res, err = h.database.ListSubscriptionsByOwner(ctx, u.UserID, langext.Ptr(true))
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
+		}
+
+	} else if sel == "owner_unconfirmed" {
+
+		res, err = h.database.ListSubscriptionsByOwner(ctx, u.UserID, langext.Ptr(false))
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
+		}
+
+	} else if sel == "incoming_all" {
+
+		res, err = h.database.ListSubscriptionsBySubscriber(ctx, u.UserID, nil)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
+		}
+
+	} else if sel == "incoming_confirmed" {
+
+		res, err = h.database.ListSubscriptionsBySubscriber(ctx, u.UserID, langext.Ptr(true))
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
+		}
+
+	} else if sel == "incoming_unconfirmed" {
+
+		res, err = h.database.ListSubscriptionsBySubscriber(ctx, u.UserID, langext.Ptr(false))
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
+		}
+
+	} else {
+
+		return ginresp.APIError(g, 400, apierr.INVALID_ENUM_VALUE, "Invalid value for the [selector] parameter", nil)
+
 	}
 
-	res := langext.ArrMap(clients, func(v models.Subscription) models.SubscriptionJSON { return v.JSON() })
+	jsonres := langext.ArrMap(res, func(v models.Subscription) models.SubscriptionJSON { return v.JSON() })
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{Subscriptions: res}))
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{Subscriptions: jsonres}))
 }
 
 // ListChannelSubscriptions swaggerdoc

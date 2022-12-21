@@ -2,6 +2,7 @@ package db
 
 import (
 	server "blackforestbytes.com/simplecloudnotifier"
+	"blackforestbytes.com/simplecloudnotifier/db/dbtools"
 	"blackforestbytes.com/simplecloudnotifier/db/schema"
 	"context"
 	"database/sql"
@@ -9,7 +10,6 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
@@ -40,7 +40,9 @@ func NewDatabase(conf server.Config) (*Database, error) {
 
 	scndb := &Database{qqdb}
 
-	qqdb.SetListener(scndb)
+	qqdb.AddListener(dbtools.DBLogger{})
+
+	qqdb.AddListener(dbtools.NewDBPreprocessor(scndb.db))
 
 	return scndb, nil
 }
@@ -82,36 +84,4 @@ func (db *Database) Ping(ctx context.Context) error {
 
 func (db *Database) BeginTx(ctx context.Context) (sq.Tx, error) {
 	return db.db.BeginTransaction(ctx, sql.LevelDefault)
-}
-
-func (db *Database) OnQuery(txID *uint16, sql string, _ *sq.PP) {
-	if txID == nil {
-		log.Debug().Msg(fmt.Sprintf("[SQL-QUERY] %s", fmtSQLPrint(sql)))
-	} else {
-		log.Debug().Msg(fmt.Sprintf("[SQL-TX<%d>-QUERY] %s", *txID, fmtSQLPrint(sql)))
-	}
-}
-
-func (db *Database) OnExec(txID *uint16, sql string, _ *sq.PP) {
-	if txID == nil {
-		log.Debug().Msg(fmt.Sprintf("[SQL-EXEC] %s", fmtSQLPrint(sql)))
-	} else {
-		log.Debug().Msg(fmt.Sprintf("[SQL-TX<%d>-EXEC] %s", *txID, fmtSQLPrint(sql)))
-	}
-}
-
-func (db *Database) OnPing() {
-	log.Debug().Msg("[SQL-PING]")
-}
-
-func (db *Database) OnTxBegin(txid uint16) {
-	log.Debug().Msg(fmt.Sprintf("[SQL-TX<%d>-START]", txid))
-}
-
-func (db *Database) OnTxCommit(txid uint16) {
-	log.Debug().Msg(fmt.Sprintf("[SQL-TX<%d>-COMMIT]", txid))
-}
-
-func (db *Database) OnTxRollback(txid uint16) {
-	log.Debug().Msg(fmt.Sprintf("[SQL-TX<%d>-ROLLBACK]", txid))
 }

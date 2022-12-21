@@ -86,6 +86,8 @@ var userExamples = []userex{
 	{9, true, "UniqueUnicorn", "Galaxy Quest", "2023.1", "ANDROID", "FCM_TOK_EX_010", ""},
 	{10, false, "", "", "", "", "", ""},
 	{11, false, "", "", "", "", "", "ANDROID|v2|PURCHASED:PRO_TOK_002"},
+	{12, true, "ChanTester1", "StarfireXX", "1.x", "IOS", "FCM_TOK_EX_012", ""},
+	{13, true, "ChanTester2", "StarfireXX", "1.x", "IOS", "FCM_TOK_EX_013", ""},
 }
 
 var clientExamples = []clientex{
@@ -264,6 +266,15 @@ var messageExamples = []msgex{
 	{11, "Promotions", "192.168.0.1", P1, AKEY, "Announcing Our Annual Black Friday Sale", "Mark your calendars and get ready for the biggest sale of the year. Our annual Black Friday sale is coming soon and you won't want to miss out on the amazing deals and discounts.", 0},
 	{11, "Promotions", "", PX, AKEY, "Join Our VIP Club and Enjoy Exclusive Benefits", "Sign up for our VIP club and enjoy exclusive benefits like early access to sales, special offers, and personalized service. Don't miss out on this exclusive opportunity.", timeext.FromHours(2.32)},
 	{11, "Promotions", "", P2, SKEY, "Summer Clearance: Save Up to 75% on Your Favorite Products", "It's time for our annual summer clearance sale! Save up to 75% on your favorite products, from clothing and accessories to home decor and more.", timeext.FromHours(1.87)},
+
+	{12, "", "", P0, SKEY, "New Product Launch", "We are excited to announce the launch of our new product, the XYZ widget", 0},
+	{12, "chan_self_subscribed", "", P0, SKEY, "Important Update", "We have released a critical update", 0},
+	{12, "chan_self_unsub", "", P0, SKEY, "Reminder: Upcoming Maintenance", "", 0},
+
+	{13, "", "", P0, SKEY, "New Feature Available", "ability to schedule appointments", 0},
+	{13, "chan_other_nosub", "", P0, SKEY, "Account Suspended", "Please contact us", 0},
+	{13, "chan_other_request", "", P0, SKEY, "Invitation to Beta Test", "", 0},
+	{13, "chan_other_accepted", "", P0, SKEY, "New Blog Post", "Congratulations on your promotion! We are proud", 0},
 }
 
 type DefData struct {
@@ -285,6 +296,8 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 	baseUrl := "http://127.0.0.1:" + ws.Port
 
 	users := make([]Userdat, 0, len(userExamples))
+
+	// Create Users
 
 	for _, uex := range userExamples {
 		body := gin.H{}
@@ -318,6 +331,8 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 		})
 	}
 
+	// Create Clients
+
 	for _, cex := range clientExamples {
 		body := gin.H{}
 		body["agent_model"] = cex.AgentModel
@@ -327,15 +342,9 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 		RequestAuthPost[gin.H](t, users[cex.User].AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/clients", users[cex.User].UID), body)
 	}
 
+	// Create Messages
+
 	for _, mex := range messageExamples {
-		//User       int
-		//Channel    string
-		//SenderName string
-		//Priority   int
-		//Key        int
-		//Title      string
-		//Content    string
-		//TSOffset   time.Duration
 		body := gin.H{}
 		body["title"] = mex.Title
 		body["user_id"] = users[mex.User].UID
@@ -362,6 +371,15 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 		}
 
 		RequestPost[gin.H](t, baseUrl, "/", body)
+	}
+
+	// Sub/Unsub for Users 12+13
+
+	{
+		//TODO User 12 unsubscribe from 12:chan_self_unsub
+		//TODO User 13 request-subscribe to 13:chan_other_request
+		//TODO User 13 request-subscribe to 13:chan_other_accepted
+		//TODO User 13 accept subscription from user 12 to 13:chan_other_accepted
 	}
 
 	success = true

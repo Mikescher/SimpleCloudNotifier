@@ -62,13 +62,46 @@ func (db *Database) ListSubscriptionsByChannel(ctx TxContext, channelID models.C
 	return data, nil
 }
 
-func (db *Database) ListSubscriptionsByOwner(ctx TxContext, ownerUserID models.UserID) ([]models.Subscription, error) {
+func (db *Database) ListSubscriptionsByOwner(ctx TxContext, ownerUserID models.UserID, confirmed *bool) ([]models.Subscription, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM subscriptions WHERE channel_owner_user_id = :ouid", sq.PP{"ouid": ownerUserID})
+	cond := ""
+	if confirmed != nil && *confirmed {
+		cond = " AND confirmed = 1"
+	} else if confirmed != nil && !*confirmed {
+		cond = " AND confirmed = 0"
+	}
+
+	rows, err := tx.Query(ctx, "SELECT * FROM subscriptions WHERE channel_owner_user_id = :ouid"+cond, sq.PP{"ouid": ownerUserID})
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := models.DecodeSubscriptions(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func (db *Database) ListSubscriptionsBySubscriber(ctx TxContext, subscriberUserID models.UserID, confirmed *bool) ([]models.Subscription, error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return nil, err
+	}
+
+	cond := ""
+	if confirmed != nil && *confirmed {
+		cond = " AND confirmed = 1"
+	} else if confirmed != nil && !*confirmed {
+		cond = " AND confirmed = 0"
+	}
+
+	rows, err := tx.Query(ctx, "SELECT * FROM subscriptions WHERE subscriber_user_id = :suid"+cond, sq.PP{"suid": subscriberUserID})
 	if err != nil {
 		return nil, err
 	}

@@ -45,10 +45,10 @@ func (f MessageFilter) SQL() (string, string, sq.PP, error) {
 
 	joinClause := ""
 	if f.ConfirmedSubscriptionBy != nil {
-		joinClause += " LEFT JOIN subscriptions subs on messages.channel_id = subs.channel_id "
+		joinClause += " LEFT JOIN subscriptions AS subs on messages.channel_id = subs.channel_id "
 	}
 	if f.SearchString != nil {
-		joinClause += " JOIN messages_fts mfts on (mfts.rowid = messages.scn_message_id) "
+		joinClause += " JOIN messages_fts AS mfts on (mfts.rowid = messages.scn_message_id) "
 	}
 
 	sqlClauses := make([]string, 0)

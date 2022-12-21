@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"reflect"
 	"runtime/debug"
@@ -197,5 +198,24 @@ func AssertMultiNonEmpty(t *testing.T, key string, args ...any) {
 			t.Errorf("Value %s[%d] is empty (AssertMultiNonEmpty)", key, i)
 			t.FailNow()
 		}
+	}
+}
+
+func AssertMappedSet[T langext.OrderedConstraint](t *testing.T, key string, expected []T, values []gin.H, objkey string) {
+
+	actual := langext.ArrMap(values, func(v gin.H) T { return v[objkey].(T) })
+
+	langext.Sort(actual)
+	langext.Sort(expected)
+
+	if !langext.ArrEqualsExact(actual, expected) {
+		t.Errorf("Value [%s] differs (%T <-> %T):\n", key, expected, actual)
+
+		t.Errorf("Actual    := [%v]\n", actual)
+		t.Errorf("Expected  := [%v]\n", expected)
+
+		t.Error(string(debug.Stack()))
+
+		t.FailNow()
 	}
 }

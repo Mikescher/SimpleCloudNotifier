@@ -31,6 +31,29 @@ func (c Channel) JSON(includeKey bool) ChannelJSON {
 	}
 }
 
+func (c Channel) WithSubscription(sub *Subscription) ChannelWithSubscription {
+	return ChannelWithSubscription{
+		Channel:      c,
+		Subscription: sub,
+	}
+}
+
+type ChannelWithSubscription struct {
+	Channel
+	Subscription *Subscription
+}
+
+func (c ChannelWithSubscription) JSON(includeChannelKey bool) ChannelWithSubscriptionJSON {
+	var sub *SubscriptionJSON = nil
+	if c.Subscription != nil {
+		sub = langext.Ptr(c.Subscription.JSON())
+	}
+	return ChannelWithSubscriptionJSON{
+		ChannelJSON:  c.Channel.JSON(includeChannelKey),
+		Subscription: sub,
+	}
+}
+
 type ChannelJSON struct {
 	ChannelID         ChannelID `json:"channel_id"`
 	OwnerUserID       UserID    `json:"owner_user_id"`
@@ -40,6 +63,11 @@ type ChannelJSON struct {
 	TimestampCreated  string    `json:"timestamp_created"`
 	TimestampLastSent *string   `json:"timestamp_lastsent"`
 	MessagesSent      int       `json:"messages_sent"`
+}
+
+type ChannelWithSubscriptionJSON struct {
+	ChannelJSON
+	Subscription *SubscriptionJSON `json:"subscription"`
 }
 
 type ChannelDB struct {
@@ -67,6 +95,22 @@ func (c ChannelDB) Model() Channel {
 	}
 }
 
+type ChannelWithSubscriptionDB struct {
+	ChannelDB
+	Subscription *SubscriptionDB `db:"sub"`
+}
+
+func (c ChannelWithSubscriptionDB) Model() ChannelWithSubscription {
+	var sub *Subscription = nil
+	if c.Subscription != nil {
+		sub = langext.Ptr(c.Subscription.Model())
+	}
+	return ChannelWithSubscription{
+		Channel:      c.ChannelDB.Model(),
+		Subscription: sub,
+	}
+}
+
 func DecodeChannel(r *sqlx.Rows) (Channel, error) {
 	data, err := sq.ScanSingle[ChannelDB](r, true)
 	if err != nil {
@@ -81,4 +125,20 @@ func DecodeChannels(r *sqlx.Rows) ([]Channel, error) {
 		return nil, err
 	}
 	return langext.ArrMap(data, func(v ChannelDB) Channel { return v.Model() }), nil
+}
+
+func DecodeChannelWithSubscription(r *sqlx.Rows) (ChannelWithSubscription, error) {
+	data, err := sq.ScanSingle[ChannelWithSubscriptionDB](r, true)
+	if err != nil {
+		return ChannelWithSubscription{}, err
+	}
+	return data.Model(), nil
+}
+
+func DecodeChannelsWithSubscription(r *sqlx.Rows) ([]ChannelWithSubscription, error) {
+	data, err := sq.ScanAll[ChannelWithSubscriptionDB](r, true)
+	if err != nil {
+		return nil, err
+	}
+	return langext.ArrMap(data, func(v ChannelWithSubscriptionDB) ChannelWithSubscription { return v.Model() }), nil
 }

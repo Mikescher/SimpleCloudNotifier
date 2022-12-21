@@ -93,18 +93,21 @@ func (db *Database) CreateChannel(ctx TxContext, userid models.UserID, name stri
 	}, nil
 }
 
-func (db *Database) ListChannelsByOwner(ctx TxContext, userid models.UserID) ([]models.Channel, error) {
+func (db *Database) ListChannelsByOwner(ctx TxContext, userid models.UserID, subUserID models.UserID) ([]models.ChannelWithSubscription, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM channels WHERE owner_user_id = :ouid", sq.PP{"ouid": userid})
+	rows, err := tx.Query(ctx, "SELECT channels.*, sub.* FROM channels LEFT JOIN subscriptions AS sub ON channels.channel_id = sub.channel_id AND sub.subscriber_user_id = :subuid WHERE owner_user_id = :ouid", sq.PP{
+		"ouid":   userid,
+		"subuid": subUserID,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := models.DecodeChannels(rows)
+	data, err := models.DecodeChannelsWithSubscription(rows)
 	if err != nil {
 		return nil, err
 	}
@@ -112,25 +115,27 @@ func (db *Database) ListChannelsByOwner(ctx TxContext, userid models.UserID) ([]
 	return data, nil
 }
 
-func (db *Database) ListChannelsBySubscriber(ctx TxContext, userid models.UserID, confirmed bool) ([]models.Channel, error) {
+func (db *Database) ListChannelsBySubscriber(ctx TxContext, userid models.UserID, confirmed *bool) ([]models.ChannelWithSubscription, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
 	}
 
 	confCond := ""
-	if confirmed {
+	if confirmed != nil && *confirmed {
 		confCond = " AND sub.confirmed = 1"
+	} else if confirmed != nil && !*confirmed {
+		confCond = " AND sub.confirmed = 0"
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM channels LEFT JOIN subscriptions sub on channels.channel_id = sub.channel_id WHERE sub.subscriber_user_id = :suid "+confCond, sq.PP{
-		"suid": userid,
+	rows, err := tx.Query(ctx, "SELECT channels.*, sub.* FROM channels LEFT JOIN subscriptions AS sub on channels.channel_id = sub.channel_id AND sub.subscriber_user_id = :subuid WHERE sub.subscription_id IS NOT NULL "+confCond, sq.PP{
+		"subuid": userid,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := models.DecodeChannels(rows)
+	data, err := models.DecodeChannelsWithSubscription(rows)
 	if err != nil {
 		return nil, err
 	}
@@ -138,25 +143,28 @@ func (db *Database) ListChannelsBySubscriber(ctx TxContext, userid models.UserID
 	return data, nil
 }
 
-func (db *Database) ListChannelsByAccess(ctx TxContext, userid models.UserID, confirmed bool) ([]models.Channel, error) {
+func (db *Database) ListChannelsByAccess(ctx TxContext, userid models.UserID, confirmed *bool) ([]models.ChannelWithSubscription, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
 	}
 
-	confCond := "OR sub.subscriber_user_id = ?"
-	if confirmed {
-		confCond = "OR (sub.subscriber_user_id = ? AND sub.confirmed = 1)"
+	confCond := ""
+	if confirmed != nil && *confirmed {
+		confCond = "OR sub.confirmed = 1"
+	} else if confirmed != nil && !*confirmed {
+		confCond = "OR sub.confirmed = 0"
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM channels LEFT JOIN subscriptions sub on channels.channel_id = sub.channel_id WHERE owner_user_id = :ouid "+confCond, sq.PP{
-		"ouid": userid,
+	rows, err := tx.Query(ctx, "SELECT channels.*, sub.* FROM channels LEFT JOIN subscriptions AS sub on channels.channel_id = sub.channel_id AND sub.subscriber_user_id = :subuid WHERE owner_user_id = :ouid "+confCond, sq.PP{
+		"ouid":   userid,
+		"subuid": userid,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := models.DecodeChannels(rows)
+	data, err := models.DecodeChannelsWithSubscription(rows)
 	if err != nil {
 		return nil, err
 	}
@@ -164,26 +172,27 @@ func (db *Database) ListChannelsByAccess(ctx TxContext, userid models.UserID, co
 	return data, nil
 }
 
-func (db *Database) GetChannel(ctx TxContext, userid models.UserID, channelid models.ChannelID) (models.Channel, error) {
+func (db *Database) GetChannel(ctx TxContext, userid models.UserID, channelid models.ChannelID) (models.ChannelWithSubscription, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
-		return models.Channel{}, err
+		return models.ChannelWithSubscription{}, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM channels WHERE owner_user_id = :ouid AND channel_id = :cid LIMIT 1", sq.PP{
-		"ouid": userid,
-		"cid":  channelid,
+	rows, err := tx.Query(ctx, "SELECT channels.*, sub.* FROM channels LEFT JOIN subscriptions AS sub on channels.channel_id = sub.channel_id AND sub.subscriber_user_id = :subuid WHERE owner_user_id = :ouid AND channels.channel_id = :cid LIMIT 1", sq.PP{
+		"ouid":   userid,
+		"cid":    channelid,
+		"subuid": userid,
 	})
 	if err != nil {
-		return models.Channel{}, err
+		return models.ChannelWithSubscription{}, err
 	}
 
-	client, err := models.DecodeChannel(rows)
+	channel, err := models.DecodeChannelWithSubscription(rows)
 	if err != nil {
-		return models.Channel{}, err
+		return models.ChannelWithSubscription{}, err
 	}
 
-	return client, nil
+	return channel, nil
 }
 
 func (db *Database) IncChannelMessageCounter(ctx TxContext, channel models.Channel) error {

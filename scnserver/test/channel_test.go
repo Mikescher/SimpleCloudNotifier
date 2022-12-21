@@ -28,8 +28,8 @@ func TestCreateChannel(t *testing.T) {
 	}
 
 	{
-		chan0 := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels", uid))
-		tt.AssertEqual(t, "chan-count", 0, len(chan0.Channels))
+		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels", uid))
+		tt.AssertMappedSet(t, "channels", []string{}, clist.Channels, "name")
 	}
 
 	tt.RequestAuthPost[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels", uid), gin.H{
@@ -39,7 +39,7 @@ func TestCreateChannel(t *testing.T) {
 	{
 		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels", uid))
 		tt.AssertEqual(t, "chan.len", 1, len(clist.Channels))
-		tt.AssertEqual(t, "chan.name", "test", clist.Channels[0]["name"])
+		tt.AssertMappedSet(t, "channels", []string{"test"}, clist.Channels, "name")
 	}
 
 	tt.RequestAuthPost[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels", uid), gin.H{
@@ -48,9 +48,7 @@ func TestCreateChannel(t *testing.T) {
 
 	{
 		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels", uid))
-		tt.AssertEqual(t, "chan-count", 2, len(clist.Channels))
-		tt.AssertArrAny(t, "chan.has('asdf')", clist.Channels, func(msg gin.H) bool { return msg["name"].(string) == "asdf" })
-		tt.AssertArrAny(t, "chan.has('test')", clist.Channels, func(msg gin.H) bool { return msg["name"].(string) == "test" })
+		tt.AssertMappedSet(t, "channels", []string{"asdf", "test"}, clist.Channels, "name")
 	}
 }
 
@@ -137,12 +135,37 @@ func TestChannelNameNormalization(t *testing.T) {
 	}
 }
 
-func TestListChannels(t *testing.T) {
-	t.SkipNow() //TODO
-}
-
 func TestListChannelsOwned(t *testing.T) {
-	t.SkipNow() //TODO
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	type chanlist struct {
+		Channels []gin.H `json:"channels"`
+	}
+
+	testdata := map[int][]string{
+		0:  {"main", "chattingchamber", "unicdhll", "promotions", "reminders"},
+		1:  {"promotions"},
+		2:  {},
+		3:  {},
+		4:  {},
+		5:  {},
+		6:  {},
+		7:  {},
+		8:  {},
+		9:  {},
+		10: {},
+		11: {},
+		12: {},
+		13: {},
+	}
+
+	for k, v := range testdata {
+		r0 := tt.RequestAuthGet[chanlist](t, data.User[k].AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/channels", data.User[k].UID))
+		tt.AssertMappedSet(t, fmt.Sprintf("%d->chanlist", k), v, r0.Channels, "name")
+	}
 }
 
 func TestListChannelsSubscribedAny(t *testing.T) {

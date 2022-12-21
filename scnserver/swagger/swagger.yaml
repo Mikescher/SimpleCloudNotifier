@@ -55,6 +55,8 @@ definitions:
     properties:
       name:
         type: string
+      subscribe:
+        type: boolean
     type: object
   handler.CreateSubscription.body:
     properties:
@@ -151,7 +153,7 @@ definitions:
     properties:
       channels:
         items:
-          $ref: '#/definitions/models.ChannelJSON'
+          $ref: '#/definitions/models.ChannelWithSubscriptionJSON'
         type: array
     type: object
   handler.ListClients.response:
@@ -334,7 +336,7 @@ definitions:
       suppress_send:
         type: boolean
     type: object
-  models.ChannelJSON:
+  models.ChannelWithSubscriptionJSON:
     properties:
       channel_id:
         type: integer
@@ -350,6 +352,8 @@ definitions:
       subscribe_key:
         description: can be nil, depending on endpoint
         type: string
+      subscription:
+        $ref: '#/definitions/models.SubscriptionJSON'
       timestamp_created:
         type: string
       timestamp_lastsent:
@@ -1288,11 +1292,11 @@ paths:
     get:
       description: |-
         The possible values for 'selector' are:
-        - "owned" Return all channels of the user
-        - "subscribed" Return all channels that the user is subscribing to
-        - "all" Return channels that the user owns or is subscribing
+        - "owned"          Return all channels of the user
+        - "subscribed"     Return all channels that the user is subscribing to
+        - "all"            Return channels that the user owns or is subscribing
         - "subscribed_any" Return all channels that the user is subscribing to (even unconfirmed)
-        - "all_any" Return channels that the user owns or is subscribing (even unconfirmed)
+        - "all_any"        Return channels that the user owns or is subscribing (even unconfirmed)
       operationId: api-channels-list
       parameters:
       - description: UserID
@@ -1328,10 +1332,9 @@ paths:
           description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
-      summary: List channels of a user (subscribed/owned)
+      summary: List channels of a user (subscribed/owned/all)
       tags:
       - API-v2
-  /api/users/{uid}/channels/:
     post:
       operationId: api-channels-create
       parameters:
@@ -1349,7 +1352,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ChannelJSON'
+            $ref: '#/definitions/models.ChannelWithSubscriptionJSON'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1387,7 +1390,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ChannelJSON'
+            $ref: '#/definitions/models.ChannelWithSubscriptionJSON'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1404,7 +1407,7 @@ paths:
           description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
-      summary: List all channels of a user
+      summary: Get a single channel
       tags:
       - API-v2
     patch:
@@ -1434,7 +1437,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ChannelJSON'
+            $ref: '#/definitions/models.ChannelWithSubscriptionJSON'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1693,6 +1696,18 @@ paths:
         name: uid
         required: true
         type: integer
+      - description: 'Filter subscribptions (default: owner_all)'
+        enum:
+        - owner_all
+        - owner_confirmed
+        - owner_unconfirmed
+        - incoming_all
+        - incoming_confirmed
+        - incoming_unconfirmed
+        in: query
+        name: selector
+        required: true
+        type: string
       responses:
         "200":
           description: OK
@@ -1710,7 +1725,7 @@ paths:
           description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
-      summary: List all channels of a user
+      summary: List all subscriptions of a user (incoming/owned)
       tags:
       - API-v2
     post:

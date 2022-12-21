@@ -23,8 +23,6 @@
 
 -------------------------------------------------------------------------------------------------------------------------------
 
- - (?) return subscribtions in list-channels (?)
-
  - (?) ack/read deliveries && return ack-count  (? or not, how to query?)
 
  - (?) "login" on website and list/search/filter messages

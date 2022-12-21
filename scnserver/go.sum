@@ -112,6 +112,14 @@ gogs.mikescher.com/BlackForestBytes/goext v0.0.36 h1:iOUYz2NEiObCCdBnkt8DPi1N8gH
 gogs.mikescher.com/BlackForestBytes/goext v0.0.36/go.mod h1:/u9JtMwCP68ix4R9BJ/MT0Lm+QScmqIoyYZFKBGzv9g=
 gogs.mikescher.com/BlackForestBytes/goext v0.0.37 h1:6XP5UOqiougzH0Xtzs5tIU4c0sAXmdMPCvGhRxqVwLU=
 gogs.mikescher.com/BlackForestBytes/goext v0.0.37/go.mod h1:/u9JtMwCP68ix4R9BJ/MT0Lm+QScmqIoyYZFKBGzv9g=
+gogs.mikescher.com/BlackForestBytes/goext v0.0.38 h1:P9tf0tHexcH6Q3u9pRwi4iQsOb65Lc80JvzD49f/EIY=
+gogs.mikescher.com/BlackForestBytes/goext v0.0.38/go.mod h1:/u9JtMwCP68ix4R9BJ/MT0Lm+QScmqIoyYZFKBGzv9g=
+gogs.mikescher.com/BlackForestBytes/goext v0.0.39 h1:96QUjPMoCzcZpA2SYUU4XXytWJq3dcsnfska88tMikU=
+gogs.mikescher.com/BlackForestBytes/goext v0.0.39/go.mod h1:/u9JtMwCP68ix4R9BJ/MT0Lm+QScmqIoyYZFKBGzv9g=
+gogs.mikescher.com/BlackForestBytes/goext v0.0.40 h1:wh5+IRmcMAbwJ8cK6JZvg71IiMUWuJoaKAR5dbt7FLU=
+gogs.mikescher.com/BlackForestBytes/goext v0.0.40/go.mod h1:/u9JtMwCP68ix4R9BJ/MT0Lm+QScmqIoyYZFKBGzv9g=
+gogs.mikescher.com/BlackForestBytes/goext v0.0.41 h1:3p/MtkHZ2gulSdizXql3VnFf2v7WpeOBCmTi0rQYCQw=
+gogs.mikescher.com/BlackForestBytes/goext v0.0.41/go.mod h1:/u9JtMwCP68ix4R9BJ/MT0Lm+QScmqIoyYZFKBGzv9g=
 golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 h1:/UOmuWzQfxxo9UtlXMwuQU8CMgg1eZXqTRwkSQJWKOI=
 golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=
 golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 h1:6zppjxzCulZykYSLyVDYbneBfbaBIQPYMevg0bEwv2s=
