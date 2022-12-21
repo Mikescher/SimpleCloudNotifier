@@ -13,9 +13,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var conf = scn.Conf
-
 func main() {
+	conf := scn.Conf
+
 	scn.Init(conf)
 
 	log.Info().Msg(fmt.Sprintf("Starting with config-namespace <%s>", conf.Namespace))

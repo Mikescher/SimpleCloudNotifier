@@ -47,8 +47,7 @@ func getAsset(fn string) ([]byte, string, bool) {
 
 func Handle(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		Filename1 string  `uri:"fn1"`
-		Filename2 *string `uri:"fn2"`
+		Filename string `uri:"sub"`
 	}
 
 	var u uri
@@ -56,19 +55,16 @@ func Handle(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
-	filename := u.Filename1
-	if u.Filename2 != nil {
-		filename = filename + "/" + *u.Filename2
-	}
+	u.Filename = strings.TrimLeft(u.Filename, "/")
 
-	if filename == "" {
+	if u.Filename == "" {
 		index, _, _ := getAsset("index.html")
 		return ginresp.Data(http.StatusOK, "text/html", index)
 	}
 
-	if data, mime, ok := getAsset(filename); ok {
+	if data, mime, ok := getAsset(u.Filename); ok {
 		return ginresp.Data(http.StatusOK, mime, data)
 	}
 
-	return ginresp.JSON(http.StatusNotFound, gin.H{"error": "AssetNotFound", "filename": filename, "filename1": u.Filename1, "filename2": u.Filename2})
+	return ginresp.JSON(http.StatusNotFound, gin.H{"error": "AssetNotFound", "filename": u.Filename})
 }
