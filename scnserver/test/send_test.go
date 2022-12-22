@@ -1440,8 +1440,10 @@ func TestSendParallel(t *testing.T) {
 	uid := int(r0["user_id"].(float64))
 	sendtok := r0["send_key"].(string)
 
-	sem := make(chan tt.Void, 900) // semaphore pattern
-	for i := 0; i < 900; i++ {
+	count := 128
+
+	sem := make(chan tt.Void, count) // semaphore pattern
+	for i := 0; i < count; i++ {
 		go func() {
 			defer func() {
 				sem <- tt.Void{}
@@ -1454,7 +1456,7 @@ func TestSendParallel(t *testing.T) {
 		}()
 	}
 	// wait for goroutines to finish
-	for i := 0; i < 900; i++ {
+	for i := 0; i < count; i++ {
 		<-sem
 	}
 }

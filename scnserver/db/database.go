@@ -17,6 +17,7 @@ import (
 
 type Database struct {
 	db sq.DB
+	pp *dbtools.DBPreprocessor
 }
 
 func NewDatabase(conf server.Config) (*Database, error) {
@@ -38,11 +39,16 @@ func NewDatabase(conf server.Config) (*Database, error) {
 
 	qqdb := sq.NewDB(xdb)
 
-	scndb := &Database{qqdb}
-
 	qqdb.AddListener(dbtools.DBLogger{})
 
-	qqdb.AddListener(dbtools.NewDBPreprocessor(scndb.db))
+	pp, err := dbtools.NewDBPreprocessor(qqdb)
+	if err != nil {
+		return nil, err
+	}
+
+	qqdb.AddListener(pp)
+
+	scndb := &Database{db: qqdb, pp: pp}
 
 	return scndb, nil
 }
@@ -60,6 +66,11 @@ func (db *Database) Migrate(ctx context.Context) error {
 		}
 
 		err = db.WriteMetaInt(ctx, "schema", 3)
+		if err != nil {
+			return err
+		}
+
+		err = db.pp.Init(ctx)
 		if err != nil {
 			return err
 		}
