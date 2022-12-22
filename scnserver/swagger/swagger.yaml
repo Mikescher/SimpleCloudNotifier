@@ -66,10 +66,6 @@ definitions:
         type: string
       channel_owner_user_id:
         type: integer
-    required:
-    - channel_id
-    - channel_internal_name
-    - channel_owner_user_id
     type: object
   handler.CreateUser.body:
     properties:
@@ -276,6 +272,11 @@ definitions:
         type: integer
       user_key:
         type: string
+    type: object
+  handler.UpdateSubscription.body:
+    properties:
+      confirmed:
+        type: boolean
     type: object
   handler.Upgrade.response:
     properties:
@@ -695,7 +696,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/ginresp.apiError'
-      summary: Check for a wroking database connection
+      summary: Check for a working database connection
       tags:
       - Common
   /api/expand.php:
@@ -1701,9 +1702,9 @@ paths:
     get:
       description: |-
         The possible values for 'selector' are:
-        - "owner_all"            All subscriptions (confirmed/unconfirmed) with the user as owner (= subscriptions he can use to read channels)
-        - "owner_confirmed"      Confirmed subscriptions with the user as owner
-        - "owner_unconfirmed"    Unconfirmed (Pending) subscriptions with the user as owner
+        - "outgoing_all"         All subscriptions (confirmed/unconfirmed) with the user as subscriber (= subscriptions he can use to read channels)
+        - "outgoing_confirmed"   Confirmed subscriptions with the user as subscriber
+        - "outgoing_unconfirmed" Unconfirmed (Pending) subscriptions with the user as subscriber
         - "incoming_all"         All subscriptions (confirmed/unconfirmed) from other users to channels of this user (= incoming subscriptions and subscription requests)
         - "incoming_confirmed"   Confirmed subscriptions from other users to channels of this user
         - "incoming_unconfirmed" Unconfirmed subscriptions from other users to channels of this user (= requests)
@@ -1716,9 +1717,9 @@ paths:
         type: integer
       - description: 'Filter subscriptions (default: owner_all)'
         enum:
-        - owner_all
-        - owner_confirmed
-        - owner_unconfirmed
+        - outgoing_all
+        - outgoing_confirmed
+        - outgoing_unconfirmed
         - incoming_all
         - incoming_confirmed
         - incoming_unconfirmed
@@ -1872,6 +1873,11 @@ paths:
         name: sid
         required: true
         type: integer
+      - description: ' '
+        in: body
+        name: post_data
+        schema:
+          $ref: '#/definitions/handler.UpdateSubscription.body'
       responses:
         "200":
           description: OK

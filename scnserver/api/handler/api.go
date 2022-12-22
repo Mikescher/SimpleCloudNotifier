@@ -1268,14 +1268,15 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @ID      api-subscriptions-update
 // @Tags    API-v2
 //
-// @Param   uid path     int true "UserID"
-// @Param   sid path     int true "SubscriptionID"
+// @Param   uid       path     int                             true  "UserID"
+// @Param   sid       path     int                             true  "SubscriptionID"
+// @Param   post_data body     handler.UpdateSubscription.body false " "
 //
-// @Success 200 {object} models.SubscriptionJSON
-// @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure 404 {object} ginresp.apiError "subscription not found"
-// @Failure 500 {object} ginresp.apiError "internal server error"
+// @Success 200       {object} models.SubscriptionJSON
+// @Failure 400       {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure 401       {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure 404       {object} ginresp.apiError "subscription not found"
+// @Failure 500       {object} ginresp.apiError "internal server error"
 //
 // @Router  /api/users/{uid}/subscriptions/{sid} [PATCH]
 func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
@@ -1299,6 +1300,8 @@ func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
+	userid := *ctx.GetPermissionUserID()
+
 	subscription, err := h.database.GetSubscription(ctx, u.SubscriptionID)
 	if err == sql.ErrNoRows {
 		return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_NOT_FOUND, "Subscription not found", err)
@@ -1306,11 +1309,14 @@ func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
 	}
-	if subscription.SubscriberUserID != u.UserID {
+	if subscription.SubscriberUserID != u.UserID && subscription.ChannelOwnerUserID != u.UserID {
 		return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_USER_MISMATCH, "Subscription not found", nil)
 	}
 
 	if b.Confirmed != nil {
+		if subscription.ChannelOwnerUserID != userid {
+			return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+		}
 		err = h.database.UpdateSubscriptionConfirmed(ctx, u.SubscriptionID, *b.Confirmed)
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update subscription", err)

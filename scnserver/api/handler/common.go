@@ -69,7 +69,7 @@ func (h CommonHandler) Ping(g *gin.Context) ginresp.HTTPResponse {
 
 // DatabaseTest swaggerdoc
 //
-// @Summary Check for a wroking database connection
+// @Summary Check for a working database connection
 // @ID      api-common-dbtest
 // @Tags    Common
 //

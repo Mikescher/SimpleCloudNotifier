@@ -127,10 +127,10 @@ func (r *Router) Init(e *gin.Engine) {
 		apiv2.GET("/users/:uid/channels/:cid/subscriptions", ginresp.Wrap(r.apiHandler.ListChannelSubscriptions))
 
 		apiv2.GET("/users/:uid/subscriptions", ginresp.Wrap(r.apiHandler.ListUserSubscriptions))
+		apiv2.POST("/users/:uid/subscriptions", ginresp.Wrap(r.apiHandler.CreateSubscription))
 		apiv2.GET("/users/:uid/subscriptions/:sid", ginresp.Wrap(r.apiHandler.GetSubscription))
 		apiv2.DELETE("/users/:uid/subscriptions/:sid", ginresp.Wrap(r.apiHandler.CancelSubscription))
-		apiv2.POST("/users/:uid/subscriptions", ginresp.Wrap(r.apiHandler.CreateSubscription))
-		apiv2.PATCH("/users/:uid/subscriptions", ginresp.Wrap(r.apiHandler.UpdateSubscription))
+		apiv2.PATCH("/users/:uid/subscriptions/:sid", ginresp.Wrap(r.apiHandler.UpdateSubscription))
 
 		apiv2.GET("/messages", ginresp.Wrap(r.apiHandler.ListMessages))
 		apiv2.GET("/messages/:mid", ginresp.Wrap(r.apiHandler.GetMessage))

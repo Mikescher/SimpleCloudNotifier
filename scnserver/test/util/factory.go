@@ -463,7 +463,9 @@ func doAcceptSub(t *testing.T, baseUrl string, user Userdat, subscriber Userdat,
 		}
 	}
 
-	RequestAuthDelete[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/subscriptions/%v", user.UID, subdat["subscription_id"]), gin.H{})
+	RequestAuthPatch[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/subscriptions/%v", user.UID, subdat["subscription_id"]), gin.H{
+		"confirmed": true,
+	})
 
 }
 

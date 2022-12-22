@@ -175,11 +175,11 @@ func (db *Database) ListChannelsByAccess(ctx TxContext, userid models.UserID, co
 		return nil, err
 	}
 
-	confCond := ""
+	confCond := "OR (sub.subscription_id IS NOT NULL)"
 	if confirmed != nil && *confirmed {
-		confCond = "OR sub.confirmed = 1"
+		confCond = "OR (sub.subscription_id IS NOT NULL AND sub.confirmed = 1)"
 	} else if confirmed != nil && !*confirmed {
-		confCond = "OR sub.confirmed = 0"
+		confCond = "OR (sub.subscription_id IS NOT NULL AND sub.confirmed = 0)"
 	}
 
 	rows, err := tx.Query(ctx, "SELECT channels.*, sub.* FROM channels LEFT JOIN subscriptions AS sub on channels.channel_id = sub.channel_id AND sub.subscriber_user_id = :subuid WHERE owner_user_id = :ouid "+confCond, sq.PP{

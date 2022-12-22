@@ -257,7 +257,7 @@
                 "tags": [
                     "Common"
                 ],
-                "summary": "Check for a wroking database connection",
+                "summary": "Check for a working database connection",
                 "operationId": "api-common-dbtest",
                 "responses": {
                     "200": {
@@ -1742,7 +1742,7 @@
         },
         "/api/users/{uid}/subscriptions": {
             "get": {
-                "description": "The possible values for 'selector' are:\n- \"owner_all\"            All subscriptions (confirmed/unconfirmed) with the user as owner (= subscriptions he can use to read channels)\n- \"owner_confirmed\"      Confirmed subscriptions with the user as owner\n- \"owner_unconfirmed\"    Unconfirmed (Pending) subscriptions with the user as owner\n- \"incoming_all\"         All subscriptions (confirmed/unconfirmed) from other users to channels of this user (= incoming subscriptions and subscription requests)\n- \"incoming_confirmed\"   Confirmed subscriptions from other users to channels of this user\n- \"incoming_unconfirmed\" Unconfirmed subscriptions from other users to channels of this user (= requests)",
+                "description": "The possible values for 'selector' are:\n- \"outgoing_all\"         All subscriptions (confirmed/unconfirmed) with the user as subscriber (= subscriptions he can use to read channels)\n- \"outgoing_confirmed\"   Confirmed subscriptions with the user as subscriber\n- \"outgoing_unconfirmed\" Unconfirmed (Pending) subscriptions with the user as subscriber\n- \"incoming_all\"         All subscriptions (confirmed/unconfirmed) from other users to channels of this user (= incoming subscriptions and subscription requests)\n- \"incoming_confirmed\"   Confirmed subscriptions from other users to channels of this user\n- \"incoming_unconfirmed\" Unconfirmed subscriptions from other users to channels of this user (= requests)",
                 "tags": [
                     "API-v2"
                 ],
@@ -1758,9 +1758,9 @@
                     },
                     {
                         "enum": [
-                            "owner_all",
-                            "owner_confirmed",
-                            "owner_unconfirmed",
+                            "outgoing_all",
+                            "outgoing_confirmed",
+                            "outgoing_unconfirmed",
                             "incoming_all",
                             "incoming_confirmed",
                             "incoming_unconfirmed"
@@ -1987,6 +1987,14 @@
                         "name": "sid",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": " ",
+                        "name": "post_data",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/handler.UpdateSubscription.body"
+                        }
                     }
                 ],
                 "responses": {
@@ -2410,11 +2418,6 @@
         },
         "handler.CreateSubscription.body": {
             "type": "object",
-            "required": [
-                "channel_id",
-                "channel_internal_name",
-                "channel_owner_user_id"
-            ],
             "properties": {
                 "channel_id": {
                     "type": "integer"
@@ -2735,6 +2738,14 @@
                 },
                 "user_key": {
                     "type": "string"
+                }
+            }
+        },
+        "handler.UpdateSubscription.body": {
+            "type": "object",
+            "properties": {
+                "confirmed": {
+                    "type": "boolean"
                 }
             }
         },

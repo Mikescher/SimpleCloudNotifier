@@ -19,11 +19,15 @@
 
  - Pagination for ListChannels / ListSubscriptions / ListClients / ListChannelSubscriptions / ListUserSubscriptions
 
+ - cannot open sqlite in dbbrowsr (cannot parse schema?)
+
 -------------------------------------------------------------------------------------------------------------------------------
 
  - in my script: use (backupname || hostname) for sendername
 
 -------------------------------------------------------------------------------------------------------------------------------
+
+ - (?) use uuid ids (also prevents wrong-joins?)
 
  - (?) default-priority for channels
 
