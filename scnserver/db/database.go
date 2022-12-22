@@ -85,3 +85,15 @@ func (db *Database) Ping(ctx context.Context) error {
 func (db *Database) BeginTx(ctx context.Context) (sq.Tx, error) {
 	return db.db.BeginTransaction(ctx, sql.LevelDefault)
 }
+
+func (db *Database) Stop(ctx context.Context) error {
+	_, err := db.db.Exec(ctx, "PRAGMA wal_checkpoint;", sq.PP{})
+	if err != nil {
+		return err
+	}
+	err = db.db.Exit()
+	if err != nil {
+		return err
+	}
+	return nil
+}

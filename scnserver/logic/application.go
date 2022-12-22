@@ -91,15 +91,15 @@ func (app *Application) Run() {
 		errChan <- httpserver.Serve(ln)
 	}()
 
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	sigstop := make(chan os.Signal, 1)
+	signal.Notify(sigstop, os.Interrupt, syscall.SIGTERM)
 
 	for _, job := range app.Jobs {
 		job.Start()
 	}
 
 	select {
-	case <-stop:
+	case <-sigstop:
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
@@ -133,6 +133,13 @@ func (app *Application) Run() {
 
 	for _, job := range app.Jobs {
 		job.Stop()
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	err := app.Database.Stop(ctx)
+	if err != nil {
+		log.Info().Err(err).Msg("Error while stopping the database")
 	}
 
 	app.IsRunning.Set(false)
