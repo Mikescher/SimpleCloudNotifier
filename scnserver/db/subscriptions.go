@@ -15,10 +15,10 @@ func (db *Database) CreateSubscription(ctx TxContext, subscriberUID models.UserI
 
 	now := time.Now().UTC()
 
-	res, err := tx.Exec(ctx, "INSERT INTO subscriptions (subscriber_user_id, channel_owner_user_id, channel_name, channel_id, timestamp_created, confirmed) VALUES (:suid, :ouid, :cnam, :cid, :ts, :conf)", sq.PP{
+	res, err := tx.Exec(ctx, "INSERT INTO subscriptions (subscriber_user_id, channel_owner_user_id, channel_internal_name, channel_id, timestamp_created, confirmed) VALUES (:suid, :ouid, :cnam, :cid, :ts, :conf)", sq.PP{
 		"suid": subscriberUID,
 		"ouid": channel.OwnerUserID,
-		"cnam": channel.Name,
+		"cnam": channel.InternalName,
 		"cid":  channel.ChannelID,
 		"ts":   time2DB(now),
 		"conf": confirmed,
@@ -33,13 +33,13 @@ func (db *Database) CreateSubscription(ctx TxContext, subscriberUID models.UserI
 	}
 
 	return models.Subscription{
-		SubscriptionID:     models.SubscriptionID(liid),
-		SubscriberUserID:   subscriberUID,
-		ChannelOwnerUserID: channel.OwnerUserID,
-		ChannelID:          channel.ChannelID,
-		ChannelName:        channel.Name,
-		TimestampCreated:   now,
-		Confirmed:          confirmed,
+		SubscriptionID:      models.SubscriptionID(liid),
+		SubscriberUserID:    subscriberUID,
+		ChannelOwnerUserID:  channel.OwnerUserID,
+		ChannelID:           channel.ChannelID,
+		ChannelInternalName: channel.InternalName,
+		TimestampCreated:    now,
+		Confirmed:           confirmed,
 	}, nil
 }
 

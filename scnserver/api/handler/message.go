@@ -166,9 +166,11 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query user", err)
 	}
 
-	channelName := user.DefaultChannel()
+	channelDisplayName := user.DefaultChannel()
+	channelInternalName := user.DefaultChannel()
 	if Channel != nil {
-		channelName = h.app.NormalizeChannelName(*Channel)
+		channelDisplayName = h.app.NormalizeChannelDisplayName(*Channel)
+		channelInternalName = h.app.NormalizeChannelInternalName(*Channel)
 	}
 
 	if len(*Title) > user.MaxTitleLength() {
@@ -177,7 +179,10 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 	if Content != nil && len(*Content) > user.MaxContentLength() {
 		return ginresp.SendAPIError(g, 400, apierr.CONTENT_TOO_LONG, hl.CONTENT, fmt.Sprintf("Content too long (%d characters; max := %d characters)", len(*Content), user.MaxContentLength()), nil)
 	}
-	if len(channelName) > user.MaxChannelNameLength() {
+	if len(channelDisplayName) > user.MaxChannelNameLength() {
+		return ginresp.SendAPIError(g, 400, apierr.CHANNEL_TOO_LONG, hl.CHANNEL, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
+	}
+	if len(channelInternalName) > user.MaxChannelNameLength() {
 		return ginresp.SendAPIError(g, 400, apierr.CHANNEL_TOO_LONG, hl.CHANNEL, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
 	}
 	if SenderName != nil && len(*SenderName) > user.MaxSenderName() {
@@ -220,7 +225,7 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 	if ChanKey != nil {
 		// foreign channel (+ channel send-key)
 
-		foreignChan, err := h.database.GetChannelByNameAndSendKey(ctx, channelName, *ChanKey)
+		foreignChan, err := h.database.GetChannelByNameAndSendKey(ctx, channelInternalName, *ChanKey)
 		if err != nil {
 			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query (foreign) channel", err)
 		}
@@ -231,7 +236,7 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 	} else {
 		// own channel
 
-		channel, err = h.app.GetOrCreateChannel(ctx, *UserID, channelName)
+		channel, err = h.app.GetOrCreateChannel(ctx, *UserID, channelDisplayName, channelInternalName)
 		if err != nil {
 			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query/create (owned) channel", err)
 		}

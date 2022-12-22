@@ -64,10 +64,10 @@ func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, cha
 
 	now := time.Now().UTC()
 
-	res, err := tx.Exec(ctx, "INSERT INTO messages (sender_user_id, owner_user_id, channel_name, channel_id, timestamp_real, timestamp_client, title, content, priority, usr_message_id, sender_ip, sender_name) VALUES (:suid, :ouid, :cnam, :cid, :tsr, :tsc, :tit, :cnt, :prio, :umid, :ip, :snam)", sq.PP{
+	res, err := tx.Exec(ctx, "INSERT INTO messages (sender_user_id, owner_user_id, channel_internal_name, channel_id, timestamp_real, timestamp_client, title, content, priority, usr_message_id, sender_ip, sender_name) VALUES (:suid, :ouid, :cnam, :cid, :tsr, :tsc, :tit, :cnt, :prio, :umid, :ip, :snam)", sq.PP{
 		"suid": senderUserID,
 		"ouid": channel.OwnerUserID,
-		"cnam": channel.Name,
+		"cnam": channel.InternalName,
 		"cid":  channel.ChannelID,
 		"tsr":  time2DB(now),
 		"tsc":  time2DBOpt(timestampSend),
@@ -88,19 +88,19 @@ func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, cha
 	}
 
 	return models.Message{
-		SCNMessageID:    models.SCNMessageID(liid),
-		SenderUserID:    senderUserID,
-		OwnerUserID:     channel.OwnerUserID,
-		ChannelName:     channel.Name,
-		ChannelID:       channel.ChannelID,
-		SenderIP:        senderIP,
-		SenderName:      senderName,
-		TimestampReal:   now,
-		TimestampClient: timestampSend,
-		Title:           title,
-		Content:         content,
-		Priority:        priority,
-		UserMessageID:   userMsgId,
+		SCNMessageID:        models.SCNMessageID(liid),
+		SenderUserID:        senderUserID,
+		OwnerUserID:         channel.OwnerUserID,
+		ChannelInternalName: channel.InternalName,
+		ChannelID:           channel.ChannelID,
+		SenderIP:            senderIP,
+		SenderName:          senderName,
+		TimestampReal:       now,
+		TimestampClient:     timestampSend,
+		Title:               title,
+		Content:             content,
+		Priority:            priority,
+		UserMessageID:       userMsgId,
 	}, nil
 }
 

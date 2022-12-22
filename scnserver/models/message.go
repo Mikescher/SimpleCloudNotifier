@@ -13,55 +13,55 @@ const (
 )
 
 type Message struct {
-	SCNMessageID    SCNMessageID
-	SenderUserID    UserID
-	OwnerUserID     UserID
-	ChannelName     string
-	ChannelID       ChannelID
-	SenderName      *string
-	SenderIP        string
-	TimestampReal   time.Time
-	TimestampClient *time.Time
-	Title           string
-	Content         *string
-	Priority        int
-	UserMessageID   *string
-	Deleted         bool
+	SCNMessageID        SCNMessageID
+	SenderUserID        UserID
+	OwnerUserID         UserID
+	ChannelInternalName string
+	ChannelID           ChannelID
+	SenderName          *string
+	SenderIP            string
+	TimestampReal       time.Time
+	TimestampClient     *time.Time
+	Title               string
+	Content             *string
+	Priority            int
+	UserMessageID       *string
+	Deleted             bool
 }
 
 func (m Message) FullJSON() MessageJSON {
 	return MessageJSON{
-		SCNMessageID:  m.SCNMessageID,
-		SenderUserID:  m.SenderUserID,
-		OwnerUserID:   m.OwnerUserID,
-		ChannelName:   m.ChannelName,
-		ChannelID:     m.ChannelID,
-		SenderName:    m.SenderName,
-		SenderIP:      m.SenderIP,
-		Timestamp:     m.Timestamp().Format(time.RFC3339Nano),
-		Title:         m.Title,
-		Content:       m.Content,
-		Priority:      m.Priority,
-		UserMessageID: m.UserMessageID,
-		Trimmed:       false,
+		SCNMessageID:        m.SCNMessageID,
+		SenderUserID:        m.SenderUserID,
+		OwnerUserID:         m.OwnerUserID,
+		ChannelInternalName: m.ChannelInternalName,
+		ChannelID:           m.ChannelID,
+		SenderName:          m.SenderName,
+		SenderIP:            m.SenderIP,
+		Timestamp:           m.Timestamp().Format(time.RFC3339Nano),
+		Title:               m.Title,
+		Content:             m.Content,
+		Priority:            m.Priority,
+		UserMessageID:       m.UserMessageID,
+		Trimmed:             false,
 	}
 }
 
 func (m Message) TrimmedJSON() MessageJSON {
 	return MessageJSON{
-		SCNMessageID:  m.SCNMessageID,
-		SenderUserID:  m.SenderUserID,
-		OwnerUserID:   m.OwnerUserID,
-		ChannelName:   m.ChannelName,
-		ChannelID:     m.ChannelID,
-		SenderName:    m.SenderName,
-		SenderIP:      m.SenderIP,
-		Timestamp:     m.Timestamp().Format(time.RFC3339Nano),
-		Title:         m.Title,
-		Content:       m.TrimmedContent(),
-		Priority:      m.Priority,
-		UserMessageID: m.UserMessageID,
-		Trimmed:       m.NeedsTrim(),
+		SCNMessageID:        m.SCNMessageID,
+		SenderUserID:        m.SenderUserID,
+		OwnerUserID:         m.OwnerUserID,
+		ChannelInternalName: m.ChannelInternalName,
+		ChannelID:           m.ChannelID,
+		SenderName:          m.SenderName,
+		SenderIP:            m.SenderIP,
+		Timestamp:           m.Timestamp().Format(time.RFC3339Nano),
+		Title:               m.Title,
+		Content:             m.TrimmedContent(),
+		Priority:            m.Priority,
+		UserMessageID:       m.UserMessageID,
+		Trimmed:             m.NeedsTrim(),
 	}
 }
 
@@ -94,54 +94,54 @@ func (m Message) ShortContent() string {
 }
 
 type MessageJSON struct {
-	SCNMessageID  SCNMessageID `json:"scn_message_id"`
-	SenderUserID  UserID       `json:"sender_user_id"`
-	OwnerUserID   UserID       `json:"owner_user_id"`
-	ChannelName   string       `json:"channel_name"`
-	ChannelID     ChannelID    `json:"channel_id"`
-	SenderName    *string      `json:"sender_name"`
-	SenderIP      string       `json:"sender_ip"`
-	Timestamp     string       `json:"timestamp"`
-	Title         string       `json:"title"`
-	Content       *string      `json:"content"`
-	Priority      int          `json:"priority"`
-	UserMessageID *string      `json:"usr_message_id"`
-	Trimmed       bool         `json:"trimmed"`
+	SCNMessageID        SCNMessageID `json:"scn_message_id"`
+	SenderUserID        UserID       `json:"sender_user_id"`
+	OwnerUserID         UserID       `json:"owner_user_id"`
+	ChannelInternalName string       `json:"channel_internal_name"`
+	ChannelID           ChannelID    `json:"channel_id"`
+	SenderName          *string      `json:"sender_name"`
+	SenderIP            string       `json:"sender_ip"`
+	Timestamp           string       `json:"timestamp"`
+	Title               string       `json:"title"`
+	Content             *string      `json:"content"`
+	Priority            int          `json:"priority"`
+	UserMessageID       *string      `json:"usr_message_id"`
+	Trimmed             bool         `json:"trimmed"`
 }
 
 type MessageDB struct {
-	SCNMessageID    SCNMessageID `db:"scn_message_id"`
-	SenderUserID    UserID       `db:"sender_user_id"`
-	OwnerUserID     UserID       `db:"owner_user_id"`
-	ChannelName     string       `db:"channel_name"`
-	ChannelID       ChannelID    `db:"channel_id"`
-	SenderName      *string      `db:"sender_name"`
-	SenderIP        string       `db:"sender_ip"`
-	TimestampReal   int64        `db:"timestamp_real"`
-	TimestampClient *int64       `db:"timestamp_client"`
-	Title           string       `db:"title"`
-	Content         *string      `db:"content"`
-	Priority        int          `db:"priority"`
-	UserMessageID   *string      `db:"usr_message_id"`
-	Deleted         int          `db:"deleted"`
+	SCNMessageID        SCNMessageID `db:"scn_message_id"`
+	SenderUserID        UserID       `db:"sender_user_id"`
+	OwnerUserID         UserID       `db:"owner_user_id"`
+	ChannelInternalName string       `db:"channel_internal_name"`
+	ChannelID           ChannelID    `db:"channel_id"`
+	SenderName          *string      `db:"sender_name"`
+	SenderIP            string       `db:"sender_ip"`
+	TimestampReal       int64        `db:"timestamp_real"`
+	TimestampClient     *int64       `db:"timestamp_client"`
+	Title               string       `db:"title"`
+	Content             *string      `db:"content"`
+	Priority            int          `db:"priority"`
+	UserMessageID       *string      `db:"usr_message_id"`
+	Deleted             int          `db:"deleted"`
 }
 
 func (m MessageDB) Model() Message {
 	return Message{
-		SCNMessageID:    m.SCNMessageID,
-		SenderUserID:    m.SenderUserID,
-		OwnerUserID:     m.OwnerUserID,
-		ChannelName:     m.ChannelName,
-		ChannelID:       m.ChannelID,
-		SenderName:      m.SenderName,
-		SenderIP:        m.SenderIP,
-		TimestampReal:   time.UnixMilli(m.TimestampReal),
-		TimestampClient: timeOptFromMilli(m.TimestampClient),
-		Title:           m.Title,
-		Content:         m.Content,
-		Priority:        m.Priority,
-		UserMessageID:   m.UserMessageID,
-		Deleted:         m.Deleted != 0,
+		SCNMessageID:        m.SCNMessageID,
+		SenderUserID:        m.SenderUserID,
+		OwnerUserID:         m.OwnerUserID,
+		ChannelInternalName: m.ChannelInternalName,
+		ChannelID:           m.ChannelID,
+		SenderName:          m.SenderName,
+		SenderIP:            m.SenderIP,
+		TimestampReal:       time.UnixMilli(m.TimestampReal),
+		TimestampClient:     timeOptFromMilli(m.TimestampClient),
+		Title:               m.Title,
+		Content:             m.Content,
+		Priority:            m.Priority,
+		UserMessageID:       m.UserMessageID,
+		Deleted:             m.Deleted != 0,
 	}
 }
 

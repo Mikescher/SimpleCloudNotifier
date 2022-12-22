@@ -10,7 +10,8 @@ import (
 type Channel struct {
 	ChannelID         ChannelID
 	OwnerUserID       UserID
-	Name              string
+	InternalName      string
+	DisplayName       string
 	SubscribeKey      string
 	SendKey           string
 	TimestampCreated  time.Time
@@ -22,7 +23,8 @@ func (c Channel) JSON(includeKey bool) ChannelJSON {
 	return ChannelJSON{
 		ChannelID:         c.ChannelID,
 		OwnerUserID:       c.OwnerUserID,
-		Name:              c.Name,
+		InternalName:      c.InternalName,
+		DisplayName:       c.DisplayName,
 		SubscribeKey:      langext.Conditional(includeKey, langext.Ptr(c.SubscribeKey), nil),
 		SendKey:           langext.Conditional(includeKey, langext.Ptr(c.SendKey), nil),
 		TimestampCreated:  c.TimestampCreated.Format(time.RFC3339Nano),
@@ -57,7 +59,8 @@ func (c ChannelWithSubscription) JSON(includeChannelKey bool) ChannelWithSubscri
 type ChannelJSON struct {
 	ChannelID         ChannelID `json:"channel_id"`
 	OwnerUserID       UserID    `json:"owner_user_id"`
-	Name              string    `json:"name"`
+	InternalName      string    `json:"internal_name"`
+	DisplayName       string    `json:"display_name"`
 	SubscribeKey      *string   `json:"subscribe_key"` // can be nil, depending on endpoint
 	SendKey           *string   `json:"send_key"`      // can be nil, depending on endpoint
 	TimestampCreated  string    `json:"timestamp_created"`
@@ -73,7 +76,8 @@ type ChannelWithSubscriptionJSON struct {
 type ChannelDB struct {
 	ChannelID         ChannelID `db:"channel_id"`
 	OwnerUserID       UserID    `db:"owner_user_id"`
-	Name              string    `db:"name"`
+	InternalName      string    `db:"internal_name"`
+	DisplayName       string    `db:"display_name"`
 	SubscribeKey      string    `db:"subscribe_key"`
 	SendKey           string    `db:"send_key"`
 	TimestampCreated  int64     `db:"timestamp_created"`
@@ -86,7 +90,8 @@ func (c ChannelDB) Model() Channel {
 	return Channel{
 		ChannelID:         c.ChannelID,
 		OwnerUserID:       c.OwnerUserID,
-		Name:              c.Name,
+		InternalName:      c.InternalName,
+		DisplayName:       c.DisplayName,
 		SubscribeKey:      c.SubscribeKey,
 		SendKey:           c.SendKey,
 		TimestampCreated:  time.UnixMilli(c.TimestampCreated),

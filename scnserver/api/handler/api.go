@@ -667,9 +667,10 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	channelName := h.app.NormalizeChannelName(b.Name)
+	channelDisplayName := h.app.NormalizeChannelDisplayName(b.Name)
+	channelInternalName := h.app.NormalizeChannelInternalName(b.Name)
 
-	channelExisting, err := h.database.GetChannelByName(ctx, u.UserID, channelName)
+	channelExisting, err := h.database.GetChannelByName(ctx, u.UserID, channelInternalName)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
 	}
@@ -682,7 +683,10 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query user", err)
 	}
 
-	if len(channelName) > user.MaxChannelNameLength() {
+	if len(channelDisplayName) > user.MaxChannelNameLength() {
+		return ginresp.SendAPIError(g, 400, apierr.CHANNEL_TOO_LONG, hl.CHANNEL, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
+	}
+	if len(channelInternalName) > user.MaxChannelNameLength() {
 		return ginresp.SendAPIError(g, 400, apierr.CHANNEL_TOO_LONG, hl.CHANNEL, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
 	}
 
@@ -693,7 +697,7 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 	subscribeKey := h.app.GenerateRandomAuthKey()
 	sendKey := h.app.GenerateRandomAuthKey()
 
-	channel, err := h.database.CreateChannel(ctx, u.UserID, channelName, subscribeKey, sendKey)
+	channel, err := h.database.CreateChannel(ctx, u.UserID, channelDisplayName, channelInternalName, subscribeKey, sendKey)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create channel", err)
 	}
@@ -726,6 +730,7 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 //
 // @Param   subscribe_key body     string false "Send `true` to create a new subscribe_key"
 // @Param   send_key      body     string false "Send `true` to create a new send_key"
+// @Param   display_name  body     string false "Change the cahnnel display-name (only chnages to lowercase/uppercase are allowed - internal_name must stay the same)"
 //
 // @Success 200           {object} models.ChannelWithSubscriptionJSON
 // @Failure 400           {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
@@ -740,8 +745,9 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 		ChannelID models.ChannelID `uri:"cid"`
 	}
 	type body struct {
-		RefreshSubscribeKey *bool `json:"subscribe_key"`
-		RefreshSendKey      *bool `json:"send_key"`
+		RefreshSubscribeKey *bool   `json:"subscribe_key"`
+		RefreshSendKey      *bool   `json:"send_key"`
+		DisplayName         *string `json:"display_name"`
 	}
 
 	var u uri
@@ -756,7 +762,7 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	_, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID)
+	oldChannel, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID)
 	if err == sql.ErrNoRows {
 		return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
 	}
@@ -769,7 +775,7 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 
 		err := h.database.UpdateChannelSendKey(ctx, u.ChannelID, newkey)
 		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update user", err)
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update channel", err)
 		}
 	}
 
@@ -778,13 +784,29 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 
 		err := h.database.UpdateChannelSubscribeKey(ctx, u.ChannelID, newkey)
 		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update user", err)
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update channel", err)
 		}
+	}
+
+	if b.DisplayName != nil {
+
+		newDisplayName := h.app.NormalizeChannelDisplayName(*b.DisplayName)
+		newInternalName := h.app.NormalizeChannelInternalName(*b.DisplayName)
+
+		if newInternalName != oldChannel.InternalName {
+			return ginresp.APIError(g, 400, apierr.CHANNEL_NAME_WOULD_CHANGE, "Cannot substantially change the channel name", err)
+		}
+
+		err := h.database.UpdateChannelDisplayName(ctx, u.ChannelID, newDisplayName)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update channel", err)
+		}
+
 	}
 
 	channel, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID)
 	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query (updated) user", err)
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query (updated) channel", err)
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, channel.JSON(true)))
@@ -1191,7 +1213,9 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	channel, err := h.database.GetChannelByName(ctx, b.ChannelOwnerUserID, h.app.NormalizeChannelName(b.Channel))
+	channelInternalName := h.app.NormalizeChannelInternalName(b.Channel)
+
+	channel, err := h.database.GetChannelByName(ctx, b.ChannelOwnerUserID, channelInternalName)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
 	}

@@ -163,10 +163,10 @@ func RequestAny[TResult any](t *testing.T, akey string, method string, baseURL s
 	return data
 }
 
-func RequestAuthAnyShouldFail(t *testing.T, akey string, method string, baseURL string, urlSuffix string, body any, statusCode int, errcode apierr.APIError) {
+func RequestAuthAnyShouldFail(t *testing.T, akey string, method string, baseURL string, urlSuffix string, body any, expectedStatusCode int, errcode apierr.APIError) {
 	client := http.Client{}
 
-	TPrintf("[-> REQUEST] (%s) %s%s [%s] (should-fail with %d/%d)\n", method, baseURL, urlSuffix, langext.Conditional(akey == "", "NO AUTH", "AUTH"), statusCode, errcode)
+	TPrintf("[-> REQUEST] (%s) %s%s [%s] (should-fail with %d/%d)\n", method, baseURL, urlSuffix, langext.Conditional(akey == "", "NO AUTH", "AUTH"), expectedStatusCode, errcode)
 
 	bytesbody := make([]byte, 0)
 	contentType := ""
@@ -224,17 +224,17 @@ func RequestAuthAnyShouldFail(t *testing.T, akey string, method string, baseURL 
 	TPrintln("")
 	TPrintf("----------------  RESPONSE (%d) ----------------\n", resp.StatusCode)
 	TPrintln(langext.TryPrettyPrintJson(string(respBodyBin)))
-	if (statusCode != 0 && resp.StatusCode != statusCode) || (statusCode == 0 && resp.StatusCode == 200) {
+	if (expectedStatusCode != 0 && resp.StatusCode != expectedStatusCode) || (expectedStatusCode == 0 && resp.StatusCode == 200) {
 		TryPrintTraceObj("----------------  --------  ----------------", respBodyBin, "")
 	}
 	TPrintln("----------------  --------  ----------------")
 	TPrintln("")
 
-	if statusCode != 0 && resp.StatusCode != statusCode {
-		TestFailFmt(t, "Statuscode != %d (expected failure)", statusCode)
+	if expectedStatusCode != 0 && resp.StatusCode != expectedStatusCode {
+		TestFailFmt(t, "Statuscode != %d (expected failure, but got %d)", expectedStatusCode, resp.StatusCode)
 	}
-	if statusCode == 0 && resp.StatusCode == 200 {
-		TestFailFmt(t, "Statuscode == %d (expected failure)", resp.StatusCode)
+	if expectedStatusCode == 0 && resp.StatusCode == 200 {
+		TestFailFmt(t, "Statuscode == %d (expected any failure, but got %d)", resp.StatusCode, resp.StatusCode)
 	}
 
 	var data gin.H

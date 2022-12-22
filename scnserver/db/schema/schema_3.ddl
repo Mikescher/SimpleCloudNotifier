@@ -46,7 +46,8 @@ CREATE TABLE channels
 
     owner_user_id      INTEGER     NOT NULL,
 
-    name               TEXT        NOT NULL,
+    internal_name      TEXT        NOT NULL,
+    display_name       TEXT        NOT NULL,
 
     subscribe_key      TEXT        NOT NULL,
     send_key           TEXT        NOT NULL,
@@ -56,7 +57,7 @@ CREATE TABLE channels
 
     messages_sent      INTEGER     NOT NULL   DEFAULT '0'
 ) STRICT;
-CREATE UNIQUE INDEX "idx_channels_identity" ON channels (owner_user_id, name);
+CREATE UNIQUE INDEX "idx_channels_identity" ON channels (owner_user_id, internal_name);
 
 CREATE TABLE subscriptions
 (
@@ -64,40 +65,45 @@ CREATE TABLE subscriptions
 
     subscriber_user_id     INTEGER                                NOT NULL,
     channel_owner_user_id  INTEGER                                NOT NULL,
-    channel_name           TEXT                                   NOT NULL,
+    channel_internal_name  TEXT                                   NOT NULL,
     channel_id             INTEGER                                NOT NULL,
 
     timestamp_created      INTEGER                                NOT NULL,
 
     confirmed              INTEGER   CHECK(confirmed IN (0, 1))   NOT NULL
 ) STRICT;
-CREATE UNIQUE INDEX "idx_subscriptions_ref" ON subscriptions (subscriber_user_id, channel_owner_user_id, channel_name);
+CREATE UNIQUE INDEX "idx_subscriptions_ref"     ON subscriptions (subscriber_user_id, channel_owner_user_id, channel_internal_name);
+CREATE        INDEX "idx_subscriptions_chan"    ON subscriptions (channel_id);
+CREATE        INDEX "idx_subscriptions_subuser" ON subscriptions (subscriber_user_id);
+CREATE        INDEX "idx_subscriptions_ownuser" ON subscriptions (channel_owner_user_id);
+CREATE        INDEX "idx_subscriptions_tsc"     ON subscriptions (timestamp_created);
+CREATE        INDEX "idx_subscriptions_conf"    ON subscriptions (confirmed);
 
 
 CREATE TABLE messages
 (
-    scn_message_id     INTEGER                                  PRIMARY KEY AUTOINCREMENT,
-    sender_user_id     INTEGER                                  NOT NULL,
-    owner_user_id      INTEGER                                  NOT NULL,
-    channel_name       TEXT                                     NOT NULL,
-    channel_id         INTEGER                                  NOT NULL,
-    sender_ip          TEXT                                     NOT NULL,
-    sender_name        TEXT                                         NULL,
+    scn_message_id        INTEGER                                  PRIMARY KEY AUTOINCREMENT,
+    sender_user_id        INTEGER                                  NOT NULL,
+    owner_user_id         INTEGER                                  NOT NULL,
+    channel_internal_name TEXT                                     NOT NULL,
+    channel_id            INTEGER                                  NOT NULL,
+    sender_ip             TEXT                                     NOT NULL,
+    sender_name           TEXT                                         NULL,
 
-    timestamp_real     INTEGER                                  NOT NULL,
-    timestamp_client   INTEGER                                      NULL,
+    timestamp_real        INTEGER                                  NOT NULL,
+    timestamp_client      INTEGER                                      NULL,
 
-    title              TEXT                                     NOT NULL,
-    content            TEXT                                         NULL,
-    priority           INTEGER  CHECK(priority IN (0, 1, 2))    NOT NULL,
-    usr_message_id     TEXT                                         NULL,
+    title                 TEXT                                     NOT NULL,
+    content               TEXT                                         NULL,
+    priority              INTEGER  CHECK(priority IN (0, 1, 2))    NOT NULL,
+    usr_message_id        TEXT                                         NULL,
 
-    deleted            INTEGER  CHECK(deleted IN (0, 1))        NOT NULL    DEFAULT '0'
+    deleted               INTEGER  CHECK(deleted IN (0, 1))        NOT NULL    DEFAULT '0'
 ) STRICT;
-CREATE        INDEX "idx_messages_owner_channel"    ON messages (owner_user_id, channel_name COLLATE BINARY);
-CREATE        INDEX "idx_messages_owner_channel_nc" ON messages (owner_user_id, channel_name COLLATE NOCASE);
-CREATE        INDEX "idx_messages_channel"          ON messages (channel_name COLLATE BINARY);
-CREATE        INDEX "idx_messages_channel_nc"       ON messages (channel_name COLLATE NOCASE);
+CREATE        INDEX "idx_messages_owner_channel"    ON messages (owner_user_id, channel_internal_name COLLATE BINARY);
+CREATE        INDEX "idx_messages_owner_channel_nc" ON messages (owner_user_id, channel_internal_name COLLATE NOCASE);
+CREATE        INDEX "idx_messages_channel"          ON messages (channel_internal_name COLLATE BINARY);
+CREATE        INDEX "idx_messages_channel_nc"       ON messages (channel_internal_name COLLATE NOCASE);
 CREATE UNIQUE INDEX "idx_messages_idempotency"      ON messages (owner_user_id, usr_message_id COLLATE BINARY);
 CREATE        INDEX "idx_messages_senderip"         ON messages (sender_ip COLLATE BINARY);
 CREATE        INDEX "idx_messages_sendername"       ON messages (sender_name COLLATE BINARY);
@@ -109,7 +115,7 @@ CREATE        INDEX "idx_messages_deleted"          ON messages (deleted);
 
 CREATE VIRTUAL TABLE messages_fts USING fts5
 (
-    channel_name,
+    channel_internal_name,
     sender_name,
     title,
     content,
@@ -120,16 +126,16 @@ CREATE VIRTUAL TABLE messages_fts USING fts5
 );
 
 CREATE TRIGGER fts_insert AFTER INSERT ON messages BEGIN
-    INSERT INTO messages_fts (rowid, channel_name, sender_name, title, content) VALUES (new.scn_message_id, new.channel_name, new.sender_name, new.title, new.content);
+    INSERT INTO messages_fts (rowid, channel_internal_name, sender_name, title, content) VALUES (new.scn_message_id, new.channel_internal_name, new.sender_name, new.title, new.content);
 END;
 
 CREATE TRIGGER fts_update AFTER UPDATE ON messages BEGIN
-    INSERT INTO messages_fts (messages_fts, rowid, channel_name, sender_name, title, content) VALUES ('delete', old.scn_message_id, old.channel_name, old.sender_name, old.title, old.content);
-    INSERT INTO messages_fts (              rowid, channel_name, sender_name, title, content) VALUES (          new.scn_message_id, new.channel_name, new.sender_name, new.title, new.content);
+    INSERT INTO messages_fts (messages_fts, rowid, channel_internal_name, sender_name, title, content) VALUES ('delete', old.scn_message_id, old.channel_internal_name, old.sender_name, old.title, old.content);
+    INSERT INTO messages_fts (              rowid, channel_internal_name, sender_name, title, content) VALUES (          new.scn_message_id, new.channel_internal_name, new.sender_name, new.title, new.content);
 END;
 
 CREATE TRIGGER fts_delete AFTER DELETE ON messages BEGIN
-    INSERT INTO messages_fts (messages_fts, rowid, channel_name, sender_name, title, content) VALUES ('delete', old.scn_message_id, old.channel_name, old.sender_name, old.title, old.content);
+    INSERT INTO messages_fts (messages_fts, rowid, channel_internal_name, sender_name, title, content) VALUES ('delete', old.scn_message_id, old.channel_internal_name, old.sender_name, old.title, old.content);
 END;
 
 

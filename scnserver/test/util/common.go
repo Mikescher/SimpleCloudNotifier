@@ -203,7 +203,14 @@ func AssertMultiNonEmpty(t *testing.T, key string, args ...any) {
 
 func AssertMappedSet[T langext.OrderedConstraint](t *testing.T, key string, expected []T, values []gin.H, objkey string) {
 
-	actual := langext.ArrMap(values, func(v gin.H) T { return v[objkey].(T) })
+	actual := make([]T, 0)
+	for idx, vv := range values {
+		if tv, ok := vv[objkey].(T); ok {
+			actual = append(actual, tv)
+		} else {
+			TestFailFmt(t, "[%s]->[%d] is wrong type (expected: %T, actual: %T)", key, idx, *new(T), vv)
+		}
+	}
 
 	langext.Sort(actual)
 	langext.Sort(expected)

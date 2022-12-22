@@ -282,10 +282,8 @@ func (app *Application) getPermissions(ctx *AppContext, hdr string) (PermissionS
 	return NewEmptyPermissions(), nil
 }
 
-func (app *Application) GetOrCreateChannel(ctx *AppContext, userid models.UserID, chanName string) (models.Channel, error) {
-	chanName = app.NormalizeChannelName(chanName)
-
-	existingChan, err := app.Database.GetChannelByName(ctx, userid, chanName)
+func (app *Application) GetOrCreateChannel(ctx *AppContext, userid models.UserID, displayChanName string, intChanName string) (models.Channel, error) {
+	existingChan, err := app.Database.GetChannelByName(ctx, userid, intChanName)
 	if err != nil {
 		return models.Channel{}, err
 	}
@@ -297,7 +295,7 @@ func (app *Application) GetOrCreateChannel(ctx *AppContext, userid models.UserID
 	subscribeKey := app.GenerateRandomAuthKey()
 	sendKey := app.GenerateRandomAuthKey()
 
-	newChan, err := app.Database.CreateChannel(ctx, userid, chanName, subscribeKey, sendKey)
+	newChan, err := app.Database.CreateChannel(ctx, userid, displayChanName, intChanName, subscribeKey, sendKey)
 	if err != nil {
 		return models.Channel{}, err
 	}
@@ -310,12 +308,22 @@ func (app *Application) GetOrCreateChannel(ctx *AppContext, userid models.UserID
 	return newChan, nil
 }
 
-func (app *Application) NormalizeChannelName(v string) string {
-	rex := regexp.MustCompile("[^[:alnum:]\\-_]")
+var rexWhitespaceStart = regexp.MustCompile("^\\s+")
+var rexWhitespaceEnd = regexp.MustCompile("\\s+$")
 
+func (app *Application) NormalizeChannelDisplayName(v string) string {
+	v = strings.TrimSpace(v)
+	v = rexWhitespaceStart.ReplaceAllString(v, "")
+	v = rexWhitespaceEnd.ReplaceAllString(v, "")
+
+	return v
+}
+
+func (app *Application) NormalizeChannelInternalName(v string) string {
 	v = strings.TrimSpace(v)
 	v = strings.ToLower(v)
-	v = rex.ReplaceAllString(v, "")
+	v = rexWhitespaceStart.ReplaceAllString(v, "")
+	v = rexWhitespaceEnd.ReplaceAllString(v, "")
 
 	return v
 }

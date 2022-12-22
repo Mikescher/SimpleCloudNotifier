@@ -340,10 +340,12 @@ definitions:
     properties:
       channel_id:
         type: integer
+      display_name:
+        type: string
+      internal_name:
+        type: string
       messages_sent:
         type: integer
-      name:
-        type: string
       owner_user_id:
         type: integer
       send_key:
@@ -397,7 +399,7 @@ definitions:
     properties:
       channel_id:
         type: integer
-      channel_name:
+      channel_internal_name:
         type: string
       content:
         type: string
@@ -426,7 +428,7 @@ definitions:
     properties:
       channel_id:
         type: integer
-      channel_name:
+      channel_internal_name:
         type: string
       channel_owner_user_id:
         type: integer
@@ -1431,6 +1433,12 @@ paths:
       - description: Send `true` to create a new send_key
         in: body
         name: send_key
+        schema:
+          type: string
+      - description: Change the cahnnel display-name (only chnages to lowercase/uppercase
+          are allowed - internal_name must stay the same)
+        in: body
+        name: display_name
         schema:
           type: string
       responses:

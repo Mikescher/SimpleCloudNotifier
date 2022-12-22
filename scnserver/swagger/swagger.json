@@ -1356,6 +1356,14 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "description": "Change the cahnnel display-name (only chnages to lowercase/uppercase are allowed - internal_name must stay the same)",
+                        "name": "display_name",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
@@ -2826,11 +2834,14 @@
                 "channel_id": {
                     "type": "integer"
                 },
+                "display_name": {
+                    "type": "string"
+                },
+                "internal_name": {
+                    "type": "string"
+                },
                 "messages_sent": {
                     "type": "integer"
-                },
-                "name": {
-                    "type": "string"
                 },
                 "owner_user_id": {
                     "type": "integer"
@@ -2912,7 +2923,7 @@
                 "channel_id": {
                     "type": "integer"
                 },
-                "channel_name": {
+                "channel_internal_name": {
                     "type": "string"
                 },
                 "content": {
@@ -2956,7 +2967,7 @@
                 "channel_id": {
                     "type": "integer"
                 },
-                "channel_name": {
+                "channel_internal_name": {
                     "type": "string"
                 },
                 "channel_owner_user_id": {

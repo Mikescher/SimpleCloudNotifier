@@ -86,8 +86,10 @@ var userExamples = []userex{
 	{9, true, "UniqueUnicorn", "Galaxy Quest", "2023.1", "ANDROID", "FCM_TOK_EX_010", ""},
 	{10, false, "", "", "", "", "", ""},
 	{11, false, "", "", "", "", "", "ANDROID|v2|PURCHASED:PRO_TOK_002"},
-	{12, true, "ChanTester1", "StarfireXX", "1.x", "IOS", "FCM_TOK_EX_012", ""},
-	{13, true, "ChanTester2", "StarfireXX", "1.x", "IOS", "FCM_TOK_EX_013", ""},
+	{12, true, "NoMessageUser", "Ocean Explorer", "737edc01", "IOS", "FCM_TOK_EX_014", ""},
+	{13, false, "EmptyUser", "", "", "", "", ""},
+	{14, true, "ChanTester1", "StarfireXX", "1.x", "IOS", "FCM_TOK_EX_012", ""},
+	{15, true, "ChanTester2", "StarfireXX", "1.x", "IOS", "FCM_TOK_EX_013", ""},
 }
 
 var clientExamples = []clientex{
@@ -267,14 +269,14 @@ var messageExamples = []msgex{
 	{11, "Promotions", "", PX, AKEY, "Join Our VIP Club and Enjoy Exclusive Benefits", "Sign up for our VIP club and enjoy exclusive benefits like early access to sales, special offers, and personalized service. Don't miss out on this exclusive opportunity.", timeext.FromHours(2.32)},
 	{11, "Promotions", "", P2, SKEY, "Summer Clearance: Save Up to 75% on Your Favorite Products", "It's time for our annual summer clearance sale! Save up to 75% on your favorite products, from clothing and accessories to home decor and more.", timeext.FromHours(1.87)},
 
-	{12, "", "", P0, SKEY, "New Product Launch", "We are excited to announce the launch of our new product, the XYZ widget", 0},
-	{12, "chan_self_subscribed", "", P0, SKEY, "Important Update", "We have released a critical update", 0},
-	{12, "chan_self_unsub", "", P0, SKEY, "Reminder: Upcoming Maintenance", "", 0},
+	{14, "", "", P0, SKEY, "New Product Launch", "We are excited to announce the launch of our new product, the XYZ widget", 0},
+	{14, "chan_self_subscribed", "", P0, SKEY, "Important Update", "We have released a critical update", 0},
+	{14, "chan_self_unsub", "", P0, SKEY, "Reminder: Upcoming Maintenance", "", 0},
 
-	{13, "", "", P0, SKEY, "New Feature Available", "ability to schedule appointments", 0},
-	{13, "chan_other_nosub", "", P0, SKEY, "Account Suspended", "Please contact us", 0},
-	{13, "chan_other_request", "", P0, SKEY, "Invitation to Beta Test", "", 0},
-	{13, "chan_other_accepted", "", P0, SKEY, "New Blog Post", "Congratulations on your promotion! We are proud", 0},
+	{15, "", "", P0, SKEY, "New Feature Available", "ability to schedule appointments", 0},
+	{15, "chan_other_nosub", "", P0, SKEY, "Account Suspended", "Please contact us", 0},
+	{15, "chan_other_request", "", P0, SKEY, "Invitation to Beta Test", "", 0},
+	{15, "chan_other_accepted", "", P0, SKEY, "New Blog Post", "Congratulations on your promotion! We are proud", 0},
 }
 
 type DefData struct {
@@ -371,6 +373,12 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 		}
 
 		RequestPost[gin.H](t, baseUrl, "/", body)
+	}
+
+	// create manual channels
+
+	{
+		RequestAuthPost[Void](t, users[9].AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/channels", users[9].UID), gin.H{"name": "manual@chan"})
 	}
 
 	// Sub/Unsub for Users 12+13

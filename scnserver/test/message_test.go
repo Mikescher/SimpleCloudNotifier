@@ -166,7 +166,7 @@ func TestGetMessageFull(t *testing.T) {
 
 	tt.AssertEqual(t, "msg.title", "Message_1", msgIn["title"])
 	tt.AssertEqual(t, "msg.content", content, msgIn["content"])
-	tt.AssertEqual(t, "msg.channel", "demo-channel-007", msgIn["channel_name"])
+	tt.AssertEqual(t, "msg.channel", "demo-channel-007", msgIn["channel_internal_name"])
 	tt.AssertEqual(t, "msg.msg_id", "580b5055-a9b5-4cee-b53c-28cf304d25b0", msgIn["usr_message_id"])
 	tt.AssertStrRepEqual(t, "msg.priority", 0, msgIn["priority"])
 	tt.AssertEqual(t, "msg.sender_name", "unit-test-[TestGetMessageFull]", msgIn["sender_name"])

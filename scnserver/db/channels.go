@@ -13,7 +13,7 @@ func (db *Database) GetChannelByName(ctx TxContext, userid models.UserID, chanNa
 		return nil, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM channels WHERE owner_user_id = :uid AND name = :nam LIMIT 1", sq.PP{
+	rows, err := tx.Query(ctx, "SELECT * FROM channels WHERE owner_user_id = :uid AND internal_name = :nam LIMIT 1", sq.PP{
 		"uid": userid,
 		"nam": chanName,
 	})
@@ -38,7 +38,7 @@ func (db *Database) GetChannelByNameAndSendKey(ctx TxContext, chanName string, s
 		return nil, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM channels WHERE name = :chan_name OR send_key = :send_key LIMIT 1", sq.PP{
+	rows, err := tx.Query(ctx, "SELECT * FROM channels WHERE internal_name = :chan_name OR send_key = :send_key LIMIT 1", sq.PP{
 		"chan_name": chanName,
 		"send_key":  sendKey,
 	})
@@ -57,7 +57,7 @@ func (db *Database) GetChannelByNameAndSendKey(ctx TxContext, chanName string, s
 	return &channel, nil
 }
 
-func (db *Database) CreateChannel(ctx TxContext, userid models.UserID, name string, subscribeKey string, sendKey string) (models.Channel, error) {
+func (db *Database) CreateChannel(ctx TxContext, userid models.UserID, dispName string, intName string, subscribeKey string, sendKey string) (models.Channel, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Channel{}, err
@@ -65,9 +65,10 @@ func (db *Database) CreateChannel(ctx TxContext, userid models.UserID, name stri
 
 	now := time.Now().UTC()
 
-	res, err := tx.Exec(ctx, "INSERT INTO channels (owner_user_id, name, subscribe_key, send_key, timestamp_created) VALUES (:ouid, :nam, :subkey, :sendkey, :ts)", sq.PP{
+	res, err := tx.Exec(ctx, "INSERT INTO channels (owner_user_id, display_name, internal_name, subscribe_key, send_key, timestamp_created) VALUES (:ouid, :dnam, :inam, :subkey, :sendkey, :ts)", sq.PP{
 		"ouid":    userid,
-		"nam":     name,
+		"dnam":    dispName,
+		"inam":    intName,
 		"subkey":  subscribeKey,
 		"sendkey": sendKey,
 		"ts":      time2DB(now),
@@ -84,7 +85,8 @@ func (db *Database) CreateChannel(ctx TxContext, userid models.UserID, name stri
 	return models.Channel{
 		ChannelID:         models.ChannelID(liid),
 		OwnerUserID:       userid,
-		Name:              name,
+		DisplayName:       dispName,
+		InternalName:      intName,
 		SubscribeKey:      subscribeKey,
 		SendKey:           sendKey,
 		TimestampCreated:  now,
@@ -238,6 +240,23 @@ func (db *Database) UpdateChannelSubscribeKey(ctx TxContext, channelid models.Ch
 
 	_, err = tx.Exec(ctx, "UPDATE channels SET subscribe_key = :key WHERE channel_id = :cid", sq.PP{
 		"key": newkey,
+		"cid": channelid,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *Database) UpdateChannelDisplayName(ctx TxContext, channelid models.ChannelID, dispname string) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, "UPDATE channels SET display_name = :nam WHERE channel_id = :cid", sq.PP{
+		"nam": dispname,
 		"cid": channelid,
 	})
 	if err != nil {
