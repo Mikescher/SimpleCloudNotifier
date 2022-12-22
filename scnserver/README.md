@@ -17,6 +17,8 @@
 
  - diff my currently used scnsend script vs the one in the docs here
 
+ - Pagination for ListChannels / ListSubscriptions / ListClients / ListChannelSubscriptions / ListUserSubscriptions
+
 -------------------------------------------------------------------------------------------------------------------------------
 
  - in my script: use (backupname || hostname) for sendername

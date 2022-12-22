@@ -89,7 +89,7 @@ func (d DeliveryDB) Model() Delivery {
 }
 
 func DecodeDelivery(r *sqlx.Rows) (Delivery, error) {
-	data, err := sq.ScanSingle[DeliveryDB](r, true)
+	data, err := sq.ScanSingle[DeliveryDB](r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return Delivery{}, err
 	}
@@ -97,7 +97,7 @@ func DecodeDelivery(r *sqlx.Rows) (Delivery, error) {
 }
 
 func DecodeDeliveries(r *sqlx.Rows) ([]Delivery, error) {
-	data, err := sq.ScanAll[DeliveryDB](r, true)
+	data, err := sq.ScanAll[DeliveryDB](r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return nil, err
 	}

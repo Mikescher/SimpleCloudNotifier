@@ -60,12 +60,15 @@ definitions:
     type: object
   handler.CreateSubscription.body:
     properties:
-      channel:
+      channel_id:
+        type: integer
+      channel_internal_name:
         type: string
       channel_owner_user_id:
         type: integer
     required:
-    - channel
+    - channel_id
+    - channel_internal_name
     - channel_owner_user_id
     type: object
   handler.CreateUser.body:
@@ -1315,7 +1318,6 @@ paths:
         - all_any
         in: query
         name: selector
-        required: true
         type: string
       responses:
         "200":
@@ -1697,6 +1699,14 @@ paths:
       - API-v2
   /api/users/{uid}/subscriptions:
     get:
+      description: |-
+        The possible values for 'selector' are:
+        - "owner_all"            All subscriptions (confirmed/unconfirmed) with the user as owner (= subscriptions he can use to read channels)
+        - "owner_confirmed"      Confirmed subscriptions with the user as owner
+        - "owner_unconfirmed"    Unconfirmed (Pending) subscriptions with the user as owner
+        - "incoming_all"         All subscriptions (confirmed/unconfirmed) from other users to channels of this user (= incoming subscriptions and subscription requests)
+        - "incoming_confirmed"   Confirmed subscriptions from other users to channels of this user
+        - "incoming_unconfirmed" Unconfirmed subscriptions from other users to channels of this user (= requests)
       operationId: api-user-subscriptions-list
       parameters:
       - description: UserID
@@ -1704,7 +1714,7 @@ paths:
         name: uid
         required: true
         type: integer
-      - description: 'Filter subscribptions (default: owner_all)'
+      - description: 'Filter subscriptions (default: owner_all)'
         enum:
         - owner_all
         - owner_confirmed
@@ -1737,6 +1747,8 @@ paths:
       tags:
       - API-v2
     post:
+      description: Either [channel_owner_user_id, channel_internal_name] or [channel_id]
+        must be supplied in the request body
       operationId: api-subscriptions-create
       parameters:
       - description: UserID
@@ -1769,7 +1781,7 @@ paths:
           description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
-      summary: Creare/Request a subscription
+      summary: Create/Request a subscription
       tags:
       - API-v2
   /api/users/{uid}/subscriptions/{sid}:

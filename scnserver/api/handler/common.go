@@ -124,7 +124,7 @@ func (h CommonHandler) Health(g *gin.Context) ginresp.HTTPResponse {
 	_, libVersionNumber, _ := sqlite3.Version()
 
 	if libVersionNumber < 3039000 {
-		ginresp.InternalError(errors.New("sqlite version too low"))
+		return ginresp.InternalError(errors.New("sqlite version too low"))
 	}
 
 	err := h.app.Database.Ping(ctx)

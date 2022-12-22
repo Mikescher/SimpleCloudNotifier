@@ -2,7 +2,6 @@ package handler
 
 import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
-	hl "blackforestbytes.com/simplecloudnotifier/api/apihighlight"
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/db/cursortoken"
@@ -501,8 +500,8 @@ func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 // @ID          api-channels-list
 // @Tags        API-v2
 //
-// @Param       uid      path     int    true "UserID"
-// @Param       selector query    string true "Filter channels (default: owned)" Enums(owned, subscribed, all, subscribed_any, all_any)
+// @Param       uid      path     int    true  "UserID"
+// @Param       selector query    string false "Filter channels (default: owned)" Enums(owned, subscribed, all, subscribed_any, all_any)
 //
 // @Success     200      {object} handler.ListChannels.response
 // @Failure     400      {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
@@ -667,6 +666,10 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
+	if b.Name == "" {
+		return ginresp.APIError(g, 400, apierr.INVALID_BODY_PARAM, "Missing parameter: name", nil)
+	}
+
 	channelDisplayName := h.app.NormalizeChannelDisplayName(b.Name)
 	channelInternalName := h.app.NormalizeChannelInternalName(b.Name)
 
@@ -677,17 +680,17 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 
 	user, err := h.database.GetUser(ctx, u.UserID)
 	if err == sql.ErrNoRows {
-		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found", nil)
+		return ginresp.APIError(g, 400, apierr.USER_NOT_FOUND, "User not found", nil)
 	}
 	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query user", err)
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query user", err)
 	}
 
 	if len(channelDisplayName) > user.MaxChannelNameLength() {
-		return ginresp.SendAPIError(g, 400, apierr.CHANNEL_TOO_LONG, hl.CHANNEL, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
+		return ginresp.APIError(g, 400, apierr.CHANNEL_TOO_LONG, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
 	}
 	if len(channelInternalName) > user.MaxChannelNameLength() {
-		return ginresp.SendAPIError(g, 400, apierr.CHANNEL_TOO_LONG, hl.CHANNEL, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
+		return ginresp.APIError(g, 400, apierr.CHANNEL_TOO_LONG, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
 	}
 
 	if channelExisting != nil {
@@ -915,27 +918,27 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 
 // ListUserSubscriptions swaggerdoc
 //
-// @Summary List all subscriptions of a user (incoming/owned)
-// // @Description The possible values for 'selector' are:
-// // @Description - "owner_all"            All subscriptions (confirmed/unconfirmed) with the user as owner (= subscriptions he can use to read channels)
-// // @Description - "owner_confirmed"      Confirmed subscriptions with the user as owner
-// // @Description - "owner_unconfirmed"    Unconfirmed (Pending) subscriptions with the user as owner
-// // @Description - "incoming_all"         All subscriptions (confirmed/unconfirmed) from other users to channels of this user (= incoming subscriptions and subscription requests)
-// // @Description - "incoming_confirmed"   Confirmed subscriptions from other users to channels of this user
-// // @Description - "incoming_unconfirmed" Unconfirmed subscriptions from other users to channels of this user (= requests)
-// //
-// @ID      api-user-subscriptions-list
-// @Tags    API-v2
+// @Summary     List all subscriptions of a user (incoming/owned)
+// @Description The possible values for 'selector' are:
+// @Description - "outgoing_all"         All subscriptions (confirmed/unconfirmed) with the user as subscriber (= subscriptions he can use to read channels)
+// @Description - "outgoing_confirmed"   Confirmed subscriptions with the user as subscriber
+// @Description - "outgoing_unconfirmed" Unconfirmed (Pending) subscriptions with the user as subscriber
+// @Description - "incoming_all"         All subscriptions (confirmed/unconfirmed) from other users to channels of this user (= incoming subscriptions and subscription requests)
+// @Description - "incoming_confirmed"   Confirmed subscriptions from other users to channels of this user
+// @Description - "incoming_unconfirmed" Unconfirmed subscriptions from other users to channels of this user (= requests)
 //
-// @Param   uid      path     int    true "UserID"
-// @Param   selector query    string true "Filter subscribptions (default: owner_all)" Enums(owner_all, owner_confirmed, owner_unconfirmed, incoming_all, incoming_confirmed, incoming_unconfirmed)
+// @ID          api-user-subscriptions-list
+// @Tags        API-v2
 //
-// @Success 200      {object} handler.ListUserSubscriptions.response
-// @Failure 400      {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure 401      {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure 500      {object} ginresp.apiError "internal server error"
+// @Param       uid      path     int    true "UserID"
+// @Param       selector query    string true "Filter subscriptions (default: owner_all)" Enums(outgoing_all, outgoing_confirmed, outgoing_unconfirmed, incoming_all, incoming_confirmed, incoming_unconfirmed)
 //
-// @Router  /api/users/{uid}/subscriptions [GET]
+// @Success     200      {object} handler.ListUserSubscriptions.response
+// @Failure     400      {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure     401      {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure     500      {object} ginresp.apiError "internal server error"
+//
+// @Router      /api/users/{uid}/subscriptions [GET]
 func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid"`
@@ -964,44 +967,44 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 	var res []models.Subscription
 	var err error
 
-	if sel == "owner_all" {
-
-		res, err = h.database.ListSubscriptionsByOwner(ctx, u.UserID, nil)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
-		}
-
-	} else if sel == "owner_confirmed" {
-
-		res, err = h.database.ListSubscriptionsByOwner(ctx, u.UserID, langext.Ptr(true))
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
-		}
-
-	} else if sel == "owner_unconfirmed" {
-
-		res, err = h.database.ListSubscriptionsByOwner(ctx, u.UserID, langext.Ptr(false))
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
-		}
-
-	} else if sel == "incoming_all" {
+	if sel == "outgoing_all" {
 
 		res, err = h.database.ListSubscriptionsBySubscriber(ctx, u.UserID, nil)
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
 		}
 
-	} else if sel == "incoming_confirmed" {
+	} else if sel == "outgoing_confirmed" {
 
 		res, err = h.database.ListSubscriptionsBySubscriber(ctx, u.UserID, langext.Ptr(true))
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
 		}
 
-	} else if sel == "incoming_unconfirmed" {
+	} else if sel == "outgoing_unconfirmed" {
 
 		res, err = h.database.ListSubscriptionsBySubscriber(ctx, u.UserID, langext.Ptr(false))
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
+		}
+
+	} else if sel == "incoming_all" {
+
+		res, err = h.database.ListSubscriptionsByChannelOwner(ctx, u.UserID, nil)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
+		}
+
+	} else if sel == "incoming_confirmed" {
+
+		res, err = h.database.ListSubscriptionsByChannelOwner(ctx, u.UserID, langext.Ptr(true))
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
+		}
+
+	} else if sel == "incoming_unconfirmed" {
+
+		res, err = h.database.ListSubscriptionsByChannelOwner(ctx, u.UserID, langext.Ptr(false))
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
 		}
@@ -1111,9 +1114,8 @@ func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
 	}
-
-	if subscription.SubscriberUserID != u.UserID {
-		return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+	if subscription.SubscriberUserID != u.UserID && subscription.ChannelOwnerUserID != u.UserID {
+		return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_USER_MISMATCH, "Subscription not found", nil)
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, subscription.JSON()))
@@ -1159,9 +1161,8 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
 	}
-
 	if subscription.SubscriberUserID != u.UserID && subscription.ChannelOwnerUserID != u.UserID {
-		return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+		return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_USER_MISMATCH, "Subscription not found", nil)
 	}
 
 	err = h.database.DeleteSubscription(ctx, u.SubscriptionID)
@@ -1174,27 +1175,29 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 
 // CreateSubscription swaggerdoc
 //
-// @Summary Creare/Request a subscription
-// @ID      api-subscriptions-create
-// @Tags    API-v2
+// @Summary     Create/Request a subscription
+// @Description Either [channel_owner_user_id, channel_internal_name] or [channel_id] must be supplied in the request body
+// @ID          api-subscriptions-create
+// @Tags        API-v2
 //
-// @Param   uid        path     int                              true  "UserID"
-// @Param   query_data query    handler.CreateSubscription.query false " "
-// @Param   post_data  body     handler.CreateSubscription.body  false " "
+// @Param       uid        path     int                              true  "UserID"
+// @Param       query_data query    handler.CreateSubscription.query false " "
+// @Param       post_data  body     handler.CreateSubscription.body  false " "
 //
-// @Success 200        {object} models.SubscriptionJSON
-// @Failure 400        {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure 401        {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure 500        {object} ginresp.apiError "internal server error"
+// @Success     200        {object} models.SubscriptionJSON
+// @Failure     400        {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
+// @Failure     401        {object} ginresp.apiError "user is not authorized / has missing permissions"
+// @Failure     500        {object} ginresp.apiError "internal server error"
 //
-// @Router  /api/users/{uid}/subscriptions [POST]
+// @Router      /api/users/{uid}/subscriptions [POST]
 func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid"`
 	}
 	type body struct {
-		ChannelOwnerUserID models.UserID `form:"channel_owner_user_id" binding:"required"`
-		Channel            string        `form:"channel_name" binding:"required"`
+		ChannelOwnerUserID  *models.UserID    `json:"channel_owner_user_id"`
+		ChannelInternalName *string           `json:"channel_internal_name"`
+		ChannelID           *models.ChannelID `json:"channel_id"`
 	}
 	type query struct {
 		ChanSubscribeKey *string `json:"chan_subscribe_key" form:"chan_subscribe_key"`
@@ -1213,21 +1216,45 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	channelInternalName := h.app.NormalizeChannelInternalName(b.Channel)
+	var channel models.Channel
 
-	channel, err := h.database.GetChannelByName(ctx, b.ChannelOwnerUserID, channelInternalName)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
-	}
-	if channel == nil {
-		return ginresp.APIError(g, 400, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
+	if b.ChannelOwnerUserID != nil && b.ChannelInternalName != nil && b.ChannelID == nil {
+
+		channelInternalName := h.app.NormalizeChannelInternalName(*b.ChannelInternalName)
+
+		outchannel, err := h.database.GetChannelByName(ctx, *b.ChannelOwnerUserID, channelInternalName)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
+		}
+		if outchannel == nil {
+			return ginresp.APIError(g, 400, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
+		}
+
+		channel = *outchannel
+
+	} else if b.ChannelOwnerUserID == nil && b.ChannelInternalName == nil && b.ChannelID != nil {
+
+		outchannel, err := h.database.GetChannelByID(ctx, *b.ChannelID)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
+		}
+		if outchannel == nil {
+			return ginresp.APIError(g, 400, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
+		}
+
+		channel = *outchannel
+
+	} else {
+
+		return ginresp.APIError(g, 400, apierr.INVALID_BODY_PARAM, "Must either supply [channel_owner_user_id, channel_internal_name] or [channel_id]", nil)
+
 	}
 
 	if channel.OwnerUserID != u.UserID && (q.ChanSubscribeKey == nil || *q.ChanSubscribeKey != channel.SubscribeKey) {
-		ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+		return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 	}
 
-	sub, err := h.database.CreateSubscription(ctx, u.UserID, *channel, channel.OwnerUserID == u.UserID)
+	sub, err := h.database.CreateSubscription(ctx, u.UserID, channel, channel.OwnerUserID == u.UserID)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create subscription", err)
 	}
@@ -1279,9 +1306,8 @@ func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
 	}
-
-	if subscription.ChannelOwnerUserID != u.UserID {
-		return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+	if subscription.SubscriberUserID != u.UserID {
+		return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_USER_MISMATCH, "Subscription not found", nil)
 	}
 
 	if b.Confirmed != nil {

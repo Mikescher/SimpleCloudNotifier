@@ -152,7 +152,7 @@ func RequestAny[TResult any](t *testing.T, akey string, method string, baseURL s
 	TPrintln("")
 
 	if resp.StatusCode != 200 {
-		TestFail(t, "Statuscode != 200")
+		TestFailFmt(t, "Statuscode != 200 (actual = %d)", resp.StatusCode)
 	}
 
 	var data TResult

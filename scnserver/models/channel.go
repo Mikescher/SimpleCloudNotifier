@@ -117,7 +117,7 @@ func (c ChannelWithSubscriptionDB) Model() ChannelWithSubscription {
 }
 
 func DecodeChannel(r *sqlx.Rows) (Channel, error) {
-	data, err := sq.ScanSingle[ChannelDB](r, true)
+	data, err := sq.ScanSingle[ChannelDB](r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return Channel{}, err
 	}
@@ -125,7 +125,7 @@ func DecodeChannel(r *sqlx.Rows) (Channel, error) {
 }
 
 func DecodeChannels(r *sqlx.Rows) ([]Channel, error) {
-	data, err := sq.ScanAll[ChannelDB](r, true)
+	data, err := sq.ScanAll[ChannelDB](r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func DecodeChannels(r *sqlx.Rows) ([]Channel, error) {
 }
 
 func DecodeChannelWithSubscription(r *sqlx.Rows) (ChannelWithSubscription, error) {
-	data, err := sq.ScanSingle[ChannelWithSubscriptionDB](r, true)
+	data, err := sq.ScanSingle[ChannelWithSubscriptionDB](r, sq.SModeExtended, sq.Safe, true)
 	if err != nil {
 		return ChannelWithSubscription{}, err
 	}
@@ -141,7 +141,7 @@ func DecodeChannelWithSubscription(r *sqlx.Rows) (ChannelWithSubscription, error
 }
 
 func DecodeChannelsWithSubscription(r *sqlx.Rows) ([]ChannelWithSubscription, error) {
-	data, err := sq.ScanAll[ChannelWithSubscriptionDB](r, true)
+	data, err := sq.ScanAll[ChannelWithSubscriptionDB](r, sq.SModeExtended, sq.Safe, true)
 	if err != nil {
 		return nil, err
 	}

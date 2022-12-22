@@ -57,6 +57,30 @@ func (db *Database) GetChannelByNameAndSendKey(ctx TxContext, chanName string, s
 	return &channel, nil
 }
 
+func (db *Database) GetChannelByID(ctx TxContext, chanid models.ChannelID) (*models.Channel, error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := tx.Query(ctx, "SELECT * FROM channels WHERE channel_id = :cid LIMIT 1", sq.PP{
+		"cid": chanid,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	channel, err := models.DecodeChannel(rows)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &channel, nil
+}
+
 func (db *Database) CreateChannel(ctx TxContext, userid models.UserID, dispName string, intName string, subscribeKey string, sendKey string) (models.Channel, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {

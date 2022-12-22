@@ -1176,8 +1176,7 @@
                         "type": "string",
                         "description": "Filter channels (default: owned)",
                         "name": "selector",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1743,6 +1742,7 @@
         },
         "/api/users/{uid}/subscriptions": {
             "get": {
+                "description": "The possible values for 'selector' are:\n- \"owner_all\"            All subscriptions (confirmed/unconfirmed) with the user as owner (= subscriptions he can use to read channels)\n- \"owner_confirmed\"      Confirmed subscriptions with the user as owner\n- \"owner_unconfirmed\"    Unconfirmed (Pending) subscriptions with the user as owner\n- \"incoming_all\"         All subscriptions (confirmed/unconfirmed) from other users to channels of this user (= incoming subscriptions and subscription requests)\n- \"incoming_confirmed\"   Confirmed subscriptions from other users to channels of this user\n- \"incoming_unconfirmed\" Unconfirmed subscriptions from other users to channels of this user (= requests)",
                 "tags": [
                     "API-v2"
                 ],
@@ -1766,7 +1766,7 @@
                             "incoming_unconfirmed"
                         ],
                         "type": "string",
-                        "description": "Filter subscribptions (default: owner_all)",
+                        "description": "Filter subscriptions (default: owner_all)",
                         "name": "selector",
                         "in": "query",
                         "required": true
@@ -1800,10 +1800,11 @@
                 }
             },
             "post": {
+                "description": "Either [channel_owner_user_id, channel_internal_name] or [channel_id] must be supplied in the request body",
                 "tags": [
                     "API-v2"
                 ],
-                "summary": "Creare/Request a subscription",
+                "summary": "Create/Request a subscription",
                 "operationId": "api-subscriptions-create",
                 "parameters": [
                     {
@@ -2410,11 +2411,15 @@
         "handler.CreateSubscription.body": {
             "type": "object",
             "required": [
-                "channel",
+                "channel_id",
+                "channel_internal_name",
                 "channel_owner_user_id"
             ],
             "properties": {
-                "channel": {
+                "channel_id": {
+                    "type": "integer"
+                },
+                "channel_internal_name": {
                     "type": "string"
                 },
                 "channel_owner_user_id": {

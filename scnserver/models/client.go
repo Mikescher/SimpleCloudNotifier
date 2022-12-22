@@ -69,7 +69,7 @@ func (c ClientDB) Model() Client {
 }
 
 func DecodeClient(r *sqlx.Rows) (Client, error) {
-	data, err := sq.ScanSingle[ClientDB](r, true)
+	data, err := sq.ScanSingle[ClientDB](r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return Client{}, err
 	}
@@ -77,7 +77,7 @@ func DecodeClient(r *sqlx.Rows) (Client, error) {
 }
 
 func DecodeClients(r *sqlx.Rows) ([]Client, error) {
-	data, err := sq.ScanAll[ClientDB](r, true)
+	data, err := sq.ScanAll[ClientDB](r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return nil, err
 	}

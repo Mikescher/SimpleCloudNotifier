@@ -163,7 +163,7 @@ func (u UserDB) Model() User {
 }
 
 func DecodeUser(r *sqlx.Rows) (User, error) {
-	data, err := sq.ScanSingle[UserDB](r, true)
+	data, err := sq.ScanSingle[UserDB](r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return User{}, err
 	}
@@ -171,7 +171,7 @@ func DecodeUser(r *sqlx.Rows) (User, error) {
 }
 
 func DecodeUsers(r *sqlx.Rows) ([]User, error) {
-	data, err := sq.ScanAll[UserDB](r, true)
+	data, err := sq.ScanAll[UserDB](r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return nil, err
 	}

@@ -257,8 +257,8 @@ var messageExamples = []msgex{
 	{11, "Promotions", "localhost", P2, SKEY, "New Product Launch: Introducing Our Latest Innovation", "We are excited to announce the release of our newest product, designed to revolutionize the industry. Don't miss out on this game-changing technology.", timeext.FromHours(-12.21)},
 	{11, "Promotions", "#S0", P0, SKEY, "Limited Time Offer: Get 50% Off Your Next Purchase", "For a limited time, take advantage of our special offer and get half off your next purchase. Don't miss out on this amazing deal.", 0},
 	{11, "Promotions", "#S0", P2, SKEY, "Customer Appreciation Sale: Save Up to 75% on Your Favorite Products", "", 0},
-	{11, "Promotions", "", P0, SKEY, "Sign Up for Our Newsletter and Save 10% on Your Next Order", "", 0},
-	{11, "Promotions", "", PX, AKEY, "New Arrivals: Check Out Our Latest Collection", "We've just added new items to our collection and we think you'll love them. Take a look and see what's new in fashion, home decor, and more.", 0},
+	{11, " Promotions", "", P0, SKEY, "Sign Up for Our Newsletter and Save 10% on Your Next Order", "", 0},
+	{11, "Promotions ", "", PX, AKEY, "New Arrivals: Check Out Our Latest Collection", "We've just added new items to our collection and we think you'll love them. Take a look and see what's new in fashion, home decor, and more.", 0},
 	{11, "Promotions", "", PX, AKEY, "Join Our Rewards Program and Earn Points on Every Purchase", "Sign up for our rewards program and earn points on every purchase you make. Redeem your points for discounts, free products, and more.", 0},
 	{11, "Promotions", "#S0", P0, SKEY, "Seasonal Special: Save on Your Favorite Fall Products", "As the leaves change color and the air gets cooler, we have the perfect products to help you enjoy the season. Take advantage of our special offers and save on your favorite fall products.", 0},
 	{11, "Promotions", "192.168.0.1", P1, AKEY, "Refer a Friend and Save on Your Next Order", "Share the love and refer a friend to our store. When they make a purchase, you'll receive a discount on your next order. It's a win-win for both of you.", 0},
@@ -384,15 +384,87 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 	// Sub/Unsub for Users 12+13
 
 	{
-		//TODO User 12 unsubscribe from 12:chan_self_unsub
-		//TODO User 13 request-subscribe to 13:chan_other_request
-		//TODO User 13 request-subscribe to 13:chan_other_accepted
-		//TODO User 13 accept subscription from user 12 to 13:chan_other_accepted
+		doUnsubscribe(t, baseUrl, users[14], users[14], "chan_self_unsub")
+		doSubscribe(t, baseUrl, users[14], users[15], "chan_other_request")
+		doSubscribe(t, baseUrl, users[14], users[15], "chan_other_accepted")
+		doAcceptSub(t, baseUrl, users[15], users[14], "chan_other_accepted")
 	}
 
 	success = true
 
 	return DefData{User: users}
+}
+
+func doSubscribe(t *testing.T, baseUrl string, user Userdat, chanOwner Userdat, chanInternalName string) {
+
+	if user == chanOwner {
+
+		RequestAuthPost[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/channels", user.UID), gin.H{
+			"channel_owner_user_id": chanOwner.UID,
+			"channel_internal_name": chanInternalName,
+		})
+
+	} else {
+		type chanlist struct {
+			Channels []gin.H `json:"channels"`
+		}
+
+		clist := RequestAuthGet[chanlist](t, chanOwner.AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/channels?selector=owned", chanOwner.UID))
+
+		var chandat gin.H
+		for _, v := range clist.Channels {
+			if v["internal_name"].(string) == chanInternalName {
+				chandat = v
+				break
+			}
+		}
+
+		RequestAuthPost[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/subscriptions?chan_subscribe_key=%s", user.UID, chandat["subscribe_key"].(string)), gin.H{
+			"channel_id": chandat["channel_id"].(float64),
+		})
+
+	}
+
+}
+
+func doUnsubscribe(t *testing.T, baseUrl string, user Userdat, chanOwner Userdat, chanInternalName string) {
+
+	type chanlist struct {
+		Subscriptions []gin.H `json:"subscriptions"`
+	}
+
+	slist := RequestAuthGet[chanlist](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/subscriptions?selector=outgoing_confirmed", user.UID))
+
+	var subdat gin.H
+	for _, v := range slist.Subscriptions {
+		if v["channel_internal_name"].(string) == chanInternalName && int64(v["channel_owner_user_id"].(float64)) == chanOwner.UID {
+			subdat = v
+			break
+		}
+	}
+
+	RequestAuthDelete[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/subscriptions/%v", user.UID, subdat["subscription_id"]), gin.H{})
+
+}
+
+func doAcceptSub(t *testing.T, baseUrl string, user Userdat, subscriber Userdat, chanInternalName string) {
+
+	type chanlist struct {
+		Subscriptions []gin.H `json:"subscriptions"`
+	}
+
+	slist := RequestAuthGet[chanlist](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/subscriptions?selector=incoming_unconfirmed", user.UID))
+
+	var subdat gin.H
+	for _, v := range slist.Subscriptions {
+		if v["channel_internal_name"].(string) == chanInternalName && int64(v["subscriber_user_id"].(float64)) == subscriber.UID {
+			subdat = v
+			break
+		}
+	}
+
+	RequestAuthDelete[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/subscriptions/%v", user.UID, subdat["subscription_id"]), gin.H{})
+
 }
 
 func Lipsum(seed int64, paracount int) string {

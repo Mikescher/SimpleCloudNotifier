@@ -206,12 +206,7 @@ func (pp *DBPreprocessor) getTableColumns(ctx context.Context, tablename string)
 	}
 
 	type res struct {
-		CID     int64   `db:"cid"`
-		Name    string  `db:"name"`
-		Type    string  `db:"type"`
-		NotNull int     `db:"notnull"`
-		DFLT    *string `db:"dflt_value"`
-		PK      int     `db:"pk"`
+		Name string `db:"name"`
 	}
 
 	rows, err := pp.db.Query(ctx, "PRAGMA table_info('"+tablename+"');", sq.PP{})
@@ -219,7 +214,7 @@ func (pp *DBPreprocessor) getTableColumns(ctx context.Context, tablename string)
 		return nil, err
 	}
 
-	resrows, err := sq.ScanAll[res](rows, true)
+	resrows, err := sq.ScanAll[res](rows, sq.SModeFast, sq.Unsafe, true)
 	if err != nil {
 		return nil, err
 	}

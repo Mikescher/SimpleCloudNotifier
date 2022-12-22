@@ -62,7 +62,7 @@ func (s SubscriptionDB) Model() Subscription {
 }
 
 func DecodeSubscription(r *sqlx.Rows) (Subscription, error) {
-	data, err := sq.ScanSingle[SubscriptionDB](r, true)
+	data, err := sq.ScanSingle[SubscriptionDB](r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return Subscription{}, err
 	}
@@ -70,7 +70,7 @@ func DecodeSubscription(r *sqlx.Rows) (Subscription, error) {
 }
 
 func DecodeSubscriptions(r *sqlx.Rows) ([]Subscription, error) {
-	data, err := sq.ScanAll[SubscriptionDB](r, true)
+	data, err := sq.ScanAll[SubscriptionDB](r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return nil, err
 	}

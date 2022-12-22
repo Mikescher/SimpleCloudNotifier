@@ -146,7 +146,7 @@ func (m MessageDB) Model() Message {
 }
 
 func DecodeMessage(r *sqlx.Rows) (Message, error) {
-	data, err := sq.ScanSingle[MessageDB](r, true)
+	data, err := sq.ScanSingle[MessageDB](r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return Message{}, err
 	}
@@ -154,7 +154,7 @@ func DecodeMessage(r *sqlx.Rows) (Message, error) {
 }
 
 func DecodeMessages(r *sqlx.Rows) ([]Message, error) {
-	data, err := sq.ScanAll[MessageDB](r, true)
+	data, err := sq.ScanAll[MessageDB](r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return nil, err
 	}

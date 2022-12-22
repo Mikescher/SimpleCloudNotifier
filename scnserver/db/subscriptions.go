@@ -62,7 +62,7 @@ func (db *Database) ListSubscriptionsByChannel(ctx TxContext, channelID models.C
 	return data, nil
 }
 
-func (db *Database) ListSubscriptionsByOwner(ctx TxContext, ownerUserID models.UserID, confirmed *bool) ([]models.Subscription, error) {
+func (db *Database) ListSubscriptionsByChannelOwner(ctx TxContext, ownerUserID models.UserID, confirmed *bool) ([]models.Subscription, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err

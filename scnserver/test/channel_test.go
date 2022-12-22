@@ -161,10 +161,10 @@ func TestListChannelsOwned(t *testing.T) {
 	}
 
 	testdata := map[int][]string{
-		0:  {"main", "chattingchamber", "unicdhll", "promotions", "reminders"},
+		0:  {"main", "chatting chamber", "unicôdé häll \U0001f92a", "promotions", "reminders"},
 		1:  {"main", "private"},
 		2:  {"main", "ü", "ö", "ä"},
-		3:  {"main", "innovations", "reminders"},
+		3:  {"main", "\U0001f5ff", "innovations", "reminders"},
 		4:  {"main"},
 		5:  {"main", "test1", "test2", "test3", "test4", "test5"},
 		6:  {"main", "security", "lipsum"},
@@ -175,8 +175,8 @@ func TestListChannelsOwned(t *testing.T) {
 		11: {"promotions"},
 		12: {},
 		13: {},
-		14: {"", "chan_self_subscribed", "chan_self_unsub"},                                             //TODO these two have the interesting cases
-		15: {"", "chan_other_nosub", "chan_other_request", "chan_other_request", "chan_other_accepted"}, //TODO these two have the interesting cases
+		14: {"main", "chan_self_subscribed", "chan_self_unsub"},                       //TODO these two have the interesting cases
+		15: {"main", "chan_other_nosub", "chan_other_request", "chan_other_accepted"}, //TODO these two have the interesting cases
 	}
 
 	for k, v := range testdata {
@@ -186,19 +186,143 @@ func TestListChannelsOwned(t *testing.T) {
 }
 
 func TestListChannelsSubscribedAny(t *testing.T) {
-	t.SkipNow() //TODO
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	type chanlist struct {
+		Channels []gin.H `json:"channels"`
+	}
+
+	testdata := map[int][]string{
+		0:  {"main", "chatting chamber", "unicôdé häll \U0001f92a", "promotions", "reminders"},
+		1:  {"main", "private"},
+		2:  {"main", "ü", "ö", "ä"},
+		3:  {"main", "\U0001f5ff", "innovations", "reminders"},
+		4:  {"main"},
+		5:  {"main", "test1", "test2", "test3", "test4", "test5"},
+		6:  {"main", "security", "lipsum"},
+		7:  {"main"},
+		8:  {"main"},
+		9:  {"main", "manual@chan"},
+		10: {"main"},
+		11: {"promotions"},
+		12: {},
+		13: {},
+		14: {"main", "chan_self_subscribed", "chan_self_unsub"},                       //TODO these two have the interesting cases
+		15: {"main", "chan_other_nosub", "chan_other_request", "chan_other_accepted"}, //TODO these two have the interesting cases
+	}
+
+	for k, v := range testdata {
+		r0 := tt.RequestAuthGet[chanlist](t, data.User[k].AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/channels", data.User[k].UID))
+		tt.AssertMappedSet(t, fmt.Sprintf("%d->chanlist", k), v, r0.Channels, "internal_name")
+	}
 }
 
 func TestListChannelsAllAny(t *testing.T) {
-	t.SkipNow() //TODO
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	type chanlist struct {
+		Channels []gin.H `json:"channels"`
+	}
+
+	testdata := map[int][]string{
+		0:  {"main", "chatting chamber", "unicôdé häll \U0001f92a", "promotions", "reminders"},
+		1:  {"main", "private"},
+		2:  {"main", "ü", "ö", "ä"},
+		3:  {"main", "\U0001f5ff", "innovations", "reminders"},
+		4:  {"main"},
+		5:  {"main", "test1", "test2", "test3", "test4", "test5"},
+		6:  {"main", "security", "lipsum"},
+		7:  {"main"},
+		8:  {"main"},
+		9:  {"main", "manual@chan"},
+		10: {"main"},
+		11: {"promotions"},
+		12: {},
+		13: {},
+		14: {"main", "chan_self_subscribed", "chan_self_unsub"},                       //TODO these two have the interesting cases
+		15: {"main", "chan_other_nosub", "chan_other_request", "chan_other_accepted"}, //TODO these two have the interesting cases
+	}
+
+	for k, v := range testdata {
+		r0 := tt.RequestAuthGet[chanlist](t, data.User[k].AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/channels", data.User[k].UID))
+		tt.AssertMappedSet(t, fmt.Sprintf("%d->chanlist", k), v, r0.Channels, "internal_name")
+	}
 }
 
 func TestListChannelsSubscribed(t *testing.T) {
-	t.SkipNow() //TODO
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	type chanlist struct {
+		Channels []gin.H `json:"channels"`
+	}
+
+	testdata := map[int][]string{
+		0:  {"main", "chatting chamber", "unicôdé häll \U0001f92a", "promotions", "reminders"},
+		1:  {"main", "private"},
+		2:  {"main", "ü", "ö", "ä"},
+		3:  {"main", "\U0001f5ff", "innovations", "reminders"},
+		4:  {"main"},
+		5:  {"main", "test1", "test2", "test3", "test4", "test5"},
+		6:  {"main", "security", "lipsum"},
+		7:  {"main"},
+		8:  {"main"},
+		9:  {"main", "manual@chan"},
+		10: {"main"},
+		11: {"promotions"},
+		12: {},
+		13: {},
+		14: {"main", "chan_self_subscribed", "chan_self_unsub"},                       //TODO these two have the interesting cases
+		15: {"main", "chan_other_nosub", "chan_other_request", "chan_other_accepted"}, //TODO these two have the interesting cases
+	}
+
+	for k, v := range testdata {
+		r0 := tt.RequestAuthGet[chanlist](t, data.User[k].AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/channels", data.User[k].UID))
+		tt.AssertMappedSet(t, fmt.Sprintf("%d->chanlist", k), v, r0.Channels, "internal_name")
+	}
 }
 
 func TestListChannelsAll(t *testing.T) {
-	t.SkipNow() //TODO
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	type chanlist struct {
+		Channels []gin.H `json:"channels"`
+	}
+
+	testdata := map[int][]string{
+		0:  {"main", "chatting chamber", "unicôdé häll \U0001f92a", "promotions", "reminders"},
+		1:  {"main", "private"},
+		2:  {"main", "ü", "ö", "ä"},
+		3:  {"main", "\U0001f5ff", "innovations", "reminders"},
+		4:  {"main"},
+		5:  {"main", "test1", "test2", "test3", "test4", "test5"},
+		6:  {"main", "security", "lipsum"},
+		7:  {"main"},
+		8:  {"main"},
+		9:  {"main", "manual@chan"},
+		10: {"main"},
+		11: {"promotions"},
+		12: {},
+		13: {},
+		14: {"main", "chan_self_subscribed", "chan_self_unsub"},                       //TODO these two have the interesting cases
+		15: {"main", "chan_other_nosub", "chan_other_request", "chan_other_accepted"}, //TODO these two have the interesting cases
+	}
+
+	for k, v := range testdata {
+		r0 := tt.RequestAuthGet[chanlist](t, data.User[k].AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/channels", data.User[k].UID))
+		tt.AssertMappedSet(t, fmt.Sprintf("%d->chanlist", k), v, r0.Channels, "internal_name")
+	}
 }
 
 //TODO test missing channel-xx methods
