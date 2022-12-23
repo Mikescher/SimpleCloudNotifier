@@ -2337,17 +2337,11 @@
                 "error": {
                     "type": "integer"
                 },
-                "errorObj": {
-                    "type": "string"
-                },
                 "message": {
                     "type": "string"
                 },
                 "success": {
                     "type": "boolean"
-                },
-                "traceObj": {
-                    "type": "string"
                 }
             }
         },

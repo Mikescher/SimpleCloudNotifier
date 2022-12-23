@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"runtime/debug"
+	"strings"
 )
 
 type HTTPResponse interface {
@@ -110,13 +111,13 @@ func createApiError(g *gin.Context, ident string, status int, errorid apierr.API
 	if scn.Conf.ReturnRawErrors {
 		return &errorHTTPResponse{
 			statusCode: status,
-			data: apiError{
+			data: extendedAPIError{
 				Success:        false,
 				Error:          int(errorid),
 				ErrorHighlight: int(highlight),
 				Message:        msg,
 				RawError:       langext.Ptr(langext.Conditional(e == nil, "", fmt.Sprintf("%+v", e))),
-				Trace:          string(debug.Stack()),
+				Trace:          strings.Split(string(debug.Stack()), "\n"),
 			},
 			error: e,
 		}

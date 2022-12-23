@@ -216,7 +216,7 @@ func (pp *DBPreprocessor) PreQuery(ctx context.Context, txID *uint16, sql *strin
 	pp.cacheQuery[sqlOriginal] = newSQL
 	pp.lock.Unlock()
 
-	log.Debug().Msgf("Preprocessed SQL statement from '%s' --to--> '%s'", sqlOriginal, newSQL)
+	log.Debug().Msgf("Preprocessed SQL statement from\n'%s'\n--to-->\n'%s'", sqlOriginal, newSQL)
 
 	*sql = newSQL
 	return nil

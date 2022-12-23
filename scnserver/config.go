@@ -51,7 +51,7 @@ var configLocHost = func() Config {
 	return Config{
 		Namespace:           "local-host",
 		BaseURL:             "http://localhost:8080",
-		GinDebug:            true,
+		GinDebug:            false,
 		LogLevel:            zerolog.DebugLevel,
 		ServerIP:            "0.0.0.0",
 		ServerPort:          "8080",
@@ -89,7 +89,7 @@ var configLocDocker = func() Config {
 	return Config{
 		Namespace:           "local-docker",
 		BaseURL:             "http://localhost:8080",
-		GinDebug:            true,
+		GinDebug:            false,
 		LogLevel:            zerolog.DebugLevel,
 		ServerIP:            "0.0.0.0",
 		ServerPort:          "80",
@@ -127,7 +127,7 @@ var configDev = func() Config {
 	return Config{
 		Namespace:           "develop",
 		BaseURL:             confEnv("SCN_URL"),
-		GinDebug:            true,
+		GinDebug:            false,
 		LogLevel:            zerolog.DebugLevel,
 		ServerIP:            "0.0.0.0",
 		ServerPort:          "80",
@@ -165,7 +165,7 @@ var configStag = func() Config {
 	return Config{
 		Namespace:           "staging",
 		BaseURL:             confEnv("SCN_URL"),
-		GinDebug:            true,
+		GinDebug:            false,
 		LogLevel:            zerolog.DebugLevel,
 		ServerIP:            "0.0.0.0",
 		ServerPort:          "80",
