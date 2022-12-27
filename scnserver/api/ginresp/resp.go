@@ -91,7 +91,7 @@ func SendAPIError(g *gin.Context, status int, errorid apierr.APIError, highlight
 }
 
 func NotImplemented(g *gin.Context) HTTPResponse {
-	return createApiError(g, "NotImplemented", 500, apierr.UNDEFINED, 0, "Not Implemented", nil)
+	return createApiError(g, "NotImplemented", 500, apierr.NOT_IMPLEMENTED, 0, "Not Implemented", nil)
 }
 
 func createApiError(g *gin.Context, ident string, status int, errorid apierr.APIError, highlight apihighlight.ErrHighlight, msg string, e error) HTTPResponse {

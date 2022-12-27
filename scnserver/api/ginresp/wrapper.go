@@ -2,6 +2,9 @@ package ginresp
 
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
+	"blackforestbytes.com/simplecloudnotifier/api/apierr"
+	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/mattn/go-sqlite3"
 	"github.com/rs/zerolog/log"
@@ -26,7 +29,11 @@ func Wrap(fn WHandlerFunc) gin.HandlerFunc {
 
 		for ctr := 1; ; ctr++ {
 
-			wrap := fn(g)
+			wrap, panicObj := callPanicSafe(fn, g)
+			if panicObj != nil {
+				log.Error().Interface("panicObj", panicObj).Msg("Panic occured (in gin handler)")
+				wrap = APIError(g, 500, apierr.PANIC, "A panic occured in the HTTP handler", errors.New(fmt.Sprintf("%+v", panicObj)))
+			}
 
 			if g.Writer.Written() {
 				panic("Writing in WrapperFunc is not supported")
@@ -53,6 +60,18 @@ func Wrap(fn WHandlerFunc) gin.HandlerFunc {
 
 	}
 
+}
+
+func callPanicSafe(fn WHandlerFunc, g *gin.Context) (res HTTPResponse, panicObj any) {
+	defer func() {
+		if rec := recover(); rec != nil {
+			res = nil
+			panicObj = rec
+		}
+	}()
+
+	res = fn(g)
+	return res, nil
 }
 
 func resetBody(g *gin.Context) error {
