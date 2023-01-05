@@ -132,26 +132,30 @@ func (h CommonHandler) Health(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.InternalError(err)
 	}
 
-	uuidKey, _ := langext.NewHexUUID()
-	uuidWrite, _ := langext.NewHexUUID()
+	for _, subdb := range h.app.Database.List() {
 
-	err = h.app.Database.WriteMetaString(ctx, uuidKey, uuidWrite)
-	if err != nil {
-		return ginresp.InternalError(err)
-	}
+		uuidKey, _ := langext.NewHexUUID()
+		uuidWrite, _ := langext.NewHexUUID()
 
-	uuidRead, err := h.app.Database.ReadMetaString(ctx, uuidKey)
-	if err != nil {
-		return ginresp.InternalError(err)
-	}
+		err = subdb.WriteMetaString(ctx, uuidKey, uuidWrite)
+		if err != nil {
+			return ginresp.InternalError(err)
+		}
 
-	if uuidRead == nil || uuidWrite != *uuidRead {
-		return ginresp.InternalError(errors.New("writing into DB was not consistent"))
-	}
+		uuidRead, err := subdb.ReadMetaString(ctx, uuidKey)
+		if err != nil {
+			return ginresp.InternalError(err)
+		}
 
-	err = h.app.Database.DeleteMeta(ctx, uuidKey)
-	if err != nil {
-		return ginresp.InternalError(err)
+		if uuidRead == nil || uuidWrite != *uuidRead {
+			return ginresp.InternalError(errors.New("writing into DB was not consistent"))
+		}
+
+		err = subdb.DeleteMeta(ctx, uuidKey)
+		if err != nil {
+			return ginresp.InternalError(err)
+		}
+
 	}
 
 	return ginresp.JSON(http.StatusOK, response{Status: "ok"})

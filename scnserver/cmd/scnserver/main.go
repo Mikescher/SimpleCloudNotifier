@@ -4,7 +4,6 @@ import (
 	scn "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/api"
 	"blackforestbytes.com/simplecloudnotifier/api/ginext"
-	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/google"
 	"blackforestbytes.com/simplecloudnotifier/jobs"
 	"blackforestbytes.com/simplecloudnotifier/logic"
@@ -20,7 +19,7 @@ func main() {
 
 	log.Info().Msg(fmt.Sprintf("Starting with config-namespace <%s>", conf.Namespace))
 
-	sqlite, err := db.NewDatabase(conf)
+	sqlite, err := logic.NewDBPool(conf)
 	if err != nil {
 		panic(err)
 	}

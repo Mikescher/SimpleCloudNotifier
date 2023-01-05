@@ -4,7 +4,6 @@ import (
 	scn "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
-	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/google"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"blackforestbytes.com/simplecloudnotifier/push"
@@ -28,7 +27,7 @@ import (
 type Application struct {
 	Config           scn.Config
 	Gin              *gin.Engine
-	Database         *db.Database
+	Database         *DBPool
 	Pusher           push.NotificationClient
 	AndroidPublisher google.AndroidPublisherClient
 	Jobs             []Job
@@ -37,7 +36,7 @@ type Application struct {
 	IsRunning        *syncext.AtomicBool
 }
 
-func NewApp(db *db.Database) *Application {
+func NewApp(db *DBPool) *Application {
 	return &Application{
 		Database:  db,
 		stopChan:  make(chan bool),
@@ -264,7 +263,7 @@ func (app *Application) getPermissions(ctx *AppContext, hdr string) (PermissionS
 
 	key := strings.TrimSpace(hdr[4:])
 
-	user, err := app.Database.GetUserByKey(ctx, key)
+	user, err := app.Database.Primary.GetUserByKey(ctx, key)
 	if err != nil {
 		return PermissionSet{}, err
 	}
@@ -283,7 +282,7 @@ func (app *Application) getPermissions(ctx *AppContext, hdr string) (PermissionS
 }
 
 func (app *Application) GetOrCreateChannel(ctx *AppContext, userid models.UserID, displayChanName string, intChanName string) (models.Channel, error) {
-	existingChan, err := app.Database.GetChannelByName(ctx, userid, intChanName)
+	existingChan, err := app.Database.Primary.GetChannelByName(ctx, userid, intChanName)
 	if err != nil {
 		return models.Channel{}, err
 	}
@@ -295,12 +294,12 @@ func (app *Application) GetOrCreateChannel(ctx *AppContext, userid models.UserID
 	subscribeKey := app.GenerateRandomAuthKey()
 	sendKey := app.GenerateRandomAuthKey()
 
-	newChan, err := app.Database.CreateChannel(ctx, userid, displayChanName, intChanName, subscribeKey, sendKey)
+	newChan, err := app.Database.Primary.CreateChannel(ctx, userid, displayChanName, intChanName, subscribeKey, sendKey)
 	if err != nil {
 		return models.Channel{}, err
 	}
 
-	_, err = app.Database.CreateSubscription(ctx, userid, newChan, true)
+	_, err = app.Database.Primary.CreateSubscription(ctx, userid, newChan, true)
 	if err != nil {
 		return models.Channel{}, err
 	}

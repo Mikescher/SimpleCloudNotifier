@@ -16,18 +16,13 @@ type Config struct {
 	LogLevel            zerolog.Level `env:"SCN_LOGLEVEL"`
 	ServerIP            string        `env:"SCN_IP"`
 	ServerPort          string        `env:"SCN_PORT"`
-	DBFile              string        `env:"SCN_DB_FILE"`
-	DBJournal           string        `env:"SCN_DB_JOURNAL"`
-	DBTimeout           time.Duration `env:"SCN_DB_TIMEOUT"`
-	DBMaxOpenConns      int           `env:"SCN_DB_MAXOPENCONNECTIONS"`
-	DBMaxIdleConns      int           `env:"SCN_DB_MAXIDLECONNECTIONS"`
-	DBConnMaxLifetime   time.Duration `env:"SCN_DB_CONNEXTIONMAXLIFETIME"`
-	DBConnMaxIdleTime   time.Duration `env:"SCN_DB_CONNEXTIONMAXIDLETIME"`
-	DBCheckForeignKeys  bool          `env:"SCN_DB_CHECKFOREIGNKEYS"`
-	DBSingleConn        bool          `env:"SCN_DB_SINGLECONNECTION"`
+	DBMain              DBConfig      `envprefix:"SCN_DB_MAIN_"`
+	DBRequests          DBConfig      `envprefix:"SCN_DB_REQUESTS_"`
+	DBLogs              DBConfig      `envprefix:"SCN_DB_LOGS_"`
 	RequestTimeout      time.Duration `env:"SCN_REQUEST_TIMEOUT"`
 	RequestMaxRetry     int           `env:"SCN_REQUEST_MAXRETRY"`
 	RequestRetrySleep   time.Duration `env:"SCN_REQUEST_RETRYSLEEP"`
+	Cors                bool          `env:"SCN_CORS"`
 	ReturnRawErrors     bool          `env:"SCN_ERROR_RETURN"`
 	DummyFirebase       bool          `env:"SCN_DUMMY_FB"`
 	DummyGoogleAPI      bool          `env:"SCN_DUMMY_GOOG"`
@@ -42,28 +37,63 @@ type Config struct {
 	GoogleAPIPrivateKey string        `env:"SCN_GOOG_PRIVATEKEY"`
 	GooglePackageName   string        `env:"SCN_GOOG_PACKAGENAME"`
 	GoogleProProductID  string        `env:"SCN_GOOG_PROPRODUCTID"`
-	Cors                bool          `env:"SCN_CORS"`
+}
+
+type DBConfig struct {
+	File             string        `env:"FILE"`
+	Journal          string        `env:"JOURNAL"`
+	Timeout          time.Duration `env:"TIMEOUT"`
+	MaxOpenConns     int           `env:"MAXOPENCONNECTIONS"`
+	MaxIdleConns     int           `env:"MAXIDLECONNECTIONS"`
+	ConnMaxLifetime  time.Duration `env:"CONNEXTIONMAXLIFETIME"`
+	ConnMaxIdleTime  time.Duration `env:"CONNEXTIONMAXIDLETIME"`
+	CheckForeignKeys bool          `env:"CHECKFOREIGNKEYS"`
+	SingleConn       bool          `env:"SINGLECONNECTION"`
 }
 
 var Conf Config
 
 var configLocHost = func() Config {
 	return Config{
-		Namespace:           "local-host",
-		BaseURL:             "http://localhost:8080",
-		GinDebug:            false,
-		LogLevel:            zerolog.DebugLevel,
-		ServerIP:            "0.0.0.0",
-		ServerPort:          "8080",
-		DBFile:              ".run-data/db.sqlite3",
-		DBJournal:           "WAL",
-		DBTimeout:           5 * time.Second,
-		DBCheckForeignKeys:  false,
-		DBSingleConn:        false,
-		DBMaxOpenConns:      5,
-		DBMaxIdleConns:      5,
-		DBConnMaxLifetime:   60 * time.Minute,
-		DBConnMaxIdleTime:   60 * time.Minute,
+		Namespace:  "local-host",
+		BaseURL:    "http://localhost:8080",
+		GinDebug:   false,
+		LogLevel:   zerolog.DebugLevel,
+		ServerIP:   "0.0.0.0",
+		ServerPort: "8080",
+		DBMain: DBConfig{
+			File:             ".run-data/loc_main.sqlite3",
+			Journal:          "WAL",
+			Timeout:          5 * time.Second,
+			CheckForeignKeys: false,
+			SingleConn:       false,
+			MaxOpenConns:     5,
+			MaxIdleConns:     5,
+			ConnMaxLifetime:  60 * time.Minute,
+			ConnMaxIdleTime:  60 * time.Minute,
+		},
+		DBRequests: DBConfig{
+			File:             ".run-data/loc_requests.sqlite3",
+			Journal:          "DELETE",
+			Timeout:          5 * time.Second,
+			CheckForeignKeys: false,
+			SingleConn:       false,
+			MaxOpenConns:     5,
+			MaxIdleConns:     5,
+			ConnMaxLifetime:  60 * time.Minute,
+			ConnMaxIdleTime:  60 * time.Minute,
+		},
+		DBLogs: DBConfig{
+			File:             ".run-data/loc_logs.sqlite3",
+			Journal:          "DELETE",
+			Timeout:          5 * time.Second,
+			CheckForeignKeys: false,
+			SingleConn:       false,
+			MaxOpenConns:     5,
+			MaxIdleConns:     5,
+			ConnMaxLifetime:  60 * time.Minute,
+			ConnMaxIdleTime:  60 * time.Minute,
+		},
 		RequestTimeout:      16 * time.Second,
 		RequestMaxRetry:     8,
 		RequestRetrySleep:   100 * time.Millisecond,
@@ -87,21 +117,45 @@ var configLocHost = func() Config {
 
 var configLocDocker = func() Config {
 	return Config{
-		Namespace:           "local-docker",
-		BaseURL:             "http://localhost:8080",
-		GinDebug:            false,
-		LogLevel:            zerolog.DebugLevel,
-		ServerIP:            "0.0.0.0",
-		ServerPort:          "80",
-		DBFile:              "/data/scn_docker.sqlite3",
-		DBJournal:           "WAL",
-		DBTimeout:           5 * time.Second,
-		DBCheckForeignKeys:  false,
-		DBSingleConn:        false,
-		DBMaxOpenConns:      5,
-		DBMaxIdleConns:      5,
-		DBConnMaxLifetime:   60 * time.Minute,
-		DBConnMaxIdleTime:   60 * time.Minute,
+		Namespace:  "local-docker",
+		BaseURL:    "http://localhost:8080",
+		GinDebug:   false,
+		LogLevel:   zerolog.DebugLevel,
+		ServerIP:   "0.0.0.0",
+		ServerPort: "80",
+		DBMain: DBConfig{
+			File:             "/data/docker_scn_main.sqlite3",
+			Journal:          "WAL",
+			Timeout:          5 * time.Second,
+			CheckForeignKeys: false,
+			SingleConn:       false,
+			MaxOpenConns:     5,
+			MaxIdleConns:     5,
+			ConnMaxLifetime:  60 * time.Minute,
+			ConnMaxIdleTime:  60 * time.Minute,
+		},
+		DBRequests: DBConfig{
+			File:             "/data/docker_scn_requests.sqlite3",
+			Journal:          "DELETE",
+			Timeout:          5 * time.Second,
+			CheckForeignKeys: false,
+			SingleConn:       false,
+			MaxOpenConns:     5,
+			MaxIdleConns:     5,
+			ConnMaxLifetime:  60 * time.Minute,
+			ConnMaxIdleTime:  60 * time.Minute,
+		},
+		DBLogs: DBConfig{
+			File:             "/data/docker_scn_logs.sqlite3",
+			Journal:          "DELETE",
+			Timeout:          5 * time.Second,
+			CheckForeignKeys: false,
+			SingleConn:       false,
+			MaxOpenConns:     5,
+			MaxIdleConns:     5,
+			ConnMaxLifetime:  60 * time.Minute,
+			ConnMaxIdleTime:  60 * time.Minute,
+		},
 		RequestTimeout:      16 * time.Second,
 		RequestMaxRetry:     8,
 		RequestRetrySleep:   100 * time.Millisecond,
@@ -125,21 +179,45 @@ var configLocDocker = func() Config {
 
 var configDev = func() Config {
 	return Config{
-		Namespace:           "develop",
-		BaseURL:             confEnv("SCN_URL"),
-		GinDebug:            false,
-		LogLevel:            zerolog.DebugLevel,
-		ServerIP:            "0.0.0.0",
-		ServerPort:          "80",
-		DBFile:              "/data/scn.sqlite3",
-		DBJournal:           "WAL",
-		DBTimeout:           5 * time.Second,
-		DBCheckForeignKeys:  false,
-		DBSingleConn:        false,
-		DBMaxOpenConns:      5,
-		DBMaxIdleConns:      5,
-		DBConnMaxLifetime:   60 * time.Minute,
-		DBConnMaxIdleTime:   60 * time.Minute,
+		Namespace:  "develop",
+		BaseURL:    confEnv("SCN_URL"),
+		GinDebug:   false,
+		LogLevel:   zerolog.DebugLevel,
+		ServerIP:   "0.0.0.0",
+		ServerPort: "80",
+		DBMain: DBConfig{
+			File:             "/data/scn_main.sqlite3",
+			Journal:          "WAL",
+			Timeout:          5 * time.Second,
+			CheckForeignKeys: false,
+			SingleConn:       false,
+			MaxOpenConns:     5,
+			MaxIdleConns:     5,
+			ConnMaxLifetime:  60 * time.Minute,
+			ConnMaxIdleTime:  60 * time.Minute,
+		},
+		DBRequests: DBConfig{
+			File:             "/data/scn_requests.sqlite3",
+			Journal:          "DELETE",
+			Timeout:          5 * time.Second,
+			CheckForeignKeys: false,
+			SingleConn:       false,
+			MaxOpenConns:     5,
+			MaxIdleConns:     5,
+			ConnMaxLifetime:  60 * time.Minute,
+			ConnMaxIdleTime:  60 * time.Minute,
+		},
+		DBLogs: DBConfig{
+			File:             "/data/scn_logs.sqlite3",
+			Journal:          "DELETE",
+			Timeout:          5 * time.Second,
+			CheckForeignKeys: false,
+			SingleConn:       false,
+			MaxOpenConns:     5,
+			MaxIdleConns:     5,
+			ConnMaxLifetime:  60 * time.Minute,
+			ConnMaxIdleTime:  60 * time.Minute,
+		},
 		RequestTimeout:      16 * time.Second,
 		RequestMaxRetry:     8,
 		RequestRetrySleep:   100 * time.Millisecond,
@@ -163,21 +241,45 @@ var configDev = func() Config {
 
 var configStag = func() Config {
 	return Config{
-		Namespace:           "staging",
-		BaseURL:             confEnv("SCN_URL"),
-		GinDebug:            false,
-		LogLevel:            zerolog.DebugLevel,
-		ServerIP:            "0.0.0.0",
-		ServerPort:          "80",
-		DBFile:              "/data/scn.sqlite3",
-		DBJournal:           "WAL",
-		DBTimeout:           5 * time.Second,
-		DBCheckForeignKeys:  false,
-		DBSingleConn:        false,
-		DBMaxOpenConns:      5,
-		DBMaxIdleConns:      5,
-		DBConnMaxLifetime:   60 * time.Minute,
-		DBConnMaxIdleTime:   60 * time.Minute,
+		Namespace:  "staging",
+		BaseURL:    confEnv("SCN_URL"),
+		GinDebug:   false,
+		LogLevel:   zerolog.DebugLevel,
+		ServerIP:   "0.0.0.0",
+		ServerPort: "80",
+		DBMain: DBConfig{
+			File:             "/data/scn_main.sqlite3",
+			Journal:          "WAL",
+			Timeout:          5 * time.Second,
+			CheckForeignKeys: false,
+			SingleConn:       false,
+			MaxOpenConns:     5,
+			MaxIdleConns:     5,
+			ConnMaxLifetime:  60 * time.Minute,
+			ConnMaxIdleTime:  60 * time.Minute,
+		},
+		DBRequests: DBConfig{
+			File:             "/data/scn_requests.sqlite3",
+			Journal:          "DELETE",
+			Timeout:          5 * time.Second,
+			CheckForeignKeys: false,
+			SingleConn:       false,
+			MaxOpenConns:     5,
+			MaxIdleConns:     5,
+			ConnMaxLifetime:  60 * time.Minute,
+			ConnMaxIdleTime:  60 * time.Minute,
+		},
+		DBLogs: DBConfig{
+			File:             "/data/scn_logs.sqlite3",
+			Journal:          "DELETE",
+			Timeout:          5 * time.Second,
+			CheckForeignKeys: false,
+			SingleConn:       false,
+			MaxOpenConns:     5,
+			MaxIdleConns:     5,
+			ConnMaxLifetime:  60 * time.Minute,
+			ConnMaxIdleTime:  60 * time.Minute,
+		},
 		RequestTimeout:      16 * time.Second,
 		RequestMaxRetry:     8,
 		RequestRetrySleep:   100 * time.Millisecond,
@@ -201,21 +303,45 @@ var configStag = func() Config {
 
 var configProd = func() Config {
 	return Config{
-		Namespace:           "production",
-		BaseURL:             confEnv("SCN_URL"),
-		GinDebug:            false,
-		LogLevel:            zerolog.InfoLevel,
-		ServerIP:            "0.0.0.0",
-		ServerPort:          "80",
-		DBFile:              "/data/scn.sqlite3",
-		DBJournal:           "WAL",
-		DBTimeout:           5 * time.Second,
-		DBCheckForeignKeys:  false,
-		DBSingleConn:        false,
-		DBMaxOpenConns:      5,
-		DBMaxIdleConns:      5,
-		DBConnMaxLifetime:   60 * time.Minute,
-		DBConnMaxIdleTime:   60 * time.Minute,
+		Namespace:  "production",
+		BaseURL:    confEnv("SCN_URL"),
+		GinDebug:   false,
+		LogLevel:   zerolog.InfoLevel,
+		ServerIP:   "0.0.0.0",
+		ServerPort: "80",
+		DBMain: DBConfig{
+			File:             "/data/scn_main.sqlite3",
+			Journal:          "WAL",
+			Timeout:          5 * time.Second,
+			CheckForeignKeys: false,
+			SingleConn:       false,
+			MaxOpenConns:     5,
+			MaxIdleConns:     5,
+			ConnMaxLifetime:  60 * time.Minute,
+			ConnMaxIdleTime:  60 * time.Minute,
+		},
+		DBRequests: DBConfig{
+			File:             "/data/scn_requests.sqlite3",
+			Journal:          "DELETE",
+			Timeout:          5 * time.Second,
+			CheckForeignKeys: false,
+			SingleConn:       false,
+			MaxOpenConns:     5,
+			MaxIdleConns:     5,
+			ConnMaxLifetime:  60 * time.Minute,
+			ConnMaxIdleTime:  60 * time.Minute,
+		},
+		DBLogs: DBConfig{
+			File:             "/data/scn_logs.sqlite3",
+			Journal:          "DELETE",
+			Timeout:          5 * time.Second,
+			CheckForeignKeys: false,
+			SingleConn:       false,
+			MaxOpenConns:     5,
+			MaxIdleConns:     5,
+			ConnMaxLifetime:  60 * time.Minute,
+			ConnMaxIdleTime:  60 * time.Minute,
+		},
 		RequestTimeout:      16 * time.Second,
 		RequestMaxRetry:     8,
 		RequestRetrySleep:   100 * time.Millisecond,
@@ -245,7 +371,7 @@ var allConfig = map[string]func() Config{
 	"production":   configProd,
 }
 
-func getConfig(ns string) (Config, bool) {
+func GetConfig(ns string) (Config, bool) {
 	if ns == "" {
 		ns = "local-host"
 	}
@@ -272,7 +398,7 @@ func confEnv(key string) string {
 func init() {
 	ns := os.Getenv("SCN_NAMESPACE")
 
-	cfg, ok := getConfig(ns)
+	cfg, ok := GetConfig(ns)
 	if !ok {
 		log.Fatal().Str("ns", ns).Msg("Unknown config-namespace")
 	}

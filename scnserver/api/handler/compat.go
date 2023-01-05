@@ -2,7 +2,7 @@ package handler
 
 import (
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
-	"blackforestbytes.com/simplecloudnotifier/db"
+	primarydb "blackforestbytes.com/simplecloudnotifier/db/impl/primary"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
@@ -14,13 +14,13 @@ import (
 
 type CompatHandler struct {
 	app      *logic.Application
-	database *db.Database
+	database *primarydb.Database
 }
 
 func NewCompatHandler(app *logic.Application) CompatHandler {
 	return CompatHandler{
 		app:      app,
-		database: app.Database,
+		database: app.Database.Primary,
 	}
 }
 

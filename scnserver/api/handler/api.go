@@ -3,8 +3,8 @@ package handler
 import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
-	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/db/cursortoken"
+	primarydb "blackforestbytes.com/simplecloudnotifier/db/impl/primary"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
@@ -18,13 +18,13 @@ import (
 
 type APIHandler struct {
 	app      *logic.Application
-	database *db.Database
+	database *primarydb.Database
 }
 
 func NewAPIHandler(app *logic.Application) APIHandler {
 	return APIHandler{
 		app:      app,
-		database: app.Database,
+		database: app.Database.Primary,
 	}
 }
 

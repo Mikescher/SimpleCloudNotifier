@@ -4,7 +4,6 @@ import (
 	scn "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/api"
 	"blackforestbytes.com/simplecloudnotifier/api/ginext"
-	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/google"
 	"blackforestbytes.com/simplecloudnotifier/jobs"
 	"blackforestbytes.com/simplecloudnotifier/logic"
@@ -21,54 +20,87 @@ type Void = struct{}
 func StartSimpleWebserver(t *testing.T) (*logic.Application, string, func()) {
 	InitTests()
 
+	uuid1, _ := langext.NewHexUUID()
 	uuid2, _ := langext.NewHexUUID()
+	uuid3, _ := langext.NewHexUUID()
+
 	dbdir := t.TempDir()
-	dbfile := filepath.Join(dbdir, uuid2+".sqlite3")
+	dbfile1 := filepath.Join(dbdir, uuid1+".sqlite3")
+	dbfile2 := filepath.Join(dbdir, uuid2+".sqlite3")
+	dbfile3 := filepath.Join(dbdir, uuid3+".sqlite3")
 
 	err := os.MkdirAll(dbdir, os.ModePerm)
 	if err != nil {
 		TestFailErr(t, err)
 	}
 
-	f, err := os.Create(dbfile)
+	f1, err := os.Create(dbfile1)
 	if err != nil {
 		TestFailErr(t, err)
 	}
-	err = f.Close()
+	err = f1.Close()
+	if err != nil {
+		TestFailErr(t, err)
+	}
+	err = os.Chmod(dbfile1, 0777)
+	if err != nil {
+		TestFailErr(t, err)
+	}
+	f2, err := os.Create(dbfile2)
+	if err != nil {
+		TestFailErr(t, err)
+	}
+	err = f2.Close()
+	if err != nil {
+		TestFailErr(t, err)
+	}
+	err = os.Chmod(dbfile2, 0777)
+	if err != nil {
+		TestFailErr(t, err)
+	}
+	f3, err := os.Create(dbfile3)
+	if err != nil {
+		TestFailErr(t, err)
+	}
+	err = f3.Close()
+	if err != nil {
+		TestFailErr(t, err)
+	}
+	err = os.Chmod(dbfile3, 0777)
 	if err != nil {
 		TestFailErr(t, err)
 	}
 
-	err = os.Chmod(dbfile, 0777)
-	if err != nil {
-		TestFailErr(t, err)
+	TPrintln("DatabaseFile<main>:      " + dbfile1)
+	TPrintln("DatabaseFile<requests>:  " + dbfile2)
+	TPrintln("DatabaseFile<logs>:      " + dbfile3)
+
+	conf, ok := scn.GetConfig("local-host")
+	if !ok {
+		TestFail(t, "conf not found")
 	}
 
-	TPrintln("DatabaseFile: " + dbfile)
-
-	conf := scn.Config{
-		Namespace:         "test",
-		GinDebug:          true,
-		ServerIP:          "0.0.0.0",
-		ServerPort:        "0", // simply choose a free port
-		DBFile:            dbfile,
-		DBJournal:         "WAL",
-		DBTimeout:         500 * time.Millisecond,
-		DBMaxOpenConns:    2,
-		DBMaxIdleConns:    2,
-		DBConnMaxLifetime: 1 * time.Second,
-		DBConnMaxIdleTime: 1 * time.Second,
-		RequestTimeout:    30 * time.Second,
-		RequestMaxRetry:   32,
-		RequestRetrySleep: 100 * time.Millisecond,
-		ReturnRawErrors:   true,
-		DummyFirebase:     true,
-		DBSingleConn:      false,
-	}
+	conf.ServerPort = "0" // simply choose a free port
+	conf.DBMain.File = dbfile1
+	conf.DBLogs.File = dbfile2
+	conf.DBRequests.File = dbfile3
+	conf.DBMain.Timeout = 500 * time.Millisecond
+	conf.DBLogs.Timeout = 500 * time.Millisecond
+	conf.DBRequests.Timeout = 500 * time.Millisecond
+	conf.DBMain.ConnMaxLifetime = 1 * time.Second
+	conf.DBLogs.ConnMaxLifetime = 1 * time.Second
+	conf.DBRequests.ConnMaxLifetime = 1 * time.Second
+	conf.DBMain.ConnMaxIdleTime = 1 * time.Second
+	conf.DBLogs.ConnMaxIdleTime = 1 * time.Second
+	conf.DBRequests.ConnMaxIdleTime = 1 * time.Second
+	conf.RequestMaxRetry = 32
+	conf.RequestRetrySleep = 100 * time.Millisecond
+	conf.ReturnRawErrors = true
+	conf.DummyFirebase = true
 
 	scn.Conf = conf
 
-	sqlite, err := db.NewDatabase(conf)
+	sqlite, err := logic.NewDBPool(conf)
 	if err != nil {
 		TestFailErr(t, err)
 	}
@@ -94,7 +126,9 @@ func StartSimpleWebserver(t *testing.T) (*logic.Application, string, func()) {
 
 	stop := func() {
 		app.Stop()
-		_ = os.Remove(dbfile)
+		_ = os.Remove(dbfile1)
+		_ = os.Remove(dbfile2)
+		_ = os.Remove(dbfile3)
 		_ = app.IsRunning.WaitWithTimeout(400*time.Millisecond, false)
 	}
 

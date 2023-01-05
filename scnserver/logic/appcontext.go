@@ -83,7 +83,7 @@ func (ac *AppContext) FinishSuccess(res ginresp.HTTPResponse) ginresp.HTTPRespon
 	return res
 }
 
-func (ac *AppContext) GetOrCreateTransaction(db *db.Database) (sq.Tx, error) {
+func (ac *AppContext) GetOrCreateTransaction(db db.DatabaseImpl) (sq.Tx, error) {
 	if ac.cancelled {
 		return nil, errors.New("context cancelled")
 	}

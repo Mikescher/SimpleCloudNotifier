@@ -28,6 +28,12 @@
    (then all errors end up in _second_ sqlite table)
    due to message channel etc everything is non blocking and cant fail in main
 
+ - request logging (log all requests with body response, exitcode, headers, uri, route, userid, ..., tx-retries, etc), (trim body/response if too big?)
+
+ - jobs to clear requests-db and logs-db after to only keep X entries...
+
+ -> logs and request-logging into their own sqlite files (sqlite-files are prepped)
+
 -------------------------------------------------------------------------------------------------------------------------------
 
  - in my script: use (backupname || hostname) for sendername

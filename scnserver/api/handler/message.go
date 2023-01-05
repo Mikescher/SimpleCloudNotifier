@@ -4,7 +4,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	hl "blackforestbytes.com/simplecloudnotifier/api/apihighlight"
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
-	"blackforestbytes.com/simplecloudnotifier/db"
+	primarydb "blackforestbytes.com/simplecloudnotifier/db/impl/primary"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
@@ -21,13 +21,13 @@ import (
 
 type MessageHandler struct {
 	app      *logic.Application
-	database *db.Database
+	database *primarydb.Database
 }
 
 func NewMessageHandler(app *logic.Application) MessageHandler {
 	return MessageHandler{
 		app:      app,
-		database: app.Database,
+		database: app.Database.Primary,
 	}
 }
 

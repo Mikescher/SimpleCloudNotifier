@@ -1,6 +1,7 @@
-package db
+package primary
 
 import (
+	"blackforestbytes.com/simplecloudnotifier/db"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
@@ -11,5 +12,5 @@ type TxContext interface {
 	Err() error
 	Value(key any) any
 
-	GetOrCreateTransaction(db *Database) (sq.Tx, error)
+	GetOrCreateTransaction(db db.DatabaseImpl) (sq.Tx, error)
 }

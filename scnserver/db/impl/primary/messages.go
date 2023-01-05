@@ -1,4 +1,4 @@
-package db
+package primary
 
 import (
 	"blackforestbytes.com/simplecloudnotifier/db/cursortoken"

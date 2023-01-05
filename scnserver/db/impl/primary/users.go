@@ -1,4 +1,4 @@
-package db
+package primary
 
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"

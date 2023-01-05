@@ -61,7 +61,7 @@ func (j *DeliveryRetryJob) run() bool {
 	ctx := j.app.NewSimpleTransactionContext(10 * time.Second)
 	defer ctx.Cancel()
 
-	deliveries, err := j.app.Database.ListRetrieableDeliveries(ctx, 32)
+	deliveries, err := j.app.Database.Primary.ListRetrieableDeliveries(ctx, 32)
 	if err != nil {
 		log.Err(err).Msg("Failed to query retrieable deliveries")
 		return false
@@ -86,14 +86,14 @@ func (j *DeliveryRetryJob) run() bool {
 
 func (j *DeliveryRetryJob) redeliver(ctx *logic.SimpleContext, delivery models.Delivery) {
 
-	client, err := j.app.Database.GetClient(ctx, delivery.ReceiverUserID, delivery.ReceiverClientID)
+	client, err := j.app.Database.Primary.GetClient(ctx, delivery.ReceiverUserID, delivery.ReceiverClientID)
 	if err != nil {
 		log.Err(err).Int64("ReceiverUserID", delivery.ReceiverUserID.IntID()).Int64("ReceiverClientID", delivery.ReceiverClientID.IntID()).Msg("Failed to get client")
 		ctx.RollbackTransaction()
 		return
 	}
 
-	msg, err := j.app.Database.GetMessage(ctx, delivery.SCNMessageID, true)
+	msg, err := j.app.Database.Primary.GetMessage(ctx, delivery.SCNMessageID, true)
 	if err != nil {
 		log.Err(err).Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Msg("Failed to get message")
 		ctx.RollbackTransaction()
@@ -101,7 +101,7 @@ func (j *DeliveryRetryJob) redeliver(ctx *logic.SimpleContext, delivery models.D
 	}
 
 	if msg.Deleted {
-		err = j.app.Database.SetDeliveryFailed(ctx, delivery)
+		err = j.app.Database.Primary.SetDeliveryFailed(ctx, delivery)
 		if err != nil {
 			log.Err(err).Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Int64("DeliveryID", delivery.DeliveryID.IntID()).Msg("Failed to update delivery")
 			ctx.RollbackTransaction()
@@ -111,14 +111,14 @@ func (j *DeliveryRetryJob) redeliver(ctx *logic.SimpleContext, delivery models.D
 
 		fcmDelivID, err := j.app.DeliverMessage(ctx, client, msg)
 		if err == nil {
-			err = j.app.Database.SetDeliverySuccess(ctx, delivery, *fcmDelivID)
+			err = j.app.Database.Primary.SetDeliverySuccess(ctx, delivery, *fcmDelivID)
 			if err != nil {
 				log.Err(err).Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Int64("DeliveryID", delivery.DeliveryID.IntID()).Msg("Failed to update delivery")
 				ctx.RollbackTransaction()
 				return
 			}
 		} else if delivery.RetryCount+1 > delivery.MaxRetryCount() {
-			err = j.app.Database.SetDeliveryFailed(ctx, delivery)
+			err = j.app.Database.Primary.SetDeliveryFailed(ctx, delivery)
 			if err != nil {
 				log.Err(err).Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Int64("DeliveryID", delivery.DeliveryID.IntID()).Msg("Failed to update delivery")
 				ctx.RollbackTransaction()
@@ -126,7 +126,7 @@ func (j *DeliveryRetryJob) redeliver(ctx *logic.SimpleContext, delivery models.D
 			}
 			log.Warn().Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Int64("DeliveryID", delivery.DeliveryID.IntID()).Msg("Delivery failed after <max> retries (set to FAILURE)")
 		} else {
-			err = j.app.Database.SetDeliveryRetry(ctx, delivery)
+			err = j.app.Database.Primary.SetDeliveryRetry(ctx, delivery)
 			if err != nil {
 				log.Err(err).Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Int64("DeliveryID", delivery.DeliveryID.IntID()).Msg("Failed to update delivery")
 				ctx.RollbackTransaction()

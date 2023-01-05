@@ -8,7 +8,9 @@ import (
 	"strings"
 )
 
-type DBLogger struct{}
+type DBLogger struct {
+	Ident string
+}
 
 func (l DBLogger) PrePing(ctx context.Context) error {
 	log.Debug().Msg("[SQL-PING]")
@@ -17,28 +19,28 @@ func (l DBLogger) PrePing(ctx context.Context) error {
 }
 
 func (l DBLogger) PreTxBegin(ctx context.Context, txid uint16) error {
-	log.Debug().Msg(fmt.Sprintf("[SQL-TX<%d>-START]", txid))
+	log.Debug().Msg(fmt.Sprintf("[SQL-TX<%s|%d>-START]", l.Ident, txid))
 
 	return nil
 }
 
 func (l DBLogger) PreTxCommit(txid uint16) error {
-	log.Debug().Msg(fmt.Sprintf("[SQL-TX<%d>-COMMIT]", txid))
+	log.Debug().Msg(fmt.Sprintf("[SQL-TX<%s|%d>-COMMIT]", l.Ident, txid))
 
 	return nil
 }
 
 func (l DBLogger) PreTxRollback(txid uint16) error {
-	log.Debug().Msg(fmt.Sprintf("[SQL-TX<%d>-ROLLBACK]", txid))
+	log.Debug().Msg(fmt.Sprintf("[SQL-TX<%s|%d>-ROLLBACK]", l.Ident, txid))
 
 	return nil
 }
 
 func (l DBLogger) PreQuery(ctx context.Context, txID *uint16, sql *string, params *sq.PP) error {
 	if txID == nil {
-		log.Debug().Msg(fmt.Sprintf("[SQL-QUERY] %s", fmtSQLPrint(*sql)))
+		log.Debug().Msg(fmt.Sprintf("[SQL<%s>-QUERY] %s", l.Ident, fmtSQLPrint(*sql)))
 	} else {
-		log.Debug().Msg(fmt.Sprintf("[SQL-TX<%d>-QUERY] %s", *txID, fmtSQLPrint(*sql)))
+		log.Debug().Msg(fmt.Sprintf("[SQL-TX<%s|%d>-QUERY] %s", l.Ident, *txID, fmtSQLPrint(*sql)))
 	}
 
 	return nil
@@ -46,9 +48,9 @@ func (l DBLogger) PreQuery(ctx context.Context, txID *uint16, sql *string, param
 
 func (l DBLogger) PreExec(ctx context.Context, txID *uint16, sql *string, params *sq.PP) error {
 	if txID == nil {
-		log.Debug().Msg(fmt.Sprintf("[SQL-EXEC] %s", fmtSQLPrint(*sql)))
+		log.Debug().Msg(fmt.Sprintf("[SQL-<%s>-EXEC] %s", l.Ident, fmtSQLPrint(*sql)))
 	} else {
-		log.Debug().Msg(fmt.Sprintf("[SQL-TX<%d>-EXEC] %s", *txID, fmtSQLPrint(*sql)))
+		log.Debug().Msg(fmt.Sprintf("[SQL-TX<%s|%d>-EXEC] %s", l.Ident, *txID, fmtSQLPrint(*sql)))
 	}
 
 	return nil

@@ -54,7 +54,7 @@ func (sc *SimpleContext) Cancel() {
 	sc.cancelFunc()
 }
 
-func (sc *SimpleContext) GetOrCreateTransaction(db *db.Database) (sq.Tx, error) {
+func (sc *SimpleContext) GetOrCreateTransaction(db db.DatabaseImpl) (sq.Tx, error) {
 	if sc.cancelled {
 		return nil, errors.New("context cancelled")
 	}
