@@ -7,7 +7,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/rs/zerolog v1.28.0
-	gogs.mikescher.com/BlackForestBytes/goext v0.0.50
+	gogs.mikescher.com/BlackForestBytes/goext v0.0.55
 	gopkg.in/loremipsum.v1 v1.1.0
 )
 

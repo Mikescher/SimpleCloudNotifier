@@ -16,9 +16,9 @@ type Config struct {
 	LogLevel            zerolog.Level `env:"SCN_LOGLEVEL"`
 	ServerIP            string        `env:"SCN_IP"`
 	ServerPort          string        `env:"SCN_PORT"`
-	DBMain              DBConfig      `envprefix:"SCN_DB_MAIN_"`
-	DBRequests          DBConfig      `envprefix:"SCN_DB_REQUESTS_"`
-	DBLogs              DBConfig      `envprefix:"SCN_DB_LOGS_"`
+	DBMain              DBConfig      `env:"SCN_DB_MAIN"`
+	DBRequests          DBConfig      `env:"SCN_DB_REQUESTS"`
+	DBLogs              DBConfig      `env:"SCN_DB_LOGS"`
 	RequestTimeout      time.Duration `env:"SCN_REQUEST_TIMEOUT"`
 	RequestMaxRetry     int           `env:"SCN_REQUEST_MAXRETRY"`
 	RequestRetrySleep   time.Duration `env:"SCN_REQUEST_RETRYSLEEP"`
@@ -377,7 +377,7 @@ func GetConfig(ns string) (Config, bool) {
 	}
 	if cfn, ok := allConfig[ns]; ok {
 		c := cfn()
-		err := confext.ApplyEnvOverrides(&c)
+		err := confext.ApplyEnvOverrides(&c, "_")
 		if err != nil {
 			panic(err)
 		}
