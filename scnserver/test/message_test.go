@@ -2,6 +2,7 @@ package test
 
 import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
+	"blackforestbytes.com/simplecloudnotifier/models"
 	tt "blackforestbytes.com/simplecloudnotifier/test/util"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -48,7 +49,7 @@ func TestDeleteMessage(t *testing.T) {
 		"fcm_token":     "DUMMY_FCM",
 	})
 
-	uid := int(r0["user_id"].(float64))
+	uid := r0["user_id"].(string)
 	sendtok := r0["send_key"].(string)
 	admintok := r0["admin_key"].(string)
 
@@ -76,7 +77,7 @@ func TestDeleteMessageAndResendUsrMsgId(t *testing.T) {
 		"fcm_token":     "DUMMY_FCM",
 	})
 
-	uid := int(r0["user_id"].(float64))
+	uid := r0["user_id"].(string)
 	sendtok := r0["send_key"].(string)
 	admintok := r0["admin_key"].(string)
 
@@ -138,7 +139,18 @@ func TestGetMessageNotFound(t *testing.T) {
 
 	data := tt.InitDefaultData(t, ws)
 
-	tt.RequestAuthGetShouldFail(t, data.User[0].AdminKey, baseUrl, "/api/messages/8963586", 404, apierr.MESSAGE_NOT_FOUND)
+	tt.RequestAuthGetShouldFail(t, data.User[0].AdminKey, baseUrl, "/api/messages/"+models.NewMessageID().String(), 404, apierr.MESSAGE_NOT_FOUND)
+}
+
+func TestGetMessageInvalidID(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	tt.RequestAuthGetShouldFail(t, data.User[0].AdminKey, baseUrl, "/api/messages/"+models.NewUserID().String(), 400, apierr.BINDFAIL_URI_PARAM)
+
+	tt.RequestAuthGetShouldFail(t, data.User[0].AdminKey, baseUrl, "/api/messages/"+"asdfxxx", 400, apierr.BINDFAIL_URI_PARAM)
 }
 
 func TestGetMessageFull(t *testing.T) {

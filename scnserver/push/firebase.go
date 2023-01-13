@@ -56,7 +56,7 @@ func (fb FirebaseConnector) SendNotification(ctx context.Context, client models.
 
 	jsonBody := gin.H{
 		"data": gin.H{
-			"scn_msg_id": msg.SCNMessageID.String(),
+			"scn_msg_id": msg.MessageID.String(),
 			"usr_msg_id": langext.Coalesce(msg.UserMessageID, ""),
 			"client_id":  client.ClientID.String(),
 			"timestamp":  strconv.FormatInt(msg.Timestamp().Unix(), 10),

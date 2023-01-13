@@ -15,7 +15,10 @@ func (db *Database) CreateSubscription(ctx TxContext, subscriberUID models.UserI
 
 	now := time.Now().UTC()
 
-	res, err := tx.Exec(ctx, "INSERT INTO subscriptions (subscriber_user_id, channel_owner_user_id, channel_internal_name, channel_id, timestamp_created, confirmed) VALUES (:suid, :ouid, :cnam, :cid, :ts, :conf)", sq.PP{
+	subscriptionid := models.NewSubscriptionID()
+
+	_, err = tx.Exec(ctx, "INSERT INTO subscriptions (subscription_id, subscriber_user_id, channel_owner_user_id, channel_internal_name, channel_id, timestamp_created, confirmed) VALUES (:sid, :suid, :ouid, :cnam, :cid, :ts, :conf)", sq.PP{
+		"sid":  subscriptionid,
 		"suid": subscriberUID,
 		"ouid": channel.OwnerUserID,
 		"cnam": channel.InternalName,
@@ -27,13 +30,8 @@ func (db *Database) CreateSubscription(ctx TxContext, subscriberUID models.UserI
 		return models.Subscription{}, err
 	}
 
-	liid, err := res.LastInsertId()
-	if err != nil {
-		return models.Subscription{}, err
-	}
-
 	return models.Subscription{
-		SubscriptionID:      models.SubscriptionID(liid),
+		SubscriptionID:      subscriptionid,
 		SubscriberUserID:    subscriberUID,
 		ChannelOwnerUserID:  channel.OwnerUserID,
 		ChannelID:           channel.ChannelID,
@@ -49,7 +47,9 @@ func (db *Database) ListSubscriptionsByChannel(ctx TxContext, channelID models.C
 		return nil, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM subscriptions WHERE channel_id = :cid", sq.PP{"cid": channelID})
+	order := " ORDER BY subscriptions.timestamp_created DESC, subscriptions.subscription_id DESC "
+
+	rows, err := tx.Query(ctx, "SELECT * FROM subscriptions WHERE channel_id = :cid"+order, sq.PP{"cid": channelID})
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,9 @@ func (db *Database) ListSubscriptionsByChannelOwner(ctx TxContext, ownerUserID m
 		cond = " AND confirmed = 0"
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM subscriptions WHERE channel_owner_user_id = :ouid"+cond, sq.PP{"ouid": ownerUserID})
+	order := " ORDER BY subscriptions.timestamp_created DESC, subscriptions.subscription_id DESC "
+
+	rows, err := tx.Query(ctx, "SELECT * FROM subscriptions WHERE channel_owner_user_id = :ouid"+cond+order, sq.PP{"ouid": ownerUserID})
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +103,9 @@ func (db *Database) ListSubscriptionsBySubscriber(ctx TxContext, subscriberUserI
 		cond = " AND confirmed = 0"
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM subscriptions WHERE subscriber_user_id = :suid"+cond, sq.PP{"suid": subscriberUserID})
+	order := " ORDER BY subscriptions.timestamp_created DESC, subscriptions.subscription_id DESC "
+
+	rows, err := tx.Query(ctx, "SELECT * FROM subscriptions WHERE subscriber_user_id = :suid"+cond+order, sq.PP{"suid": subscriberUserID})
 	if err != nil {
 		return nil, err
 	}

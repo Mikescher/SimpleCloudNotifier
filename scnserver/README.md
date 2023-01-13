@@ -23,6 +23,8 @@
   -> how does it work with existing data? 
   -> do i care, there are only 2 active users... (are there?)
 
+ - convert existing user-ids on compat /send endpoint
+
  - error logging as goroutine, gets all errors via channel,
    (channel buffered - nonblocking send, second channel that gets a message when sender failed )
    (then all errors end up in _second_ sqlite table)
@@ -57,10 +59,14 @@
 
  - (?) desktop client for notifications
 
+- (?) add querylog (similar to requestlog/errorlog) - only for main-db
+
 #### LATER
 
-- Pagination for ListChannels / ListSubscriptions / ListClients / ListChannelSubscriptions / ListUserSubscriptions
+ - weblogin, webapp, ...
 
-- cannot open sqlite in dbbrowsr (cannot parse schema?)
-  -> https://github.com/sqlitebrowser/sqlitebrowser/issues/292 -> https://github.com/sqlitebrowser/sqlitebrowser/issues/29266
+ - Pagination for ListChannels / ListSubscriptions / ListClients / ListChannelSubscriptions / ListUserSubscriptions
+
+ - cannot open sqlite in dbbrowsr (cannot parse schema?)
+   -> https://github.com/sqlitebrowser/sqlitebrowser/issues/292 -> https://github.com/sqlitebrowser/sqlitebrowser/issues/29266
 

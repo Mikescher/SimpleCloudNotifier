@@ -15,7 +15,10 @@ func (db *Database) CreateClient(ctx TxContext, userid models.UserID, ctype mode
 
 	now := time.Now().UTC()
 
-	res, err := tx.Exec(ctx, "INSERT INTO clients (user_id, type, fcm_token, timestamp_created, agent_model, agent_version) VALUES (:uid, :typ, :fcm, :ts, :am, :av)", sq.PP{
+	clientid := models.NewClientID()
+
+	_, err = tx.Exec(ctx, "INSERT INTO clients (client_id, user_id, type, fcm_token, timestamp_created, agent_model, agent_version) VALUES (:cid, :uid, :typ, :fcm, :ts, :am, :av)", sq.PP{
+		"cid": clientid,
 		"uid": userid,
 		"typ": string(ctype),
 		"fcm": fcmToken,
@@ -27,13 +30,8 @@ func (db *Database) CreateClient(ctx TxContext, userid models.UserID, ctype mode
 		return models.Client{}, err
 	}
 
-	liid, err := res.LastInsertId()
-	if err != nil {
-		return models.Client{}, err
-	}
-
 	return models.Client{
-		ClientID:         models.ClientID(liid),
+		ClientID:         clientid,
 		UserID:           userid,
 		Type:             ctype,
 		FCMToken:         langext.Ptr(fcmToken),
@@ -63,7 +61,7 @@ func (db *Database) ListClients(ctx TxContext, userid models.UserID) ([]models.C
 		return nil, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM clients WHERE user_id = :uid", sq.PP{"uid": userid})
+	rows, err := tx.Query(ctx, "SELECT * FROM clients WHERE user_id = :uid ORDER BY clients.timestamp_created DESC, clients.client_id ASC", sq.PP{"uid": userid})
 	if err != nil {
 		return nil, err
 	}

@@ -5,8 +5,12 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/api/handler"
 	"blackforestbytes.com/simplecloudnotifier/logic"
+	"blackforestbytes.com/simplecloudnotifier/models"
 	"blackforestbytes.com/simplecloudnotifier/swagger"
+	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 type Router struct {
@@ -44,7 +48,16 @@ func NewRouter(app *logic.Application) *Router {
 // @tag.name    Common
 //
 // @BasePath    /
-func (r *Router) Init(e *gin.Engine) {
+func (r *Router) Init(e *gin.Engine) error {
+
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		err := v.RegisterValidation("entityid", models.ValidateEntityID, true)
+		if err != nil {
+			return err
+		}
+	} else {
+		return errors.New("failed to add validators - wrong engine")
+	}
 
 	// ================ General ================
 
@@ -94,7 +107,7 @@ func (r *Router) Init(e *gin.Engine) {
 
 	// ================ Compat (v1) ================
 
-	compat := e.Group("/api/")
+	compat := e.Group("/api")
 	{
 		compat.GET("/register.php", r.Wrap(r.compatHandler.Register))
 		compat.GET("/info.php", r.Wrap(r.compatHandler.Info))
@@ -150,6 +163,9 @@ func (r *Router) Init(e *gin.Engine) {
 		e.NoRoute(r.Wrap(r.commonHandler.NoRoute))
 	}
 
+	// ================
+
+	return nil
 }
 
 func (r *Router) Wrap(fn ginresp.WHandlerFunc) gin.HandlerFunc {

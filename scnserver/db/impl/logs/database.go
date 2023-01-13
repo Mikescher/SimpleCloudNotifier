@@ -24,7 +24,7 @@ type Database struct {
 func NewLogsDatabase(cfg server.Config) (*Database, error) {
 	conf := cfg.DBLogs
 
-	url := fmt.Sprintf("file:%s?_journal=%s&_timeout=%d&_fk=%s", conf.File, conf.Journal, conf.Timeout.Milliseconds(), langext.FormatBool(conf.CheckForeignKeys, "true", "false"))
+	url := fmt.Sprintf("file:%s?_journal=%s&_timeout=%d&_fk=%s&_busy_timeout=%d", conf.File, conf.Journal, conf.Timeout.Milliseconds(), langext.FormatBool(conf.CheckForeignKeys, "true", "false"), conf.BusyTimeout.Milliseconds())
 
 	xdb, err := sqlx.Open("sqlite3", url)
 	if err != nil {

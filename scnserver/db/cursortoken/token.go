@@ -19,14 +19,14 @@ const (
 type CursorToken struct {
 	Mode       Mode
 	Timestamp  int64
-	Id         int64
+	Id         string
 	Direction  string
 	FilterHash string
 }
 
 type cursorTokenSerialize struct {
 	Timestamp  *int64  `json:"ts,omitempty"`
-	Id         *int64  `json:"id,omitempty"`
+	Id         *string `json:"id,omitempty"`
 	Direction  *string `json:"dir,omitempty"`
 	FilterHash *string `json:"f,omitempty"`
 }
@@ -35,7 +35,7 @@ func Start() CursorToken {
 	return CursorToken{
 		Mode:       CTMStart,
 		Timestamp:  0,
-		Id:         0,
+		Id:         "",
 		Direction:  "",
 		FilterHash: "",
 	}
@@ -45,13 +45,13 @@ func End() CursorToken {
 	return CursorToken{
 		Mode:       CTMEnd,
 		Timestamp:  0,
-		Id:         0,
+		Id:         "",
 		Direction:  "",
 		FilterHash: "",
 	}
 }
 
-func Normal(ts time.Time, id int64, dir string, filter string) CursorToken {
+func Normal(ts time.Time, id string, dir string, filter string) CursorToken {
 	return CursorToken{
 		Mode:       CTMNormal,
 		Timestamp:  ts.UnixMilli(),
@@ -76,7 +76,7 @@ func (c *CursorToken) Token() string {
 
 	sertok := cursorTokenSerialize{}
 
-	if c.Id != 0 {
+	if c.Id != "" {
 		sertok.Id = &c.Id
 	}
 

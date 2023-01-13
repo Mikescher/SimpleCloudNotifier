@@ -30,7 +30,7 @@ func (db *Database) GetMessageByUserMessageID(ctx TxContext, usrMsgId string) (*
 	return &msg, nil
 }
 
-func (db *Database) GetMessage(ctx TxContext, scnMessageID models.SCNMessageID, allowDeleted bool) (models.Message, error) {
+func (db *Database) GetMessage(ctx TxContext, scnMessageID models.MessageID, allowDeleted bool) (models.Message, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Message{}, err
@@ -38,9 +38,9 @@ func (db *Database) GetMessage(ctx TxContext, scnMessageID models.SCNMessageID, 
 
 	var sqlcmd string
 	if allowDeleted {
-		sqlcmd = "SELECT * FROM messages WHERE scn_message_id = :mid LIMIT 1"
+		sqlcmd = "SELECT * FROM messages WHERE message_id = :mid LIMIT 1"
 	} else {
-		sqlcmd = "SELECT * FROM messages WHERE scn_message_id = :mid AND deleted=0 LIMIT 1"
+		sqlcmd = "SELECT * FROM messages WHERE message_id = :mid AND deleted=0 LIMIT 1"
 	}
 
 	rows, err := tx.Query(ctx, sqlcmd, sq.PP{"mid": scnMessageID})
@@ -64,7 +64,10 @@ func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, cha
 
 	now := time.Now().UTC()
 
-	res, err := tx.Exec(ctx, "INSERT INTO messages (sender_user_id, owner_user_id, channel_internal_name, channel_id, timestamp_real, timestamp_client, title, content, priority, usr_message_id, sender_ip, sender_name) VALUES (:suid, :ouid, :cnam, :cid, :tsr, :tsc, :tit, :cnt, :prio, :umid, :ip, :snam)", sq.PP{
+	messageid := models.NewMessageID()
+
+	_, err = tx.Exec(ctx, "INSERT INTO messages (message_id, sender_user_id, owner_user_id, channel_internal_name, channel_id, timestamp_real, timestamp_client, title, content, priority, usr_message_id, sender_ip, sender_name) VALUES (:mid, :suid, :ouid, :cnam, :cid, :tsr, :tsc, :tit, :cnt, :prio, :umid, :ip, :snam)", sq.PP{
+		"mid":  messageid,
 		"suid": senderUserID,
 		"ouid": channel.OwnerUserID,
 		"cnam": channel.InternalName,
@@ -82,13 +85,8 @@ func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, cha
 		return models.Message{}, err
 	}
 
-	liid, err := res.LastInsertId()
-	if err != nil {
-		return models.Message{}, err
-	}
-
 	return models.Message{
-		SCNMessageID:        models.SCNMessageID(liid),
+		MessageID:           messageid,
 		SenderUserID:        senderUserID,
 		OwnerUserID:         channel.OwnerUserID,
 		ChannelInternalName: channel.InternalName,
@@ -104,13 +102,13 @@ func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, cha
 	}, nil
 }
 
-func (db *Database) DeleteMessage(ctx TxContext, scnMessageID models.SCNMessageID) error {
+func (db *Database) DeleteMessage(ctx TxContext, messageID models.MessageID) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.Exec(ctx, "UPDATE messages SET deleted=1 WHERE scn_message_id = :mid AND deleted=0", sq.PP{"mid": scnMessageID})
+	_, err = tx.Exec(ctx, "UPDATE messages SET deleted=1 WHERE message_id = :mid AND deleted=0", sq.PP{"mid": messageID})
 	if err != nil {
 		return err
 	}
@@ -130,12 +128,12 @@ func (db *Database) ListMessages(ctx TxContext, filter models.MessageFilter, pag
 
 	pageCond := "1=1"
 	if inTok.Mode == cursortoken.CTMNormal {
-		pageCond = "timestamp_real < :tokts OR (timestamp_real = :tokts AND scn_message_id < :tokid )"
+		pageCond = "timestamp_real < :tokts OR (timestamp_real = :tokts AND message_id < :tokid )"
 	}
 
 	filterCond, filterJoin, prepParams, err := filter.SQL()
 
-	orderClause := "ORDER BY COALESCE(timestamp_client, timestamp_real) DESC LIMIT :lim"
+	orderClause := "ORDER BY COALESCE(timestamp_client, timestamp_real) DESC, message_id DESC LIMIT :lim"
 
 	sqlQuery := "SELECT " + "messages.*" + " FROM messages " + filterJoin + " WHERE ( " + pageCond + " ) AND ( " + filterCond + " ) " + orderClause
 
@@ -156,7 +154,7 @@ func (db *Database) ListMessages(ctx TxContext, filter models.MessageFilter, pag
 	if len(data) <= pageSize {
 		return data, cursortoken.End(), nil
 	} else {
-		outToken := cursortoken.Normal(data[pageSize-1].Timestamp(), data[pageSize-1].SCNMessageID.IntID(), "DESC", filter.Hash())
+		outToken := cursortoken.Normal(data[pageSize-1].Timestamp(), data[pageSize-1].MessageID.String(), "DESC", filter.Hash())
 		return data[0:pageSize], outToken, nil
 	}
 }

@@ -1,7 +1,7 @@
 
 CREATE TABLE `requests`
 (
-    request_id            INTEGER                                PRIMARY KEY AUTOINCREMENT,
+    request_id            TEXT                                   NOT NULL,
 
     method                TEXT                                   NOT NULL,
     uri                   TEXT                                   NOT NULL,
@@ -15,8 +15,8 @@ CREATE TABLE `requests`
     userid                TEXT                                       NULL,
     permissions           TEXT                                       NULL,
 
-    response_statuscode   INTEGER                                NOT NULL,
-    response_body_size    INTEGER                                NOT NULL,
+    response_statuscode   INTEGER                                    NULL,
+    response_body_size    INTEGER                                    NULL,
     response_body         TEXT                                       NULL,
     response_content_type TEXT                                   NOT NULL,
     processing_time       INTEGER                                NOT NULL,
@@ -26,8 +26,9 @@ CREATE TABLE `requests`
 
     timestamp_created     INTEGER                                NOT NULL,
     timestamp_start       INTEGER                                NOT NULL,
-    timestamp_finish      INTEGER                                NOT NULL
+    timestamp_finish      INTEGER                                NOT NULL,
 
+    PRIMARY KEY (request_id)
 ) STRICT;
 
 

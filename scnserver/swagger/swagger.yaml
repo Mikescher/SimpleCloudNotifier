@@ -57,11 +57,11 @@ definitions:
   handler.CreateSubscription.body:
     properties:
       channel_id:
-        type: integer
+        type: string
       channel_internal_name:
         type: string
       channel_owner_user_id:
-        type: integer
+        type: string
     type: object
   handler.CreateUser.body:
     properties:
@@ -237,8 +237,8 @@ definitions:
         example: Hello World
         type: string
       user_id:
-        example: 7725
-        type: integer
+        example: "7725"
+        type: string
       user_key:
         example: P3TNH8mvv14fm
         type: string
@@ -330,7 +330,7 @@ definitions:
       quota_max:
         type: integer
       scn_msg_id:
-        type: integer
+        type: string
       success:
         type: boolean
       suppress_send:
@@ -339,7 +339,7 @@ definitions:
   models.ChannelWithSubscriptionJSON:
     properties:
       channel_id:
-        type: integer
+        type: string
       description_name:
         type: string
       display_name:
@@ -349,7 +349,7 @@ definitions:
       messages_sent:
         type: integer
       owner_user_id:
-        type: integer
+        type: string
       send_key:
         description: can be nil, depending on endpoint
         type: string
@@ -370,7 +370,7 @@ definitions:
       agent_version:
         type: string
       client_id:
-        type: integer
+        type: string
       fcm_token:
         type: string
       timestamp_created:
@@ -378,7 +378,7 @@ definitions:
       type:
         type: string
       user_id:
-        type: integer
+        type: string
     type: object
   models.CompatMessage:
     properties:
@@ -400,23 +400,23 @@ definitions:
   models.MessageJSON:
     properties:
       channel_id:
-        type: integer
+        type: string
       channel_internal_name:
         type: string
       content:
         type: string
+      message_id:
+        type: string
       owner_user_id:
-        type: integer
+        type: string
       priority:
-        type: integer
-      scn_message_id:
         type: integer
       sender_ip:
         type: string
       sender_name:
         type: string
       sender_user_id:
-        type: integer
+        type: string
       timestamp:
         type: string
       title:
@@ -429,17 +429,17 @@ definitions:
   models.SubscriptionJSON:
     properties:
       channel_id:
-        type: integer
+        type: string
       channel_internal_name:
         type: string
       channel_owner_user_id:
-        type: integer
+        type: string
       confirmed:
         type: boolean
       subscriber_user_id:
-        type: integer
+        type: string
       subscription_id:
-        type: integer
+        type: string
       timestamp_created:
         type: string
     type: object
@@ -470,7 +470,7 @@ definitions:
       timestamp_lastsent:
         type: string
       user_id:
-        type: integer
+        type: string
       username:
         type: string
     type: object
@@ -505,7 +505,7 @@ definitions:
       timestamp_lastsent:
         type: string
       user_id:
-        type: integer
+        type: string
       username:
         type: string
     type: object
@@ -557,10 +557,10 @@ paths:
         in: query
         name: title
         type: string
-      - example: 7725
+      - example: "7725"
         in: query
         name: user_id
-        type: integer
+        type: string
       - example: P3TNH8mvv14fm
         in: query
         name: user_key
@@ -606,10 +606,10 @@ paths:
         in: formData
         name: title
         type: string
-      - example: 7725
+      - example: "7725"
         in: formData
         name: user_id
-        type: integer
+        type: string
       - example: P3TNH8mvv14fm
         in: formData
         name: user_key
@@ -836,7 +836,7 @@ paths:
         ADMIN Key
       operationId: api-messages-delete
       parameters:
-      - description: SCNMessageID
+      - description: MessageID
         in: path
         name: mid
         required: true
@@ -872,7 +872,7 @@ paths:
         The returned message is never trimmed
       operationId: api-messages-get
       parameters:
-      - description: SCNMessageID
+      - description: MessageID
         in: path
         name: mid
         required: true
@@ -1941,10 +1941,10 @@ paths:
         in: query
         name: title
         type: string
-      - example: 7725
+      - example: "7725"
         in: query
         name: user_id
-        type: integer
+        type: string
       - example: P3TNH8mvv14fm
         in: query
         name: user_key
@@ -1990,10 +1990,10 @@ paths:
         in: formData
         name: title
         type: string
-      - example: 7725
+      - example: "7725"
         in: formData
         name: user_id
-        type: integer
+        type: string
       - example: P3TNH8mvv14fm
         in: formData
         name: user_key

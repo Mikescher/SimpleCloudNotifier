@@ -89,7 +89,10 @@ func (db *Database) CreateChannel(ctx TxContext, userid models.UserID, dispName 
 
 	now := time.Now().UTC()
 
-	res, err := tx.Exec(ctx, "INSERT INTO channels (owner_user_id, display_name, internal_name, subscribe_key, send_key, timestamp_created) VALUES (:ouid, :dnam, :inam, :subkey, :sendkey, :ts)", sq.PP{
+	channelid := models.NewChannelID()
+
+	_, err = tx.Exec(ctx, "INSERT INTO channels (channel_id, owner_user_id, display_name, internal_name, subscribe_key, send_key, timestamp_created) VALUES (:cid, :ouid, :dnam, :inam, :subkey, :sendkey, :ts)", sq.PP{
+		"cid":     channelid,
 		"ouid":    userid,
 		"dnam":    dispName,
 		"inam":    intName,
@@ -101,13 +104,8 @@ func (db *Database) CreateChannel(ctx TxContext, userid models.UserID, dispName 
 		return models.Channel{}, err
 	}
 
-	liid, err := res.LastInsertId()
-	if err != nil {
-		return models.Channel{}, err
-	}
-
 	return models.Channel{
-		ChannelID:         models.ChannelID(liid),
+		ChannelID:         channelid,
 		OwnerUserID:       userid,
 		DisplayName:       dispName,
 		InternalName:      intName,
@@ -125,7 +123,9 @@ func (db *Database) ListChannelsByOwner(ctx TxContext, userid models.UserID, sub
 		return nil, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT channels.*, sub.* FROM channels LEFT JOIN subscriptions AS sub ON channels.channel_id = sub.channel_id AND sub.subscriber_user_id = :subuid WHERE owner_user_id = :ouid", sq.PP{
+	order := " ORDER BY channels.timestamp_created ASC, channels.channel_id ASC "
+
+	rows, err := tx.Query(ctx, "SELECT channels.*, sub.* FROM channels LEFT JOIN subscriptions AS sub ON channels.channel_id = sub.channel_id AND sub.subscriber_user_id = :subuid WHERE owner_user_id = :ouid"+order, sq.PP{
 		"ouid":   userid,
 		"subuid": subUserID,
 	})
@@ -154,7 +154,9 @@ func (db *Database) ListChannelsBySubscriber(ctx TxContext, userid models.UserID
 		confCond = " AND sub.confirmed = 0"
 	}
 
-	rows, err := tx.Query(ctx, "SELECT channels.*, sub.* FROM channels LEFT JOIN subscriptions AS sub on channels.channel_id = sub.channel_id AND sub.subscriber_user_id = :subuid WHERE sub.subscription_id IS NOT NULL "+confCond, sq.PP{
+	order := " ORDER BY channels.timestamp_created ASC, channels.channel_id ASC "
+
+	rows, err := tx.Query(ctx, "SELECT channels.*, sub.* FROM channels LEFT JOIN subscriptions AS sub on channels.channel_id = sub.channel_id AND sub.subscriber_user_id = :subuid WHERE sub.subscription_id IS NOT NULL "+confCond+order, sq.PP{
 		"subuid": userid,
 	})
 	if err != nil {
@@ -182,7 +184,9 @@ func (db *Database) ListChannelsByAccess(ctx TxContext, userid models.UserID, co
 		confCond = "OR (sub.subscription_id IS NOT NULL AND sub.confirmed = 0)"
 	}
 
-	rows, err := tx.Query(ctx, "SELECT channels.*, sub.* FROM channels LEFT JOIN subscriptions AS sub on channels.channel_id = sub.channel_id AND sub.subscriber_user_id = :subuid WHERE owner_user_id = :ouid "+confCond, sq.PP{
+	order := " ORDER BY channels.timestamp_created ASC, channels.channel_id ASC "
+
+	rows, err := tx.Query(ctx, "SELECT channels.*, sub.* FROM channels LEFT JOIN subscriptions AS sub on channels.channel_id = sub.channel_id AND sub.subscriber_user_id = :subuid WHERE owner_user_id = :ouid "+confCond+order, sq.PP{
 		"ouid":   userid,
 		"subuid": userid,
 	})

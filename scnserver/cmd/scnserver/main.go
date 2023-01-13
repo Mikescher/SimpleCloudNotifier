@@ -63,7 +63,11 @@ func main() {
 
 	app.Init(conf, ginengine, nc, apc, []logic.Job{jobRetry, jobReqCollector})
 
-	router.Init(ginengine)
+	err = router.Init(ginengine)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to init router")
+		return
+	}
 
 	app.Run()
 }

@@ -134,14 +134,14 @@ func (j *DeliveryRetryJob) redeliver(ctx *logic.SimpleContext, delivery models.D
 
 	client, err := j.app.Database.Primary.GetClient(ctx, delivery.ReceiverUserID, delivery.ReceiverClientID)
 	if err != nil {
-		log.Err(err).Int64("ReceiverUserID", delivery.ReceiverUserID.IntID()).Int64("ReceiverClientID", delivery.ReceiverClientID.IntID()).Msg("Failed to get client")
+		log.Err(err).Str("ReceiverUserID", delivery.ReceiverUserID.String()).Str("ReceiverClientID", delivery.ReceiverClientID.String()).Msg("Failed to get client")
 		ctx.RollbackTransaction()
 		return
 	}
 
-	msg, err := j.app.Database.Primary.GetMessage(ctx, delivery.SCNMessageID, true)
+	msg, err := j.app.Database.Primary.GetMessage(ctx, delivery.MessageID, true)
 	if err != nil {
-		log.Err(err).Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Msg("Failed to get message")
+		log.Err(err).Str("MessageID", delivery.MessageID.String()).Msg("Failed to get message")
 		ctx.RollbackTransaction()
 		return
 	}
@@ -149,7 +149,7 @@ func (j *DeliveryRetryJob) redeliver(ctx *logic.SimpleContext, delivery models.D
 	if msg.Deleted {
 		err = j.app.Database.Primary.SetDeliveryFailed(ctx, delivery)
 		if err != nil {
-			log.Err(err).Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Int64("DeliveryID", delivery.DeliveryID.IntID()).Msg("Failed to update delivery")
+			log.Err(err).Str("MessageID", delivery.MessageID.String()).Str("DeliveryID", delivery.DeliveryID.String()).Msg("Failed to update delivery")
 			ctx.RollbackTransaction()
 			return
 		}
@@ -159,22 +159,22 @@ func (j *DeliveryRetryJob) redeliver(ctx *logic.SimpleContext, delivery models.D
 		if err == nil {
 			err = j.app.Database.Primary.SetDeliverySuccess(ctx, delivery, *fcmDelivID)
 			if err != nil {
-				log.Err(err).Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Int64("DeliveryID", delivery.DeliveryID.IntID()).Msg("Failed to update delivery")
+				log.Err(err).Str("MessageID", delivery.MessageID.String()).Str("DeliveryID", delivery.DeliveryID.String()).Msg("Failed to update delivery")
 				ctx.RollbackTransaction()
 				return
 			}
 		} else if delivery.RetryCount+1 > delivery.MaxRetryCount() {
 			err = j.app.Database.Primary.SetDeliveryFailed(ctx, delivery)
 			if err != nil {
-				log.Err(err).Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Int64("DeliveryID", delivery.DeliveryID.IntID()).Msg("Failed to update delivery")
+				log.Err(err).Str("MessageID", delivery.MessageID.String()).Str("DeliveryID", delivery.DeliveryID.String()).Msg("Failed to update delivery")
 				ctx.RollbackTransaction()
 				return
 			}
-			log.Warn().Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Int64("DeliveryID", delivery.DeliveryID.IntID()).Msg("Delivery failed after <max> retries (set to FAILURE)")
+			log.Warn().Str("MessageID", delivery.MessageID.String()).Str("DeliveryID", delivery.DeliveryID.String()).Msg("Delivery failed after <max> retries (set to FAILURE)")
 		} else {
 			err = j.app.Database.Primary.SetDeliveryRetry(ctx, delivery)
 			if err != nil {
-				log.Err(err).Int64("SCNMessageID", delivery.SCNMessageID.IntID()).Int64("DeliveryID", delivery.DeliveryID.IntID()).Msg("Failed to update delivery")
+				log.Err(err).Str("MessageID", delivery.MessageID.String()).Str("DeliveryID", delivery.DeliveryID.String()).Msg("Failed to update delivery")
 				ctx.RollbackTransaction()
 				return
 			}

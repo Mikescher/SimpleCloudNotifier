@@ -17,7 +17,7 @@ const (
 
 type Delivery struct {
 	DeliveryID         DeliveryID
-	SCNMessageID       SCNMessageID
+	MessageID          MessageID
 	ReceiverUserID     UserID
 	ReceiverClientID   ClientID
 	TimestampCreated   time.Time
@@ -31,7 +31,7 @@ type Delivery struct {
 func (d Delivery) JSON() DeliveryJSON {
 	return DeliveryJSON{
 		DeliveryID:         d.DeliveryID,
-		SCNMessageID:       d.SCNMessageID,
+		MessageID:          d.MessageID,
 		ReceiverUserID:     d.ReceiverUserID,
 		ReceiverClientID:   d.ReceiverClientID,
 		TimestampCreated:   d.TimestampCreated.Format(time.RFC3339Nano),
@@ -49,7 +49,7 @@ func (d Delivery) MaxRetryCount() int {
 
 type DeliveryJSON struct {
 	DeliveryID         DeliveryID     `json:"delivery_id"`
-	SCNMessageID       SCNMessageID   `json:"scn_message_id"`
+	MessageID          MessageID      `json:"message_id"`
 	ReceiverUserID     UserID         `json:"receiver_user_id"`
 	ReceiverClientID   ClientID       `json:"receiver_client_id"`
 	TimestampCreated   string         `json:"timestamp_created"`
@@ -62,7 +62,7 @@ type DeliveryJSON struct {
 
 type DeliveryDB struct {
 	DeliveryID         DeliveryID     `db:"delivery_id"`
-	SCNMessageID       SCNMessageID   `db:"scn_message_id"`
+	MessageID          MessageID      `db:"message_id"`
 	ReceiverUserID     UserID         `db:"receiver_user_id"`
 	ReceiverClientID   ClientID       `db:"receiver_client_id"`
 	TimestampCreated   int64          `db:"timestamp_created"`
@@ -76,7 +76,7 @@ type DeliveryDB struct {
 func (d DeliveryDB) Model() Delivery {
 	return Delivery{
 		DeliveryID:         d.DeliveryID,
-		SCNMessageID:       d.SCNMessageID,
+		MessageID:          d.MessageID,
 		ReceiverUserID:     d.ReceiverUserID,
 		ReceiverClientID:   d.ReceiverClientID,
 		TimestampCreated:   time.UnixMilli(d.TimestampCreated),

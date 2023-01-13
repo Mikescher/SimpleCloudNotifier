@@ -347,7 +347,7 @@ func (app *Application) DeliverMessage(ctx context.Context, client models.Client
 	if client.FCMToken != nil {
 		fcmDelivID, err := app.Pusher.SendNotification(ctx, client, msg)
 		if err != nil {
-			log.Warn().Int64("SCNMessageID", msg.SCNMessageID.IntID()).Int64("ClientID", client.ClientID.IntID()).Err(err).Msg("FCM Delivery failed")
+			log.Warn().Str("MessageID", msg.MessageID.String()).Str("ClientID", client.ClientID.String()).Err(err).Msg("FCM Delivery failed")
 			return nil, err
 		}
 		return langext.Ptr(fcmDelivID), nil

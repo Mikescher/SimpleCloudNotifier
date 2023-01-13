@@ -18,7 +18,7 @@ CREATE TABLE `users`
 
 CREATE TABLE `messages`
 (
-    `scn_message_id`     INTEGER                AUTO_INCREMENT,
+    `message_id`     INTEGER                AUTO_INCREMENT,
     `sender_user_id`     INTEGER     NOT NULL,
 
     `timestamp_real`     TEXT        NOT NULL   DEFAULT CURRENT_TIMESTAMP,
@@ -32,7 +32,7 @@ CREATE TABLE `messages`
     `fcm_message_id`     TEXT            NULL,
     `usr_message_id`     TEXT            NULL,
 
-    PRIMARY KEY (`scn_message_id`)
+    PRIMARY KEY (`message_id`)
 );
 
 CREATE TABLE `meta`

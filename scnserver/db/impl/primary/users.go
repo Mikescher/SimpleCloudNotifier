@@ -16,7 +16,10 @@ func (db *Database) CreateUser(ctx TxContext, readKey string, sendKey string, ad
 
 	now := time.Now().UTC()
 
-	res, err := tx.Exec(ctx, "INSERT INTO users (username, read_key, send_key, admin_key, is_pro, pro_token, timestamp_created) VALUES (:un, :rk, :sk, :ak, :pro, :tok, :ts)", sq.PP{
+	userid := models.NewUserID()
+
+	_, err = tx.Exec(ctx, "INSERT INTO users (user_id, username, read_key, send_key, admin_key, is_pro, pro_token, timestamp_created) VALUES (:uid, :un, :rk, :sk, :ak, :pro, :tok, :ts)", sq.PP{
+		"uid": userid,
 		"un":  username,
 		"rk":  readKey,
 		"sk":  sendKey,
@@ -29,13 +32,8 @@ func (db *Database) CreateUser(ctx TxContext, readKey string, sendKey string, ad
 		return models.User{}, err
 	}
 
-	liid, err := res.LastInsertId()
-	if err != nil {
-		return models.User{}, err
-	}
-
 	return models.User{
-		UserID:            models.UserID(liid),
+		UserID:            userid,
 		Username:          username,
 		ReadKey:           readKey,
 		SendKey:           sendKey,

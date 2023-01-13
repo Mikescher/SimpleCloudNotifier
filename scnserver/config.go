@@ -54,6 +54,7 @@ type DBConfig struct {
 	ConnMaxIdleTime  time.Duration `env:"CONNEXTIONMAXIDLETIME"`
 	CheckForeignKeys bool          `env:"CHECKFOREIGNKEYS"`
 	SingleConn       bool          `env:"SINGLECONNECTION"`
+	BusyTimeout      time.Duration `env:"BUSYTIMEOUT"`
 }
 
 var Conf Config
@@ -76,6 +77,7 @@ var configLocHost = func() Config {
 			MaxIdleConns:     5,
 			ConnMaxLifetime:  60 * time.Minute,
 			ConnMaxIdleTime:  60 * time.Minute,
+			BusyTimeout:      100 * time.Millisecond,
 		},
 		DBRequests: DBConfig{
 			File:             ".run-data/loc_requests.sqlite3",
@@ -87,6 +89,7 @@ var configLocHost = func() Config {
 			MaxIdleConns:     5,
 			ConnMaxLifetime:  60 * time.Minute,
 			ConnMaxIdleTime:  60 * time.Minute,
+			BusyTimeout:      500 * time.Millisecond,
 		},
 		DBLogs: DBConfig{
 			File:             ".run-data/loc_logs.sqlite3",
@@ -98,6 +101,7 @@ var configLocHost = func() Config {
 			MaxIdleConns:     5,
 			ConnMaxLifetime:  60 * time.Minute,
 			ConnMaxIdleTime:  60 * time.Minute,
+			BusyTimeout:      500 * time.Millisecond,
 		},
 		RequestTimeout:           16 * time.Second,
 		RequestMaxRetry:          8,
@@ -142,6 +146,7 @@ var configLocDocker = func() Config {
 			MaxIdleConns:     5,
 			ConnMaxLifetime:  60 * time.Minute,
 			ConnMaxIdleTime:  60 * time.Minute,
+			BusyTimeout:      100 * time.Millisecond,
 		},
 		DBRequests: DBConfig{
 			File:             "/data/docker_scn_requests.sqlite3",
@@ -153,6 +158,7 @@ var configLocDocker = func() Config {
 			MaxIdleConns:     5,
 			ConnMaxLifetime:  60 * time.Minute,
 			ConnMaxIdleTime:  60 * time.Minute,
+			BusyTimeout:      500 * time.Millisecond,
 		},
 		DBLogs: DBConfig{
 			File:             "/data/docker_scn_logs.sqlite3",
@@ -164,6 +170,7 @@ var configLocDocker = func() Config {
 			MaxIdleConns:     5,
 			ConnMaxLifetime:  60 * time.Minute,
 			ConnMaxIdleTime:  60 * time.Minute,
+			BusyTimeout:      500 * time.Millisecond,
 		},
 		RequestTimeout:           16 * time.Second,
 		RequestMaxRetry:          8,
@@ -207,6 +214,7 @@ var configDev = func() Config {
 			MaxIdleConns:     5,
 			ConnMaxLifetime:  60 * time.Minute,
 			ConnMaxIdleTime:  60 * time.Minute,
+			BusyTimeout:      100 * time.Millisecond,
 		},
 		DBRequests: DBConfig{
 			File:             "/data/scn_requests.sqlite3",
@@ -218,6 +226,7 @@ var configDev = func() Config {
 			MaxIdleConns:     5,
 			ConnMaxLifetime:  60 * time.Minute,
 			ConnMaxIdleTime:  60 * time.Minute,
+			BusyTimeout:      500 * time.Millisecond,
 		},
 		DBLogs: DBConfig{
 			File:             "/data/scn_logs.sqlite3",
@@ -229,6 +238,7 @@ var configDev = func() Config {
 			MaxIdleConns:     5,
 			ConnMaxLifetime:  60 * time.Minute,
 			ConnMaxIdleTime:  60 * time.Minute,
+			BusyTimeout:      500 * time.Millisecond,
 		},
 		RequestTimeout:           16 * time.Second,
 		RequestMaxRetry:          8,
@@ -272,6 +282,7 @@ var configStag = func() Config {
 			MaxIdleConns:     5,
 			ConnMaxLifetime:  60 * time.Minute,
 			ConnMaxIdleTime:  60 * time.Minute,
+			BusyTimeout:      100 * time.Millisecond,
 		},
 		DBRequests: DBConfig{
 			File:             "/data/scn_requests.sqlite3",
@@ -283,6 +294,7 @@ var configStag = func() Config {
 			MaxIdleConns:     5,
 			ConnMaxLifetime:  60 * time.Minute,
 			ConnMaxIdleTime:  60 * time.Minute,
+			BusyTimeout:      500 * time.Millisecond,
 		},
 		DBLogs: DBConfig{
 			File:             "/data/scn_logs.sqlite3",
@@ -294,6 +306,7 @@ var configStag = func() Config {
 			MaxIdleConns:     5,
 			ConnMaxLifetime:  60 * time.Minute,
 			ConnMaxIdleTime:  60 * time.Minute,
+			BusyTimeout:      500 * time.Millisecond,
 		},
 		RequestTimeout:           16 * time.Second,
 		RequestMaxRetry:          8,
@@ -337,6 +350,7 @@ var configProd = func() Config {
 			MaxIdleConns:     5,
 			ConnMaxLifetime:  60 * time.Minute,
 			ConnMaxIdleTime:  60 * time.Minute,
+			BusyTimeout:      100 * time.Millisecond,
 		},
 		DBRequests: DBConfig{
 			File:             "/data/scn_requests.sqlite3",
@@ -348,6 +362,7 @@ var configProd = func() Config {
 			MaxIdleConns:     5,
 			ConnMaxLifetime:  60 * time.Minute,
 			ConnMaxIdleTime:  60 * time.Minute,
+			BusyTimeout:      500 * time.Millisecond,
 		},
 		DBLogs: DBConfig{
 			File:             "/data/scn_logs.sqlite3",
@@ -359,6 +374,7 @@ var configProd = func() Config {
 			MaxIdleConns:     5,
 			ConnMaxLifetime:  60 * time.Minute,
 			ConnMaxIdleTime:  60 * time.Minute,
+			BusyTimeout:      500 * time.Millisecond,
 		},
 		RequestTimeout:           16 * time.Second,
 		RequestMaxRetry:          8,

@@ -31,48 +31,6 @@ func NewMessageHandler(app *logic.Application) MessageHandler {
 	}
 }
 
-// SendMessageCompat swaggerdoc
-//
-// @Deprecated
-//
-// @Summary     Send a new message (compatibility)
-// @Description All parameter can be set via query-parameter or form-data body. Only UserID, UserKey and Title are required
-// @Tags        External
-//
-// @Param       query_data query    handler.SendMessageCompat.combined false " "
-// @Param       form_data  formData handler.SendMessageCompat.combined false " "
-//
-// @Success     200        {object} handler.sendMessageInternal.response
-// @Failure     400        {object} ginresp.apiError
-// @Failure     401        {object} ginresp.apiError
-// @Failure     403        {object} ginresp.apiError
-// @Failure     500        {object} ginresp.apiError
-//
-// @Router      /send.php [POST]
-func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
-	type combined struct {
-		UserID        *models.UserID `json:"user_id"   form:"user_id"`
-		UserKey       *string        `json:"user_key"  form:"user_key"`
-		Title         *string        `json:"title"     form:"title"`
-		Content       *string        `json:"content"   form:"content"`
-		Priority      *int           `json:"priority"  form:"priority"`
-		UserMessageID *string        `json:"msg_id"    form:"msg_id"`
-		SendTimestamp *float64       `json:"timestamp" form:"timestamp"`
-	}
-
-	var f combined
-	var q combined
-	ctx, errResp := h.app.StartRequest(g, nil, &q, nil, &f)
-	if errResp != nil {
-		return *errResp
-	}
-	defer ctx.Cancel()
-
-	data := dataext.ObjectMerge(f, q)
-
-	return h.sendMessageInternal(g, ctx, data.UserID, data.UserKey, nil, nil, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp, nil)
-}
-
 // SendMessage swaggerdoc
 //
 // @Summary     Send a new message
@@ -123,16 +81,16 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 
 func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContext, UserID *models.UserID, UserKey *string, Channel *string, ChanKey *string, Title *string, Content *string, Priority *int, UserMessageID *string, SendTimestamp *float64, SenderName *string) ginresp.HTTPResponse {
 	type response struct {
-		Success        bool                `json:"success"`
-		ErrorID        apierr.APIError     `json:"error"`
-		ErrorHighlight int                 `json:"errhighlight"`
-		Message        string              `json:"message"`
-		SuppressSend   bool                `json:"suppress_send"`
-		MessageCount   int                 `json:"messagecount"`
-		Quota          int                 `json:"quota"`
-		IsPro          bool                `json:"is_pro"`
-		QuotaMax       int                 `json:"quota_max"`
-		SCNMessageID   models.SCNMessageID `json:"scn_msg_id"`
+		Success        bool             `json:"success"`
+		ErrorID        apierr.APIError  `json:"error"`
+		ErrorHighlight int              `json:"errhighlight"`
+		Message        string           `json:"message"`
+		SuppressSend   bool             `json:"suppress_send"`
+		MessageCount   int              `json:"messagecount"`
+		Quota          int              `json:"quota"`
+		IsPro          bool             `json:"is_pro"`
+		QuotaMax       int              `json:"quota_max"`
+		SCNMessageID   models.MessageID `json:"scn_msg_id"`
 	}
 
 	if Title != nil {
@@ -212,7 +170,7 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 				Quota:          user.QuotaUsedToday(),
 				IsPro:          user.IsPro,
 				QuotaMax:       user.QuotaPerDay(),
-				SCNMessageID:   msg.SCNMessageID,
+				SCNMessageID:   msg.MessageID,
 			}))
 		}
 	}
@@ -317,6 +275,6 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 		Quota:          user.QuotaUsedToday() + 1,
 		IsPro:          user.IsPro,
 		QuotaMax:       user.QuotaPerDay(),
-		SCNMessageID:   msg.SCNMessageID,
+		SCNMessageID:   msg.MessageID,
 	}))
 }

@@ -1,9 +1,10 @@
 
 CREATE TABLE `logs`
 (
-    log_id               INTEGER        PRIMARY KEY,
-    timestamp_created    INTEGER        NOT NULL
+    log_id               TEXT           NOT NULL,
+    timestamp_created    INTEGER        NOT NULL,
 
+    PRIMARY KEY (log_id)
 ) STRICT;
 
 

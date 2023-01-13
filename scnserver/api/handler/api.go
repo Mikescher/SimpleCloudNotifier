@@ -151,7 +151,7 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api/users/{uid} [GET]
 func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID models.UserID `uri:"uid"`
+		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 
 	var u uri
@@ -200,7 +200,7 @@ func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 // @Router      /api/users/{uid} [PATCH]
 func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID models.UserID `uri:"uid"`
+		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 	type body struct {
 		Username        *string `json:"username"`
@@ -306,7 +306,7 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api/users/{uid}/clients [GET]
 func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID models.UserID `uri:"uid"`
+		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 	type response struct {
 		Clients []models.ClientJSON `json:"clients"`
@@ -351,8 +351,8 @@ func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api/users/{uid}/clients/{cid} [GET]
 func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID   models.UserID   `uri:"uid"`
-		ClientID models.ClientID `uri:"cid"`
+		UserID   models.UserID   `uri:"uid" binding:"entityid"`
+		ClientID models.ClientID `uri:"cid" binding:"entityid"`
 	}
 
 	var u uri
@@ -395,7 +395,7 @@ func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api/users/{uid}/clients [POST]
 func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID models.UserID `uri:"uid"`
+		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 	type body struct {
 		FCMToken     string `json:"fcm_token" binding:"required"`
@@ -456,8 +456,8 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api/users/{uid}/clients/{cid} [DELETE]
 func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID   models.UserID   `uri:"uid"`
-		ClientID models.ClientID `uri:"cid"`
+		UserID   models.UserID   `uri:"uid" binding:"entityid"`
+		ClientID models.ClientID `uri:"cid" binding:"entityid"`
 	}
 
 	var u uri
@@ -511,7 +511,7 @@ func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 // @Router      /api/users/{uid}/channels [GET]
 func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID models.UserID `uri:"uid"`
+		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 	type query struct {
 		Selector *string `json:"selector" form:"selector"  enums:"owned,subscribed_any,all_any,subscribed,all"`
@@ -603,8 +603,8 @@ func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api/users/{uid}/channels/{cid} [GET]
 func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID    models.UserID    `uri:"uid"`
-		ChannelID models.ChannelID `uri:"cid"`
+		UserID    models.UserID    `uri:"uid" binding:"entityid"`
+		ChannelID models.ChannelID `uri:"cid" binding:"entityid"`
 	}
 
 	var u uri
@@ -647,7 +647,7 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api/users/{uid}/channels [POST]
 func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID models.UserID `uri:"uid"`
+		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 	type body struct {
 		Name      string `json:"name"`
@@ -744,8 +744,8 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api/users/{uid}/channels/{cid} [PATCH]
 func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID    models.UserID    `uri:"uid"`
-		ChannelID models.ChannelID `uri:"cid"`
+		UserID    models.UserID    `uri:"uid" binding:"entityid"`
+		ChannelID models.ChannelID `uri:"cid" binding:"entityid"`
 	}
 	type body struct {
 		RefreshSubscribeKey *bool   `json:"subscribe_key"`
@@ -869,8 +869,8 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 // @Router      /api/users/{uid}/channels/{cid}/messages [GET]
 func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		ChannelUserID models.UserID    `uri:"uid"`
-		ChannelID     models.ChannelID `uri:"cid"`
+		ChannelUserID models.UserID    `uri:"uid" binding:"entityid"`
+		ChannelID     models.ChannelID `uri:"cid" binding:"entityid"`
 	}
 	type query struct {
 		PageSize      *int    `json:"page_size"       form:"page_size"`
@@ -972,7 +972,7 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 // @Router      /api/users/{uid}/subscriptions [GET]
 func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID models.UserID `uri:"uid"`
+		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 	type query struct {
 		Selector *string `json:"selector" form:"selector"  enums:"owner_all,owner_confirmed,owner_unconfirmed,incoming_all,incoming_confirmed,incoming_unconfirmed"`
@@ -1069,8 +1069,8 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api/users/{uid}/channels/{cid}/subscriptions [GET]
 func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID    models.UserID    `uri:"uid"`
-		ChannelID models.ChannelID `uri:"cid"`
+		UserID    models.UserID    `uri:"uid" binding:"entityid"`
+		ChannelID models.ChannelID `uri:"cid" binding:"entityid"`
 	}
 	type response struct {
 		Subscriptions []models.SubscriptionJSON `json:"subscriptions"`
@@ -1123,8 +1123,8 @@ func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPRespons
 // @Router  /api/users/{uid}/subscriptions/{sid} [GET]
 func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID         models.UserID         `uri:"uid"`
-		SubscriptionID models.SubscriptionID `uri:"sid"`
+		UserID         models.UserID         `uri:"uid" binding:"entityid"`
+		SubscriptionID models.SubscriptionID `uri:"sid" binding:"entityid"`
 	}
 
 	var u uri
@@ -1170,8 +1170,8 @@ func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api/users/{uid}/subscriptions/{sid} [DELETE]
 func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID         models.UserID         `uri:"uid"`
-		SubscriptionID models.SubscriptionID `uri:"sid"`
+		UserID         models.UserID         `uri:"uid" binding:"entityid"`
+		SubscriptionID models.SubscriptionID `uri:"sid" binding:"entityid"`
 	}
 
 	var u uri
@@ -1223,12 +1223,12 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Router      /api/users/{uid}/subscriptions [POST]
 func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID models.UserID `uri:"uid"`
+		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 	type body struct {
-		ChannelOwnerUserID  *models.UserID    `json:"channel_owner_user_id"`
+		ChannelOwnerUserID  *models.UserID    `json:"channel_owner_user_id" binding:"entityid"`
 		ChannelInternalName *string           `json:"channel_internal_name"`
-		ChannelID           *models.ChannelID `json:"channel_id"`
+		ChannelID           *models.ChannelID `json:"channel_id" binding:"entityid"`
 	}
 	type query struct {
 		ChanSubscribeKey *string `json:"chan_subscribe_key" form:"chan_subscribe_key"`
@@ -1312,8 +1312,8 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Router  /api/users/{uid}/subscriptions/{sid} [PATCH]
 func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID         models.UserID         `uri:"uid"`
-		SubscriptionID models.SubscriptionID `uri:"sid"`
+		UserID         models.UserID         `uri:"uid" binding:"entityid"`
+		SubscriptionID models.SubscriptionID `uri:"sid" binding:"entityid"`
 	}
 	type body struct {
 		Confirmed *bool `form:"confirmed"`
@@ -1454,7 +1454,7 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 // @ID          api-messages-get
 // @Tags        API-v2
 //
-// @Param       mid path     int true "SCNMessageID"
+// @Param       mid path     int true "MessageID"
 //
 // @Success     200 {object} models.MessageJSON
 // @Failure     400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
@@ -1465,7 +1465,7 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 // @Router      /api/messages/{mid} [PATCH]
 func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		MessageID models.SCNMessageID `uri:"mid"`
+		MessageID models.MessageID `uri:"mid" binding:"entityid"`
 	}
 
 	var u uri
@@ -1524,7 +1524,7 @@ func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 // @ID          api-messages-delete
 // @Tags        API-v2
 //
-// @Param       mid path     int true "SCNMessageID"
+// @Param       mid path     int true "MessageID"
 //
 // @Success     200 {object} models.MessageJSON
 // @Failure     400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
@@ -1535,7 +1535,7 @@ func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 // @Router      /api/messages/{mid} [DELETE]
 func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		MessageID models.SCNMessageID `uri:"mid"`
+		MessageID models.MessageID `uri:"mid" binding:"entityid"`
 	}
 
 	var u uri
@@ -1561,12 +1561,12 @@ func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 	}
 
-	err = h.database.DeleteMessage(ctx, msg.SCNMessageID)
+	err = h.database.DeleteMessage(ctx, msg.MessageID)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete message", err)
 	}
 
-	err = h.database.CancelPendingDeliveries(ctx, msg.SCNMessageID)
+	err = h.database.CancelPendingDeliveries(ctx, msg.MessageID)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to cancel deliveries", err)
 	}

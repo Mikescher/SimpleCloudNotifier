@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"blackforestbytes.com/simplecloudnotifier/api/apierr"
+	hl "blackforestbytes.com/simplecloudnotifier/api/apihighlight"
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	primarydb "blackforestbytes.com/simplecloudnotifier/db/impl/primary"
 	"blackforestbytes.com/simplecloudnotifier/logic"
@@ -22,6 +24,56 @@ func NewCompatHandler(app *logic.Application) CompatHandler {
 		app:      app,
 		database: app.Database.Primary,
 	}
+}
+
+// SendMessageCompat swaggerdoc
+//
+// @Deprecated
+//
+// @Summary     Send a new message (compatibility)
+// @Description All parameter can be set via query-parameter or form-data body. Only UserID, UserKey and Title are required
+// @Tags        External
+//
+// @Param       query_data query    handler.SendMessageCompat.combined false " "
+// @Param       form_data  formData handler.SendMessageCompat.combined false " "
+//
+// @Success     200        {object} handler.sendMessageInternal.response
+// @Failure     400        {object} ginresp.apiError
+// @Failure     401        {object} ginresp.apiError
+// @Failure     403        {object} ginresp.apiError
+// @Failure     500        {object} ginresp.apiError
+//
+// @Router      /send.php [POST]
+func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
+	type combined struct {
+		UserID        *int64   `json:"user_id"   form:"user_id"`
+		UserKey       *string  `json:"user_key"  form:"user_key"`
+		Title         *string  `json:"title"     form:"title"`
+		Content       *string  `json:"content"   form:"content"`
+		Priority      *int     `json:"priority"  form:"priority"`
+		UserMessageID *string  `json:"msg_id"    form:"msg_id"`
+		SendTimestamp *float64 `json:"timestamp" form:"timestamp"`
+	}
+
+	var f combined
+	var q combined
+	ctx, errResp := h.app.StartRequest(g, nil, &q, nil, &f)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	data := dataext.ObjectMerge(f, q)
+
+	newid, err := h.database.ConvertCompatID(ctx, langext.Coalesce(data.UserID, -1), "userid")
+	if err != nil {
+		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
+	}
+	if newid == nil {
+		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
+	}
+
+	return h.sendMessageInternal(g, ctx, langext.Ptr(models.UserID(*newid)), data.UserKey, nil, nil, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp, nil)
 }
 
 // Register swaggerdoc
@@ -121,10 +173,15 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(0, "Failed to create client in db")
 	}
 
+	oldid, err := h.database.CreateCompatID(ctx, "userid", user.UserID.String())
+	if err != nil {
+		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to create userid<old>", err)
+	}
+
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
 		Success:   true,
 		Message:   "New user registered",
-		UserID:    user.UserID.IntID(),
+		UserID:    oldid,
 		UserKey:   user.AdminKey,
 		QuotaUsed: user.QuotaUsedToday(),
 		QuotaMax:  user.QuotaPerDay(),
@@ -184,7 +241,15 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(102, "Missing parameter [[user_key]]")
 	}
 
-	user, err := h.database.GetUser(ctx, models.UserID(*data.UserID))
+	useridCompNew, err := h.database.ConvertCompatID(ctx, *data.UserID, "userid")
+	if err != nil {
+		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
+	}
+	if useridCompNew == nil {
+		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
+	}
+
+	user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
 	if err == sql.ErrNoRows {
 		return ginresp.CompatAPIError(201, "User not found")
 	}
@@ -206,7 +271,7 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
 		Success:    true,
 		Message:    "ok",
-		UserID:     user.UserID.IntID(),
+		UserID:     *data.UserID,
 		UserKey:    user.AdminKey,
 		QuotaUsed:  user.QuotaUsedToday(),
 		QuotaMax:   user.QuotaPerDay(),
@@ -269,7 +334,15 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(103, "Missing parameter [[scn_msg_id]]")
 	}
 
-	user, err := h.database.GetUser(ctx, models.UserID(*data.UserID))
+	useridCompNew, err := h.database.ConvertCompatID(ctx, *data.UserID, "userid")
+	if err != nil {
+		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
+	}
+	if useridCompNew == nil {
+		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
+	}
+
+	user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
 	if err == sql.ErrNoRows {
 		return ginresp.CompatAPIError(201, "User not found")
 	}
@@ -336,7 +409,15 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(102, "Missing parameter [[user_key]]")
 	}
 
-	user, err := h.database.GetUser(ctx, models.UserID(*data.UserID))
+	useridCompNew, err := h.database.ConvertCompatID(ctx, *data.UserID, "userid")
+	if err != nil {
+		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
+	}
+	if useridCompNew == nil {
+		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
+	}
+
+	user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
 	if err == sql.ErrNoRows {
 		return ginresp.CompatAPIError(201, "User not found")
 	}
@@ -409,7 +490,15 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(102, "Missing parameter [[user_key]]")
 	}
 
-	user, err := h.database.GetUser(ctx, models.UserID(*data.UserID))
+	useridCompNew, err := h.database.ConvertCompatID(ctx, *data.UserID, "userid")
+	if err != nil {
+		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
+	}
+	if useridCompNew == nil {
+		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
+	}
+
+	user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
 	if err == sql.ErrNoRows {
 		return ginresp.CompatAPIError(201, "User not found")
 	}
@@ -461,7 +550,7 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
 		Success:   true,
 		Message:   "user updated",
-		UserID:    user.UserID.IntID(),
+		UserID:    *data.UserID,
 		UserKey:   user.AdminKey,
 		QuotaUsed: user.QuotaUsedToday(),
 		QuotaMax:  user.QuotaPerDay(),
@@ -521,7 +610,15 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(103, "Missing parameter [[scn_msg_id]]")
 	}
 
-	user, err := h.database.GetUser(ctx, models.UserID(*data.UserID))
+	useridCompNew, err := h.database.ConvertCompatID(ctx, *data.UserID, "userid")
+	if err != nil {
+		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
+	}
+	if useridCompNew == nil {
+		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
+	}
+
+	user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
 	if err == sql.ErrNoRows {
 		return ginresp.CompatAPIError(201, "User not found")
 	}
@@ -533,7 +630,15 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 
-	msg, err := h.database.GetMessage(ctx, models.SCNMessageID(*data.MessageID), false)
+	messageCompNew, err := h.database.ConvertCompatID(ctx, *data.MessageID, "messageid")
+	if err != nil {
+		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query messagid<old>", err)
+	}
+	if messageCompNew == nil {
+		return ginresp.CompatAPIError(301, "Message not found")
+	}
+
+	msg, err := h.database.GetMessage(ctx, models.MessageID(*messageCompNew), false)
 	if err == sql.ErrNoRows {
 		return ginresp.CompatAPIError(301, "Message not found")
 	}
@@ -551,7 +656,7 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 			Priority:      msg.Priority,
 			Timestamp:     msg.Timestamp().Unix(),
 			UserMessageID: msg.UserMessageID,
-			SCNMessageID:  msg.SCNMessageID.IntID(),
+			SCNMessageID:  *data.MessageID,
 		},
 	}))
 }
@@ -617,7 +722,15 @@ func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(104, "Missing parameter [[pro_token]]")
 	}
 
-	user, err := h.database.GetUser(ctx, models.UserID(*data.UserID))
+	useridCompNew, err := h.database.ConvertCompatID(ctx, *data.UserID, "userid")
+	if err != nil {
+		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
+	}
+	if useridCompNew == nil {
+		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
+	}
+
+	user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
 	if err == sql.ErrNoRows {
 		return ginresp.CompatAPIError(201, "User not found")
 	}
@@ -662,7 +775,7 @@ func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
 		Success:   true,
 		Message:   "user updated",
-		UserID:    user.UserID.IntID(),
+		UserID:    *data.UserID,
 		QuotaUsed: user.QuotaUsedToday(),
 		QuotaMax:  user.QuotaPerDay(),
 		IsPro:     user.IsPro,

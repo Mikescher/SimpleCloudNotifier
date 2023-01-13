@@ -124,14 +124,17 @@ func StartSimpleWebserver(t *testing.T) (*logic.Application, string, func()) {
 		jobs.NewRequestLogCollectorJob(app),
 	})
 
-	router.Init(ginengine)
+	err = router.Init(ginengine)
+	if err != nil {
+		panic(err)
+	}
 
 	stop := func() {
 		app.Stop()
+		_ = app.IsRunning.WaitWithTimeout(5*time.Second, false)
 		_ = os.Remove(dbfile1)
 		_ = os.Remove(dbfile2)
 		_ = os.Remove(dbfile3)
-		_ = app.IsRunning.WaitWithTimeout(400*time.Millisecond, false)
 	}
 
 	go func() { app.Run() }()

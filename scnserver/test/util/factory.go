@@ -59,7 +59,7 @@ type clientex struct {
 }
 
 type Userdat struct {
-	UID      int64
+	UID      string
 	SendKey  string
 	AdminKey string
 	ReadKey  string
@@ -319,7 +319,7 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 		}
 
 		user0 := RequestPost[gin.H](t, baseUrl, "/api/users", body)
-		uid0 := int64(user0["user_id"].(float64))
+		uid0 := user0["user_id"].(string)
 		readtok0 := user0["read_key"].(string)
 		sendtok0 := user0["send_key"].(string)
 		admintok0 := user0["admin_key"].(string)
@@ -341,7 +341,7 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 		body["agent_version"] = cex.AgentVersion
 		body["client_type"] = cex.ClientType
 		body["fcm_token"] = cex.FCMTok
-		RequestAuthPost[gin.H](t, users[cex.User].AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/clients", users[cex.User].UID), body)
+		RequestAuthPost[gin.H](t, users[cex.User].AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/clients", users[cex.User].UID), body)
 	}
 
 	// Create Messages
@@ -378,7 +378,7 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 	// create manual channels
 
 	{
-		RequestAuthPost[Void](t, users[9].AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/channels", users[9].UID), gin.H{"name": "manual@chan"})
+		RequestAuthPost[Void](t, users[9].AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/channels", users[9].UID), gin.H{"name": "manual@chan"})
 	}
 
 	// Sub/Unsub for Users 12+13
@@ -399,7 +399,7 @@ func doSubscribe(t *testing.T, baseUrl string, user Userdat, chanOwner Userdat, 
 
 	if user == chanOwner {
 
-		RequestAuthPost[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/channels", user.UID), gin.H{
+		RequestAuthPost[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/channels", user.UID), gin.H{
 			"channel_owner_user_id": chanOwner.UID,
 			"channel_internal_name": chanInternalName,
 		})
@@ -409,7 +409,7 @@ func doSubscribe(t *testing.T, baseUrl string, user Userdat, chanOwner Userdat, 
 			Channels []gin.H `json:"channels"`
 		}
 
-		clist := RequestAuthGet[chanlist](t, chanOwner.AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/channels?selector=owned", chanOwner.UID))
+		clist := RequestAuthGet[chanlist](t, chanOwner.AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/channels?selector=owned", chanOwner.UID))
 
 		var chandat gin.H
 		for _, v := range clist.Channels {
@@ -419,8 +419,8 @@ func doSubscribe(t *testing.T, baseUrl string, user Userdat, chanOwner Userdat, 
 			}
 		}
 
-		RequestAuthPost[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/subscriptions?chan_subscribe_key=%s", user.UID, chandat["subscribe_key"].(string)), gin.H{
-			"channel_id": chandat["channel_id"].(float64),
+		RequestAuthPost[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/subscriptions?chan_subscribe_key=%s", user.UID, chandat["subscribe_key"].(string)), gin.H{
+			"channel_id": chandat["channel_id"].(string),
 		})
 
 	}
@@ -433,17 +433,17 @@ func doUnsubscribe(t *testing.T, baseUrl string, user Userdat, chanOwner Userdat
 		Subscriptions []gin.H `json:"subscriptions"`
 	}
 
-	slist := RequestAuthGet[chanlist](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/subscriptions?selector=outgoing_confirmed", user.UID))
+	slist := RequestAuthGet[chanlist](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/subscriptions?selector=outgoing_confirmed", user.UID))
 
 	var subdat gin.H
 	for _, v := range slist.Subscriptions {
-		if v["channel_internal_name"].(string) == chanInternalName && int64(v["channel_owner_user_id"].(float64)) == chanOwner.UID {
+		if v["channel_internal_name"].(string) == chanInternalName && v["channel_owner_user_id"].(string) == chanOwner.UID {
 			subdat = v
 			break
 		}
 	}
 
-	RequestAuthDelete[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/subscriptions/%v", user.UID, subdat["subscription_id"]), gin.H{})
+	RequestAuthDelete[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/subscriptions/%v", user.UID, subdat["subscription_id"]), gin.H{})
 
 }
 
@@ -453,17 +453,17 @@ func doAcceptSub(t *testing.T, baseUrl string, user Userdat, subscriber Userdat,
 		Subscriptions []gin.H `json:"subscriptions"`
 	}
 
-	slist := RequestAuthGet[chanlist](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/subscriptions?selector=incoming_unconfirmed", user.UID))
+	slist := RequestAuthGet[chanlist](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/subscriptions?selector=incoming_unconfirmed", user.UID))
 
 	var subdat gin.H
 	for _, v := range slist.Subscriptions {
-		if v["channel_internal_name"].(string) == chanInternalName && int64(v["subscriber_user_id"].(float64)) == subscriber.UID {
+		if v["channel_internal_name"].(string) == chanInternalName && v["subscriber_user_id"].(string) == subscriber.UID {
 			subdat = v
 			break
 		}
 	}
 
-	RequestAuthPatch[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/subscriptions/%v", user.UID, subdat["subscription_id"]), gin.H{
+	RequestAuthPatch[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/subscriptions/%v", user.UID, subdat["subscription_id"]), gin.H{
 		"confirmed": true,
 	})
 

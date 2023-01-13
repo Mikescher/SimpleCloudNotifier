@@ -72,11 +72,12 @@ mainLoop:
 				log.Error().Msg(fmt.Sprintf("Received unknown job signal: <%s> in job [%s]", signal, j.name))
 			}
 		case obj := <-j.app.RequestLogQueue:
-			err := j.insertLog(obj)
+			requestid := models.NewRequestID()
+			err := j.insertLog(requestid, obj)
 			if err != nil {
-				log.Error().Err(err).Msg(fmt.Sprintf("Failed to insert RequestLog {%s} into DB", obj.RequestID))
+				log.Error().Err(err).Msg(fmt.Sprintf("Failed to insert RequestLog {%s} into DB", requestid))
 			} else {
-				log.Debug().Msg(fmt.Sprintf("Inserted RequestLog '%s' into DB", obj.RequestID))
+				log.Debug().Msg(fmt.Sprintf("Inserted RequestLog '%s' into DB", requestid))
 			}
 		}
 	}
@@ -86,12 +87,12 @@ mainLoop:
 	j.isRunning.Set(false)
 }
 
-func (j *RequestLogCollectorJob) insertLog(rl models.RequestLog) error {
+func (j *RequestLogCollectorJob) insertLog(requestid models.RequestID, rl models.RequestLog) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	_, err := j.app.Database.Requests.InsertRequestLog(ctx, rl.DB())
+	_, err := j.app.Database.Requests.InsertRequestLog(ctx, requestid, rl.DB())
 	if err != nil {
 		return err
 	}

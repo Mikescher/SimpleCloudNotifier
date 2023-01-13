@@ -7,11 +7,12 @@ import (
 	"time"
 )
 
-func (db *Database) InsertRequestLog(ctx context.Context, data models.RequestLogDB) (models.RequestLogDB, error) {
+func (db *Database) InsertRequestLog(ctx context.Context, requestid models.RequestID, data models.RequestLogDB) (models.RequestLogDB, error) {
 
 	now := time.Now()
 
-	res, err := db.db.Exec(ctx, "INSERT INTO requests (method, uri, user_agent, authentication, request_body, request_body_size, request_content_type, remote_ip, userid, permissions, response_statuscode, response_body_size, response_body, response_content_type, retry_count, panicked, panic_str, processing_time, timestamp_created, timestamp_start, timestamp_finish) VALUES (:method, :uri, :user_agent, :authentication, :request_body, :request_body_size, :request_content_type, :remote_ip, :userid, :permissions, :response_statuscode, :response_body_size, :response_body, :response_content_type, :retry_count, :panicked, :panic_str, :processing_time, :timestamp_created, :timestamp_start, :timestamp_finish)", sq.PP{
+	_, err := db.db.Exec(ctx, "INSERT INTO requests (request_id, method, uri, user_agent, authentication, request_body, request_body_size, request_content_type, remote_ip, userid, permissions, response_statuscode, response_body_size, response_body, response_content_type, retry_count, panicked, panic_str, processing_time, timestamp_created, timestamp_start, timestamp_finish) VALUES (:request_id, :method, :uri, :user_agent, :authentication, :request_body, :request_body_size, :request_content_type, :remote_ip, :userid, :permissions, :response_statuscode, :response_body_size, :response_body, :response_content_type, :retry_count, :panicked, :panic_str, :processing_time, :timestamp_created, :timestamp_start, :timestamp_finish)", sq.PP{
+		"request_id":            requestid,
 		"method":                data.Method,
 		"uri":                   data.URI,
 		"user_agent":            data.UserAgent,
@@ -38,13 +39,8 @@ func (db *Database) InsertRequestLog(ctx context.Context, data models.RequestLog
 		return models.RequestLogDB{}, err
 	}
 
-	liid, err := res.LastInsertId()
-	if err != nil {
-		return models.RequestLogDB{}, err
-	}
-
 	return models.RequestLogDB{
-		RequestID:           models.RequestID(liid),
+		RequestID:           requestid,
 		Method:              data.Method,
 		URI:                 data.URI,
 		UserAgent:           data.UserAgent,

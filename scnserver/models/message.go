@@ -13,7 +13,7 @@ const (
 )
 
 type Message struct {
-	SCNMessageID        SCNMessageID
+	MessageID           MessageID
 	SenderUserID        UserID
 	OwnerUserID         UserID
 	ChannelInternalName string
@@ -31,7 +31,7 @@ type Message struct {
 
 func (m Message) FullJSON() MessageJSON {
 	return MessageJSON{
-		SCNMessageID:        m.SCNMessageID,
+		MessageID:           m.MessageID,
 		SenderUserID:        m.SenderUserID,
 		OwnerUserID:         m.OwnerUserID,
 		ChannelInternalName: m.ChannelInternalName,
@@ -49,7 +49,7 @@ func (m Message) FullJSON() MessageJSON {
 
 func (m Message) TrimmedJSON() MessageJSON {
 	return MessageJSON{
-		SCNMessageID:        m.SCNMessageID,
+		MessageID:           m.MessageID,
 		SenderUserID:        m.SenderUserID,
 		OwnerUserID:         m.OwnerUserID,
 		ChannelInternalName: m.ChannelInternalName,
@@ -94,41 +94,41 @@ func (m Message) ShortContent() string {
 }
 
 type MessageJSON struct {
-	SCNMessageID        SCNMessageID `json:"scn_message_id"`
-	SenderUserID        UserID       `json:"sender_user_id"`
-	OwnerUserID         UserID       `json:"owner_user_id"`
-	ChannelInternalName string       `json:"channel_internal_name"`
-	ChannelID           ChannelID    `json:"channel_id"`
-	SenderName          *string      `json:"sender_name"`
-	SenderIP            string       `json:"sender_ip"`
-	Timestamp           string       `json:"timestamp"`
-	Title               string       `json:"title"`
-	Content             *string      `json:"content"`
-	Priority            int          `json:"priority"`
-	UserMessageID       *string      `json:"usr_message_id"`
-	Trimmed             bool         `json:"trimmed"`
+	MessageID           MessageID `json:"message_id"`
+	SenderUserID        UserID    `json:"sender_user_id"`
+	OwnerUserID         UserID    `json:"owner_user_id"`
+	ChannelInternalName string    `json:"channel_internal_name"`
+	ChannelID           ChannelID `json:"channel_id"`
+	SenderName          *string   `json:"sender_name"`
+	SenderIP            string    `json:"sender_ip"`
+	Timestamp           string    `json:"timestamp"`
+	Title               string    `json:"title"`
+	Content             *string   `json:"content"`
+	Priority            int       `json:"priority"`
+	UserMessageID       *string   `json:"usr_message_id"`
+	Trimmed             bool      `json:"trimmed"`
 }
 
 type MessageDB struct {
-	SCNMessageID        SCNMessageID `db:"scn_message_id"`
-	SenderUserID        UserID       `db:"sender_user_id"`
-	OwnerUserID         UserID       `db:"owner_user_id"`
-	ChannelInternalName string       `db:"channel_internal_name"`
-	ChannelID           ChannelID    `db:"channel_id"`
-	SenderName          *string      `db:"sender_name"`
-	SenderIP            string       `db:"sender_ip"`
-	TimestampReal       int64        `db:"timestamp_real"`
-	TimestampClient     *int64       `db:"timestamp_client"`
-	Title               string       `db:"title"`
-	Content             *string      `db:"content"`
-	Priority            int          `db:"priority"`
-	UserMessageID       *string      `db:"usr_message_id"`
-	Deleted             int          `db:"deleted"`
+	MessageID           MessageID `db:"message_id"`
+	SenderUserID        UserID    `db:"sender_user_id"`
+	OwnerUserID         UserID    `db:"owner_user_id"`
+	ChannelInternalName string    `db:"channel_internal_name"`
+	ChannelID           ChannelID `db:"channel_id"`
+	SenderName          *string   `db:"sender_name"`
+	SenderIP            string    `db:"sender_ip"`
+	TimestampReal       int64     `db:"timestamp_real"`
+	TimestampClient     *int64    `db:"timestamp_client"`
+	Title               string    `db:"title"`
+	Content             *string   `db:"content"`
+	Priority            int       `db:"priority"`
+	UserMessageID       *string   `db:"usr_message_id"`
+	Deleted             int       `db:"deleted"`
 }
 
 func (m MessageDB) Model() Message {
 	return Message{
-		SCNMessageID:        m.SCNMessageID,
+		MessageID:           m.MessageID,
 		SenderUserID:        m.SenderUserID,
 		OwnerUserID:         m.OwnerUserID,
 		ChannelInternalName: m.ChannelInternalName,

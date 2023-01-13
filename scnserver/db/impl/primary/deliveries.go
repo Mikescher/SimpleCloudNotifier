@@ -17,8 +17,11 @@ func (db *Database) CreateRetryDelivery(ctx TxContext, client models.Client, msg
 	now := time.Now().UTC()
 	next := scn.NextDeliveryTimestamp(now)
 
-	res, err := tx.Exec(ctx, "INSERT INTO deliveries (scn_message_id, receiver_user_id, receiver_client_id, timestamp_created, timestamp_finalized, status, fcm_message_id, next_delivery) VALUES (:mid, :ruid, :rcid, :tsc, :tsf, :stat, :fcm, :next)", sq.PP{
-		"mid":  msg.SCNMessageID,
+	deliveryid := models.NewDeliveryID()
+
+	_, err = tx.Exec(ctx, "INSERT INTO deliveries (delivery_id, message_id, receiver_user_id, receiver_client_id, timestamp_created, timestamp_finalized, status, fcm_message_id, next_delivery) VALUES (:did, :mid, :ruid, :rcid, :tsc, :tsf, :stat, :fcm, :next)", sq.PP{
+		"did":  deliveryid,
+		"mid":  msg.MessageID,
 		"ruid": client.UserID,
 		"rcid": client.ClientID,
 		"tsc":  time2DB(now),
@@ -31,14 +34,9 @@ func (db *Database) CreateRetryDelivery(ctx TxContext, client models.Client, msg
 		return models.Delivery{}, err
 	}
 
-	liid, err := res.LastInsertId()
-	if err != nil {
-		return models.Delivery{}, err
-	}
-
 	return models.Delivery{
-		DeliveryID:         models.DeliveryID(liid),
-		SCNMessageID:       msg.SCNMessageID,
+		DeliveryID:         deliveryid,
+		MessageID:          msg.MessageID,
 		ReceiverUserID:     client.UserID,
 		ReceiverClientID:   client.ClientID,
 		TimestampCreated:   now,
@@ -58,8 +56,11 @@ func (db *Database) CreateSuccessDelivery(ctx TxContext, client models.Client, m
 
 	now := time.Now().UTC()
 
-	res, err := tx.Exec(ctx, "INSERT INTO deliveries (scn_message_id, receiver_user_id, receiver_client_id, timestamp_created, timestamp_finalized, status, fcm_message_id, next_delivery) VALUES (:mid, :ruid, :rcid, :tsc, :tsf, :stat, :fcm, :next)", sq.PP{
-		"mid":  msg.SCNMessageID,
+	deliveryid := models.NewDeliveryID()
+
+	_, err = tx.Exec(ctx, "INSERT INTO deliveries (delivery_id, message_id, receiver_user_id, receiver_client_id, timestamp_created, timestamp_finalized, status, fcm_message_id, next_delivery) VALUES (:did, :mid, :ruid, :rcid, :tsc, :tsf, :stat, :fcm, :next)", sq.PP{
+		"did":  deliveryid,
+		"mid":  msg.MessageID,
 		"ruid": client.UserID,
 		"rcid": client.ClientID,
 		"tsc":  time2DB(now),
@@ -72,14 +73,9 @@ func (db *Database) CreateSuccessDelivery(ctx TxContext, client models.Client, m
 		return models.Delivery{}, err
 	}
 
-	liid, err := res.LastInsertId()
-	if err != nil {
-		return models.Delivery{}, err
-	}
-
 	return models.Delivery{
-		DeliveryID:         models.DeliveryID(liid),
-		SCNMessageID:       msg.SCNMessageID,
+		DeliveryID:         deliveryid,
+		MessageID:          msg.MessageID,
 		ReceiverUserID:     client.UserID,
 		ReceiverClientID:   client.ClientID,
 		TimestampCreated:   now,
@@ -97,7 +93,7 @@ func (db *Database) ListRetrieableDeliveries(ctx TxContext, pageSize int) ([]mod
 		return nil, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM deliveries WHERE status = 'RETRY' AND next_delivery < :next LIMIT :lim", sq.PP{
+	rows, err := tx.Query(ctx, "SELECT * FROM deliveries WHERE status = 'RETRY' AND next_delivery < :next LIMIT :lim ORDER BY next_delivery ASC", sq.PP{
 		"next": time2DB(time.Now()),
 		"lim":  pageSize,
 	})
@@ -169,15 +165,15 @@ func (db *Database) SetDeliveryRetry(ctx TxContext, delivery models.Delivery) er
 	return nil
 }
 
-func (db *Database) CancelPendingDeliveries(ctx TxContext, scnMessageID models.SCNMessageID) error {
+func (db *Database) CancelPendingDeliveries(ctx TxContext, messageID models.MessageID) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.Exec(ctx, "UPDATE deliveries SET status = 'FAILED', next_delivery = NULL, timestamp_finalized = :ts WHERE scn_message_id = :mid AND status = 'RETRY'", sq.PP{
+	_, err = tx.Exec(ctx, "UPDATE deliveries SET status = 'FAILED', next_delivery = NULL, timestamp_finalized = :ts WHERE message_id = :mid AND status = 'RETRY'", sq.PP{
 		"ts":  time.Now(),
-		"mid": scnMessageID,
+		"mid": messageID,
 	})
 	if err != nil {
 		return err

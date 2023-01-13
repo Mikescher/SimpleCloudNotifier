@@ -20,7 +20,7 @@ CREATE TABLE `users`
 DROP TABLE IF EXISTS `messages`;
 CREATE TABLE `messages`
 (
-    `scn_message_id`     INT(11)         NOT NULL   AUTO_INCREMENT,
+    `message_id`     INT(11)         NOT NULL   AUTO_INCREMENT,
     `sender_user_id`     INT(11)         NOT NULL,
 
     `timestamp_real`     DATETIME        NOT NULL   DEFAULT CURRENT_TIMESTAMP,
@@ -34,5 +34,5 @@ CREATE TABLE `messages`
     `fcm_message_id`     VARCHAR(256)        NULL,
     `usr_message_id`     VARCHAR(256)        NULL,
 
-    PRIMARY KEY (`scn_message_id`)
+    PRIMARY KEY (`message_id`)
 );

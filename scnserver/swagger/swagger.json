@@ -71,8 +71,8 @@
                         "in": "query"
                     },
                     {
-                        "type": "integer",
-                        "example": 7725,
+                        "type": "string",
+                        "example": "7725",
                         "name": "user_id",
                         "in": "query"
                     },
@@ -144,8 +144,8 @@
                         "in": "formData"
                     },
                     {
-                        "type": "integer",
-                        "example": 7725,
+                        "type": "string",
+                        "example": "7725",
                         "name": "user_id",
                         "in": "formData"
                     },
@@ -478,7 +478,7 @@
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "SCNMessageID",
+                        "description": "MessageID",
                         "name": "mid",
                         "in": "path",
                         "required": true
@@ -527,7 +527,7 @@
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "SCNMessageID",
+                        "description": "MessageID",
                         "name": "mid",
                         "in": "path",
                         "required": true
@@ -2093,8 +2093,8 @@
                         "in": "query"
                     },
                     {
-                        "type": "integer",
-                        "example": 7725,
+                        "type": "string",
+                        "example": "7725",
                         "name": "user_id",
                         "in": "query"
                     },
@@ -2166,8 +2166,8 @@
                         "in": "formData"
                     },
                     {
-                        "type": "integer",
-                        "example": 7725,
+                        "type": "string",
+                        "example": "7725",
                         "name": "user_id",
                         "in": "formData"
                     },
@@ -2414,13 +2414,13 @@
             "type": "object",
             "properties": {
                 "channel_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "channel_internal_name": {
                     "type": "string"
                 },
                 "channel_owner_user_id": {
-                    "type": "integer"
+                    "type": "string"
                 }
             }
         },
@@ -2686,8 +2686,8 @@
                     "example": "Hello World"
                 },
                 "user_id": {
-                    "type": "integer",
-                    "example": 7725
+                    "type": "string",
+                    "example": "7725"
                 },
                 "user_key": {
                     "type": "string",
@@ -2828,7 +2828,7 @@
                     "type": "integer"
                 },
                 "scn_msg_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "success": {
                     "type": "boolean"
@@ -2842,7 +2842,7 @@
             "type": "object",
             "properties": {
                 "channel_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "description_name": {
                     "type": "string"
@@ -2857,7 +2857,7 @@
                     "type": "integer"
                 },
                 "owner_user_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "send_key": {
                     "description": "can be nil, depending on endpoint",
@@ -2888,7 +2888,7 @@
                     "type": "string"
                 },
                 "client_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "fcm_token": {
                     "type": "string"
@@ -2900,7 +2900,7 @@
                     "type": "string"
                 },
                 "user_id": {
-                    "type": "integer"
+                    "type": "string"
                 }
             }
         },
@@ -2934,7 +2934,7 @@
             "type": "object",
             "properties": {
                 "channel_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "channel_internal_name": {
                     "type": "string"
@@ -2942,13 +2942,13 @@
                 "content": {
                     "type": "string"
                 },
+                "message_id": {
+                    "type": "string"
+                },
                 "owner_user_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "priority": {
-                    "type": "integer"
-                },
-                "scn_message_id": {
                     "type": "integer"
                 },
                 "sender_ip": {
@@ -2958,7 +2958,7 @@
                     "type": "string"
                 },
                 "sender_user_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "timestamp": {
                     "type": "string"
@@ -2978,22 +2978,22 @@
             "type": "object",
             "properties": {
                 "channel_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "channel_internal_name": {
                     "type": "string"
                 },
                 "channel_owner_user_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "confirmed": {
                     "type": "boolean"
                 },
                 "subscriber_user_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "subscription_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "timestamp_created": {
                     "type": "string"
@@ -3040,7 +3040,7 @@
                     "type": "string"
                 },
                 "user_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "username": {
                     "type": "string"
@@ -3093,7 +3093,7 @@
                     "type": "string"
                 },
                 "user_id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "username": {
                     "type": "string"
