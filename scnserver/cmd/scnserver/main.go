@@ -59,7 +59,9 @@ func main() {
 
 	jobRetry := jobs.NewDeliveryRetryJob(app)
 
-	app.Init(conf, ginengine, nc, apc, []logic.Job{jobRetry})
+	jobReqCollector := jobs.NewRequestLogCollectorJob(app)
+
+	app.Init(conf, ginengine, nc, apc, []logic.Job{jobRetry, jobReqCollector})
 
 	router.Init(ginengine)
 

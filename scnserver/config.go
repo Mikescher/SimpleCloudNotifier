@@ -5,38 +5,43 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/confext"
+	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
 	"os"
 	"time"
 )
 
 type Config struct {
-	Namespace           string
-	BaseURL             string        `env:"SCN_URL"`
-	GinDebug            bool          `env:"SCN_GINDEBUG"`
-	LogLevel            zerolog.Level `env:"SCN_LOGLEVEL"`
-	ServerIP            string        `env:"SCN_IP"`
-	ServerPort          string        `env:"SCN_PORT"`
-	DBMain              DBConfig      `env:"SCN_DB_MAIN"`
-	DBRequests          DBConfig      `env:"SCN_DB_REQUESTS"`
-	DBLogs              DBConfig      `env:"SCN_DB_LOGS"`
-	RequestTimeout      time.Duration `env:"SCN_REQUEST_TIMEOUT"`
-	RequestMaxRetry     int           `env:"SCN_REQUEST_MAXRETRY"`
-	RequestRetrySleep   time.Duration `env:"SCN_REQUEST_RETRYSLEEP"`
-	Cors                bool          `env:"SCN_CORS"`
-	ReturnRawErrors     bool          `env:"SCN_ERROR_RETURN"`
-	DummyFirebase       bool          `env:"SCN_DUMMY_FB"`
-	DummyGoogleAPI      bool          `env:"SCN_DUMMY_GOOG"`
-	FirebaseTokenURI    string        `env:"SCN_FB_TOKENURI"`
-	FirebaseProjectID   string        `env:"SCN_FB_PROJECTID"`
-	FirebasePrivKeyID   string        `env:"SCN_FB_PRIVATEKEYID"`
-	FirebaseClientMail  string        `env:"SCN_FB_CLIENTEMAIL"`
-	FirebasePrivateKey  string        `env:"SCN_FB_PRIVATEKEY"`
-	GoogleAPITokenURI   string        `env:"SCN_GOOG_TOKENURI"`
-	GoogleAPIPrivKeyID  string        `env:"SCN_GOOG_PRIVATEKEYID"`
-	GoogleAPIClientMail string        `env:"SCN_GOOG_CLIENTEMAIL"`
-	GoogleAPIPrivateKey string        `env:"SCN_GOOG_PRIVATEKEY"`
-	GooglePackageName   string        `env:"SCN_GOOG_PACKAGENAME"`
-	GoogleProProductID  string        `env:"SCN_GOOG_PROPRODUCTID"`
+	Namespace                string
+	BaseURL                  string        `env:"SCN_URL"`
+	GinDebug                 bool          `env:"SCN_GINDEBUG"`
+	LogLevel                 zerolog.Level `env:"SCN_LOGLEVEL"`
+	ServerIP                 string        `env:"SCN_IP"`
+	ServerPort               string        `env:"SCN_PORT"`
+	DBMain                   DBConfig      `env:"SCN_DB_MAIN"`
+	DBRequests               DBConfig      `env:"SCN_DB_REQUESTS"`
+	DBLogs                   DBConfig      `env:"SCN_DB_LOGS"`
+	RequestTimeout           time.Duration `env:"SCN_REQUEST_TIMEOUT"`
+	RequestMaxRetry          int           `env:"SCN_REQUEST_MAXRETRY"`
+	RequestRetrySleep        time.Duration `env:"SCN_REQUEST_RETRYSLEEP"`
+	Cors                     bool          `env:"SCN_CORS"`
+	ReturnRawErrors          bool          `env:"SCN_ERROR_RETURN"`
+	DummyFirebase            bool          `env:"SCN_DUMMY_FB"`
+	DummyGoogleAPI           bool          `env:"SCN_DUMMY_GOOG"`
+	FirebaseTokenURI         string        `env:"SCN_FB_TOKENURI"`
+	FirebaseProjectID        string        `env:"SCN_FB_PROJECTID"`
+	FirebasePrivKeyID        string        `env:"SCN_FB_PRIVATEKEYID"`
+	FirebaseClientMail       string        `env:"SCN_FB_CLIENTEMAIL"`
+	FirebasePrivateKey       string        `env:"SCN_FB_PRIVATEKEY"`
+	GoogleAPITokenURI        string        `env:"SCN_GOOG_TOKENURI"`
+	GoogleAPIPrivKeyID       string        `env:"SCN_GOOG_PRIVATEKEYID"`
+	GoogleAPIClientMail      string        `env:"SCN_GOOG_CLIENTEMAIL"`
+	GoogleAPIPrivateKey      string        `env:"SCN_GOOG_PRIVATEKEY"`
+	GooglePackageName        string        `env:"SCN_GOOG_PACKAGENAME"`
+	GoogleProProductID       string        `env:"SCN_GOOG_PROPRODUCTID"`
+	ReqLogEnabled            bool          `env:"SCN_REQUESTLOG_ENABLED"`
+	ReqLogMaxBodySize        int           `env:"SCN_REQUESTLOG_MAXBODYSIZE"`
+	ReqLogHistoryMaxCount    int           `env:"SCN_REQUESTLOG_HISTORY_MAXCOUNT"`
+	ReqLogHistoryMaxDuration time.Duration `env:"SCN_REQUESTLOG_HISTORY_MAXDURATION"`
 }
 
 type DBConfig struct {
@@ -94,24 +99,28 @@ var configLocHost = func() Config {
 			ConnMaxLifetime:  60 * time.Minute,
 			ConnMaxIdleTime:  60 * time.Minute,
 		},
-		RequestTimeout:      16 * time.Second,
-		RequestMaxRetry:     8,
-		RequestRetrySleep:   100 * time.Millisecond,
-		ReturnRawErrors:     true,
-		DummyFirebase:       true,
-		FirebaseTokenURI:    "",
-		FirebaseProjectID:   "",
-		FirebasePrivKeyID:   "",
-		FirebaseClientMail:  "",
-		FirebasePrivateKey:  "",
-		DummyGoogleAPI:      true,
-		GoogleAPITokenURI:   "",
-		GoogleAPIPrivKeyID:  "",
-		GoogleAPIClientMail: "",
-		GoogleAPIPrivateKey: "",
-		GooglePackageName:   "",
-		GoogleProProductID:  "",
-		Cors:                true,
+		RequestTimeout:           16 * time.Second,
+		RequestMaxRetry:          8,
+		RequestRetrySleep:        100 * time.Millisecond,
+		ReturnRawErrors:          true,
+		DummyFirebase:            true,
+		FirebaseTokenURI:         "",
+		FirebaseProjectID:        "",
+		FirebasePrivKeyID:        "",
+		FirebaseClientMail:       "",
+		FirebasePrivateKey:       "",
+		DummyGoogleAPI:           true,
+		GoogleAPITokenURI:        "",
+		GoogleAPIPrivKeyID:       "",
+		GoogleAPIClientMail:      "",
+		GoogleAPIPrivateKey:      "",
+		GooglePackageName:        "",
+		GoogleProProductID:       "",
+		Cors:                     true,
+		ReqLogEnabled:            true,
+		ReqLogMaxBodySize:        2048,
+		ReqLogHistoryMaxCount:    1638,
+		ReqLogHistoryMaxDuration: timeext.FromDays(60),
 	}
 }
 
@@ -156,24 +165,27 @@ var configLocDocker = func() Config {
 			ConnMaxLifetime:  60 * time.Minute,
 			ConnMaxIdleTime:  60 * time.Minute,
 		},
-		RequestTimeout:      16 * time.Second,
-		RequestMaxRetry:     8,
-		RequestRetrySleep:   100 * time.Millisecond,
-		ReturnRawErrors:     true,
-		DummyFirebase:       true,
-		FirebaseTokenURI:    "",
-		FirebaseProjectID:   "",
-		FirebasePrivKeyID:   "",
-		FirebaseClientMail:  "",
-		FirebasePrivateKey:  "",
-		DummyGoogleAPI:      true,
-		GoogleAPITokenURI:   "",
-		GoogleAPIPrivKeyID:  "",
-		GoogleAPIClientMail: "",
-		GoogleAPIPrivateKey: "",
-		GooglePackageName:   "",
-		GoogleProProductID:  "",
-		Cors:                true,
+		RequestTimeout:           16 * time.Second,
+		RequestMaxRetry:          8,
+		RequestRetrySleep:        100 * time.Millisecond,
+		ReturnRawErrors:          true,
+		DummyFirebase:            true,
+		FirebaseTokenURI:         "",
+		FirebaseProjectID:        "",
+		FirebasePrivKeyID:        "",
+		FirebaseClientMail:       "",
+		FirebasePrivateKey:       "",
+		DummyGoogleAPI:           true,
+		GoogleAPITokenURI:        "",
+		GoogleAPIPrivKeyID:       "",
+		GoogleAPIClientMail:      "",
+		GoogleAPIPrivateKey:      "",
+		GooglePackageName:        "",
+		GoogleProProductID:       "",
+		Cors:                     true,
+		ReqLogMaxBodySize:        2048,
+		ReqLogHistoryMaxCount:    1638,
+		ReqLogHistoryMaxDuration: timeext.FromDays(60),
 	}
 }
 
@@ -218,24 +230,27 @@ var configDev = func() Config {
 			ConnMaxLifetime:  60 * time.Minute,
 			ConnMaxIdleTime:  60 * time.Minute,
 		},
-		RequestTimeout:      16 * time.Second,
-		RequestMaxRetry:     8,
-		RequestRetrySleep:   100 * time.Millisecond,
-		ReturnRawErrors:     true,
-		DummyFirebase:       false,
-		FirebaseTokenURI:    "https://oauth2.googleapis.com/token",
-		FirebaseProjectID:   confEnv("SCN_FB_PROJECTID"),
-		FirebasePrivKeyID:   confEnv("SCN_FB_PRIVATEKEYID"),
-		FirebaseClientMail:  confEnv("SCN_FB_CLIENTEMAIL"),
-		FirebasePrivateKey:  confEnv("SCN_FB_PRIVATEKEY"),
-		DummyGoogleAPI:      false,
-		GoogleAPITokenURI:   "https://oauth2.googleapis.com/token",
-		GoogleAPIPrivKeyID:  confEnv("SCN_GOOG_PRIVATEKEYID"),
-		GoogleAPIClientMail: confEnv("SCN_GOOG_CLIENTEMAIL"),
-		GoogleAPIPrivateKey: confEnv("SCN_GOOG_PRIVATEKEY"),
-		GooglePackageName:   confEnv("SCN_GOOG_PACKAGENAME"),
-		GoogleProProductID:  confEnv("SCN_GOOG_PROPRODUCTID"),
-		Cors:                true,
+		RequestTimeout:           16 * time.Second,
+		RequestMaxRetry:          8,
+		RequestRetrySleep:        100 * time.Millisecond,
+		ReturnRawErrors:          true,
+		DummyFirebase:            false,
+		FirebaseTokenURI:         "https://oauth2.googleapis.com/token",
+		FirebaseProjectID:        confEnv("SCN_FB_PROJECTID"),
+		FirebasePrivKeyID:        confEnv("SCN_FB_PRIVATEKEYID"),
+		FirebaseClientMail:       confEnv("SCN_FB_CLIENTEMAIL"),
+		FirebasePrivateKey:       confEnv("SCN_FB_PRIVATEKEY"),
+		DummyGoogleAPI:           false,
+		GoogleAPITokenURI:        "https://oauth2.googleapis.com/token",
+		GoogleAPIPrivKeyID:       confEnv("SCN_GOOG_PRIVATEKEYID"),
+		GoogleAPIClientMail:      confEnv("SCN_GOOG_CLIENTEMAIL"),
+		GoogleAPIPrivateKey:      confEnv("SCN_GOOG_PRIVATEKEY"),
+		GooglePackageName:        confEnv("SCN_GOOG_PACKAGENAME"),
+		GoogleProProductID:       confEnv("SCN_GOOG_PROPRODUCTID"),
+		Cors:                     true,
+		ReqLogMaxBodySize:        2048,
+		ReqLogHistoryMaxCount:    1638,
+		ReqLogHistoryMaxDuration: timeext.FromDays(60),
 	}
 }
 
@@ -280,24 +295,27 @@ var configStag = func() Config {
 			ConnMaxLifetime:  60 * time.Minute,
 			ConnMaxIdleTime:  60 * time.Minute,
 		},
-		RequestTimeout:      16 * time.Second,
-		RequestMaxRetry:     8,
-		RequestRetrySleep:   100 * time.Millisecond,
-		ReturnRawErrors:     true,
-		DummyFirebase:       false,
-		FirebaseTokenURI:    "https://oauth2.googleapis.com/token",
-		FirebaseProjectID:   confEnv("SCN_FB_PROJECTID"),
-		FirebasePrivKeyID:   confEnv("SCN_FB_PRIVATEKEYID"),
-		FirebaseClientMail:  confEnv("SCN_FB_CLIENTEMAIL"),
-		FirebasePrivateKey:  confEnv("SCN_FB_PRIVATEKEY"),
-		DummyGoogleAPI:      false,
-		GoogleAPITokenURI:   "https://oauth2.googleapis.com/token",
-		GoogleAPIPrivKeyID:  confEnv("SCN_GOOG_PRIVATEKEYID"),
-		GoogleAPIClientMail: confEnv("SCN_GOOG_CLIENTEMAIL"),
-		GoogleAPIPrivateKey: confEnv("SCN_GOOG_PRIVATEKEY"),
-		GooglePackageName:   confEnv("SCN_GOOG_PACKAGENAME"),
-		GoogleProProductID:  confEnv("SCN_GOOG_PROPRODUCTID"),
-		Cors:                true,
+		RequestTimeout:           16 * time.Second,
+		RequestMaxRetry:          8,
+		RequestRetrySleep:        100 * time.Millisecond,
+		ReturnRawErrors:          true,
+		DummyFirebase:            false,
+		FirebaseTokenURI:         "https://oauth2.googleapis.com/token",
+		FirebaseProjectID:        confEnv("SCN_FB_PROJECTID"),
+		FirebasePrivKeyID:        confEnv("SCN_FB_PRIVATEKEYID"),
+		FirebaseClientMail:       confEnv("SCN_FB_CLIENTEMAIL"),
+		FirebasePrivateKey:       confEnv("SCN_FB_PRIVATEKEY"),
+		DummyGoogleAPI:           false,
+		GoogleAPITokenURI:        "https://oauth2.googleapis.com/token",
+		GoogleAPIPrivKeyID:       confEnv("SCN_GOOG_PRIVATEKEYID"),
+		GoogleAPIClientMail:      confEnv("SCN_GOOG_CLIENTEMAIL"),
+		GoogleAPIPrivateKey:      confEnv("SCN_GOOG_PRIVATEKEY"),
+		GooglePackageName:        confEnv("SCN_GOOG_PACKAGENAME"),
+		GoogleProProductID:       confEnv("SCN_GOOG_PROPRODUCTID"),
+		Cors:                     true,
+		ReqLogMaxBodySize:        2048,
+		ReqLogHistoryMaxCount:    1638,
+		ReqLogHistoryMaxDuration: timeext.FromDays(60),
 	}
 }
 
@@ -342,24 +360,27 @@ var configProd = func() Config {
 			ConnMaxLifetime:  60 * time.Minute,
 			ConnMaxIdleTime:  60 * time.Minute,
 		},
-		RequestTimeout:      16 * time.Second,
-		RequestMaxRetry:     8,
-		RequestRetrySleep:   100 * time.Millisecond,
-		ReturnRawErrors:     false,
-		DummyFirebase:       false,
-		FirebaseTokenURI:    "https://oauth2.googleapis.com/token",
-		FirebaseProjectID:   confEnv("SCN_SCN_FB_PROJECTID"),
-		FirebasePrivKeyID:   confEnv("SCN_SCN_FB_PRIVATEKEYID"),
-		FirebaseClientMail:  confEnv("SCN_SCN_FB_CLIENTEMAIL"),
-		FirebasePrivateKey:  confEnv("SCN_SCN_FB_PRIVATEKEY"),
-		DummyGoogleAPI:      false,
-		GoogleAPITokenURI:   "https://oauth2.googleapis.com/token",
-		GoogleAPIPrivKeyID:  confEnv("SCN_SCN_GOOG_PRIVATEKEYID"),
-		GoogleAPIClientMail: confEnv("SCN_SCN_GOOG_CLIENTEMAIL"),
-		GoogleAPIPrivateKey: confEnv("SCN_SCN_GOOG_PRIVATEKEY"),
-		GooglePackageName:   confEnv("SCN_SCN_GOOG_PACKAGENAME"),
-		GoogleProProductID:  confEnv("SCN_SCN_GOOG_PROPRODUCTID"),
-		Cors:                true,
+		RequestTimeout:           16 * time.Second,
+		RequestMaxRetry:          8,
+		RequestRetrySleep:        100 * time.Millisecond,
+		ReturnRawErrors:          false,
+		DummyFirebase:            false,
+		FirebaseTokenURI:         "https://oauth2.googleapis.com/token",
+		FirebaseProjectID:        confEnv("SCN_SCN_FB_PROJECTID"),
+		FirebasePrivKeyID:        confEnv("SCN_SCN_FB_PRIVATEKEYID"),
+		FirebaseClientMail:       confEnv("SCN_SCN_FB_CLIENTEMAIL"),
+		FirebasePrivateKey:       confEnv("SCN_SCN_FB_PRIVATEKEY"),
+		DummyGoogleAPI:           false,
+		GoogleAPITokenURI:        "https://oauth2.googleapis.com/token",
+		GoogleAPIPrivKeyID:       confEnv("SCN_SCN_GOOG_PRIVATEKEYID"),
+		GoogleAPIClientMail:      confEnv("SCN_SCN_GOOG_CLIENTEMAIL"),
+		GoogleAPIPrivateKey:      confEnv("SCN_SCN_GOOG_PRIVATEKEY"),
+		GooglePackageName:        confEnv("SCN_SCN_GOOG_PACKAGENAME"),
+		GoogleProProductID:       confEnv("SCN_SCN_GOOG_PROPRODUCTID"),
+		Cors:                     true,
+		ReqLogMaxBodySize:        2048,
+		ReqLogHistoryMaxCount:    1638,
+		ReqLogHistoryMaxDuration: timeext.FromDays(60),
 	}
 }
 

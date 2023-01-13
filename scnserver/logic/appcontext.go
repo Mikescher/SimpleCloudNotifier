@@ -4,6 +4,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/db"
+	"blackforestbytes.com/simplecloudnotifier/models"
 	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
@@ -17,7 +18,7 @@ type AppContext struct {
 	cancelFunc  context.CancelFunc
 	cancelled   bool
 	transaction sq.Tx
-	permissions PermissionSet
+	permissions models.PermissionSet
 	ginContext  *gin.Context
 }
 
@@ -27,7 +28,7 @@ func CreateAppContext(g *gin.Context, innerCtx context.Context, cancelFn context
 		cancelFunc:  cancelFn,
 		cancelled:   false,
 		transaction: nil,
-		permissions: NewEmptyPermissions(),
+		permissions: models.NewEmptyPermissions(),
 		ginContext:  g,
 	}
 }

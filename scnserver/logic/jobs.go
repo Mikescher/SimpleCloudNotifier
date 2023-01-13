@@ -1,6 +1,7 @@
 package logic
 
 type Job interface {
-	Start()
+	Start() error
 	Stop()
+	Running() bool
 }

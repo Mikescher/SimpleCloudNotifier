@@ -66,3 +66,13 @@ func (id ClientID) IntID() int64 {
 func (id ClientID) String() string {
 	return strconv.FormatInt(int64(id), 10)
 }
+
+type RequestID int64
+
+func (id RequestID) IntID() int64 {
+	return int64(id)
+}
+
+func (id RequestID) String() string {
+	return strconv.FormatInt(int64(id), 10)
+}

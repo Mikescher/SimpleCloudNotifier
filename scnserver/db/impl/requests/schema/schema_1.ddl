@@ -1,8 +1,32 @@
 
 CREATE TABLE `requests`
 (
-    request_id           INTEGER        PRIMARY KEY,
-    timestamp_created    INTEGER        NOT NULL
+    request_id            INTEGER                                PRIMARY KEY AUTOINCREMENT,
+
+    method                TEXT                                   NOT NULL,
+    uri                   TEXT                                   NOT NULL,
+    user_agent            TEXT                                       NULL,
+    authentication        TEXT                                       NULL,
+    request_body          TEXT                                       NULL,
+    request_body_size     INTEGER                                NOT NULL,
+    request_content_type  TEXT                                   NOT NULL,
+    remote_ip             TEXT                                   NOT NULL,
+
+    userid                TEXT                                       NULL,
+    permissions           TEXT                                       NULL,
+
+    response_statuscode   INTEGER                                NOT NULL,
+    response_body_size    INTEGER                                NOT NULL,
+    response_body         TEXT                                       NULL,
+    response_content_type TEXT                                   NOT NULL,
+    processing_time       INTEGER                                NOT NULL,
+    retry_count           INTEGER                                NOT NULL,
+    panicked              INTEGER    CHECK(panicked IN (0, 1))   NOT NULL,
+    panic_str             TEXT                                       NULL,
+
+    timestamp_created     INTEGER                                NOT NULL,
+    timestamp_start       INTEGER                                NOT NULL,
+    timestamp_finish      INTEGER                                NOT NULL
 
 ) STRICT;
 

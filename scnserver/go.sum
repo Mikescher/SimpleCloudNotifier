@@ -79,6 +79,8 @@ gogs.mikescher.com/BlackForestBytes/goext v0.0.50 h1:WuhfxFVyywR7J4+hSTTW/wE87aF
 gogs.mikescher.com/BlackForestBytes/goext v0.0.50/go.mod h1:ZEXyKUr8t0EKdPN1FYdk0klY7N8OwXxipGE9lWgpVE8=
 gogs.mikescher.com/BlackForestBytes/goext v0.0.55 h1:mzX/s+EBhnaRbiz3+6iwDJyJFS0F+jkbssiLDr9eJYY=
 gogs.mikescher.com/BlackForestBytes/goext v0.0.55/go.mod h1:ZEXyKUr8t0EKdPN1FYdk0klY7N8OwXxipGE9lWgpVE8=
+gogs.mikescher.com/BlackForestBytes/goext v0.0.56 h1:nl+2mP3BmkeB3kT6zFNXqYkOLc3JnFF3m8QwhxZJf2A=
+gogs.mikescher.com/BlackForestBytes/goext v0.0.56/go.mod h1:ZEXyKUr8t0EKdPN1FYdk0klY7N8OwXxipGE9lWgpVE8=
 golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=
 golang.org/x/crypto v0.4.0 h1:UVQgzMY87xqpKNgb+kDsll2Igd33HszWHFLmpaRMq/8=
 golang.org/x/crypto v0.4.0/go.mod h1:3quD/ATkf6oY+rnes5c3ExXTbLc8mueNue5/DoinL80=

@@ -24,6 +24,10 @@ import (
 	"time"
 )
 
+var rexWhitespaceStart = regexp.MustCompile("^\\s+")
+
+var rexWhitespaceEnd = regexp.MustCompile("\\s+$")
+
 type Application struct {
 	Config           scn.Config
 	Gin              *gin.Engine
@@ -34,13 +38,15 @@ type Application struct {
 	stopChan         chan bool
 	Port             string
 	IsRunning        *syncext.AtomicBool
+	RequestLogQueue  chan models.RequestLog
 }
 
 func NewApp(db *DBPool) *Application {
 	return &Application{
-		Database:  db,
-		stopChan:  make(chan bool),
-		IsRunning: syncext.NewAtomicBool(false),
+		Database:        db,
+		stopChan:        make(chan bool),
+		IsRunning:       syncext.NewAtomicBool(false),
+		RequestLogQueue: make(chan models.RequestLog, 1024),
 	}
 }
 
@@ -94,7 +100,10 @@ func (app *Application) Run() {
 	signal.Notify(sigstop, os.Interrupt, syscall.SIGTERM)
 
 	for _, job := range app.Jobs {
-		job.Start()
+		err := job.Start()
+		if err != nil {
+			log.Fatal().Err(err).Msg("Failed to start job")
+		}
 	}
 
 	select {
@@ -243,6 +252,7 @@ func (app *Application) StartRequest(g *gin.Context, uri any, query any, body an
 	}
 
 	actx.permissions = perm
+	g.Set("perm", perm)
 
 	return actx, nil
 }
@@ -252,33 +262,33 @@ func (app *Application) NewSimpleTransactionContext(timeout time.Duration) *Simp
 	return CreateSimpleContext(ictx, cancel)
 }
 
-func (app *Application) getPermissions(ctx *AppContext, hdr string) (PermissionSet, error) {
+func (app *Application) getPermissions(ctx *AppContext, hdr string) (models.PermissionSet, error) {
 	if hdr == "" {
-		return NewEmptyPermissions(), nil
+		return models.NewEmptyPermissions(), nil
 	}
 
 	if !strings.HasPrefix(hdr, "SCN ") {
-		return NewEmptyPermissions(), nil
+		return models.NewEmptyPermissions(), nil
 	}
 
 	key := strings.TrimSpace(hdr[4:])
 
 	user, err := app.Database.Primary.GetUserByKey(ctx, key)
 	if err != nil {
-		return PermissionSet{}, err
+		return models.PermissionSet{}, err
 	}
 
 	if user != nil && user.SendKey == key {
-		return PermissionSet{UserID: langext.Ptr(user.UserID), KeyType: PermKeyTypeUserSend}, nil
+		return models.PermissionSet{UserID: langext.Ptr(user.UserID), KeyType: models.PermKeyTypeUserSend}, nil
 	}
 	if user != nil && user.ReadKey == key {
-		return PermissionSet{UserID: langext.Ptr(user.UserID), KeyType: PermKeyTypeUserRead}, nil
+		return models.PermissionSet{UserID: langext.Ptr(user.UserID), KeyType: models.PermKeyTypeUserRead}, nil
 	}
 	if user != nil && user.AdminKey == key {
-		return PermissionSet{UserID: langext.Ptr(user.UserID), KeyType: PermKeyTypeUserAdmin}, nil
+		return models.PermissionSet{UserID: langext.Ptr(user.UserID), KeyType: models.PermKeyTypeUserAdmin}, nil
 	}
 
-	return NewEmptyPermissions(), nil
+	return models.NewEmptyPermissions(), nil
 }
 
 func (app *Application) GetOrCreateChannel(ctx *AppContext, userid models.UserID, displayChanName string, intChanName string) (models.Channel, error) {
@@ -306,9 +316,6 @@ func (app *Application) GetOrCreateChannel(ctx *AppContext, userid models.UserID
 
 	return newChan, nil
 }
-
-var rexWhitespaceStart = regexp.MustCompile("^\\s+")
-var rexWhitespaceEnd = regexp.MustCompile("\\s+$")
 
 func (app *Application) NormalizeChannelDisplayName(v string) string {
 	v = strings.TrimSpace(v)
@@ -346,5 +353,12 @@ func (app *Application) DeliverMessage(ctx context.Context, client models.Client
 		return langext.Ptr(fcmDelivID), nil
 	} else {
 		return langext.Ptr(""), nil
+	}
+}
+
+func (app *Application) InsertRequestLog(data models.RequestLog) {
+	ok := syncext.WriteNonBlocking(app.RequestLogQueue, data)
+	if !ok {
+		log.Error().Msg("failed to insert request-log (queue full)")
 	}
 }

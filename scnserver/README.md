@@ -3,7 +3,10 @@
   TODO
 ========
 
--------------------------------------------------------------------------------------------------------------------------------
+
+#### BEFORE RELEASE
+
+- tests (!)
 
  - migration script for existing data
 
@@ -11,21 +14,14 @@
 
  - route to re-check all pro-token (for me)
 
- - tests (!)
-
  - deploy
 
  - diff my currently used scnsend script vs the one in the docs here
 
- - Pagination for ListChannels / ListSubscriptions / ListClients / ListChannelSubscriptions / ListUserSubscriptions
-
- - cannot open sqlite in dbbrowsr (cannot parse schema?)
- -> https://github.com/sqlitebrowser/sqlitebrowser/issues/292 -> https://github.com/sqlitebrowser/sqlitebrowser/issues/29266
-
 - (?) use str-ids (also prevents wrong-joins) -> see psycho
   -> how does it work with existing data? (do i care, there are only 2 active users... (are there?))
 
- - error logging as goroutine, get sall errors via channel,
+ - error logging as goroutine, gets all errors via channel,
    (channel buffered - nonblocking send, second channel that gets a message when sender failed )
    (then all errors end up in _second_ sqlite table)
    due to message channel etc everything is non blocking and cant fail in main
@@ -40,11 +36,11 @@
    (or add another /kuma endpoint)
    -> https://webhook.site/
 
--------------------------------------------------------------------------------------------------------------------------------
+#### PERSONAL
 
  - in my script: use `srvname` for sendername
 
--------------------------------------------------------------------------------------------------------------------------------
+#### UNSURE
 
  - (?) default-priority for channels
 
@@ -55,4 +51,11 @@
  - (?) make channels deleteable (soft-delete) (what do with messages in channel?)
 
  - (?) desktop client for notifications
+
+#### LATER
+
+- Pagination for ListChannels / ListSubscriptions / ListClients / ListChannelSubscriptions / ListUserSubscriptions
+
+- cannot open sqlite in dbbrowsr (cannot parse schema?)
+  -> https://github.com/sqlitebrowser/sqlitebrowser/issues/292 -> https://github.com/sqlitebrowser/sqlitebrowser/issues/29266
 

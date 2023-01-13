@@ -4,6 +4,7 @@ import (
 	scn "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/api/apihighlight"
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -14,6 +15,9 @@ import (
 
 type HTTPResponse interface {
 	Write(g *gin.Context)
+	Statuscode() int
+	BodyString() *string
+	ContentType() string
 }
 
 type jsonHTTPResponse struct {
@@ -25,12 +29,40 @@ func (j jsonHTTPResponse) Write(g *gin.Context) {
 	g.JSON(j.statusCode, j.data)
 }
 
+func (j jsonHTTPResponse) Statuscode() int {
+	return j.statusCode
+}
+
+func (j jsonHTTPResponse) BodyString() *string {
+	v, err := json.Marshal(j.data)
+	if err != nil {
+		return nil
+	}
+	return langext.Ptr(string(v))
+}
+
+func (j jsonHTTPResponse) ContentType() string {
+	return "application/json"
+}
+
 type emptyHTTPResponse struct {
 	statusCode int
 }
 
 func (j emptyHTTPResponse) Write(g *gin.Context) {
 	g.Status(j.statusCode)
+}
+
+func (j emptyHTTPResponse) Statuscode() int {
+	return j.statusCode
+}
+
+func (j emptyHTTPResponse) BodyString() *string {
+	return nil
+}
+
+func (j emptyHTTPResponse) ContentType() string {
+	return ""
 }
 
 type textHTTPResponse struct {
@@ -40,6 +72,18 @@ type textHTTPResponse struct {
 
 func (j textHTTPResponse) Write(g *gin.Context) {
 	g.String(j.statusCode, "%s", j.data)
+}
+
+func (j textHTTPResponse) Statuscode() int {
+	return j.statusCode
+}
+
+func (j textHTTPResponse) BodyString() *string {
+	return langext.Ptr(j.data)
+}
+
+func (j textHTTPResponse) ContentType() string {
+	return "text/plain"
 }
 
 type dataHTTPResponse struct {
@@ -52,6 +96,18 @@ func (j dataHTTPResponse) Write(g *gin.Context) {
 	g.Data(j.statusCode, j.contentType, j.data)
 }
 
+func (j dataHTTPResponse) Statuscode() int {
+	return j.statusCode
+}
+
+func (j dataHTTPResponse) BodyString() *string {
+	return langext.Ptr(string(j.data))
+}
+
+func (j dataHTTPResponse) ContentType() string {
+	return j.contentType
+}
+
 type errorHTTPResponse struct {
 	statusCode int
 	data       any
@@ -60,6 +116,22 @@ type errorHTTPResponse struct {
 
 func (j errorHTTPResponse) Write(g *gin.Context) {
 	g.JSON(j.statusCode, j.data)
+}
+
+func (j errorHTTPResponse) Statuscode() int {
+	return j.statusCode
+}
+
+func (j errorHTTPResponse) BodyString() *string {
+	v, err := json.Marshal(j.data)
+	if err != nil {
+		return nil
+	}
+	return langext.Ptr(string(v))
+}
+
+func (j errorHTTPResponse) ContentType() string {
+	return "application/json"
 }
 
 func Status(sc int) HTTPResponse {

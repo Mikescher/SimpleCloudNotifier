@@ -3,18 +3,24 @@ package ginresp
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
+	"blackforestbytes.com/simplecloudnotifier/models"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/mattn/go-sqlite3"
 	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/dataext"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"time"
 )
 
 type WHandlerFunc func(*gin.Context) HTTPResponse
 
-func Wrap(fn WHandlerFunc) gin.HandlerFunc {
+type RequestLogAcceptor interface {
+	InsertRequestLog(data models.RequestLog)
+}
+
+func Wrap(rlacc RequestLogAcceptor, fn WHandlerFunc) gin.HandlerFunc {
 
 	maxRetry := scn.Conf.RequestMaxRetry
 	retrySleep := scn.Conf.RequestRetrySleep
@@ -27,6 +33,8 @@ func Wrap(fn WHandlerFunc) gin.HandlerFunc {
 			g.Request.Body = dataext.NewBufferedReadCloser(g.Request.Body)
 		}
 
+		t0 := time.Now()
+
 		for ctr := 1; ; ctr++ {
 
 			wrap, panicObj := callPanicSafe(fn, g)
@@ -36,6 +44,9 @@ func Wrap(fn WHandlerFunc) gin.HandlerFunc {
 			}
 
 			if g.Writer.Written() {
+				if scn.Conf.ReqLogEnabled {
+					rlacc.InsertRequestLog(createRequestLog(g, t0, ctr, nil, langext.Ptr("Writing in WrapperFunc is not supported")))
+				}
 				panic("Writing in WrapperFunc is not supported")
 			}
 
@@ -52,6 +63,9 @@ func Wrap(fn WHandlerFunc) gin.HandlerFunc {
 			}
 
 			if reqctx.Err() == nil {
+				if scn.Conf.ReqLogEnabled {
+					rlacc.InsertRequestLog(createRequestLog(g, t0, ctr, wrap, nil))
+				}
 				wrap.Write(g)
 			}
 
@@ -60,6 +74,62 @@ func Wrap(fn WHandlerFunc) gin.HandlerFunc {
 
 	}
 
+}
+
+func createRequestLog(g *gin.Context, t0 time.Time, ctr int, resp HTTPResponse, panicstr *string) models.RequestLog {
+
+	t1 := time.Now()
+
+	ua := g.Request.UserAgent()
+	auth := g.Request.Header.Get("Authorization")
+	ct := g.Request.Header.Get("Content-Type")
+
+	var reqbody []byte = nil
+	if g.Request.Body != nil {
+		brcbody, err := g.Request.Body.(dataext.BufferedReadCloser).BufferedAll()
+		if err == nil {
+			reqbody = brcbody
+		}
+	}
+	var strreqbody *string = nil
+	if len(reqbody) < scn.Conf.ReqLogMaxBodySize {
+		strreqbody = langext.Ptr(string(reqbody))
+	}
+
+	var respbody *string = nil
+
+	var strrespbody *string = nil
+	if resp != nil {
+		respbody = resp.BodyString()
+		if respbody != nil && len(*respbody) < scn.Conf.ReqLogMaxBodySize {
+			strrespbody = respbody
+		}
+	}
+
+	permObj, hasPerm := g.Get("perm")
+
+	return models.RequestLog{
+		Method:              g.Request.Method,
+		URI:                 g.Request.URL.String(),
+		UserAgent:           langext.Conditional(ua == "", nil, &ua),
+		Authentication:      langext.Conditional(auth == "", nil, &auth),
+		RequestBody:         strreqbody,
+		RequestBodySize:     int64(len(reqbody)),
+		RequestContentType:  ct,
+		RemoteIP:            g.RemoteIP(),
+		UserID:              langext.ConditionalFn10(hasPerm, func() *models.UserID { return permObj.(models.PermissionSet).UserID }, nil),
+		Permissions:         langext.ConditionalFn10(hasPerm, func() *string { return langext.Ptr(string(permObj.(models.PermissionSet).KeyType)) }, nil),
+		ResponseStatuscode:  langext.ConditionalFn10(resp != nil, func() *int64 { return langext.Ptr(int64(resp.Statuscode())) }, nil),
+		ResponseBodySize:    langext.ConditionalFn10(strrespbody != nil, func() *int64 { return langext.Ptr(int64(len(*respbody))) }, nil),
+		ResponseBody:        strrespbody,
+		ResponseContentType: langext.ConditionalFn10(resp != nil, func() string { return resp.ContentType() }, ""),
+		RetryCount:          int64(ctr),
+		Panicked:            panicstr != nil,
+		PanicStr:            panicstr,
+		ProcessingTime:      t1.Sub(t0),
+		TimestampStart:      t0,
+		TimestampFinish:     t1,
+	}
 }
 
 func callPanicSafe(fn WHandlerFunc, g *gin.Context) (res HTTPResponse, panicObj any) {

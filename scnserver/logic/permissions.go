@@ -7,33 +7,12 @@ import (
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 )
 
-type PermKeyType string
-
-const (
-	PermKeyTypeNone      PermKeyType = "NONE"       // (nothing)
-	PermKeyTypeUserSend  PermKeyType = "USER_SEND"  // send-messages
-	PermKeyTypeUserRead  PermKeyType = "USER_READ"  // send-messages, list-messages, read-user
-	PermKeyTypeUserAdmin PermKeyType = "USER_ADMIN" // send-messages, list-messages, read-user, delete-messages, update-user
-)
-
-type PermissionSet struct {
-	UserID  *models.UserID
-	KeyType PermKeyType
-}
-
-func NewEmptyPermissions() PermissionSet {
-	return PermissionSet{
-		UserID:  nil,
-		KeyType: PermKeyTypeNone,
-	}
-}
-
 func (ac *AppContext) CheckPermissionUserRead(userid models.UserID) *ginresp.HTTPResponse {
 	p := ac.permissions
-	if p.UserID != nil && *p.UserID == userid && p.KeyType == PermKeyTypeUserRead {
+	if p.UserID != nil && *p.UserID == userid && p.KeyType == models.PermKeyTypeUserRead {
 		return nil
 	}
-	if p.UserID != nil && *p.UserID == userid && p.KeyType == PermKeyTypeUserAdmin {
+	if p.UserID != nil && *p.UserID == userid && p.KeyType == models.PermKeyTypeUserAdmin {
 		return nil
 	}
 
@@ -42,10 +21,10 @@ func (ac *AppContext) CheckPermissionUserRead(userid models.UserID) *ginresp.HTT
 
 func (ac *AppContext) CheckPermissionRead() *ginresp.HTTPResponse {
 	p := ac.permissions
-	if p.UserID != nil && p.KeyType == PermKeyTypeUserRead {
+	if p.UserID != nil && p.KeyType == models.PermKeyTypeUserRead {
 		return nil
 	}
-	if p.UserID != nil && p.KeyType == PermKeyTypeUserAdmin {
+	if p.UserID != nil && p.KeyType == models.PermKeyTypeUserAdmin {
 		return nil
 	}
 
@@ -54,7 +33,7 @@ func (ac *AppContext) CheckPermissionRead() *ginresp.HTTPResponse {
 
 func (ac *AppContext) CheckPermissionUserAdmin(userid models.UserID) *ginresp.HTTPResponse {
 	p := ac.permissions
-	if p.UserID != nil && *p.UserID == userid && p.KeyType == PermKeyTypeUserAdmin {
+	if p.UserID != nil && *p.UserID == userid && p.KeyType == models.PermKeyTypeUserAdmin {
 		return nil
 	}
 
@@ -63,10 +42,10 @@ func (ac *AppContext) CheckPermissionUserAdmin(userid models.UserID) *ginresp.HT
 
 func (ac *AppContext) CheckPermissionSend() *ginresp.HTTPResponse {
 	p := ac.permissions
-	if p.UserID != nil && p.KeyType == PermKeyTypeUserSend {
+	if p.UserID != nil && p.KeyType == models.PermKeyTypeUserSend {
 		return nil
 	}
-	if p.UserID != nil && p.KeyType == PermKeyTypeUserAdmin {
+	if p.UserID != nil && p.KeyType == models.PermKeyTypeUserAdmin {
 		return nil
 	}
 
@@ -75,7 +54,7 @@ func (ac *AppContext) CheckPermissionSend() *ginresp.HTTPResponse {
 
 func (ac *AppContext) CheckPermissionAny() *ginresp.HTTPResponse {
 	p := ac.permissions
-	if p.KeyType == PermKeyTypeNone {
+	if p.KeyType == models.PermKeyTypeNone {
 		return langext.Ptr(ginresp.APIError(ac.ginContext, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil))
 	}
 
@@ -84,10 +63,10 @@ func (ac *AppContext) CheckPermissionAny() *ginresp.HTTPResponse {
 
 func (ac *AppContext) CheckPermissionMessageReadDirect(msg models.Message) bool {
 	p := ac.permissions
-	if p.UserID != nil && msg.OwnerUserID == *p.UserID && p.KeyType == PermKeyTypeUserRead {
+	if p.UserID != nil && msg.OwnerUserID == *p.UserID && p.KeyType == models.PermKeyTypeUserRead {
 		return true
 	}
-	if p.UserID != nil && msg.OwnerUserID == *p.UserID && p.KeyType == PermKeyTypeUserAdmin {
+	if p.UserID != nil && msg.OwnerUserID == *p.UserID && p.KeyType == models.PermKeyTypeUserAdmin {
 		return true
 	}
 
@@ -104,15 +83,15 @@ func (ac *AppContext) GetPermissionUserID() *models.UserID {
 
 func (ac *AppContext) IsPermissionUserRead() bool {
 	p := ac.permissions
-	return p.KeyType == PermKeyTypeUserRead || p.KeyType == PermKeyTypeUserAdmin
+	return p.KeyType == models.PermKeyTypeUserRead || p.KeyType == models.PermKeyTypeUserAdmin
 }
 
 func (ac *AppContext) IsPermissionUserSend() bool {
 	p := ac.permissions
-	return p.KeyType == PermKeyTypeUserSend || p.KeyType == PermKeyTypeUserAdmin
+	return p.KeyType == models.PermKeyTypeUserSend || p.KeyType == models.PermKeyTypeUserAdmin
 }
 
 func (ac *AppContext) IsPermissionUserAdmin() bool {
 	p := ac.permissions
-	return p.KeyType == PermKeyTypeUserAdmin
+	return p.KeyType == models.PermKeyTypeUserAdmin
 }

@@ -28,7 +28,7 @@ func TestSearchMessageFTSSimple(t *testing.T) {
 }
 
 func TestSearchMessageFTSMulti(t *testing.T) {
-	//TODO search for messages by FTS
+	t.SkipNow() //TODO search for messages by FTS
 }
 
 //TODO more search/list/filter message tests

@@ -119,8 +119,10 @@ func StartSimpleWebserver(t *testing.T) (*logic.Application, string, func()) {
 
 	apc := google.NewDummy()
 
-	jobRetry := jobs.NewDeliveryRetryJob(app)
-	app.Init(conf, ginengine, nc, apc, []logic.Job{jobRetry})
+	app.Init(conf, ginengine, nc, apc, []logic.Job{
+		jobs.NewDeliveryRetryJob(app),
+		jobs.NewRequestLogCollectorJob(app),
+	})
 
 	router.Init(ginengine)
 
