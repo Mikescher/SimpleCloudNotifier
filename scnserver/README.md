@@ -6,7 +6,7 @@
 
 #### BEFORE RELEASE
 
-- tests (!)
+ - finish tests (!)
 
  - migration script for existing data
 
@@ -18,16 +18,21 @@
 
  - diff my currently used scnsend script vs the one in the docs here
 
-- (?) use str-ids (also prevents wrong-joins) -> see psycho
-  -> how does it work with existing data? (do i care, there are only 2 active users... (are there?))
+- (?) use str-ids (hide counts and prevents wrong-joins) -> see psycho
+  -> ensre that all queries that return multiple are properly ordered
+  -> how does it work with existing data? 
+  -> do i care, there are only 2 active users... (are there?)
 
  - error logging as goroutine, gets all errors via channel,
    (channel buffered - nonblocking send, second channel that gets a message when sender failed )
    (then all errors end up in _second_ sqlite table)
    due to message channel etc everything is non blocking and cant fail in main
 
- - request logging (log all requests with body response, exitcode, headers, uri, route, userid, ..., tx-retries, etc), (trim body/response if too big?)
-
+ - => implement proper error logging in goext, kinda combines zerolog and wrapped-errors
+      copy basic code from bringman, but remove all bm specific stuff and make it abstract
+      Register(ErrType) methods, errtypes then as structs
+      log.xxx package with same interface as zerolog
+      
  - jobs to clear requests-db and logs-db after to only keep X entries...
 
  -> logs and request-logging into their own sqlite files (sqlite-files are prepped)
