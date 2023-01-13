@@ -492,4 +492,10 @@ func TestChannelUpdate(t *testing.T) {
 
 }
 
-//TODO test missing channel-xx methods
+func TestListChannelMessages(t *testing.T) {
+	t.SkipNow() //TODO
+}
+
+func TestListChannelSubscriptions(t *testing.T) {
+	t.SkipNow() //TODO
+}

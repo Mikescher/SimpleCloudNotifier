@@ -1461,10 +1461,14 @@ func TestSendParallel(t *testing.T) {
 	}
 }
 
-//TODO post to foreign channel via send-key
+func TestSendToForeignChannelWithSendKey(t *testing.T) {
+	t.SkipNow() //TODO
+}
+
+func TestSendDeliveryRetry(t *testing.T) {
+	t.SkipNow() //TODO
+}
 
 //TODO check message_counter + last_sent in channel
 
 //TODO check message_counter + last_sent in user
-
-//TODO test delivery-retry
