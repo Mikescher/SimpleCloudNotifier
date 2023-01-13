@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"strings"
 	"testing"
 )
 
@@ -358,6 +359,137 @@ func TestListChannelsAll(t *testing.T) {
 		r0 := tt.RequestAuthGet[chanlist](t, data.User[k].AdminKey, baseUrl, fmt.Sprintf("/api/users/%d/channels?selector=%s", data.User[k].UID, "all"))
 		tt.AssertMappedSet(t, fmt.Sprintf("%d->chanlist", k), v, r0.Channels, "internal_name")
 	}
+}
+
+func TestChannelUpdate(t *testing.T) {
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	uid := int(r0["user_id"].(float64))
+	admintok := r0["admin_key"].(string)
+
+	type chanlist struct {
+		Channels []gin.H `json:"channels"`
+	}
+
+	{
+		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels", uid))
+		tt.AssertMappedSet(t, "channels", []string{}, clist.Channels, "display_name")
+		tt.AssertMappedSet(t, "channels", []string{}, clist.Channels, "internal_name")
+	}
+
+	chan0 := tt.RequestAuthPost[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels", uid), gin.H{
+		"name": "server-alerts",
+	})
+	chanid := fmt.Sprintf("%v", chan0["channel_id"])
+
+	{
+		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels", uid))
+		tt.AssertMappedSet(t, "channels", []string{"server-alerts"}, clist.Channels, "display_name")
+		tt.AssertMappedSet(t, "channels", []string{"server-alerts"}, clist.Channels, "internal_name")
+		tt.AssertEqual(t, "channels.descr", nil, clist.Channels[0]["description_name"])
+	}
+
+	{
+		chan1 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels/%s", uid, chanid))
+		tt.AssertEqual(t, "channels.display_name", "server-alerts", chan1["display_name"])
+		tt.AssertEqual(t, "channels.internal_name", "server-alerts", chan1["internal_name"])
+		tt.AssertEqual(t, "channels.description_name", nil, chan1["description_name"])
+		tt.AssertEqual(t, "channels.subscribe_key", chan0["subscribe_key"], chan1["subscribe_key"])
+		tt.AssertEqual(t, "channels.send_key", chan0["send_key"], chan1["send_key"])
+	}
+
+	// [1] update display_name
+
+	tt.RequestAuthPatch[tt.Void](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels/%s", uid, chanid), gin.H{
+		"display_name": "SERVER-ALERTS",
+	})
+
+	{
+		chan1 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels/%s", uid, chanid))
+		tt.AssertEqual(t, "channels.display_name", "SERVER-ALERTS", chan1["display_name"])
+		tt.AssertEqual(t, "channels.internal_name", "server-alerts", chan1["internal_name"])
+		tt.AssertEqual(t, "channels.description_name", nil, chan1["description_name"])
+		tt.AssertEqual(t, "channels.subscribe_key", chan0["subscribe_key"], chan1["subscribe_key"])
+		tt.AssertEqual(t, "channels.send_key", chan0["send_key"], chan1["send_key"])
+	}
+
+	// [2] fail to update display_name
+
+	tt.RequestAuthPatchShouldFail(t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels/%s", uid, chanid), gin.H{
+		"display_name": "SERVER-ALERTS2",
+	}, 400, apierr.CHANNEL_NAME_WOULD_CHANGE)
+
+	// [3] renew subscribe_key
+
+	tt.RequestAuthPatch[tt.Void](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels/%s", uid, chanid), gin.H{
+		"subscribe_key": true,
+	})
+
+	{
+		chan1 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels/%s", uid, chanid))
+		tt.AssertNotEqual(t, "channels.subscribe_key", chan0["subscribe_key"], chan1["subscribe_key"])
+		tt.AssertEqual(t, "channels.send_key", chan0["send_key"], chan1["send_key"])
+	}
+
+	// [4] renew send_key
+
+	tt.RequestAuthPatch[tt.Void](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels/%s", uid, chanid), gin.H{
+		"send_key": true,
+	})
+
+	{
+		chan1 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels/%s", uid, chanid))
+		tt.AssertNotEqual(t, "channels.subscribe_key", chan0["subscribe_key"], chan1["subscribe_key"])
+		tt.AssertNotEqual(t, "channels.send_key", chan0["send_key"], chan1["send_key"])
+	}
+
+	// [5] update description_name
+
+	tt.RequestAuthPatch[tt.Void](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels/%s", uid, chanid), gin.H{
+		"description_name": "hello World",
+	})
+
+	{
+		chan1 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels/%s", uid, chanid))
+		tt.AssertEqual(t, "channels.description_name", "hello World", chan1["description_name"])
+	}
+
+	// [6] update description_name
+
+	tt.RequestAuthPatch[tt.Void](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels/%s", uid, chanid), gin.H{
+		"description_name": "  AXXhello World9  ",
+	})
+
+	{
+		chan1 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels/%s", uid, chanid))
+		tt.AssertEqual(t, "channels.description_name", "AXXhello World9", chan1["description_name"])
+	}
+
+	// [7] clear description_name
+
+	tt.RequestAuthPatch[tt.Void](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels/%s", uid, chanid), gin.H{
+		"description_name": "",
+	})
+
+	{
+		chan1 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels/%s", uid, chanid))
+		tt.AssertEqual(t, "channels.description_name", nil, chan1["description_name"])
+	}
+
+	// [8] fail to update description_name
+
+	tt.RequestAuthPatchShouldFail(t, admintok, baseUrl, fmt.Sprintf("/api/users/%d/channels/%s", uid, chanid), gin.H{
+		"description_name": strings.Repeat("0123456789", 48),
+	}, 400, apierr.CHANNEL_DESCRIPTION_TOO_LONG)
+
 }
 
 //TODO test missing channel-xx methods

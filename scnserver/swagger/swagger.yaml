@@ -340,6 +340,8 @@ definitions:
     properties:
       channel_id:
         type: integer
+      description_name:
+        type: string
       display_name:
         type: string
       internal_name:

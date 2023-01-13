@@ -751,6 +751,7 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 		RefreshSubscribeKey *bool   `json:"subscribe_key"`
 		RefreshSendKey      *bool   `json:"send_key"`
 		DisplayName         *string `json:"display_name"`
+		DescriptionName     *string `json:"description_name"`
 	}
 
 	var u uri
@@ -771,6 +772,14 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 	}
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
+	}
+
+	user, err := h.database.GetUser(ctx, u.UserID)
+	if err == sql.ErrNoRows {
+		return ginresp.APIError(g, 400, apierr.USER_NOT_FOUND, "User not found", nil)
+	}
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query user", err)
 	}
 
 	if langext.Coalesce(b.RefreshSendKey, false) {
@@ -800,7 +809,29 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 			return ginresp.APIError(g, 400, apierr.CHANNEL_NAME_WOULD_CHANGE, "Cannot substantially change the channel name", err)
 		}
 
+		if len(newDisplayName) > user.MaxChannelNameLength() {
+			return ginresp.APIError(g, 400, apierr.CHANNEL_TOO_LONG, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
+		}
+
 		err := h.database.UpdateChannelDisplayName(ctx, u.ChannelID, newDisplayName)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update channel", err)
+		}
+
+	}
+
+	if b.DescriptionName != nil {
+
+		var descName *string = nil
+		if strings.TrimSpace(*b.DescriptionName) != "" {
+			descName = langext.Ptr(strings.TrimSpace(*b.DescriptionName))
+		}
+
+		if descName != nil && len(*descName) > user.MaxChannelDescriptionNameLength() {
+			return ginresp.APIError(g, 400, apierr.CHANNEL_DESCRIPTION_TOO_LONG, fmt.Sprintf("Channel-Description too long (max %d characters)", user.MaxChannelNameLength()), nil)
+		}
+
+		err := h.database.UpdateChannelDescriptionName(ctx, u.ChannelID, descName)
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update channel", err)
 		}

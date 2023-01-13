@@ -12,6 +12,7 @@ type Channel struct {
 	OwnerUserID       UserID
 	InternalName      string
 	DisplayName       string
+	DescriptionName   *string
 	SubscribeKey      string
 	SendKey           string
 	TimestampCreated  time.Time
@@ -25,6 +26,7 @@ func (c Channel) JSON(includeKey bool) ChannelJSON {
 		OwnerUserID:       c.OwnerUserID,
 		InternalName:      c.InternalName,
 		DisplayName:       c.DisplayName,
+		DescriptionName:   c.DescriptionName,
 		SubscribeKey:      langext.Conditional(includeKey, langext.Ptr(c.SubscribeKey), nil),
 		SendKey:           langext.Conditional(includeKey, langext.Ptr(c.SendKey), nil),
 		TimestampCreated:  c.TimestampCreated.Format(time.RFC3339Nano),
@@ -61,6 +63,7 @@ type ChannelJSON struct {
 	OwnerUserID       UserID    `json:"owner_user_id"`
 	InternalName      string    `json:"internal_name"`
 	DisplayName       string    `json:"display_name"`
+	DescriptionName   *string   `json:"description_name"`
 	SubscribeKey      *string   `json:"subscribe_key"` // can be nil, depending on endpoint
 	SendKey           *string   `json:"send_key"`      // can be nil, depending on endpoint
 	TimestampCreated  string    `json:"timestamp_created"`
@@ -78,6 +81,7 @@ type ChannelDB struct {
 	OwnerUserID       UserID    `db:"owner_user_id"`
 	InternalName      string    `db:"internal_name"`
 	DisplayName       string    `db:"display_name"`
+	DescriptionName   *string   `db:"description_name"`
 	SubscribeKey      string    `db:"subscribe_key"`
 	SendKey           string    `db:"send_key"`
 	TimestampCreated  int64     `db:"timestamp_created"`
@@ -92,6 +96,7 @@ func (c ChannelDB) Model() Channel {
 		OwnerUserID:       c.OwnerUserID,
 		InternalName:      c.InternalName,
 		DisplayName:       c.DisplayName,
+		DescriptionName:   c.DescriptionName,
 		SubscribeKey:      c.SubscribeKey,
 		SendKey:           c.SendKey,
 		TimestampCreated:  time.UnixMilli(c.TimestampCreated),

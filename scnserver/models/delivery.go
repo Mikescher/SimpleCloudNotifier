@@ -53,7 +53,7 @@ type DeliveryJSON struct {
 	ReceiverUserID     UserID         `json:"receiver_user_id"`
 	ReceiverClientID   ClientID       `json:"receiver_client_id"`
 	TimestampCreated   string         `json:"timestamp_created"`
-	TimestampFinalized *string        `json:"tiestamp_finalized"`
+	TimestampFinalized *string        `json:"timestamp_finalized"`
 	Status             DeliveryStatus `json:"status"`
 	RetryCount         int            `json:"retry_count"`
 	NextDelivery       *string        `json:"next_delivery"`
@@ -66,7 +66,7 @@ type DeliveryDB struct {
 	ReceiverUserID     UserID         `db:"receiver_user_id"`
 	ReceiverClientID   ClientID       `db:"receiver_client_id"`
 	TimestampCreated   int64          `db:"timestamp_created"`
-	TimestampFinalized *int64         `db:"tiestamp_finalized"`
+	TimestampFinalized *int64         `db:"timestamp_finalized"`
 	Status             DeliveryStatus `db:"status"`
 	RetryCount         int            `db:"retry_count"`
 	NextDelivery       *int64         `db:"next_delivery"`

@@ -20,8 +20,10 @@
  - Pagination for ListChannels / ListSubscriptions / ListClients / ListChannelSubscriptions / ListUserSubscriptions
 
  - cannot open sqlite in dbbrowsr (cannot parse schema?)
+ -> https://github.com/sqlitebrowser/sqlitebrowser/issues/292 -> https://github.com/sqlitebrowser/sqlitebrowser/issues/29266
 
 - (?) use str-ids (also prevents wrong-joins) -> see psycho
+  -> how does it work with existing data? (do i care, there are only 2 active users... (are there?))
 
  - error logging as goroutine, get sall errors via channel,
    (channel buffered - nonblocking send, second channel that gets a message when sender failed )
@@ -34,9 +36,13 @@
 
  -> logs and request-logging into their own sqlite files (sqlite-files are prepped)
 
+ - /send endpoint should be compatible with the [ webhook ] notifier of uptime-kuma
+   (or add another /kuma endpoint)
+   -> https://webhook.site/
+
 -------------------------------------------------------------------------------------------------------------------------------
 
- - in my script: use (backupname || hostname) for sendername
+ - in my script: use `srvname` for sendername
 
 -------------------------------------------------------------------------------------------------------------------------------
 
@@ -47,3 +53,6 @@
  - (?) "login" on website and list/search/filter messages
 
  - (?) make channels deleteable (soft-delete) (what do with messages in channel?)
+
+ - (?) desktop client for notifications
+

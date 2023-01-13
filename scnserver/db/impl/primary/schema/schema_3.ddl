@@ -48,6 +48,7 @@ CREATE TABLE channels
 
     internal_name      TEXT        NOT NULL,
     display_name       TEXT        NOT NULL,
+    description_name   TEXT            NULL,
 
     subscribe_key      TEXT        NOT NULL,
     send_key           TEXT        NOT NULL,

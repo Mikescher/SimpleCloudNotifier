@@ -95,6 +95,10 @@ func (u User) MaxChannelNameLength() int {
 	return 120
 }
 
+func (u User) MaxChannelDescriptionNameLength() int {
+	return 300
+}
+
 func (u User) MaxSenderName() int {
 	return 120
 }

@@ -289,3 +289,20 @@ func (db *Database) UpdateChannelDisplayName(ctx TxContext, channelid models.Cha
 
 	return nil
 }
+
+func (db *Database) UpdateChannelDescriptionName(ctx TxContext, channelid models.ChannelID, descname *string) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, "UPDATE channels SET description_name = :nam WHERE channel_id = :cid", sq.PP{
+		"nam": descname,
+		"cid": channelid,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

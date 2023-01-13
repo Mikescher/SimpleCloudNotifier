@@ -2844,6 +2844,9 @@
                 "channel_id": {
                     "type": "integer"
                 },
+                "description_name": {
+                    "type": "string"
+                },
                 "display_name": {
                     "type": "string"
                 },
