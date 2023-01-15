@@ -5,6 +5,8 @@ _build
 
 DOCKER_GIT_INFO
 
+scn_export.dat
+scn_export.json
 
 ##############
 

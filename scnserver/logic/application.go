@@ -12,8 +12,8 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"gogs.mikescher.com/BlackForestBytes/goext/rext"
 	"gogs.mikescher.com/BlackForestBytes/goext/syncext"
-	"math/rand"
 	"net"
 	"net/http"
 	"os"
@@ -24,9 +24,9 @@ import (
 	"time"
 )
 
-var rexWhitespaceStart = regexp.MustCompile("^\\s+")
-
-var rexWhitespaceEnd = regexp.MustCompile("\\s+$")
+var rexWhitespaceStart = rext.W(regexp.MustCompile("^\\s+"))
+var rexWhitespaceEnd = rext.W(regexp.MustCompile("\\s+$"))
+var rexNormalizeUsername = rext.W(regexp.MustCompile("[^[:alnum:]\\-_ ]"))
 
 type Application struct {
 	Config           scn.Config
@@ -154,12 +154,7 @@ func (app *Application) Run() {
 }
 
 func (app *Application) GenerateRandomAuthKey() string {
-	charset := "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-	k := ""
-	for i := 0; i < 64; i++ {
-		k += string(charset[rand.Int()%len(charset)])
-	}
-	return k
+	return scn.RandomAuthKey()
 }
 
 func (app *Application) QuotaMax(ispro bool) int {
@@ -171,6 +166,10 @@ func (app *Application) QuotaMax(ispro bool) int {
 }
 
 func (app *Application) VerifyProToken(ctx *AppContext, token string) (bool, error) {
+	if strings.HasPrefix(token, "ANDROID|v1|") {
+		subToken := token[len("ANDROID|v2|"):]
+		return app.VerifyAndroidProToken(ctx, subToken)
+	}
 	if strings.HasPrefix(token, "ANDROID|v2|") {
 		subToken := token[len("ANDROID|v2|"):]
 		return app.VerifyAndroidProToken(ctx, subToken)
@@ -319,8 +318,8 @@ func (app *Application) GetOrCreateChannel(ctx *AppContext, userid models.UserID
 
 func (app *Application) NormalizeChannelDisplayName(v string) string {
 	v = strings.TrimSpace(v)
-	v = rexWhitespaceStart.ReplaceAllString(v, "")
-	v = rexWhitespaceEnd.ReplaceAllString(v, "")
+	v = rexWhitespaceStart.RemoveAll(v)
+	v = rexWhitespaceEnd.RemoveAll(v)
 
 	return v
 }
@@ -328,17 +327,15 @@ func (app *Application) NormalizeChannelDisplayName(v string) string {
 func (app *Application) NormalizeChannelInternalName(v string) string {
 	v = strings.TrimSpace(v)
 	v = strings.ToLower(v)
-	v = rexWhitespaceStart.ReplaceAllString(v, "")
-	v = rexWhitespaceEnd.ReplaceAllString(v, "")
+	v = rexWhitespaceStart.RemoveAll(v)
+	v = rexWhitespaceEnd.RemoveAll(v)
 
 	return v
 }
 
 func (app *Application) NormalizeUsername(v string) string {
-	rex := regexp.MustCompile("[^[:alnum:]\\-_ ]")
-
 	v = strings.TrimSpace(v)
-	v = rex.ReplaceAllString(v, "")
+	v = rexNormalizeUsername.RemoveAll(v)
 
 	return v
 }

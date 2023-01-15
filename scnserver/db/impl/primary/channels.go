@@ -91,11 +91,12 @@ func (db *Database) CreateChannel(ctx TxContext, userid models.UserID, dispName 
 
 	channelid := models.NewChannelID()
 
-	_, err = tx.Exec(ctx, "INSERT INTO channels (channel_id, owner_user_id, display_name, internal_name, subscribe_key, send_key, timestamp_created) VALUES (:cid, :ouid, :dnam, :inam, :subkey, :sendkey, :ts)", sq.PP{
+	_, err = tx.Exec(ctx, "INSERT INTO channels (channel_id, owner_user_id, display_name, internal_name, description_name, subscribe_key, send_key, timestamp_created) VALUES (:cid, :ouid, :dnam, :inam, :hnam, :subkey, :sendkey, :ts)", sq.PP{
 		"cid":     channelid,
 		"ouid":    userid,
 		"dnam":    dispName,
 		"inam":    intName,
+		"hnam":    nil,
 		"subkey":  subscribeKey,
 		"sendkey": sendKey,
 		"ts":      time2DB(now),

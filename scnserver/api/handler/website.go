@@ -7,6 +7,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
+	"gogs.mikescher.com/BlackForestBytes/goext/rext"
 	"net/http"
 	"regexp"
 	"strings"
@@ -14,15 +15,15 @@ import (
 
 type WebsiteHandler struct {
 	app         *logic.Application
-	rexTemplate *regexp.Regexp
-	rexConfig   *regexp.Regexp
+	rexTemplate rext.Regex
+	rexConfig   rext.Regex
 }
 
 func NewWebsiteHandler(app *logic.Application) WebsiteHandler {
 	return WebsiteHandler{
 		app:         app,
-		rexTemplate: regexp.MustCompile("{{template\\|[A-Za-z0-9_\\-\\[\\].]+}}"),
-		rexConfig:   regexp.MustCompile("{{config\\|[A-Za-z0-9_\\-.]+}}"),
+		rexTemplate: rext.W(regexp.MustCompile("{{template\\|[A-Za-z0-9_\\-\\[\\].]+}}")),
+		rexConfig:   rext.W(regexp.MustCompile("{{config\\|[A-Za-z0-9_\\-.]+}}")),
 	}
 }
 
@@ -77,17 +78,19 @@ func (h WebsiteHandler) CSS(g *gin.Context) ginresp.HTTPResponse {
 }
 
 func (h WebsiteHandler) serveAsset(g *gin.Context, fn string, repl bool) ginresp.HTTPResponse {
-	data, err := website.Assets.ReadFile(fn)
+	_data, err := website.Assets.ReadFile(fn)
 	if err != nil {
 		return ginresp.Status(http.StatusNotFound)
 	}
 
+	data := string(_data)
+
 	if repl {
 		failed := false
-		data = h.rexTemplate.ReplaceAllFunc(data, func(match []byte) []byte {
+		data = h.rexTemplate.ReplaceAllFunc(data, func(match string) string {
 			prefix := len("{{template|")
 			suffix := len("}}")
-			fnSub := string(match[prefix : len(match)-suffix])
+			fnSub := match[prefix : len(match)-suffix]
 
 			fnSub = strings.ReplaceAll(fnSub, "[theme]", h.getTheme(g))
 
@@ -96,23 +99,23 @@ func (h WebsiteHandler) serveAsset(g *gin.Context, fn string, repl bool) ginresp
 				log.Error().Str("templ", string(match)).Str("fnSub", fnSub).Str("source", fn).Msg("Failed to replace template")
 				failed = true
 			}
-			return subdata
+			return string(subdata)
 		})
 		if failed {
 			return ginresp.InternalError(errors.New("template replacement failed"))
 		}
 
-		data = h.rexConfig.ReplaceAllFunc(data, func(match []byte) []byte {
+		data = h.rexConfig.ReplaceAllFunc(data, func(match string) string {
 			prefix := len("{{config|")
 			suffix := len("}}")
 			cfgKey := match[prefix : len(match)-suffix]
 
-			cval, ok := h.getReplConfig(string(cfgKey))
+			cval, ok := h.getReplConfig(cfgKey)
 			if !ok {
-				log.Error().Str("templ", string(match)).Str("source", fn).Msg("Failed to replace config")
+				log.Error().Str("templ", match).Str("source", fn).Msg("Failed to replace config")
 				failed = true
 			}
-			return []byte(cval)
+			return cval
 		})
 		if failed {
 			return ginresp.InternalError(errors.New("config replacement failed"))
@@ -138,7 +141,7 @@ func (h WebsiteHandler) serveAsset(g *gin.Context, fn string, repl bool) ginresp
 		mime = "image/svg+xml"
 	}
 
-	return ginresp.Data(http.StatusOK, mime, data)
+	return ginresp.Data(http.StatusOK, mime, []byte(data))
 }
 
 func (h WebsiteHandler) getReplConfig(key string) (string, bool) {

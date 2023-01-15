@@ -71,4 +71,7 @@ fmt:
 test:
 	go test ./test/...
 
+migrate:
+	CGO_ENABLED=1 go build -v -o _build/scn_migrate -tags "timetzdata sqlite_fts5 sqlite_foreign_keys" ./cmd/migrate
+	./_build/scn_migrate
 

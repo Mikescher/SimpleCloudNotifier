@@ -81,7 +81,7 @@ func (l DBLogger) PostExec(txID *uint16, sqlOriginal string, sqlReal string, par
 }
 
 func fmtSQLPrint(sql string) string {
-	if strings.Contains(sql, ";") {
+	if strings.Contains(sql, ";") && len(sql) > 1024 {
 		return "(...multi...)"
 	}
 

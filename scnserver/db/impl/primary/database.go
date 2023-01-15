@@ -42,7 +42,9 @@ func NewPrimaryDatabase(cfg server.Config) (*Database, error) {
 
 	qqdb := sq.NewDB(xdb)
 
-	qqdb.AddListener(dbtools.DBLogger{})
+	if conf.EnableLogger {
+		qqdb.AddListener(dbtools.DBLogger{})
+	}
 
 	pp, err := dbtools.NewDBPreprocessor(qqdb)
 	if err != nil {
@@ -54,6 +56,10 @@ func NewPrimaryDatabase(cfg server.Config) (*Database, error) {
 	scndb := &Database{db: qqdb, pp: pp, wal: conf.Journal == "WAL"}
 
 	return scndb, nil
+}
+
+func (db *Database) DB() sq.DB {
+	return db.db
 }
 
 func (db *Database) Migrate(ctx context.Context) error {

@@ -7,6 +7,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"gogs.mikescher.com/BlackForestBytes/goext/rext"
 	"math/big"
 	"reflect"
 	"regexp"
@@ -19,7 +20,7 @@ type EntityID interface {
 	Prefix() string
 	Raw() string
 	CheckString() string
-	Regex() *regexp.Regexp
+	Regex() rext.Regex
 }
 
 const idlen = 24
@@ -51,8 +52,8 @@ var (
 	regexRequestID      = generateRegex(prefixRequestID)
 )
 
-func generateRegex(prefix string) *regexp.Regexp {
-	return regexp.MustCompile(fmt.Sprintf("^%s[%s]{%d}[%s]{%d}$", prefix, idCharset, idlen-len(prefix)-checklen, idCharset, checklen))
+func generateRegex(prefix string) rext.Regex {
+	return rext.W(regexp.MustCompile(fmt.Sprintf("^%s[%s]{%d}[%s]{%d}$", prefix, idCharset, idlen-len(prefix)-checklen, idCharset, checklen)))
 }
 
 func generateCharsetMap() []int {
@@ -179,7 +180,7 @@ func (id UserID) CheckString() string {
 	return getCheckString(prefixUserID, string(id))
 }
 
-func (id UserID) Regex() *regexp.Regexp {
+func (id UserID) Regex() rext.Regex {
 	return regexUserID
 }
 
@@ -211,7 +212,7 @@ func (id ChannelID) CheckString() string {
 	return getCheckString(prefixChannelID, string(id))
 }
 
-func (id ChannelID) Regex() *regexp.Regexp {
+func (id ChannelID) Regex() rext.Regex {
 	return regexChannelID
 }
 
@@ -243,7 +244,7 @@ func (id DeliveryID) CheckString() string {
 	return getCheckString(prefixDeliveryID, string(id))
 }
 
-func (id DeliveryID) Regex() *regexp.Regexp {
+func (id DeliveryID) Regex() rext.Regex {
 	return regexDeliveryID
 }
 
@@ -275,7 +276,7 @@ func (id MessageID) CheckString() string {
 	return getCheckString(prefixMessageID, string(id))
 }
 
-func (id MessageID) Regex() *regexp.Regexp {
+func (id MessageID) Regex() rext.Regex {
 	return regexMessageID
 }
 
@@ -307,7 +308,7 @@ func (id SubscriptionID) CheckString() string {
 	return getCheckString(prefixSubscriptionID, string(id))
 }
 
-func (id SubscriptionID) Regex() *regexp.Regexp {
+func (id SubscriptionID) Regex() rext.Regex {
 	return regexSubscriptionID
 }
 
@@ -339,7 +340,7 @@ func (id ClientID) CheckString() string {
 	return getCheckString(prefixClientID, string(id))
 }
 
-func (id ClientID) Regex() *regexp.Regexp {
+func (id ClientID) Regex() rext.Regex {
 	return regexClientID
 }
 
@@ -371,6 +372,6 @@ func (id RequestID) CheckString() string {
 	return getCheckString(prefixRequestID, string(id))
 }
 
-func (id RequestID) Regex() *regexp.Regexp {
+func (id RequestID) Regex() rext.Regex {
 	return regexRequestID
 }

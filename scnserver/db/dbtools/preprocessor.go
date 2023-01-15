@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"gogs.mikescher.com/BlackForestBytes/goext/rext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"regexp"
 	"strings"
@@ -37,7 +38,7 @@ type DBPreprocessor struct {
 	cacheQuery map[string]string
 }
 
-var regexAlias = regexp.MustCompile("([A-Za-z_\\-0-9]+)\\s+AS\\s+([A-Za-z_\\-0-9]+)")
+var regexAlias = rext.W(regexp.MustCompile("([A-Za-z_\\-0-9]+)\\s+AS\\s+([A-Za-z_\\-0-9]+)"))
 
 func NewDBPreprocessor(db sq.DB) (*DBPreprocessor, error) {
 
@@ -146,8 +147,8 @@ func (pp *DBPreprocessor) PreQuery(ctx context.Context, txID *uint16, sql *strin
 	newsel := make([]string, 0)
 
 	aliasMap := make(map[string]string)
-	for _, v := range regexAlias.FindAllStringSubmatch(sqlOriginal, idxFrom+len(" FROM")) {
-		aliasMap[strings.TrimSpace(v[2])] = strings.TrimSpace(v[1])
+	for _, v := range regexAlias.MatchAll(sqlOriginal) {
+		aliasMap[strings.TrimSpace(v.GroupByIndex(1).Value())] = strings.TrimSpace(v.GroupByIndex(2).Value())
 	}
 
 	for _, expr := range split {

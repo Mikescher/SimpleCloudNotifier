@@ -6,6 +6,8 @@ import (
 )
 
 type DatabaseImpl interface {
+	DB() sq.DB
+
 	Migrate(ctx context.Context) error
 	Ping(ctx context.Context) error
 	BeginTx(ctx context.Context) (sq.Tx, error)

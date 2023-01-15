@@ -4,10 +4,12 @@ go 1.19
 
 require (
 	github.com/gin-gonic/gin v1.8.1
+	github.com/go-playground/validator/v10 v10.10.0
+	github.com/go-sql-driver/mysql v1.6.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/rs/zerolog v1.28.0
-	gogs.mikescher.com/BlackForestBytes/goext v0.0.56
+	gogs.mikescher.com/BlackForestBytes/goext v0.0.59
 	gopkg.in/loremipsum.v1 v1.1.0
 )
 
@@ -15,7 +17,6 @@ require (
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
-	github.com/go-playground/validator/v10 v10.10.0 // indirect
 	github.com/goccy/go-json v0.9.7 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect

@@ -9,6 +9,8 @@
  - finish tests (!)
 
  - migration script for existing data
+   apply local deletion in (my) app
+   delete excessive dockerwatch messages (directly in db?)
 
  - app-store link in HTML
 
@@ -42,6 +44,8 @@
  - /send endpoint should be compatible with the [ webhook ] notifier of uptime-kuma
    (or add another /kuma endpoint)
    -> https://webhook.site/
+
+ - endpoint to list all servernames of user (distinct select)
 
 #### PERSONAL
 
