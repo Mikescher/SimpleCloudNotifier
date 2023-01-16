@@ -93,7 +93,7 @@ func (db *Database) ListRetrieableDeliveries(ctx TxContext, pageSize int) ([]mod
 		return nil, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM deliveries WHERE status = 'RETRY' AND next_delivery < :next LIMIT :lim ORDER BY next_delivery ASC", sq.PP{
+	rows, err := tx.Query(ctx, "SELECT * FROM deliveries WHERE status = 'RETRY' AND next_delivery < :next ORDER BY next_delivery ASC LIMIT :lim", sq.PP{
 		"next": time2DB(time.Now()),
 		"lim":  pageSize,
 	})

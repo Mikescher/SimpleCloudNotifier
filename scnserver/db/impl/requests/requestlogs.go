@@ -66,8 +66,8 @@ func (db *Database) InsertRequestLog(ctx context.Context, requestid models.Reque
 }
 
 func (db *Database) Cleanup(ctx context.Context, count int, duration time.Duration) (int64, error) {
-	res1, err := db.db.Exec(ctx, "DELETE FROM requests WHERE request_id NOT IN ( SELECT request_id FROM requests ORDER BY timestamp_created DESC LIMIT :lim ) ", sq.PP{
-		"lim": count,
+	res1, err := db.db.Exec(ctx, "DELETE FROM requests WHERE request_id NOT IN ( SELECT request_id FROM requests ORDER BY timestamp_created DESC LIMIT :keep ) ", sq.PP{
+		"keep": count,
 	})
 	if err != nil {
 		return 0, err

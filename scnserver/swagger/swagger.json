@@ -160,7 +160,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.sendMessageInternal.response"
+                            "$ref": "#/definitions/handler.SendMessage.response"
                         }
                     },
                     "400": {
@@ -245,6 +245,12 @@
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Ack.response"
+                        }
+                    },
+                    "default": {
+                        "description": "",
                         "schema": {
                             "$ref": "#/definitions/ginresp.compatAPIError"
                         }
@@ -331,6 +337,12 @@
                     "200": {
                         "description": "OK",
                         "schema": {
+                            "$ref": "#/definitions/handler.Expand.response"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
                             "$ref": "#/definitions/ginresp.compatAPIError"
                         }
                     }
@@ -401,6 +413,12 @@
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Info.response"
+                        }
+                    },
+                    "default": {
+                        "description": "",
                         "schema": {
                             "$ref": "#/definitions/ginresp.compatAPIError"
                         }
@@ -733,6 +751,12 @@
                     "200": {
                         "description": "OK",
                         "schema": {
+                            "$ref": "#/definitions/handler.Register.response"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
                             "$ref": "#/definitions/ginresp.compatAPIError"
                         }
                     }
@@ -780,6 +804,12 @@
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Requery.response"
+                        }
+                    },
+                    "default": {
+                        "description": "",
                         "schema": {
                             "$ref": "#/definitions/ginresp.compatAPIError"
                         }
@@ -881,6 +911,12 @@
                     "200": {
                         "description": "OK",
                         "schema": {
+                            "$ref": "#/definitions/handler.Update.response"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
                             "$ref": "#/definitions/ginresp.compatAPIError"
                         }
                     }
@@ -964,6 +1000,12 @@
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Upgrade.response"
+                        }
+                    },
+                    "default": {
+                        "description": "",
                         "schema": {
                             "$ref": "#/definitions/ginresp.compatAPIError"
                         }
@@ -2182,7 +2224,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.sendMessageInternal.response"
+                            "$ref": "#/definitions/handler.SendMessage.response"
                         }
                     },
                     "400": {
@@ -2296,7 +2338,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.sendMessageInternal.response"
+                            "$ref": "#/definitions/handler.SendMessageCompat.response"
                         }
                     },
                     "400": {
@@ -2695,6 +2737,76 @@
                 }
             }
         },
+        "handler.SendMessage.response": {
+            "type": "object",
+            "properties": {
+                "errhighlight": {
+                    "type": "integer"
+                },
+                "error": {
+                    "type": "integer"
+                },
+                "is_pro": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "messagecount": {
+                    "type": "integer"
+                },
+                "quota": {
+                    "type": "integer"
+                },
+                "quota_max": {
+                    "type": "integer"
+                },
+                "scn_msg_id": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "suppress_send": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "handler.SendMessageCompat.response": {
+            "type": "object",
+            "properties": {
+                "errhighlight": {
+                    "type": "integer"
+                },
+                "error": {
+                    "type": "integer"
+                },
+                "is_pro": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "messagecount": {
+                    "type": "integer"
+                },
+                "quota": {
+                    "type": "integer"
+                },
+                "quota_max": {
+                    "type": "integer"
+                },
+                "scn_msg_id": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "suppress_send": {
+                    "type": "boolean"
+                }
+            }
+        },
         "handler.Sleep.response": {
             "type": "object",
             "properties": {
@@ -2800,41 +2912,6 @@
                 },
                 "uri": {
                     "type": "string"
-                }
-            }
-        },
-        "handler.sendMessageInternal.response": {
-            "type": "object",
-            "properties": {
-                "errhighlight": {
-                    "type": "integer"
-                },
-                "error": {
-                    "type": "integer"
-                },
-                "is_pro": {
-                    "type": "boolean"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "messagecount": {
-                    "type": "integer"
-                },
-                "quota": {
-                    "type": "integer"
-                },
-                "quota_max": {
-                    "type": "integer"
-                },
-                "scn_msg_id": {
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean"
-                },
-                "suppress_send": {
-                    "type": "boolean"
                 }
             }
         },

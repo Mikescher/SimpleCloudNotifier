@@ -37,7 +37,7 @@ func NewCompatHandler(app *logic.Application) CompatHandler {
 // @Param       query_data query    handler.SendMessageCompat.combined false " "
 // @Param       form_data  formData handler.SendMessageCompat.combined false " "
 //
-// @Success     200        {object} handler.sendMessageInternal.response
+// @Success     200        {object} handler.SendMessageCompat.response
 // @Failure     400        {object} ginresp.apiError
 // @Failure     401        {object} ginresp.apiError
 // @Failure     403        {object} ginresp.apiError
@@ -53,6 +53,18 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 		Priority      *int     `json:"priority"  form:"priority"`
 		UserMessageID *string  `json:"msg_id"    form:"msg_id"`
 		SendTimestamp *float64 `json:"timestamp" form:"timestamp"`
+	}
+	type response struct {
+		Success        bool            `json:"success"`
+		ErrorID        apierr.APIError `json:"error"`
+		ErrorHighlight int             `json:"errhighlight"`
+		Message        string          `json:"message"`
+		SuppressSend   bool            `json:"suppress_send"`
+		MessageCount   int             `json:"messagecount"`
+		Quota          int             `json:"quota"`
+		IsPro          bool            `json:"is_pro"`
+		QuotaMax       int             `json:"quota_max"`
+		SCNMessageID   int64           `json:"scn_msg_id"`
 	}
 
 	var f combined
@@ -73,7 +85,57 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
 	}
 
-	return h.sendMessageInternal(g, ctx, langext.Ptr(models.UserID(*newid)), data.UserKey, nil, nil, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp, nil)
+	okResp, errResp := h.sendMessageInternal(g, ctx, langext.Ptr(models.UserID(*newid)), data.UserKey, nil, nil, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp, nil)
+	if errResp != nil {
+		return *errResp
+	} else {
+		if okResp.MessageIsOld {
+
+			compatMessageID, _, err := h.database.ConvertToCompatID(ctx, okResp.Message.MessageID.String())
+			if err != nil {
+				return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query compat-id", err)
+			}
+			if compatMessageID == nil {
+				v, err := h.database.CreateCompatID(ctx, "messageid", okResp.Message.MessageID.String())
+				if err != nil {
+					return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to create compat-id", err)
+				}
+				compatMessageID = &v
+			}
+
+			return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
+				Success:        true,
+				ErrorID:        apierr.NO_ERROR,
+				ErrorHighlight: -1,
+				Message:        "Message already sent",
+				SuppressSend:   true,
+				MessageCount:   okResp.User.MessagesSent,
+				Quota:          okResp.User.QuotaUsedToday(),
+				IsPro:          okResp.User.IsPro,
+				QuotaMax:       okResp.User.QuotaPerDay(),
+				SCNMessageID:   *compatMessageID,
+			}))
+		} else {
+
+			compatMessageID, err := h.database.CreateCompatID(ctx, "messageid", okResp.Message.MessageID.String())
+			if err != nil {
+				return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to create compat-id", err)
+			}
+
+			return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
+				Success:        true,
+				ErrorID:        apierr.NO_ERROR,
+				ErrorHighlight: -1,
+				Message:        "Message sent",
+				SuppressSend:   false,
+				MessageCount:   okResp.User.MessagesSent + 1,
+				Quota:          okResp.User.QuotaUsedToday() + 1,
+				IsPro:          okResp.User.IsPro,
+				QuotaMax:       okResp.User.QuotaPerDay(),
+				SCNMessageID:   compatMessageID,
+			}))
+		}
+	}
 }
 
 // Register swaggerdoc
@@ -93,7 +155,7 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 // @Param   pro_token formData string true "the (android) IAP token"
 //
 // @Success 200       {object} handler.Register.response
-// @Failure 200       {object} ginresp.compatAPIError
+// @Failure default   {object} ginresp.compatAPIError
 //
 // @Router  /api/register.php [get]
 func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
@@ -168,7 +230,7 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(0, "Failed to create user in db")
 	}
 
-	_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, *data.FCMToken, "compat", "compat")
+	_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, "ANDROID|v1|"+*data.FCMToken, "compat", "compat")
 	if err != nil {
 		return ginresp.CompatAPIError(0, "Failed to create client in db")
 	}
@@ -204,7 +266,7 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 // @Param   user_key formData string true "the user_key"
 //
 // @Success 200      {object} handler.Info.response
-// @Failure 200      {object} ginresp.compatAPIError
+// @Failure default  {object} ginresp.compatAPIError
 //
 // @Router  /api/info.php [get]
 func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
@@ -298,7 +360,7 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 // @Param   scn_msg_id formData string true "the message id"
 //
 // @Success 200        {object} handler.Ack.response
-// @Failure 200        {object} ginresp.compatAPIError
+// @Failure default    {object} ginresp.compatAPIError
 //
 // @Router  /api/ack.php [get]
 func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
@@ -354,6 +416,8 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 
+	// we no longer ack messages - this is a no-op
+
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
 		Success:      true,
 		Message:      "ok",
@@ -377,7 +441,7 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 // @Param   user_key formData string true "the user_key"
 //
 // @Success 200      {object} handler.Requery.response
-// @Failure 200      {object} ginresp.compatAPIError
+// @Failure default  {object} ginresp.compatAPIError
 //
 // @Router  /api/requery.php [get]
 func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
@@ -454,7 +518,7 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 // @Param   fcm_token formData string true "the (android) fcm token"
 //
 // @Success 200       {object} handler.Update.response
-// @Failure 200       {object} ginresp.compatAPIError
+// @Failure default   {object} ginresp.compatAPIError
 //
 // @Router  /api/update.php [get]
 func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
@@ -535,7 +599,7 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 
 		}
 
-		_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, *data.FCMToken, "compat", "compat")
+		_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, "ANDROID|v1|"+*data.FCMToken, "compat", "compat")
 		if err != nil {
 			return ginresp.CompatAPIError(0, "Failed to delete client")
 		}
@@ -575,7 +639,7 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 // @Param   scn_msg_id formData string true "The message-id"
 //
 // @Success 200        {object} handler.Expand.response
-// @Failure 200        {object} ginresp.compatAPIError
+// @Failure default    {object} ginresp.compatAPIError
 //
 // @Router  /api/expand.php [get]
 func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
@@ -680,7 +744,7 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 // @Param   pro_token formData string true "the (android) IAP token"
 //
 // @Success 200       {object} handler.Upgrade.response
-// @Failure 200       {object} ginresp.compatAPIError
+// @Failure default   {object} ginresp.compatAPIError
 //
 // @Router  /api/upgrade.php [get]
 func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {

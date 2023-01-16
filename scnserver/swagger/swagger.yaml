@@ -243,6 +243,52 @@ definitions:
         example: P3TNH8mvv14fm
         type: string
     type: object
+  handler.SendMessage.response:
+    properties:
+      errhighlight:
+        type: integer
+      error:
+        type: integer
+      is_pro:
+        type: boolean
+      message:
+        type: string
+      messagecount:
+        type: integer
+      quota:
+        type: integer
+      quota_max:
+        type: integer
+      scn_msg_id:
+        type: string
+      success:
+        type: boolean
+      suppress_send:
+        type: boolean
+    type: object
+  handler.SendMessageCompat.response:
+    properties:
+      errhighlight:
+        type: integer
+      error:
+        type: integer
+      is_pro:
+        type: boolean
+      message:
+        type: string
+      messagecount:
+        type: integer
+      quota:
+        type: integer
+      quota_max:
+        type: integer
+      scn_msg_id:
+        type: integer
+      success:
+        type: boolean
+      suppress_send:
+        type: boolean
+    type: object
   handler.Sleep.response:
     properties:
       duration:
@@ -312,29 +358,6 @@ definitions:
         type: string
       uri:
         type: string
-    type: object
-  handler.sendMessageInternal.response:
-    properties:
-      errhighlight:
-        type: integer
-      error:
-        type: integer
-      is_pro:
-        type: boolean
-      message:
-        type: string
-      messagecount:
-        type: integer
-      quota:
-        type: integer
-      quota_max:
-        type: integer
-      scn_msg_id:
-        type: string
-      success:
-        type: boolean
-      suppress_send:
-        type: boolean
     type: object
   models.ChannelWithSubscriptionJSON:
     properties:
@@ -618,7 +641,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.sendMessageInternal.response'
+            $ref: '#/definitions/handler.SendMessage.response'
         "400":
           description: Bad Request
           schema:
@@ -678,6 +701,10 @@ paths:
         "200":
           description: OK
           schema:
+            $ref: '#/definitions/handler.Ack.response'
+        default:
+          description: ""
+          schema:
             $ref: '#/definitions/ginresp.compatAPIError'
       summary: Acknowledge that a message was received
       tags:
@@ -736,6 +763,10 @@ paths:
         "200":
           description: OK
           schema:
+            $ref: '#/definitions/handler.Expand.response'
+        default:
+          description: ""
+          schema:
             $ref: '#/definitions/ginresp.compatAPIError'
       summary: Get a whole (potentially truncated) message
       tags:
@@ -783,6 +814,10 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/handler.Info.response'
+        default:
+          description: ""
           schema:
             $ref: '#/definitions/ginresp.compatAPIError'
       summary: Get information about the current user
@@ -1012,6 +1047,10 @@ paths:
         "200":
           description: OK
           schema:
+            $ref: '#/definitions/handler.Register.response'
+        default:
+          description: ""
+          schema:
             $ref: '#/definitions/ginresp.compatAPIError'
       summary: Register a new account
       tags:
@@ -1044,6 +1083,10 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/handler.Requery.response'
+        default:
+          description: ""
           schema:
             $ref: '#/definitions/ginresp.compatAPIError'
       summary: Return all not-acknowledged messages
@@ -1113,6 +1156,10 @@ paths:
         "200":
           description: OK
           schema:
+            $ref: '#/definitions/handler.Update.response'
+        default:
+          description: ""
+          schema:
             $ref: '#/definitions/ginresp.compatAPIError'
       summary: Set the fcm-token (android)
       tags:
@@ -1171,6 +1218,10 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/handler.Upgrade.response'
+        default:
+          description: ""
           schema:
             $ref: '#/definitions/ginresp.compatAPIError'
       summary: Upgrade a free account to a paid account
@@ -2002,7 +2053,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.sendMessageInternal.response'
+            $ref: '#/definitions/handler.SendMessage.response'
         "400":
           description: Bad Request
           schema:
@@ -2075,7 +2126,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.sendMessageInternal.response'
+            $ref: '#/definitions/handler.SendMessageCompat.response'
         "400":
           description: Bad Request
           schema:
