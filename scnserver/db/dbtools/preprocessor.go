@@ -148,7 +148,7 @@ func (pp *DBPreprocessor) PreQuery(ctx context.Context, txID *uint16, sql *strin
 
 	aliasMap := make(map[string]string)
 	for _, v := range regexAlias.MatchAll(sqlOriginal) {
-		aliasMap[strings.TrimSpace(v.GroupByIndex(1).Value())] = strings.TrimSpace(v.GroupByIndex(2).Value())
+		aliasMap[strings.TrimSpace(v.GroupByIndex(2).Value())] = strings.TrimSpace(v.GroupByIndex(1).Value())
 	}
 
 	for _, expr := range split {
