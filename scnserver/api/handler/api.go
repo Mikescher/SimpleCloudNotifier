@@ -235,23 +235,30 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	if b.ProToken != nil {
-		ptok, err := h.app.VerifyProToken(ctx, *b.ProToken)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.FAILED_VERIFY_PRO_TOKEN, "Failed to query purchase status", err)
-		}
+		if *b.ProToken == "" {
+			err := h.database.UpdateUserProToken(ctx, u.UserID, nil)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update user", err)
+			}
+		} else {
+			ptok, err := h.app.VerifyProToken(ctx, *b.ProToken)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.FAILED_VERIFY_PRO_TOKEN, "Failed to query purchase status", err)
+			}
 
-		if !ptok {
-			return ginresp.APIError(g, 400, apierr.INVALID_PRO_TOKEN, "Purchase token could not be verified", nil)
-		}
+			if !ptok {
+				return ginresp.APIError(g, 400, apierr.INVALID_PRO_TOKEN, "Purchase token could not be verified", nil)
+			}
 
-		err = h.database.ClearProTokens(ctx, *b.ProToken)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
-		}
+			err = h.database.ClearProTokens(ctx, *b.ProToken)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
+			}
 
-		err = h.database.UpdateUserProToken(ctx, u.UserID, b.ProToken)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update user", err)
+			err = h.database.UpdateUserProToken(ctx, u.UserID, b.ProToken)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update user", err)
+			}
 		}
 	}
 

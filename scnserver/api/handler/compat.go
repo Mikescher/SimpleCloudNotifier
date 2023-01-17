@@ -810,12 +810,16 @@ func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 
+	if data.ProToken != nil {
+		data.ProToken = langext.Ptr("ANDROID|v1|" + *data.ProToken)
+	}
+
 	if *data.Pro != "true" {
 		data.ProToken = nil
 	}
 
 	if data.ProToken != nil {
-		ptok, err := h.app.VerifyProToken(ctx, "ANDROID|v1|"+*data.ProToken)
+		ptok, err := h.app.VerifyProToken(ctx, *data.ProToken)
 		if err != nil {
 			return ginresp.CompatAPIError(0, "Failed to query purchase status")
 		}
@@ -824,7 +828,12 @@ func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 			return ginresp.CompatAPIError(0, "Purchase token could not be verified")
 		}
 
-		err = h.database.UpdateUserProToken(ctx, user.UserID, langext.Ptr("ANDROID|v1|"+*data.ProToken))
+		err = h.database.ClearProTokens(ctx, *data.ProToken)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
+		}
+
+		err = h.database.UpdateUserProToken(ctx, user.UserID, langext.Ptr(*data.ProToken))
 		if err != nil {
 			return ginresp.CompatAPIError(0, "Failed to update user")
 		}

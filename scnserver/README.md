@@ -47,6 +47,8 @@
 
  - endpoint to list all servernames of user (distinct select)
 
+ - ios purchasw verification
+
 #### PERSONAL
 
  - in my script: use `srvname` for sendername

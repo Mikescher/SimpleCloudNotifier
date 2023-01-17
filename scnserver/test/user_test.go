@@ -130,6 +130,64 @@ func TestUpdateUsername(t *testing.T) {
 	tt.AssertEqual(t, "username", nil, r6["username"])
 }
 
+func TestUgradeUserToPro(t *testing.T) {
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"no_client": true,
+	})
+	tt.AssertEqual(t, "is_pro", false, r0["is_pro"])
+
+	uid0 := fmt.Sprintf("%v", r0["user_id"])
+	admintok0 := r0["admin_key"].(string)
+
+	r1 := tt.RequestAuthPatch[gin.H](t, admintok0, baseUrl, "/api/users/"+uid0, gin.H{"pro_token": "ANDROID|v2|PURCHASED:000"})
+	tt.AssertEqual(t, "is_pro", true, r1["is_pro"])
+
+	r2 := tt.RequestAuthGet[gin.H](t, admintok0, baseUrl, "/api/users/"+uid0)
+	tt.AssertEqual(t, "is_pro", true, r2["is_pro"])
+}
+
+func TestDowngradeUserToNonPro(t *testing.T) {
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"no_client": true,
+		"pro_token": "ANDROID|v2|PURCHASED:UNIQ_111",
+	})
+	tt.AssertEqual(t, "is_pro", true, r0["is_pro"])
+
+	uid0 := fmt.Sprintf("%v", r0["user_id"])
+	admintok0 := r0["admin_key"].(string)
+
+	r1 := tt.RequestAuthPatch[gin.H](t, admintok0, baseUrl, "/api/users/"+uid0, gin.H{"pro_token": ""})
+	tt.AssertEqual(t, "is_pro", false, r1["is_pro"])
+
+	r2 := tt.RequestAuthGet[gin.H](t, admintok0, baseUrl, "/api/users/"+uid0)
+	tt.AssertEqual(t, "is_pro", false, r2["is_pro"])
+}
+
+func TestFailedUgradeUserToPro(t *testing.T) {
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"no_client": true,
+	})
+	tt.AssertEqual(t, "is_pro", false, r0["is_pro"])
+
+	uid0 := fmt.Sprintf("%v", r0["user_id"])
+	admintok0 := r0["admin_key"].(string)
+
+	tt.RequestAuthPatchShouldFail(t, admintok0, baseUrl, "/api/users/"+uid0, gin.H{"pro_token": "ANDROID|v2|INVALID"}, 400, apierr.INVALID_PRO_TOKEN)
+
+	tt.RequestAuthPatchShouldFail(t, admintok0, baseUrl, "/api/users/"+uid0, gin.H{"pro_token": "ANDROID|v99|PURCHASED"}, 400, apierr.INVALID_PRO_TOKEN)
+
+	tt.RequestAuthPatchShouldFail(t, admintok0, baseUrl, "/api/users/"+uid0, gin.H{"pro_token": "@INVALID"}, 400, apierr.INVALID_PRO_TOKEN)
+}
+
 func TestRecreateKeys(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
@@ -259,30 +317,119 @@ func TestCreateProUser(t *testing.T) {
 		tt.AssertEqual(t, "is_pro", true, r3["is_pro"])
 	}
 
+}
+
+func TestFailToCreateProUser(t *testing.T) {
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	tt.RequestPostShouldFail(t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+		"pro_token":     "ANDROID|v2|INVALID",
+	}, 400, apierr.INVALID_PRO_TOKEN)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+		"pro_token":     "_",
+	}, 400, apierr.INVALID_PRO_TOKEN)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/api/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+		"pro_token":     "ANDROID|v99|xxx",
+	}, 400, apierr.INVALID_PRO_TOKEN)
+}
+
+func TestReuseProToken(t *testing.T) {
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"no_client": true,
+	})
+	tt.AssertEqual(t, "is_pro", false, r0["is_pro"])
+
+	uid0 := fmt.Sprintf("%v", r0["user_id"])
+	admintok0 := r0["admin_key"].(string)
+
+	r1 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"no_client": true,
+		"pro_token": "ANDROID|v2|PURCHASED:UNIQ_1",
+	})
+	tt.AssertEqual(t, "is_pro", true, r1["is_pro"])
+
+	uid1 := fmt.Sprintf("%v", r1["user_id"])
+	admintok1 := r1["admin_key"].(string)
+
 	{
-		tt.RequestPostShouldFail(t, baseUrl, "/api/users", gin.H{
-			"agent_model":   "DUMMY_PHONE",
-			"agent_version": "4X",
-			"client_type":   "ANDROID",
-			"fcm_token":     "DUMMY_FCM",
-			"pro_token":     "ANDROID|v2|INVALID",
-		}, 400, apierr.INVALID_PRO_TOKEN)
+		rc := tt.RequestAuthGet[gin.H](t, admintok1, baseUrl, "/api/users/"+uid1)
+		tt.AssertEqual(t, "is_pro", true, rc["is_pro"])
+	}
 
-		tt.RequestPostShouldFail(t, baseUrl, "/api/users", gin.H{
-			"agent_model":   "DUMMY_PHONE",
-			"agent_version": "4X",
-			"client_type":   "ANDROID",
-			"fcm_token":     "DUMMY_FCM",
-			"pro_token":     "_",
-		}, 400, apierr.INVALID_PRO_TOKEN)
+	r2 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+		"no_client": true,
+		"pro_token": "ANDROID|v2|PURCHASED:UNIQ_1",
+	})
+	tt.AssertEqual(t, "is_pro", true, r2["is_pro"])
 
-		tt.RequestPostShouldFail(t, baseUrl, "/api/users", gin.H{
-			"agent_model":   "DUMMY_PHONE",
-			"agent_version": "4X",
-			"client_type":   "ANDROID",
-			"fcm_token":     "DUMMY_FCM",
-			"pro_token":     "ANDROID|v99|xxx",
-		}, 400, apierr.INVALID_PRO_TOKEN)
+	uid2 := fmt.Sprintf("%v", r2["user_id"])
+	admintok2 := r2["admin_key"].(string)
+
+	{
+		rc := tt.RequestAuthGet[gin.H](t, admintok0, baseUrl, "/api/users/"+uid0)
+		tt.AssertEqual(t, "is_pro", false, rc["is_pro"])
+	}
+
+	{
+		rc := tt.RequestAuthGet[gin.H](t, admintok1, baseUrl, "/api/users/"+uid1)
+		tt.AssertEqual(t, "is_pro", false, rc["is_pro"])
+	}
+
+	{
+		rc := tt.RequestAuthGet[gin.H](t, admintok2, baseUrl, "/api/users/"+uid2)
+		tt.AssertEqual(t, "is_pro", true, rc["is_pro"])
+	}
+
+	tt.RequestAuthPatch[gin.H](t, admintok0, baseUrl, "/api/users/"+uid0, gin.H{"pro_token": "ANDROID|v2|PURCHASED:UNIQ_2"})
+
+	{
+		rc := tt.RequestAuthGet[gin.H](t, admintok0, baseUrl, "/api/users/"+uid0)
+		tt.AssertEqual(t, "is_pro", true, rc["is_pro"])
+	}
+
+	{
+		rc := tt.RequestAuthGet[gin.H](t, admintok1, baseUrl, "/api/users/"+uid1)
+		tt.AssertEqual(t, "is_pro", false, rc["is_pro"])
+	}
+
+	{
+		rc := tt.RequestAuthGet[gin.H](t, admintok2, baseUrl, "/api/users/"+uid2)
+		tt.AssertEqual(t, "is_pro", true, rc["is_pro"])
+	}
+
+	tt.RequestAuthPatch[gin.H](t, admintok0, baseUrl, "/api/users/"+uid0, gin.H{"pro_token": "ANDROID|v2|PURCHASED:UNIQ_1"})
+
+	{
+		rc := tt.RequestAuthGet[gin.H](t, admintok0, baseUrl, "/api/users/"+uid0)
+		tt.AssertEqual(t, "is_pro", true, rc["is_pro"])
+	}
+
+	{
+		rc := tt.RequestAuthGet[gin.H](t, admintok1, baseUrl, "/api/users/"+uid1)
+		tt.AssertEqual(t, "is_pro", false, rc["is_pro"])
+	}
+
+	{
+		rc := tt.RequestAuthGet[gin.H](t, admintok2, baseUrl, "/api/users/"+uid2)
+		tt.AssertEqual(t, "is_pro", false, rc["is_pro"])
 	}
 
 }
