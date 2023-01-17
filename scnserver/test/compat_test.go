@@ -224,7 +224,7 @@ func TestSendCompatMessageByQuery(t *testing.T) {
 		url.QueryEscape("message content"),
 		url.QueryEscape("2"),
 		url.QueryEscape("624dbe5e-6d03-47cd-9a0e-a306faa2e977"),
-		url.QueryEscape("1673894797")), nil)
+		url.QueryEscape(fmt.Sprintf("%d", time.Now().Unix()+666))), nil)
 	tt.AssertEqual(t, "success", true, r2["success"])
 	tt.AssertEqual(t, "suppress_send", false, r2["suppress_send"])
 
@@ -241,7 +241,7 @@ func TestSendCompatMessageByQuery(t *testing.T) {
 		url.QueryEscape("message content"),
 		url.QueryEscape("2"),
 		url.QueryEscape("624dbe5e-6d03-47cd-9a0e-a306faa2e977"),
-		url.QueryEscape("1673894797")), nil)
+		url.QueryEscape(fmt.Sprintf("%d", time.Now().Unix()+666))), nil)
 	tt.AssertEqual(t, "success", true, r3["success"])
 	tt.AssertEqual(t, "suppress_send", true, r3["suppress_send"])
 }
@@ -278,7 +278,7 @@ func TestSendCompatMessageByFormData(t *testing.T) {
 		"content":   "message content",
 		"priority":  "2",
 		"msg_id":    "624dbe5e-6d03-47cd-9a0e-a306faa2e977",
-		"timestamp": "1673894797",
+		"timestamp": fmt.Sprintf("%d", time.Now().Unix()-666),
 	})
 	tt.AssertEqual(t, "success", true, r2["success"])
 	tt.AssertEqual(t, "suppress_send", false, r2["suppress_send"])
@@ -296,7 +296,7 @@ func TestSendCompatMessageByFormData(t *testing.T) {
 		"content":   "message content",
 		"priority":  "2",
 		"msg_id":    "624dbe5e-6d03-47cd-9a0e-a306faa2e977",
-		"timestamp": "1673894797",
+		"timestamp": fmt.Sprintf("%d", time.Now().Unix()-666),
 	})
 	tt.AssertEqual(t, "success", true, r3["success"])
 	tt.AssertEqual(t, "suppress_send", true, r3["suppress_send"])
@@ -324,13 +324,13 @@ func TestCompatInfo(t *testing.T) {
 
 	tt.AssertEqual(t, "success", true, r1["success"])
 	tt.AssertEqual(t, "fcm_token_set", true, r1["fcm_token_set"])
-	tt.AssertEqual(t, "is_pro", 0, int(r1["is_pro"].(float64)))
+	tt.AssertEqual(t, "is_pro", 0, r1["is_pro"])
 	tt.AssertEqual(t, "message", "ok", r1["message"])
-	tt.AssertEqual(t, "quota", 0, int(r1["quota"].(float64)))
-	tt.AssertEqual(t, "quota_max", 50, int(r1["quota_max"].(float64)))
-	tt.AssertEqual(t, "unack_count", 0, int(r1["unack_count"].(float64)))
-	tt.AssertEqual(t, "user_id", userid, int64(r1["user_id"].(float64)))
-	tt.AssertEqual(t, "user_key", userkey, r1["user_key"].(string))
+	tt.AssertEqual(t, "quota", 0, r1["quota"])
+	tt.AssertEqual(t, "quota_max", 50, r1["quota_max"])
+	tt.AssertEqual(t, "unack_count", 0, r1["unack_count"])
+	tt.AssertEqual(t, "user_id", userid, r1["user_id"])
+	tt.AssertEqual(t, "user_key", userkey, r1["user_key"])
 }
 
 func TestCompatAck(t *testing.T) {

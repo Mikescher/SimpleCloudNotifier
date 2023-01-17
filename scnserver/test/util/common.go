@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"math"
 	"reflect"
 	"runtime/debug"
 	"strings"
@@ -34,6 +35,111 @@ func AssertJsonMapEqual(t *testing.T, key string, expected map[string]any, actua
 }
 
 func AssertEqual(t *testing.T, key string, expected any, actual any) {
+
+	// try to fix types, kinda hacky, but its only unit tests...
+	switch vex := expected.(type) {
+	case int:
+		switch vac := actual.(type) {
+		case int:
+			// same
+		case int32:
+			expected = int64(vex)
+			actual = int64(vac)
+		case int64:
+			expected = int64(vex)
+		case float32:
+			if IsWholeFloat(vac) {
+				expected = int64(vex)
+				actual = int64(vac)
+			}
+		case float64:
+			if IsWholeFloat(vac) {
+				expected = int64(vex)
+				actual = int64(vac)
+			}
+		}
+	case int32:
+		switch vac := actual.(type) {
+		case int:
+			expected = int64(vex)
+			actual = int64(vac)
+		case int32:
+			// same
+		case int64:
+			expected = int64(vex)
+		case float32:
+			if IsWholeFloat(vac) {
+				expected = int64(vex)
+				actual = int64(vac)
+			}
+		case float64:
+			if IsWholeFloat(vac) {
+				expected = int64(vex)
+				actual = int64(vac)
+			}
+		}
+	case int64:
+		switch vac := actual.(type) {
+		case int:
+			actual = int64(vac)
+		case int32:
+			actual = int64(vac)
+		case int64:
+			// same
+		case float32:
+			if IsWholeFloat(vac) {
+				actual = int64(vac)
+			}
+		case float64:
+			if IsWholeFloat(vac) {
+				actual = int64(vac)
+			}
+		}
+	case float32:
+		switch vac := actual.(type) {
+		case int:
+			if IsWholeFloat(vex) {
+				expected = int64(vex)
+				actual = int64(vac)
+			}
+		case int32:
+			if IsWholeFloat(vex) {
+				expected = int64(vex)
+				actual = int64(vac)
+			}
+		case int64:
+			if IsWholeFloat(vex) {
+				expected = int64(vex)
+			}
+		case float32:
+			// same
+		case float64:
+			expected = float64(vex)
+		}
+	case float64:
+		switch vac := actual.(type) {
+		case int:
+			if IsWholeFloat(vex) {
+				expected = int64(vex)
+				actual = int64(vac)
+			}
+		case int32:
+			if IsWholeFloat(vex) {
+				expected = int64(vex)
+				actual = int64(vac)
+			}
+		case int64:
+			if IsWholeFloat(vex) {
+				expected = int64(vex)
+			}
+		case float32:
+			actual = float64(vac)
+		case float64:
+			// same
+		}
+
+	}
+
 	if expected != actual {
 		t.Errorf("Value [%s] differs (%T <-> %T):\n", key, expected, actual)
 
@@ -225,4 +331,9 @@ func AssertMappedSet[T langext.OrderedConstraint](t *testing.T, key string, expe
 
 		t.FailNow()
 	}
+}
+
+func IsWholeFloat[T langext.FloatConstraint](v T) bool {
+	_, frac := math.Modf(math.Abs(float64(v)))
+	return frac == 0.0
 }
