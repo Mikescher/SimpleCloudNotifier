@@ -269,7 +269,7 @@ func TestSendCompatMessageByFormData(t *testing.T) {
 
 	r1x := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/expand.php?user_id=%d&user_key=%s&scn_msg_id=%d", userid, userkey, r1scnid))
 	tt.AssertEqual(t, "success", true, r1x["success"])
-	tt.AssertEqual(t, "success", "my title 11 & x", (r1x["data"].(map[string]any))["title"])
+	tt.AssertEqual(t, "title", "my title 11 & x", (r1x["data"].(map[string]any))["title"])
 
 	r2 := tt.RequestPost[gin.H](t, baseUrl, "/send.php", tt.FormData{
 		"user_id":   fmt.Sprintf("%d", userid),
@@ -287,7 +287,7 @@ func TestSendCompatMessageByFormData(t *testing.T) {
 
 	r2x := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/expand.php?user_id=%d&user_key=%s&scn_msg_id=%d", userid, userkey, r2scnid))
 	tt.AssertEqual(t, "success", true, r2x["success"])
-	tt.AssertEqual(t, "success", "my title", (r2x["data"].(map[string]any))["title"])
+	tt.AssertEqual(t, "title", "my title", (r2x["data"].(map[string]any))["title"])
 
 	r3 := tt.RequestPost[gin.H](t, baseUrl, "/send.php", tt.FormData{
 		"user_id":   fmt.Sprintf("%d", userid),
@@ -331,9 +331,54 @@ func TestCompatInfo(t *testing.T) {
 	tt.AssertEqual(t, "unack_count", 0, r1["unack_count"])
 	tt.AssertEqual(t, "user_id", userid, r1["user_id"])
 	tt.AssertEqual(t, "user_key", userkey, r1["user_key"])
+
+	tt.RequestPost[gin.H](t, baseUrl, "/send.php", tt.FormData{
+		"user_key": userkey,
+		"user_id":  fmt.Sprintf("%d", userid),
+		"title":    tt.ShortLipsum0(1),
+	})
+
+	r2 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/info.php?user_id=%d&user_key=%s", userid, userkey))
+
+	tt.AssertEqual(t, "success", true, r2["success"])
+	tt.AssertEqual(t, "fcm_token_set", true, r2["fcm_token_set"])
+	tt.AssertEqual(t, "is_pro", 0, r2["is_pro"])
+	tt.AssertEqual(t, "message", "ok", r2["message"])
+	tt.AssertEqual(t, "quota", 1, r2["quota"])
+	tt.AssertEqual(t, "quota_max", 50, r2["quota_max"])
+	tt.AssertEqual(t, "unack_count", 0, r2["unack_count"])
+	tt.AssertEqual(t, "user_id", userid, r2["user_id"])
+	tt.AssertEqual(t, "user_key", userkey, r2["user_key"])
+
 }
 
 func TestCompatAck(t *testing.T) {
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/register.php?fcm_token=%s&pro=%s&pro_token=%s", "DUMMY_FCM", "0", ""))
+	tt.AssertEqual(t, "success", true, r0["success"])
+
+	userid := int64(r0["user_id"].(float64))
+	userkey := r0["user_key"].(string)
+
+	r1 := tt.RequestPost[gin.H](t, baseUrl, "/send.php", tt.FormData{
+		"user_id":  fmt.Sprintf("%d", userid),
+		"user_key": userkey,
+		"title":    "my title 11 & x",
+	})
+	tt.AssertEqual(t, "success", true, r1["success"])
+	r1scnid := int64(r1["scn_msg_id"].(float64))
+
+	ack := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/ack.php?user_id=%d&user_key=%s&scn_msg_id=%d", userid, userkey, r1scnid))
+	tt.AssertEqual(t, "success", true, ack["success"])
+	tt.AssertEqual(t, "prev_ack", 0, ack["prev_ack"])
+	tt.AssertEqual(t, "new_ack", 1, ack["new_ack"])
+	tt.AssertEqual(t, "message", "ok", ack["message"])
+
+}
+
+func TestCompatExpand(t *testing.T) {
 	t.SkipNow() //TODO
 }
 
@@ -342,10 +387,6 @@ func TestCompatRequery(t *testing.T) {
 }
 
 func TestCompatUpdate(t *testing.T) {
-	t.SkipNow() //TODO
-}
-
-func TestCompatExpand(t *testing.T) {
 	t.SkipNow() //TODO
 }
 

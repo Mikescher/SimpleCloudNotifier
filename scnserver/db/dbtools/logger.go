@@ -4,9 +4,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/rs/zerolog/log"
+	"gogs.mikescher.com/BlackForestBytes/goext/rext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
+	"regexp"
 	"strings"
 )
+
+var rexWhitespaceRun = rext.W(regexp.MustCompile("\\s{2,}"))
 
 type DBLogger struct {
 	Ident string
@@ -81,12 +85,29 @@ func (l DBLogger) PostExec(txID *uint16, sqlOriginal string, sqlReal string, par
 }
 
 func fmtSQLPrint(sql string) string {
-	if strings.Contains(sql, ";") && len(sql) > 1024 {
-		return "(...multi...)"
+	if strings.Contains(strings.TrimRight(sql, ";\r\n\t "), ";") {
+
+		str := "(...multi...)"
+		for _, v := range strings.Split(sql, ";") {
+
+			v = strings.ReplaceAll(v, "\r", "")
+			v = strings.ReplaceAll(v, "\n", " ")
+			v = strings.TrimRight(v, ";")
+			v = strings.TrimSpace(v)
+			v = rexWhitespaceRun.ReplaceAll(v, " ", true)
+
+			str += "\n" + "    " + v
+		}
+		return str
+
+	} else {
+
+		sql = strings.ReplaceAll(sql, "\r", "")
+		sql = strings.ReplaceAll(sql, "\n", " ")
+		sql = rexWhitespaceRun.ReplaceAll(sql, " ", true)
+
+		return sql
+
 	}
 
-	sql = strings.ReplaceAll(sql, "\r", "")
-	sql = strings.ReplaceAll(sql, "\n", " ")
-
-	return sql
 }
