@@ -259,4 +259,30 @@ func TestCreateProUser(t *testing.T) {
 		tt.AssertEqual(t, "is_pro", true, r3["is_pro"])
 	}
 
+	{
+		tt.RequestPostShouldFail(t, baseUrl, "/api/users", gin.H{
+			"agent_model":   "DUMMY_PHONE",
+			"agent_version": "4X",
+			"client_type":   "ANDROID",
+			"fcm_token":     "DUMMY_FCM",
+			"pro_token":     "ANDROID|v2|INVALID",
+		}, 400, apierr.INVALID_PRO_TOKEN)
+
+		tt.RequestPostShouldFail(t, baseUrl, "/api/users", gin.H{
+			"agent_model":   "DUMMY_PHONE",
+			"agent_version": "4X",
+			"client_type":   "ANDROID",
+			"fcm_token":     "DUMMY_FCM",
+			"pro_token":     "_",
+		}, 400, apierr.INVALID_PRO_TOKEN)
+
+		tt.RequestPostShouldFail(t, baseUrl, "/api/users", gin.H{
+			"agent_model":   "DUMMY_PHONE",
+			"agent_version": "4X",
+			"client_type":   "ANDROID",
+			"fcm_token":     "DUMMY_FCM",
+			"pro_token":     "ANDROID|v99|xxx",
+		}, 400, apierr.INVALID_PRO_TOKEN)
+	}
+
 }

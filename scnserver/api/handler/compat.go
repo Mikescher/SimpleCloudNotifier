@@ -194,12 +194,16 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(0, "Missing parameter [[pro_token]]")
 	}
 
+	if data.ProToken != nil {
+		data.ProToken = langext.Ptr("ANDROID|v1|" + *data.ProToken)
+	}
+
 	if *data.Pro != "true" {
 		data.ProToken = nil
 	}
 
 	if data.ProToken != nil {
-		ptok, err := h.app.VerifyProToken(ctx, "ANDROID|v2|"+*data.ProToken)
+		ptok, err := h.app.VerifyProToken(ctx, *data.ProToken)
 		if err != nil {
 			return ginresp.CompatAPIError(0, "Failed to query purchase status")
 		}
@@ -221,7 +225,7 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 	if data.ProToken != nil {
 		err := h.database.ClearProTokens(ctx, *data.ProToken)
 		if err != nil {
-			return ginresp.CompatAPIError(0, "Failed to clear existing fcm tokens")
+			return ginresp.CompatAPIError(0, "Failed to clear existing pro tokens")
 		}
 	}
 
@@ -230,7 +234,7 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(0, "Failed to create user in db")
 	}
 
-	_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, "ANDROID|v1|"+*data.FCMToken, "compat", "compat")
+	_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, *data.FCMToken, "compat", "compat")
 	if err != nil {
 		return ginresp.CompatAPIError(0, "Failed to create client in db")
 	}
@@ -599,7 +603,7 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 
 		}
 
-		_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, "ANDROID|v1|"+*data.FCMToken, "compat", "compat")
+		_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, *data.FCMToken, "compat", "compat")
 		if err != nil {
 			return ginresp.CompatAPIError(0, "Failed to delete client")
 		}
@@ -811,7 +815,7 @@ func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	if data.ProToken != nil {
-		ptok, err := h.app.VerifyProToken(ctx, "ANDROID|v2|"+*data.ProToken)
+		ptok, err := h.app.VerifyProToken(ctx, "ANDROID|v1|"+*data.ProToken)
 		if err != nil {
 			return ginresp.CompatAPIError(0, "Failed to query purchase status")
 		}
@@ -820,7 +824,7 @@ func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 			return ginresp.CompatAPIError(0, "Purchase token could not be verified")
 		}
 
-		err = h.database.UpdateUserProToken(ctx, user.UserID, data.ProToken)
+		err = h.database.UpdateUserProToken(ctx, user.UserID, langext.Ptr("ANDROID|v1|"+*data.ProToken))
 		if err != nil {
 			return ginresp.CompatAPIError(0, "Failed to update user")
 		}

@@ -8,6 +8,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"blackforestbytes.com/simplecloudnotifier/push"
 	"context"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/rs/zerolog/log"
@@ -166,14 +167,21 @@ func (app *Application) QuotaMax(ispro bool) int {
 }
 
 func (app *Application) VerifyProToken(ctx *AppContext, token string) (bool, error) {
+
 	if strings.HasPrefix(token, "ANDROID|v1|") {
-		subToken := token[len("ANDROID|v2|"):]
+		subToken := token[len("ANDROID|v1|"):]
 		return app.VerifyAndroidProToken(ctx, subToken)
 	}
+
 	if strings.HasPrefix(token, "ANDROID|v2|") {
 		subToken := token[len("ANDROID|v2|"):]
 		return app.VerifyAndroidProToken(ctx, subToken)
 	}
+
+	if strings.HasPrefix(token, "IOS|v1|") {
+		return false, errors.New("invalid token-version: ios-v1")
+	}
+
 	if strings.HasPrefix(token, "IOS|v2|") {
 		subToken := token[len("IOS|v2|"):]
 		return app.VerifyIOSProToken(ctx, subToken)

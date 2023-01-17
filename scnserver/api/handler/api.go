@@ -102,7 +102,7 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 	if b.ProToken != nil {
 		err := h.database.ClearProTokens(ctx, *b.ProToken)
 		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to clear existing pro tokens", err)
 		}
 	}
 
