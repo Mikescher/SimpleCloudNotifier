@@ -492,8 +492,78 @@ func TestCompatRequery(t *testing.T) {
 
 }
 
-func TestCompatUpdate(t *testing.T) {
-	t.SkipNow() //TODO
+func TestCompatUpdateUserKey(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	pusher := ws.Pusher.(*push.TestSink)
+
+	r0 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/register.php?fcm_token=%s&pro=%s&pro_token=%s", "DUMMY_FCM", "0", ""))
+	tt.AssertEqual(t, "success", true, r0["success"])
+
+	userid := int64(r0["user_id"].(float64))
+	userkey := r0["user_key"].(string)
+
+	s0 := tt.RequestPost[gin.H](t, baseUrl, fmt.Sprintf("/send.php?user_id=%d&user_key=%s&title=%s", userid, userkey, url.QueryEscape("msg_1")), nil)
+	tt.AssertEqual(t, "success", true, s0["success"])
+	tt.AssertEqual(t, "fcm", "DUMMY_FCM", *pusher.Last().Client.FCMToken)
+
+	upd := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/update.php?user_id=%d&user_key=%s", userid, userkey))
+	tt.AssertEqual(t, "success", true, upd["success"])
+
+	newkey := upd["user_key"].(string)
+
+	r1 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/info.php?user_id=%d&user_key=%s", userid, newkey))
+	tt.AssertEqual(t, "success", true, r1["success"])
+	tt.AssertEqual(t, "fcm_token_set", true, r1["fcm_token_set"])
+	tt.AssertEqual(t, "is_pro", 0, r1["is_pro"])
+	tt.AssertEqual(t, "message", "ok", r1["message"])
+	tt.AssertEqual(t, "quota", 1, r1["quota"])
+	tt.AssertEqual(t, "quota_max", 50, r1["quota_max"])
+	tt.AssertEqual(t, "unack_count", 0, r1["unack_count"])
+	tt.AssertEqual(t, "user_id", userid, r1["user_id"])
+	tt.AssertEqual(t, "user_key", newkey, r1["user_key"])
+
+	s1 := tt.RequestPost[gin.H](t, baseUrl, fmt.Sprintf("/send.php?user_id=%d&user_key=%s&title=%s", userid, newkey, url.QueryEscape("msg_2")), nil)
+	tt.AssertEqual(t, "success", true, s1["success"])
+	tt.AssertEqual(t, "fcm", "DUMMY_FCM", *pusher.Last().Client.FCMToken)
+}
+
+func TestCompatUpdateFCM(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	pusher := ws.Pusher.(*push.TestSink)
+
+	r0 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/register.php?fcm_token=%s&pro=%s&pro_token=%s", "DUMMY_FCM", "0", ""))
+	tt.AssertEqual(t, "success", true, r0["success"])
+
+	userid := int64(r0["user_id"].(float64))
+	userkey := r0["user_key"].(string)
+
+	s0 := tt.RequestPost[gin.H](t, baseUrl, fmt.Sprintf("/send.php?user_id=%d&user_key=%s&title=%s", userid, userkey, url.QueryEscape("msg_1")), nil)
+	tt.AssertEqual(t, "success", true, s0["success"])
+	tt.AssertEqual(t, "fcm", "DUMMY_FCM", *pusher.Last().Client.FCMToken)
+
+	upd := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/update.php?user_id=%d&user_key=%s&fcm_token=%s", userid, userkey, "NEW_FCM"))
+	tt.AssertEqual(t, "success", true, upd["success"])
+
+	newkey := upd["user_key"].(string)
+
+	r1 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/info.php?user_id=%d&user_key=%s", userid, newkey))
+	tt.AssertEqual(t, "success", true, r1["success"])
+	tt.AssertEqual(t, "fcm_token_set", true, r1["fcm_token_set"])
+	tt.AssertEqual(t, "is_pro", 0, r1["is_pro"])
+	tt.AssertEqual(t, "message", "ok", r1["message"])
+	tt.AssertEqual(t, "quota", 1, r1["quota"])
+	tt.AssertEqual(t, "quota_max", 50, r1["quota_max"])
+	tt.AssertEqual(t, "unack_count", 0, r1["unack_count"])
+	tt.AssertEqual(t, "user_id", userid, r1["user_id"])
+	tt.AssertEqual(t, "user_key", newkey, r1["user_key"])
+
+	s1 := tt.RequestPost[gin.H](t, baseUrl, fmt.Sprintf("/send.php?user_id=%d&user_key=%s&title=%s", userid, newkey, url.QueryEscape("msg_2")), nil)
+	tt.AssertEqual(t, "success", true, s1["success"])
+	tt.AssertEqual(t, "fcm", "NEW_FCM", *pusher.Last().Client.FCMToken)
 }
 
 func TestCompatUpgrade(t *testing.T) {
