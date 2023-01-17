@@ -17,6 +17,7 @@ func TestSendCompatWithOldUser(t *testing.T) {
 	pusher := ws.Pusher.(*push.TestSink)
 
 	r0 := tt.RequestGet[gin.H](t, baseUrl, "/api/register.php?fcm_token=DUMMY_FCM&pro=0&pro_token=")
+	tt.AssertEqual(t, "success", true, r0["success"])
 
 	uidold := int64(r0["user_id"].(float64))
 	admintok := r0["user_key"].(string)
@@ -198,7 +199,6 @@ func TestSendCompatMessageByQuery(t *testing.T) {
 	defer stop()
 
 	r0 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/register.php?fcm_token=%s&pro=%s&pro_token=%s", "DUMMY_FCM", "0", ""))
-
 	tt.AssertEqual(t, "success", true, r0["success"])
 
 	userid := int64(r0["user_id"].(float64))
@@ -251,7 +251,6 @@ func TestSendCompatMessageByFormData(t *testing.T) {
 	defer stop()
 
 	r0 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/register.php?fcm_token=%s&pro=%s&pro_token=%s", "DUMMY_FCM", "0", ""))
-
 	tt.AssertEqual(t, "success", true, r0["success"])
 
 	userid := int64(r0["user_id"].(float64))
@@ -311,7 +310,7 @@ func TestCompatRegister(t *testing.T) {
 	tt.AssertEqual(t, "message", "New user registered", r0["message"])
 	tt.AssertEqual(t, "quota", 0, r0["quota"])
 	tt.AssertEqual(t, "quota_max", 50, r0["quota_max"])
-	tt.AssertEqual(t, "is_pro", 0, r0["is_pro"])
+	tt.AssertEqual(t, "is_pro", false, r0["is_pro"])
 }
 
 func TestCompatRegisterPro(t *testing.T) {
@@ -323,7 +322,7 @@ func TestCompatRegisterPro(t *testing.T) {
 	tt.AssertEqual(t, "message", "New user registered", r0["message"])
 	tt.AssertEqual(t, "quota", 0, r0["quota"])
 	tt.AssertEqual(t, "quota_max", 1000, r0["quota_max"])
-	tt.AssertEqual(t, "is_pro", 1, r0["is_pro"])
+	tt.AssertEqual(t, "is_pro", true, r0["is_pro"])
 
 	r1 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/register.php?fcm_token=%s&pro=%s&pro_token=%s", "DUMMY_FCM", "true", url.QueryEscape("INVALID")))
 	tt.AssertEqual(t, "success", false, r1["success"])
@@ -498,5 +497,23 @@ func TestCompatUpdate(t *testing.T) {
 }
 
 func TestCompatUpgrade(t *testing.T) {
-	t.SkipNow() //TODO
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/register.php?fcm_token=%s&pro=%s&pro_token=%s", "FCM_DUMMY_FCM", "0", ""))
+	tt.AssertEqual(t, "success", true, r0["success"])
+	tt.AssertEqual(t, "message", "New user registered", r0["message"])
+	tt.AssertEqual(t, "quota", 0, r0["quota"])
+	tt.AssertEqual(t, "quota_max", 50, r0["quota_max"])
+	tt.AssertEqual(t, "is_pro", false, r0["is_pro"])
+
+	userid := int64(r0["user_id"].(float64))
+	userkey := r0["user_key"].(string)
+
+	r1 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/upgrade.php?user_id=%d&user_key=%s&pro=%s&pro_token=%s", userid, userkey, "true", url.QueryEscape("PURCHASED:000")))
+	tt.AssertEqual(t, "success", true, r1["success"])
+	tt.AssertEqual(t, "message", "user updated", r1["message"])
+	tt.AssertEqual(t, "quota", 0, r1["quota"])
+	tt.AssertEqual(t, "quota_max", 1000, r1["quota_max"])
+	tt.AssertEqual(t, "is_pro", true, r1["is_pro"])
 }

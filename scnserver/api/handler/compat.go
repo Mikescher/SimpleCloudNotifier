@@ -171,7 +171,7 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 		UserKey   string `json:"user_key"`
 		QuotaUsed int    `json:"quota"`
 		QuotaMax  int    `json:"quota_max"`
-		IsPro     int    `json:"is_pro"`
+		IsPro     bool   `json:"is_pro"`
 	}
 
 	var datq query
@@ -251,7 +251,7 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 		UserKey:   user.AdminKey,
 		QuotaUsed: user.QuotaUsedToday(),
 		QuotaMax:  user.QuotaPerDay(),
-		IsPro:     langext.Conditional(user.IsPro, 1, 0),
+		IsPro:     user.IsPro,
 	}))
 }
 
