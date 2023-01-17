@@ -715,7 +715,7 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 		Message: "ok",
 		Data: models.CompatMessage{
 			Title:         msg.Title,
-			Body:          langext.Coalesce(msg.Content, ""),
+			Body:          msg.Content,
 			Trimmed:       langext.Ptr(false),
 			Priority:      msg.Priority,
 			Timestamp:     msg.Timestamp().Unix(),

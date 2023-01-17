@@ -379,7 +379,70 @@ func TestCompatAck(t *testing.T) {
 }
 
 func TestCompatExpand(t *testing.T) {
-	t.SkipNow() //TODO
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/register.php?fcm_token=%s&pro=%s&pro_token=%s", "DUMMY_FCM", "0", ""))
+	tt.AssertEqual(t, "success", true, r0["success"])
+
+	userid := int64(r0["user_id"].(float64))
+	userkey := r0["user_key"].(string)
+
+	{
+		ts := time.Now().Unix()
+
+		r1 := tt.RequestPost[gin.H](t, baseUrl, "/send.php", tt.FormData{
+			"user_id":   fmt.Sprintf("%d", userid),
+			"user_key":  userkey,
+			"title":     "_title_",
+			"content":   "_content_",
+			"timestamp": fmt.Sprintf("%d", ts),
+		})
+		tt.AssertEqual(t, "success", true, r1["success"])
+		r1scnid := int64(r1["scn_msg_id"].(float64))
+
+		exp1 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/expand.php?user_id=%d&user_key=%s&scn_msg_id=%d", userid, userkey, r1scnid))
+		tt.AssertEqual(t, "success", true, exp1["success"])
+
+		exp1data := exp1["data"].(map[string]any)
+
+		tt.AssertEqual(t, "title", "_title_", exp1data["title"])
+		tt.AssertEqual(t, "body", "_content_", exp1data["body"])
+		tt.AssertEqual(t, "priority", 1, exp1data["priority"])
+		tt.AssertEqual(t, "timestamp", ts, exp1data["timestamp"])
+		tt.AssertEqual(t, "usr_msg_id", nil, exp1data["usr_msg_id"])
+		tt.AssertEqual(t, "scn_msg_id", r1scnid, exp1data["scn_msg_id"])
+		tt.AssertEqual(t, "trimmed", false, exp1data["trimmed"])
+	}
+
+	{
+		ts := time.Now().Unix()
+
+		r1 := tt.RequestPost[gin.H](t, baseUrl, "/send.php", tt.FormData{
+			"user_id":   fmt.Sprintf("%d", userid),
+			"user_key":  userkey,
+			"title":     "_title_",
+			"timestamp": fmt.Sprintf("%d", ts),
+			"priority":  "0",
+			"msg_id":    "36aa8281-4bcd-4973-9368-e1d1ca5e21cb",
+		})
+		tt.AssertEqual(t, "success", true, r1["success"])
+		r1scnid := int64(r1["scn_msg_id"].(float64))
+
+		exp1 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/expand.php?user_id=%d&user_key=%s&scn_msg_id=%d", userid, userkey, r1scnid))
+		tt.AssertEqual(t, "success", true, exp1["success"])
+
+		exp1data := exp1["data"].(map[string]any)
+
+		tt.AssertEqual(t, "title", "_title_", exp1data["title"])
+		tt.AssertEqual(t, "body", nil, exp1data["body"])
+		tt.AssertEqual(t, "priority", 0, exp1data["priority"])
+		tt.AssertEqual(t, "timestamp", ts, exp1data["timestamp"])
+		tt.AssertEqual(t, "usr_msg_id", "36aa8281-4bcd-4973-9368-e1d1ca5e21cb", exp1data["usr_msg_id"])
+		tt.AssertEqual(t, "scn_msg_id", r1scnid, exp1data["scn_msg_id"])
+		tt.AssertEqual(t, "trimmed", false, exp1data["trimmed"])
+	}
+
 }
 
 func TestCompatRequery(t *testing.T) {
