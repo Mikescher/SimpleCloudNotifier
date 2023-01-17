@@ -193,22 +193,6 @@ func TestSendCompatWithNewUser(t *testing.T) {
 
 }
 
-func TestCreateCompatUser(t *testing.T) {
-	_, baseUrl, stop := tt.StartSimpleWebserver(t)
-	defer stop()
-
-	r0 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/register.php?fcm_token=%s&pro=%s&pro_token=%s", "DUMMY_FCM", "0", ""))
-
-	tt.AssertEqual(t, "success", true, r0["success"])
-
-	userid := int64(r0["user_id"].(float64))
-	userkey := r0["user_key"].(string)
-
-	r1 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/info.php?user_id=%d&user_key=%s", userid, userkey))
-
-	tt.AssertEqual(t, "success", true, r1["success"])
-}
-
 func TestSendCompatMessageByQuery(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
@@ -318,6 +302,53 @@ func TestSendCompatMessageByFormData(t *testing.T) {
 	tt.AssertEqual(t, "suppress_send", true, r3["suppress_send"])
 }
 
-//TODO test compat methods
+func TestCompatRegister(t *testing.T) {
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
 
-//TODO also test compat_id mapping
+	r0 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/register.php?fcm_token=%s&pro=%s&pro_token=%s", "DUMMY_FCM", "0", ""))
+	tt.AssertEqual(t, "success", true, r0["success"])
+}
+
+func TestCompatInfo(t *testing.T) {
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/register.php?fcm_token=%s&pro=%s&pro_token=%s", "DUMMY_FCM", "0", ""))
+	tt.AssertEqual(t, "success", true, r0["success"])
+
+	userid := int64(r0["user_id"].(float64))
+	userkey := r0["user_key"].(string)
+
+	r1 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/info.php?user_id=%d&user_key=%s", userid, userkey))
+
+	tt.AssertEqual(t, "success", true, r1["success"])
+	tt.AssertEqual(t, "fcm_token_set", true, r1["fcm_token_set"])
+	tt.AssertEqual(t, "is_pro", 0, int(r1["is_pro"].(float64)))
+	tt.AssertEqual(t, "message", "ok", r1["message"])
+	tt.AssertEqual(t, "quota", 0, int(r1["quota"].(float64)))
+	tt.AssertEqual(t, "quota_max", 50, int(r1["quota_max"].(float64)))
+	tt.AssertEqual(t, "unack_count", 0, int(r1["unack_count"].(float64)))
+	tt.AssertEqual(t, "user_id", userid, int64(r1["user_id"].(float64)))
+	tt.AssertEqual(t, "user_key", userkey, r1["user_key"].(string))
+}
+
+func TestCompatAck(t *testing.T) {
+	t.SkipNow() //TODO
+}
+
+func TestCompatRequery(t *testing.T) {
+	t.SkipNow() //TODO
+}
+
+func TestCompatUpdate(t *testing.T) {
+	t.SkipNow() //TODO
+}
+
+func TestCompatExpand(t *testing.T) {
+	t.SkipNow() //TODO
+}
+
+func TestCompatUpgrade(t *testing.T) {
+	t.SkipNow() //TODO
+}
