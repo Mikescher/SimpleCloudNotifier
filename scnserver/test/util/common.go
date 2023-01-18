@@ -333,6 +333,29 @@ func AssertMappedSet[T langext.OrderedConstraint](t *testing.T, key string, expe
 	}
 }
 
+func AssertMappedArr[T langext.OrderedConstraint](t *testing.T, key string, expected []T, values []gin.H, objkey string) {
+
+	actual := make([]T, 0)
+	for idx, vv := range values {
+		if tv, ok := vv[objkey].(T); ok {
+			actual = append(actual, tv)
+		} else {
+			TestFailFmt(t, "[%s]->[%d] is wrong type (expected: %T, actual: %T)", key, idx, *new(T), vv)
+		}
+	}
+
+	if !langext.ArrEqualsExact(actual, expected) {
+		t.Errorf("Value [%s] differs (%T <-> %T):\n", key, expected, actual)
+
+		t.Errorf("Actual    := [%v]\n", actual)
+		t.Errorf("Expected  := [%v]\n", expected)
+
+		t.Error(string(debug.Stack()))
+
+		t.FailNow()
+	}
+}
+
 func IsWholeFloat[T langext.FloatConstraint](v T) bool {
 	_, frac := math.Modf(math.Abs(float64(v)))
 	return frac == 0.0

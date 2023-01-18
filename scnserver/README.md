@@ -47,7 +47,9 @@
 
  - endpoint to list all servernames of user (distinct select)
 
- - ios purchasw verification
+ - ios purchase verification
+
+ - api versioning (api/v2 ?)
 
 #### PERSONAL
 

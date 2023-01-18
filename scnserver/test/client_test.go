@@ -1,9 +1,11 @@
 package test
 
 import (
+	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	tt "blackforestbytes.com/simplecloudnotifier/test/util"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"net/url"
 	"testing"
 )
 
@@ -147,5 +149,46 @@ func TestReuseFCM(t *testing.T) {
 }
 
 func TestListClients(t *testing.T) {
-	t.SkipNow() //TODO
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	type clientlist struct {
+		Clients []gin.H `json:"clients"`
+	}
+
+	type T2 struct {
+		CT []string
+		AM []string
+		AV []string
+	}
+
+	vals := map[int]T2{
+		1:  {[]string{"ANDROID"}, []string{"Galaxy Quest"}, []string{"2022"}},
+		2:  {[]string{"IOS", "IOS"}, []string{"GalaxySurfer", "Ocean Explorer"}, []string{"Triple-XXX", "737edc01"}},
+		3:  {[]string{"ANDROID"}, []string{"Snow Leopard"}, []string{"1.0.1.99~3"}},
+		8:  {[]string{"ANDROID"}, []string{"Galaxy Quest"}, []string{"2023.1"}},
+		9:  {[]string{"ANDROID", "IOS", "IOS", "ANDROID"}, []string{"Galaxy Quest", "DreamWeaver", "GalaxySurfer", "Galaxy Quest"}, []string{"2023.2", "Triple-XXX", "Triple-XXX", "2023.1"}},
+		5:  {[]string{"IOS"}, []string{"Ocean Explorer"}, []string{"737edc01"}},
+		7:  {[]string{"ANDROID"}, []string{"Galaxy Quest"}, []string{"2023.1"}},
+		10: {[]string{}, []string{}, []string{}},
+		14: {[]string{"IOS"}, []string{"StarfireXX"}, []string{"1.x"}},
+		11: {[]string{}, []string{}, []string{}},
+		12: {[]string{"IOS"}, []string{"Ocean Explorer"}, []string{"737edc01"}},
+		13: {[]string{}, []string{}, []string{}},
+		0:  {[]string{"IOS"}, []string{"Starfire"}, []string{"2.0"}},
+		4:  {[]string{"ANDROID"}, []string{"Thunder-Bolt-4$"}, []string{"#12"}},
+		6:  {[]string{"IOS", "IOS"}, []string{"GalaxySurfer", "Cyber Nova"}, []string{"Triple-XXX", "Cyber 4"}},
+		15: {[]string{"IOS"}, []string{"StarfireXX"}, []string{"1.x"}},
+	}
+
+	for k, v := range vals {
+		clist1 := tt.RequestAuthGet[clientlist](t, data.User[k].AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/clients", url.QueryEscape(data.User[k].UID)))
+		tt.AssertMappedSet(t, fmt.Sprintf("clients[%d]->type", k), v.CT, clist1.Clients, "type")
+		tt.AssertMappedSet(t, fmt.Sprintf("clients[%d]->agent_model", k), v.AM, clist1.Clients, "agent_model")
+		tt.AssertMappedSet(t, fmt.Sprintf("clients[%d]->agent_version", k), v.AV, clist1.Clients, "agent_version")
+	}
+
+	tt.RequestAuthGetShouldFail(t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/clients", url.QueryEscape(data.User[1].UID)), 401, apierr.USER_AUTH_FAILED)
 }
