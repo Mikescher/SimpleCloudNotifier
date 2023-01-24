@@ -17,8 +17,8 @@ type RequestLogCleanupJob struct {
 	sigChannel chan string
 }
 
-func NewRequestLogCleanupJob(app *logic.Application) *DeliveryRetryJob {
-	return &DeliveryRetryJob{
+func NewRequestLogCleanupJob(app *logic.Application) *RequestLogCleanupJob {
+	return &RequestLogCleanupJob{
 		app:        app,
 		name:       "RequestLogCleanupJob",
 		isRunning:  syncext.NewAtomicBool(false),
@@ -95,7 +95,7 @@ func (j *RequestLogCleanupJob) mainLoop() {
 func (j *RequestLogCleanupJob) execute() (err error) {
 	defer func() {
 		if rec := recover(); rec != nil {
-			log.Error().Interface("recover", rec).Msg("Recovered panic in DeliveryRetryJob")
+			log.Error().Interface("recover", rec).Msg("Recovered panic in " + j.name)
 			err = errors.New(fmt.Sprintf("Panic recovered: %v", rec))
 		}
 	}()

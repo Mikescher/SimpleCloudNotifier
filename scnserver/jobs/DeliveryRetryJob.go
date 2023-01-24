@@ -73,7 +73,6 @@ func (j *DeliveryRetryJob) mainLoop() {
 				break
 			} else if signal == "run" {
 				log.Info().Msg(fmt.Sprintf("Job [%s] received <run> signal", j.name))
-				continue
 			} else {
 				log.Error().Msg(fmt.Sprintf("Received unknown job signal: <%s> in job [%s]", signal, j.name))
 			}
@@ -100,7 +99,7 @@ func (j *DeliveryRetryJob) mainLoop() {
 func (j *DeliveryRetryJob) execute() (fastrr bool, err error) {
 	defer func() {
 		if rec := recover(); rec != nil {
-			log.Error().Interface("recover", rec).Msg("Recovered panic in DeliveryRetryJob")
+			log.Error().Interface("recover", rec).Msg("Recovered panic in " + j.name)
 			err = errors.New(fmt.Sprintf("Panic recovered: %v", rec))
 			fastrr = false
 		}
