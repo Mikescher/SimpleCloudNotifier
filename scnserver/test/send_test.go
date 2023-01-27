@@ -18,7 +18,7 @@ func TestSendSimpleMessageJSON(t *testing.T) {
 
 	pusher := ws.Pusher.(*push.TestSink)
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -57,10 +57,10 @@ func TestSendSimpleMessageJSON(t *testing.T) {
 		Messages []gin.H `json:"messages"`
 	}
 
-	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/messages")
+	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/v2/messages")
 	tt.AssertEqual(t, "len(messages)", 1, len(msgList1.Messages))
 
-	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
+	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
 	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_001", msg1Get["title"])
 	tt.AssertStrRepEqual(t, "msg.channel_internal_name", "main", msg1Get["channel_internal_name"])
 }
@@ -71,7 +71,7 @@ func TestSendSimpleMessageQuery(t *testing.T) {
 
 	pusher := ws.Pusher.(*push.TestSink)
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -93,10 +93,10 @@ func TestSendSimpleMessageQuery(t *testing.T) {
 		Messages []gin.H `json:"messages"`
 	}
 
-	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/messages")
+	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/v2/messages")
 	tt.AssertEqual(t, "len(messages)", 1, len(msgList1.Messages))
 
-	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
+	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
 	tt.AssertStrRepEqual(t, "msg.title", "Hello World 2134", msg1Get["title"])
 	tt.AssertStrRepEqual(t, "msg.channel_internal_name", "main", msg1Get["channel_internal_name"])
 }
@@ -107,7 +107,7 @@ func TestSendSimpleMessageForm(t *testing.T) {
 
 	pusher := ws.Pusher.(*push.TestSink)
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -133,10 +133,10 @@ func TestSendSimpleMessageForm(t *testing.T) {
 		Messages []gin.H `json:"messages"`
 	}
 
-	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/messages")
+	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/v2/messages")
 	tt.AssertEqual(t, "len(messages)", 1, len(msgList1.Messages))
 
-	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
+	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
 	tt.AssertStrRepEqual(t, "msg.title", "Hello World 9999 [$$$]", msg1Get["title"])
 	tt.AssertStrRepEqual(t, "msg.channel_internal_name", "main", msg1Get["channel_internal_name"])
 }
@@ -147,7 +147,7 @@ func TestSendSimpleMessageFormAndQuery(t *testing.T) {
 
 	pusher := ws.Pusher.(*push.TestSink)
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -174,7 +174,7 @@ func TestSendSimpleMessageJSONAndQuery(t *testing.T) {
 
 	pusher := ws.Pusher.(*push.TestSink)
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -202,7 +202,7 @@ func TestSendSimpleMessageAlt1(t *testing.T) {
 
 	pusher := ws.Pusher.(*push.TestSink)
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -235,10 +235,10 @@ func TestSendSimpleMessageAlt1(t *testing.T) {
 		Messages []gin.H `json:"messages"`
 	}
 
-	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/messages")
+	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/v2/messages")
 	tt.AssertEqual(t, "len(messages)", 1, len(msgList1.Messages))
 
-	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
+	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
 	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_001", msg1Get["title"])
 	tt.AssertStrRepEqual(t, "msg.channel_internal_name", "main", msg1Get["channel_internal_name"])
 }
@@ -249,7 +249,7 @@ func TestSendContentMessage(t *testing.T) {
 
 	pusher := ws.Pusher.(*push.TestSink)
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -276,13 +276,13 @@ func TestSendContentMessage(t *testing.T) {
 		Messages []gin.H `json:"messages"`
 	}
 
-	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/messages")
+	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/v2/messages")
 	tt.AssertEqual(t, "len(messages)", 1, len(msgList1.Messages))
 	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_042", msgList1.Messages[0]["title"])
 	tt.AssertStrRepEqual(t, "msg.content", "I am Content\nasdf", msgList1.Messages[0]["content"])
 	tt.AssertStrRepEqual(t, "msg.channel_internal_name", "main", msgList1.Messages[0]["channel_internal_name"])
 
-	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
+	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
 	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_042", msg1Get["title"])
 	tt.AssertStrRepEqual(t, "msg.content", "I am Content\nasdf", msg1Get["content"])
 	tt.AssertStrRepEqual(t, "msg.channel_internal_name", "main", msg1Get["channel_internal_name"])
@@ -294,7 +294,7 @@ func TestSendWithSendername(t *testing.T) {
 
 	pusher := ws.Pusher.(*push.TestSink)
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -323,14 +323,14 @@ func TestSendWithSendername(t *testing.T) {
 		Messages []gin.H `json:"messages"`
 	}
 
-	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/messages")
+	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/v2/messages")
 	tt.AssertEqual(t, "len(messages)", 1, len(msgList1.Messages))
 	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_xyz", msgList1.Messages[0]["title"])
 	tt.AssertStrRepEqual(t, "msg.content", "Unicode: 日本 - yäy\000\n\t\x00...", msgList1.Messages[0]["content"])
 	tt.AssertStrRepEqual(t, "msg.sender_name", "localhorst", msgList1.Messages[0]["sender_name"])
 	tt.AssertStrRepEqual(t, "msg.channel_internal_name", "main", msgList1.Messages[0]["channel_internal_name"])
 
-	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
+	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
 	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_xyz", msg1Get["title"])
 	tt.AssertStrRepEqual(t, "msg.content", "Unicode: 日本 - yäy\000\n\t\x00...", msg1Get["content"])
 	tt.AssertStrRepEqual(t, "msg.sender_name", "localhorst", msg1Get["sender_name"])
@@ -343,7 +343,7 @@ func TestSendLongContent(t *testing.T) {
 
 	pusher := ws.Pusher.(*push.TestSink)
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -375,21 +375,21 @@ func TestSendLongContent(t *testing.T) {
 		Messages []gin.H `json:"messages"`
 	}
 
-	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/messages")
+	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/v2/messages")
 	tt.AssertEqual(t, "len(messages)", 1, len(msgList1.Messages))
 	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_042", msgList1.Messages[0]["title"])
 	tt.AssertNotStrRepEqual(t, "msg.content", longContent, msgList1.Messages[0]["content"])
 	tt.AssertStrRepEqual(t, "msg.channel_internal_name", "main", msgList1.Messages[0]["channel_internal_name"])
 	tt.AssertStrRepEqual(t, "msg.trimmmed", true, msgList1.Messages[0]["trimmed"])
 
-	msgList2 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/messages?trimmed=false")
+	msgList2 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/v2/messages?trimmed=false")
 	tt.AssertEqual(t, "len(messages)", 1, len(msgList2.Messages))
 	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_042", msgList2.Messages[0]["title"])
 	tt.AssertStrRepEqual(t, "msg.content", longContent, msgList2.Messages[0]["content"])
 	tt.AssertStrRepEqual(t, "msg.channel_internal_name", "main", msgList2.Messages[0]["channel_internal_name"])
 	tt.AssertStrRepEqual(t, "msg.trimmmed", false, msgList2.Messages[0]["trimmed"])
 
-	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
+	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
 	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_042", msg1Get["title"])
 	tt.AssertStrRepEqual(t, "msg.titcontentle", longContent, msg1Get["content"])
 	tt.AssertStrRepEqual(t, "msg.channel_internal_name", "main", msg1Get["channel_internal_name"])
@@ -400,7 +400,7 @@ func TestSendTooLongContent(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -427,7 +427,7 @@ func TestSendLongContentPro(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -514,7 +514,7 @@ func TestSendTooLongTitle(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -537,7 +537,7 @@ func TestSendIdempotent(t *testing.T) {
 
 	pusher := ws.Pusher.(*push.TestSink)
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -567,7 +567,7 @@ func TestSendIdempotent(t *testing.T) {
 		Messages []gin.H `json:"messages"`
 	}
 
-	msgList1 := tt.RequestAuthGet[mglist](t, readtok, baseUrl, "/api/messages")
+	msgList1 := tt.RequestAuthGet[mglist](t, readtok, baseUrl, "/api/v2/messages")
 	tt.AssertEqual(t, "len(messages)", 1, len(msgList1.Messages))
 
 	msg2 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
@@ -586,7 +586,7 @@ func TestSendIdempotent(t *testing.T) {
 	tt.AssertStrRepEqual(t, "msg.title", "Hello SCN", pusher.Last().Message.Title)
 	tt.AssertStrRepEqual(t, "msg.content", "mamma mia", pusher.Last().Message.Content)
 
-	msgList2 := tt.RequestAuthGet[mglist](t, readtok, baseUrl, "/api/messages")
+	msgList2 := tt.RequestAuthGet[mglist](t, readtok, baseUrl, "/api/v2/messages")
 	tt.AssertEqual(t, "len(messages)", 1, len(msgList2.Messages))
 
 	msg3 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
@@ -605,7 +605,7 @@ func TestSendIdempotent(t *testing.T) {
 	tt.AssertStrRepEqual(t, "msg.title", "Hello third", pusher.Last().Message.Title)
 	tt.AssertStrRepEqual(t, "msg.content", "let me go", pusher.Last().Message.Content)
 
-	msgList3 := tt.RequestAuthGet[mglist](t, readtok, baseUrl, "/api/messages")
+	msgList3 := tt.RequestAuthGet[mglist](t, readtok, baseUrl, "/api/v2/messages")
 	tt.AssertEqual(t, "len(messages)", 2, len(msgList3.Messages))
 }
 
@@ -615,7 +615,7 @@ func TestSendWithPriority(t *testing.T) {
 
 	pusher := ws.Pusher.(*push.TestSink)
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -638,7 +638,7 @@ func TestSendWithPriority(t *testing.T) {
 
 		tt.AssertStrRepEqual(t, "msg.prio", 1, pusher.Last().Message.Priority)
 
-		msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
+		msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
 		tt.AssertStrRepEqual(t, "msg.title", "M_001", msg1Get["title"])
 		tt.AssertStrRepEqual(t, "msg.content", "TestSendWithPriority#001", msg1Get["content"])
 		tt.AssertStrRepEqual(t, "msg.content", 1, msg1Get["priority"])
@@ -657,7 +657,7 @@ func TestSendWithPriority(t *testing.T) {
 
 		tt.AssertStrRepEqual(t, "msg.prio", 0, pusher.Last().Message.Priority)
 
-		msg2Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg2["scn_msg_id"]))
+		msg2Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msg2["scn_msg_id"]))
 		tt.AssertStrRepEqual(t, "msg.title", "M_002", msg2Get["title"])
 		tt.AssertStrRepEqual(t, "msg.content", "TestSendWithPriority#002", msg2Get["content"])
 		tt.AssertStrRepEqual(t, "msg.content", 0, msg2Get["priority"])
@@ -676,7 +676,7 @@ func TestSendWithPriority(t *testing.T) {
 
 		tt.AssertStrRepEqual(t, "msg.prio", 1, pusher.Last().Message.Priority)
 
-		msg3Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg3["scn_msg_id"]))
+		msg3Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msg3["scn_msg_id"]))
 		tt.AssertStrRepEqual(t, "msg.title", "M_003", msg3Get["title"])
 		tt.AssertStrRepEqual(t, "msg.content", "TestSendWithPriority#003", msg3Get["content"])
 		tt.AssertStrRepEqual(t, "msg.content", 1, msg3Get["priority"])
@@ -695,7 +695,7 @@ func TestSendWithPriority(t *testing.T) {
 
 		tt.AssertStrRepEqual(t, "msg.prio", 2, pusher.Last().Message.Priority)
 
-		msg4Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg4["scn_msg_id"]))
+		msg4Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msg4["scn_msg_id"]))
 		tt.AssertStrRepEqual(t, "msg.title", "M_004", msg4Get["title"])
 		tt.AssertStrRepEqual(t, "msg.content", "TestSendWithPriority#004", msg4Get["content"])
 		tt.AssertStrRepEqual(t, "msg.content", 2, msg4Get["priority"])
@@ -708,7 +708,7 @@ func TestSendInvalidPriority(t *testing.T) {
 
 	pusher := ws.Pusher.(*push.TestSink)
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -824,7 +824,7 @@ func TestSendWithTimestamp(t *testing.T) {
 
 	pusher := ws.Pusher.(*push.TestSink)
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -855,7 +855,7 @@ func TestSendWithTimestamp(t *testing.T) {
 		Messages []gin.H `json:"messages"`
 	}
 
-	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/messages")
+	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/v2/messages")
 	tt.AssertEqual(t, "len(messages)", 1, len(msgList1.Messages))
 	tt.AssertStrRepEqual(t, "msg.title", "TTT", msgList1.Messages[0]["title"])
 	tt.AssertStrRepEqual(t, "msg.content", nil, msgList1.Messages[0]["sender_name"])
@@ -865,7 +865,7 @@ func TestSendWithTimestamp(t *testing.T) {
 	tt.TestFailIfErr(t, err)
 	tt.AssertStrRepEqual(t, "msg.timestamp", ts, tm1.Unix())
 
-	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
+	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
 	tt.AssertStrRepEqual(t, "msg.title", "TTT", msg1Get["title"])
 	tt.AssertStrRepEqual(t, "msg.content", nil, msg1Get["sender_name"])
 	tt.AssertStrRepEqual(t, "msg.channel_internal_name", "main", msg1Get["channel_internal_name"])
@@ -881,7 +881,7 @@ func TestSendInvalidTimestamp(t *testing.T) {
 
 	pusher := ws.Pusher.(*push.TestSink)
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -982,7 +982,7 @@ func TestSendToNewChannel(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -998,7 +998,7 @@ func TestSendToNewChannel(t *testing.T) {
 	}
 
 	{
-		chan0 := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/users/%s/channels", uid))
+		chan0 := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid))
 		tt.AssertEqual(t, "chan-count", 0, len(chan0.Channels))
 	}
 
@@ -1009,7 +1009,7 @@ func TestSendToNewChannel(t *testing.T) {
 	})
 
 	{
-		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/users/%s/channels", uid))
+		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid))
 		tt.AssertMappedSet(t, "channels", []string{"main"}, clist.Channels, "display_name")
 		tt.AssertMappedSet(t, "channels", []string{"main"}, clist.Channels, "internal_name")
 	}
@@ -1023,7 +1023,7 @@ func TestSendToNewChannel(t *testing.T) {
 	})
 
 	{
-		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/users/%s/channels", uid))
+		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid))
 		tt.AssertMappedSet(t, "channels", []string{"main"}, clist.Channels, "display_name")
 		tt.AssertMappedSet(t, "channels", []string{"main"}, clist.Channels, "internal_name")
 	}
@@ -1037,7 +1037,7 @@ func TestSendToNewChannel(t *testing.T) {
 	})
 
 	{
-		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/users/%s/channels", uid))
+		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid))
 		tt.AssertMappedSet(t, "channels", []string{"main", "test"}, clist.Channels, "display_name")
 		tt.AssertMappedSet(t, "channels", []string{"main", "test"}, clist.Channels, "internal_name")
 	}
@@ -1050,7 +1050,7 @@ func TestSendToNewChannel(t *testing.T) {
 	})
 
 	{
-		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/users/%s/channels", uid))
+		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid))
 		tt.AssertMappedSet(t, "channels", []string{"main", "test"}, clist.Channels, "display_name")
 		tt.AssertMappedSet(t, "channels", []string{"main", "test"}, clist.Channels, "internal_name")
 	}
@@ -1060,7 +1060,7 @@ func TestSendToManualChannel(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -1076,7 +1076,7 @@ func TestSendToManualChannel(t *testing.T) {
 	}
 
 	{
-		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/users/%s/channels", uid))
+		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid))
 		tt.AssertMappedSet(t, "channels", []string{}, clist.Channels, "display_name")
 		tt.AssertMappedSet(t, "channels", []string{}, clist.Channels, "internal_name")
 	}
@@ -1088,7 +1088,7 @@ func TestSendToManualChannel(t *testing.T) {
 	})
 
 	{
-		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/users/%s/channels", uid))
+		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid))
 		tt.AssertMappedSet(t, "channels", []string{"main"}, clist.Channels, "display_name")
 		tt.AssertMappedSet(t, "channels", []string{"main"}, clist.Channels, "internal_name")
 	}
@@ -1102,18 +1102,18 @@ func TestSendToManualChannel(t *testing.T) {
 	})
 
 	{
-		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/users/%s/channels", uid))
+		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid))
 		tt.AssertEqual(t, "chan.len", 1, len(clist.Channels))
 		tt.AssertEqual(t, "chan.internal_name", "main", clist.Channels[0]["internal_name"])
 		tt.AssertEqual(t, "chan.display_name", "main", clist.Channels[0]["display_name"])
 	}
 
-	tt.RequestAuthPost[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/users/%s/channels", uid), gin.H{
+	tt.RequestAuthPost[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid), gin.H{
 		"name": "test",
 	})
 
 	{
-		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/users/%s/channels", uid))
+		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid))
 		tt.AssertMappedSet(t, "channels", []string{"main", "test"}, clist.Channels, "display_name")
 		tt.AssertMappedSet(t, "channels", []string{"main", "test"}, clist.Channels, "internal_name")
 	}
@@ -1127,7 +1127,7 @@ func TestSendToManualChannel(t *testing.T) {
 	})
 
 	{
-		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/users/%s/channels", uid))
+		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid))
 		tt.AssertMappedSet(t, "channels", []string{"main", "test"}, clist.Channels, "display_name")
 		tt.AssertMappedSet(t, "channels", []string{"main", "test"}, clist.Channels, "internal_name")
 	}
@@ -1140,7 +1140,7 @@ func TestSendToManualChannel(t *testing.T) {
 	})
 
 	{
-		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/users/%s/channels", uid))
+		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid))
 		tt.AssertMappedSet(t, "channels", []string{"main", "test"}, clist.Channels, "display_name")
 		tt.AssertMappedSet(t, "channels", []string{"main", "test"}, clist.Channels, "internal_name")
 	}
@@ -1150,7 +1150,7 @@ func TestSendToTooLongChannel(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -1186,7 +1186,7 @@ func TestQuotaExceededNoPro(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -1212,7 +1212,7 @@ func TestQuotaExceededNoPro(t *testing.T) {
 	}
 
 	{
-		usr := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/users/%s", uid))
+		usr := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s", uid))
 
 		tt.AssertStrRepEqual(t, "quota.1", 1, usr["quota_used"])
 		tt.AssertStrRepEqual(t, "quota.1", 50, usr["quota_max"])
@@ -1229,7 +1229,7 @@ func TestQuotaExceededNoPro(t *testing.T) {
 	}
 
 	{
-		usr := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/users/%s", uid))
+		usr := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s", uid))
 
 		tt.AssertStrRepEqual(t, "quota.49", 49, usr["quota_used"])
 		tt.AssertStrRepEqual(t, "quota.49", 50, usr["quota_max"])
@@ -1245,7 +1245,7 @@ func TestQuotaExceededNoPro(t *testing.T) {
 	tt.AssertStrRepEqual(t, "quota.msg.50", 50, msg50["quota_max"])
 
 	{
-		usr := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/users/%s", uid))
+		usr := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s", uid))
 
 		tt.AssertStrRepEqual(t, "quota.50", 50, usr["quota_used"])
 		tt.AssertStrRepEqual(t, "quota.50", 50, usr["quota_max"])
@@ -1263,7 +1263,7 @@ func TestQuotaExceededPro(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -1290,7 +1290,7 @@ func TestQuotaExceededPro(t *testing.T) {
 	}
 
 	{
-		usr := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/users/%s", uid))
+		usr := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s", uid))
 
 		tt.AssertStrRepEqual(t, "quota.1", 1, usr["quota_used"])
 		tt.AssertStrRepEqual(t, "quota.1", 1000, usr["quota_max"])
@@ -1307,7 +1307,7 @@ func TestQuotaExceededPro(t *testing.T) {
 	}
 
 	{
-		usr := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/users/%s", uid))
+		usr := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s", uid))
 
 		tt.AssertStrRepEqual(t, "quota.999", 999, usr["quota_used"])
 		tt.AssertStrRepEqual(t, "quota.999", 1000, usr["quota_max"])
@@ -1323,7 +1323,7 @@ func TestQuotaExceededPro(t *testing.T) {
 	tt.AssertStrRepEqual(t, "quota.msg.1000", 1000, msg50["quota_max"])
 
 	{
-		usr := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/users/%s", uid))
+		usr := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s", uid))
 
 		tt.AssertStrRepEqual(t, "quota.1000", 1000, usr["quota_used"])
 		tt.AssertStrRepEqual(t, "quota.1000", 1000, usr["quota_max"])
@@ -1341,7 +1341,7 @@ func TestSendParallel(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",

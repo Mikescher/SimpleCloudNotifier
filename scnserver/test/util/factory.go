@@ -318,7 +318,7 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 			body["pro_token"] = uex.ProTok
 		}
 
-		user0 := RequestPost[gin.H](t, baseUrl, "/api/users", body)
+		user0 := RequestPost[gin.H](t, baseUrl, "/api/v2/users", body)
 		uid0 := user0["user_id"].(string)
 		readtok0 := user0["read_key"].(string)
 		sendtok0 := user0["send_key"].(string)
@@ -341,7 +341,7 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 		body["agent_version"] = cex.AgentVersion
 		body["client_type"] = cex.ClientType
 		body["fcm_token"] = cex.FCMTok
-		RequestAuthPost[gin.H](t, users[cex.User].AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/clients", users[cex.User].UID), body)
+		RequestAuthPost[gin.H](t, users[cex.User].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/clients", users[cex.User].UID), body)
 	}
 
 	// Create Messages
@@ -378,7 +378,7 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 	// create manual channels
 
 	{
-		RequestAuthPost[Void](t, users[9].AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/channels", users[9].UID), gin.H{"name": "manual@chan"})
+		RequestAuthPost[Void](t, users[9].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", users[9].UID), gin.H{"name": "manual@chan"})
 	}
 
 	// Sub/Unsub for Users 12+13
@@ -399,7 +399,7 @@ func doSubscribe(t *testing.T, baseUrl string, user Userdat, chanOwner Userdat, 
 
 	if user == chanOwner {
 
-		RequestAuthPost[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/channels", user.UID), gin.H{
+		RequestAuthPost[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", user.UID), gin.H{
 			"channel_owner_user_id": chanOwner.UID,
 			"channel_internal_name": chanInternalName,
 		})
@@ -409,7 +409,7 @@ func doSubscribe(t *testing.T, baseUrl string, user Userdat, chanOwner Userdat, 
 			Channels []gin.H `json:"channels"`
 		}
 
-		clist := RequestAuthGet[chanlist](t, chanOwner.AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/channels?selector=owned", chanOwner.UID))
+		clist := RequestAuthGet[chanlist](t, chanOwner.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels?selector=owned", chanOwner.UID))
 
 		var chandat gin.H
 		for _, v := range clist.Channels {
@@ -419,7 +419,7 @@ func doSubscribe(t *testing.T, baseUrl string, user Userdat, chanOwner Userdat, 
 			}
 		}
 
-		RequestAuthPost[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/subscriptions?chan_subscribe_key=%s", user.UID, chandat["subscribe_key"].(string)), gin.H{
+		RequestAuthPost[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?chan_subscribe_key=%s", user.UID, chandat["subscribe_key"].(string)), gin.H{
 			"channel_id": chandat["channel_id"].(string),
 		})
 
@@ -433,7 +433,7 @@ func doUnsubscribe(t *testing.T, baseUrl string, user Userdat, chanOwner Userdat
 		Subscriptions []gin.H `json:"subscriptions"`
 	}
 
-	slist := RequestAuthGet[chanlist](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/subscriptions?selector=outgoing_confirmed", user.UID))
+	slist := RequestAuthGet[chanlist](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=outgoing_confirmed", user.UID))
 
 	var subdat gin.H
 	for _, v := range slist.Subscriptions {
@@ -443,7 +443,7 @@ func doUnsubscribe(t *testing.T, baseUrl string, user Userdat, chanOwner Userdat
 		}
 	}
 
-	RequestAuthDelete[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/subscriptions/%v", user.UID, subdat["subscription_id"]), gin.H{})
+	RequestAuthDelete[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions/%v", user.UID, subdat["subscription_id"]), gin.H{})
 
 }
 
@@ -453,7 +453,7 @@ func doAcceptSub(t *testing.T, baseUrl string, user Userdat, subscriber Userdat,
 		Subscriptions []gin.H `json:"subscriptions"`
 	}
 
-	slist := RequestAuthGet[chanlist](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/subscriptions?selector=incoming_unconfirmed", user.UID))
+	slist := RequestAuthGet[chanlist](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=incoming_unconfirmed", user.UID))
 
 	var subdat gin.H
 	for _, v := range slist.Subscriptions {
@@ -463,7 +463,7 @@ func doAcceptSub(t *testing.T, baseUrl string, user Userdat, subscriber Userdat,
 		}
 	}
 
-	RequestAuthPatch[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/subscriptions/%v", user.UID, subdat["subscription_id"]), gin.H{
+	RequestAuthPatch[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions/%v", user.UID, subdat["subscription_id"]), gin.H{
 		"confirmed": true,
 	})
 

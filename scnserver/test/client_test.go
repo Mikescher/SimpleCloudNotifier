@@ -13,7 +13,7 @@ func TestGetClient(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -29,7 +29,7 @@ func TestGetClient(t *testing.T) {
 	fmt.Printf("uid       := %s\n", uid)
 	fmt.Printf("admin_key := %s\n", admintok)
 
-	r1 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/users/"+uid)
+	r1 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid)
 
 	tt.AssertEqual(t, "uid", uid, fmt.Sprintf("%v", r1["user_id"]))
 	tt.AssertEqual(t, "admin_key", admintok, r1["admin_key"])
@@ -39,7 +39,7 @@ func TestGetClient(t *testing.T) {
 		Clients []gin.H `json:"clients"`
 	}
 
-	r2 := tt.RequestAuthGet[rt2](t, admintok, baseUrl, "/api/users/"+uid+"/clients")
+	r2 := tt.RequestAuthGet[rt2](t, admintok, baseUrl, "/api/v2/users/"+uid+"/clients")
 
 	tt.AssertEqual(t, "len(clients)", 1, len(r2.Clients))
 
@@ -53,7 +53,7 @@ func TestGetClient(t *testing.T) {
 
 	cid := fmt.Sprintf("%v", c0["client_id"])
 
-	r3 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/users/"+uid+"/clients/"+cid)
+	r3 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid+"/clients/"+cid)
 
 	tt.AssertJsonMapEqual(t, "client", r3, c0)
 }
@@ -62,7 +62,7 @@ func TestCreateAndDeleteClient(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -78,7 +78,7 @@ func TestCreateAndDeleteClient(t *testing.T) {
 	fmt.Printf("uid       := %s\n", uid)
 	fmt.Printf("admin_key := %s\n", admintok)
 
-	r2 := tt.RequestAuthPost[gin.H](t, admintok, baseUrl, "/api/users/"+uid+"/clients", gin.H{
+	r2 := tt.RequestAuthPost[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid+"/clients", gin.H{
 		"agent_model":   "DUMMY_PHONE_2",
 		"agent_version": "99X",
 		"client_type":   "IOS",
@@ -91,13 +91,13 @@ func TestCreateAndDeleteClient(t *testing.T) {
 		Clients []gin.H `json:"clients"`
 	}
 
-	r3 := tt.RequestAuthGet[rt3](t, admintok, baseUrl, "/api/users/"+uid+"/clients")
+	r3 := tt.RequestAuthGet[rt3](t, admintok, baseUrl, "/api/v2/users/"+uid+"/clients")
 	tt.AssertEqual(t, "len(clients)", 2, len(r3.Clients))
 
-	r4 := tt.RequestAuthDelete[gin.H](t, admintok, baseUrl, "/api/users/"+uid+"/clients/"+cid2, nil)
+	r4 := tt.RequestAuthDelete[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid+"/clients/"+cid2, nil)
 	tt.AssertEqual(t, "client_id", cid2, fmt.Sprintf("%v", r4["client_id"]))
 
-	r5 := tt.RequestAuthGet[rt3](t, admintok, baseUrl, "/api/users/"+uid+"/clients")
+	r5 := tt.RequestAuthGet[rt3](t, admintok, baseUrl, "/api/v2/users/"+uid+"/clients")
 	tt.AssertEqual(t, "len(clients)", 1, len(r5.Clients))
 }
 
@@ -105,7 +105,7 @@ func TestReuseFCM(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -125,11 +125,11 @@ func TestReuseFCM(t *testing.T) {
 		Clients []gin.H `json:"clients"`
 	}
 
-	r1 := tt.RequestAuthGet[rt2](t, admintok, baseUrl, "/api/users/"+uid+"/clients")
+	r1 := tt.RequestAuthGet[rt2](t, admintok, baseUrl, "/api/v2/users/"+uid+"/clients")
 
 	tt.AssertEqual(t, "len(clients)", 1, len(r1.Clients))
 
-	r2 := tt.RequestAuthPost[gin.H](t, admintok, baseUrl, "/api/users/"+uid+"/clients", gin.H{
+	r2 := tt.RequestAuthPost[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid+"/clients", gin.H{
 		"agent_model":   "DUMMY_PHONE_2",
 		"agent_version": "99X",
 		"client_type":   "IOS",
@@ -142,7 +142,7 @@ func TestReuseFCM(t *testing.T) {
 		Clients []gin.H `json:"clients"`
 	}
 
-	r3 := tt.RequestAuthGet[rt3](t, admintok, baseUrl, "/api/users/"+uid+"/clients")
+	r3 := tt.RequestAuthGet[rt3](t, admintok, baseUrl, "/api/v2/users/"+uid+"/clients")
 	tt.AssertEqual(t, "len(clients)", 1, len(r3.Clients))
 
 	tt.AssertEqual(t, "clients->client_id", cid2, fmt.Sprintf("%v", r3.Clients[0]["client_id"]))
@@ -184,11 +184,11 @@ func TestListClients(t *testing.T) {
 	}
 
 	for k, v := range vals {
-		clist1 := tt.RequestAuthGet[clientlist](t, data.User[k].AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/clients", url.QueryEscape(data.User[k].UID)))
+		clist1 := tt.RequestAuthGet[clientlist](t, data.User[k].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/clients", url.QueryEscape(data.User[k].UID)))
 		tt.AssertMappedSet(t, fmt.Sprintf("clients[%d]->type", k), v.CT, clist1.Clients, "type")
 		tt.AssertMappedSet(t, fmt.Sprintf("clients[%d]->agent_model", k), v.AM, clist1.Clients, "agent_model")
 		tt.AssertMappedSet(t, fmt.Sprintf("clients[%d]->agent_version", k), v.AV, clist1.Clients, "agent_version")
 	}
 
-	tt.RequestAuthGetShouldFail(t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/users/%s/clients", url.QueryEscape(data.User[1].UID)), 401, apierr.USER_AUTH_FAILED)
+	tt.RequestAuthGetShouldFail(t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/clients", url.QueryEscape(data.User[1].UID)), 401, apierr.USER_AUTH_FAILED)
 }

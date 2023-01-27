@@ -22,7 +22,7 @@ func TestSearchMessageFTSSimple(t *testing.T) {
 		Messages []gin.H `json:"messages"`
 	}
 
-	msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/messages?filter=%s", url.QueryEscape("Friday")))
+	msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?filter=%s", url.QueryEscape("Friday")))
 	tt.AssertEqual(t, "msgList.len", 2, len(msgList.Messages))
 	tt.AssertArrAny(t, "msgList.any<1>", msgList.Messages, func(msg gin.H) bool { return msg["title"].(string) == "Invitation" })
 	tt.AssertArrAny(t, "msgList.any<2>", msgList.Messages, func(msg gin.H) bool { return msg["title"].(string) == "Important notice" })
@@ -42,7 +42,7 @@ func TestDeleteMessage(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -59,18 +59,18 @@ func TestDeleteMessage(t *testing.T) {
 		"title":    "Message_1",
 	})
 
-	tt.RequestAuthGet[tt.Void](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
+	tt.RequestAuthGet[tt.Void](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
 
-	tt.RequestAuthDelete[tt.Void](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]), gin.H{})
+	tt.RequestAuthDelete[tt.Void](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]), gin.H{})
 
-	tt.RequestAuthGetShouldFail(t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]), 404, apierr.MESSAGE_NOT_FOUND)
+	tt.RequestAuthGetShouldFail(t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]), 404, apierr.MESSAGE_NOT_FOUND)
 }
 
 func TestDeleteMessageAndResendUsrMsgId(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -90,7 +90,7 @@ func TestDeleteMessageAndResendUsrMsgId(t *testing.T) {
 
 	tt.AssertEqual(t, "suppress_send", false, msg1["suppress_send"])
 
-	tt.RequestAuthGet[tt.Void](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
+	tt.RequestAuthGet[tt.Void](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
 
 	msg2 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
 		"user_key": sendtok,
@@ -101,7 +101,7 @@ func TestDeleteMessageAndResendUsrMsgId(t *testing.T) {
 
 	tt.AssertEqual(t, "suppress_send", true, msg2["suppress_send"])
 
-	tt.RequestAuthDelete[tt.Void](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]), gin.H{})
+	tt.RequestAuthDelete[tt.Void](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]), gin.H{})
 
 	// even though message is deleted, we still get a `suppress_send` on send_message
 
@@ -128,7 +128,7 @@ func TestGetMessageSimple(t *testing.T) {
 		"title":    "Message_1",
 	})
 
-	msgIn := tt.RequestAuthGet[gin.H](t, data.User[0].AdminKey, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msgOut["scn_msg_id"]))
+	msgIn := tt.RequestAuthGet[gin.H](t, data.User[0].AdminKey, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msgOut["scn_msg_id"]))
 
 	tt.AssertEqual(t, "msg.title", "Message_1", msgIn["title"])
 }
@@ -139,7 +139,7 @@ func TestGetMessageNotFound(t *testing.T) {
 
 	data := tt.InitDefaultData(t, ws)
 
-	tt.RequestAuthGetShouldFail(t, data.User[0].AdminKey, baseUrl, "/api/messages/"+models.NewMessageID().String(), 404, apierr.MESSAGE_NOT_FOUND)
+	tt.RequestAuthGetShouldFail(t, data.User[0].AdminKey, baseUrl, "/api/v2/messages/"+models.NewMessageID().String(), 404, apierr.MESSAGE_NOT_FOUND)
 }
 
 func TestGetMessageInvalidID(t *testing.T) {
@@ -148,9 +148,9 @@ func TestGetMessageInvalidID(t *testing.T) {
 
 	data := tt.InitDefaultData(t, ws)
 
-	tt.RequestAuthGetShouldFail(t, data.User[0].AdminKey, baseUrl, "/api/messages/"+models.NewUserID().String(), 400, apierr.BINDFAIL_URI_PARAM)
+	tt.RequestAuthGetShouldFail(t, data.User[0].AdminKey, baseUrl, "/api/v2/messages/"+models.NewUserID().String(), 400, apierr.BINDFAIL_URI_PARAM)
 
-	tt.RequestAuthGetShouldFail(t, data.User[0].AdminKey, baseUrl, "/api/messages/"+"asdfxxx", 400, apierr.BINDFAIL_URI_PARAM)
+	tt.RequestAuthGetShouldFail(t, data.User[0].AdminKey, baseUrl, "/api/v2/messages/"+"asdfxxx", 400, apierr.BINDFAIL_URI_PARAM)
 }
 
 func TestGetMessageFull(t *testing.T) {
@@ -174,7 +174,7 @@ func TestGetMessageFull(t *testing.T) {
 		"timestamp":   ts,
 	})
 
-	msgIn := tt.RequestAuthGet[gin.H](t, data.User[0].AdminKey, baseUrl, "/api/messages/"+fmt.Sprintf("%v", msgOut["scn_msg_id"]))
+	msgIn := tt.RequestAuthGet[gin.H](t, data.User[0].AdminKey, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msgOut["scn_msg_id"]))
 
 	tt.AssertEqual(t, "msg.title", "Message_1", msgIn["title"])
 	tt.AssertEqual(t, "msg.content", content, msgIn["content"])

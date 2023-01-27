@@ -59,7 +59,7 @@ func (r *Router) Init(e *gin.Engine) error {
 		return errors.New("failed to add validators - wrong engine")
 	}
 
-	// ================ General ================
+	// ================ General (unversioned) ================
 
 	commonAPI := e.Group("/api")
 	{
@@ -118,9 +118,9 @@ func (r *Router) Init(e *gin.Engine) error {
 		compat.GET("/upgrade.php", r.Wrap(r.compatHandler.Upgrade))
 	}
 
-	// ================ Manage API ================
+	// ================ Manage API (v2) ================
 
-	apiv2 := e.Group("/api/")
+	apiv2 := e.Group("/api/v2/")
 	{
 
 		apiv2.POST("/users", r.Wrap(r.apiHandler.CreateUser))
@@ -150,7 +150,7 @@ func (r *Router) Init(e *gin.Engine) error {
 		apiv2.DELETE("/messages/:mid", r.Wrap(r.apiHandler.DeleteMessage))
 	}
 
-	// ================ Send API ================
+	// ================ Send API (unversioned) ================
 
 	sendAPI := e.Group("")
 	{
@@ -158,6 +158,8 @@ func (r *Router) Init(e *gin.Engine) error {
 		sendAPI.POST("/send", r.Wrap(r.messageHandler.SendMessage))
 		sendAPI.POST("/send.php", r.Wrap(r.messageHandler.SendMessageCompat))
 	}
+
+	// ================
 
 	if r.app.Config.ReturnRawErrors {
 		e.NoRoute(r.Wrap(r.commonHandler.NoRoute))

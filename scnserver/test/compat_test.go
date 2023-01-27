@@ -46,10 +46,10 @@ func TestSendCompatWithOldUser(t *testing.T) {
 		Messages []gin.H `json:"messages"`
 	}
 
-	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/messages")
+	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/v2/messages")
 	tt.AssertEqual(t, "len(messages)", 1, len(msgList1.Messages))
 
-	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", pusher.Last().Message.MessageID))
+	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", pusher.Last().Message.MessageID))
 	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_001", msg1Get["title"])
 	tt.AssertStrRepEqual(t, "msg.channel_internal_name", "main", msg1Get["channel_internal_name"])
 
@@ -62,7 +62,7 @@ func TestSendCompatWithOldUser(t *testing.T) {
 	exp2 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/expand.php?user_id=%d&user_key=%s&scn_msg_id=%d", uidold, admintok, int64(msg2["scn_msg_id"].(float64))))
 	tt.AssertEqual(t, "success", true, exp2["success"])
 
-	tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", pusher.Last().Message.MessageID))
+	tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", pusher.Last().Message.MessageID))
 
 	content3 := "039c1817-76ee-44ab-972a-4cec0a15a791\n" +
 		"046f59ea-9a49-4060-93e6-8a4e14134faf\n" +
@@ -85,7 +85,7 @@ func TestSendCompatWithOldUser(t *testing.T) {
 		"timestamp": fmt.Sprintf("%d", ts3),
 	})
 
-	tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", pusher.Last().Message.MessageID))
+	tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", pusher.Last().Message.MessageID))
 
 	tt.AssertEqual(t, "messageCount", 3, len(pusher.Data))
 	tt.AssertStrRepEqual(t, "msg.Title", "HelloWorld_003", pusher.Last().Message.Title)
@@ -104,7 +104,7 @@ func TestSendCompatWithNewUser(t *testing.T) {
 
 	pusher := ws.Pusher.(*push.TestSink)
 
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/users", gin.H{
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
 		"agent_model":   "DUMMY_PHONE",
 		"agent_version": "4X",
 		"client_type":   "ANDROID",
@@ -142,10 +142,10 @@ func TestSendCompatWithNewUser(t *testing.T) {
 		Messages []gin.H `json:"messages"`
 	}
 
-	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/messages")
+	msgList1 := tt.RequestAuthGet[mglist](t, admintok, baseUrl, "/api/v2/messages")
 	tt.AssertEqual(t, "len(messages)", 1, len(msgList1.Messages))
 
-	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", pusher.Last().Message.MessageID))
+	msg1Get := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", pusher.Last().Message.MessageID))
 	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_001", msg1Get["title"])
 	tt.AssertStrRepEqual(t, "msg.channel_internal_name", "main", msg1Get["channel_internal_name"])
 
@@ -158,7 +158,7 @@ func TestSendCompatWithNewUser(t *testing.T) {
 	exp2 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/expand.php?user_id=%d&user_key=%s&scn_msg_id=%d", uidold, admintok, int64(msg2["scn_msg_id"].(float64))))
 	tt.AssertEqual(t, "success", true, exp2["success"])
 
-	tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", pusher.Last().Message.MessageID))
+	tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", pusher.Last().Message.MessageID))
 
 	content3 := "039c1817-76ee-44ab-972a-4cec0a15a791\n" +
 		"046f59ea-9a49-4060-93e6-8a4e14134faf\n" +
@@ -183,7 +183,7 @@ func TestSendCompatWithNewUser(t *testing.T) {
 
 	exp3 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/expand.php?user_id=%d&user_key=%s&scn_msg_id=%d", uidold, admintok, int64(msg3["scn_msg_id"].(float64))))
 	tt.AssertEqual(t, "success", true, exp3["success"])
-	tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/messages/"+fmt.Sprintf("%v", pusher.Last().Message.MessageID))
+	tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", pusher.Last().Message.MessageID))
 
 	tt.AssertEqual(t, "messageCount", 3, len(pusher.Data))
 	tt.AssertStrRepEqual(t, "msg.Title", "HelloWorld_003", pusher.Last().Message.Title)

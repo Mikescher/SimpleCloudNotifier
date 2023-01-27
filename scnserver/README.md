@@ -49,7 +49,11 @@
 
  - ios purchase verification
 
- - api versioning (api/v2 ?)
+ - re-add ack labels as compat table for v1 api user
+ - return channel as "[..] asdf" in compat methods (mark clients as compat and send compat FB to them...)
+   (then we can replace the old server without switching phone clients)
+   (still needs switching of the send-script)
+ - 
 
 #### PERSONAL
 

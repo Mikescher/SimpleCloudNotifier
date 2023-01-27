@@ -40,7 +40,7 @@ func NewAPIHandler(app *logic.Application) APIHandler {
 // @Failure 400       {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
 // @Failure 500       {object} ginresp.apiError "internal server error"
 //
-// @Router  /api/users [POST]
+// @Router  /api/v2/users [POST]
 func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 	type body struct {
 		FCMToken     string  `json:"fcm_token"`
@@ -148,7 +148,7 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404 {object} ginresp.apiError "user not found"
 // @Failure 500 {object} ginresp.apiError "internal server error"
 //
-// @Router  /api/users/{uid} [GET]
+// @Router  /api/v2/users/{uid} [GET]
 func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
@@ -197,7 +197,7 @@ func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 // @Failure     404       {object} ginresp.apiError "user not found"
 // @Failure     500       {object} ginresp.apiError "internal server error"
 //
-// @Router      /api/users/{uid} [PATCH]
+// @Router      /api/v2/users/{uid} [PATCH]
 func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
@@ -310,7 +310,7 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
 // @Failure 500 {object} ginresp.apiError "internal server error"
 //
-// @Router  /api/users/{uid}/clients [GET]
+// @Router  /api/v2/users/{uid}/clients [GET]
 func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
@@ -355,7 +355,7 @@ func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404 {object} ginresp.apiError "client not found"
 // @Failure 500 {object} ginresp.apiError "internal server error"
 //
-// @Router  /api/users/{uid}/clients/{cid} [GET]
+// @Router  /api/v2/users/{uid}/clients/{cid} [GET]
 func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID   models.UserID   `uri:"uid" binding:"entityid"`
@@ -399,7 +399,7 @@ func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 401       {object} ginresp.apiError "user is not authorized / has missing permissions"
 // @Failure 500       {object} ginresp.apiError "internal server error"
 //
-// @Router  /api/users/{uid}/clients [POST]
+// @Router  /api/v2/users/{uid}/clients [POST]
 func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
@@ -460,7 +460,7 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404 {object} ginresp.apiError "client not found"
 // @Failure 500 {object} ginresp.apiError "internal server error"
 //
-// @Router  /api/users/{uid}/clients/{cid} [DELETE]
+// @Router  /api/v2/users/{uid}/clients/{cid} [DELETE]
 func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID   models.UserID   `uri:"uid" binding:"entityid"`
@@ -515,7 +515,7 @@ func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 // @Failure     401      {object} ginresp.apiError "user is not authorized / has missing permissions"
 // @Failure     500      {object} ginresp.apiError "internal server error"
 //
-// @Router      /api/users/{uid}/channels [GET]
+// @Router      /api/v2/users/{uid}/channels [GET]
 func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
@@ -607,7 +607,7 @@ func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404 {object} ginresp.apiError "channel not found"
 // @Failure 500 {object} ginresp.apiError "internal server error"
 //
-// @Router  /api/users/{uid}/channels/{cid} [GET]
+// @Router  /api/v2/users/{uid}/channels/{cid} [GET]
 func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID    models.UserID    `uri:"uid" binding:"entityid"`
@@ -651,7 +651,7 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 409       {object} ginresp.apiError "channel already exists"
 // @Failure 500       {object} ginresp.apiError "internal server error"
 //
-// @Router  /api/users/{uid}/channels [POST]
+// @Router  /api/v2/users/{uid}/channels [POST]
 func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
@@ -748,7 +748,7 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404           {object} ginresp.apiError "channel not found"
 // @Failure 500           {object} ginresp.apiError "internal server error"
 //
-// @Router  /api/users/{uid}/channels/{cid} [PATCH]
+// @Router  /api/v2/users/{uid}/channels/{cid} [PATCH]
 func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID    models.UserID    `uri:"uid" binding:"entityid"`
@@ -873,7 +873,7 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 // @Failure     404        {object} ginresp.apiError "channel not found"
 // @Failure     500        {object} ginresp.apiError "internal server error"
 //
-// @Router      /api/users/{uid}/channels/{cid}/messages [GET]
+// @Router      /api/v2/users/{uid}/channels/{cid}/messages [GET]
 func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		ChannelUserID models.UserID    `uri:"uid" binding:"entityid"`
@@ -976,7 +976,7 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 // @Failure     401      {object} ginresp.apiError "user is not authorized / has missing permissions"
 // @Failure     500      {object} ginresp.apiError "internal server error"
 //
-// @Router      /api/users/{uid}/subscriptions [GET]
+// @Router      /api/v2/users/{uid}/subscriptions [GET]
 func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
@@ -1073,7 +1073,7 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404 {object} ginresp.apiError "channel not found"
 // @Failure 500 {object} ginresp.apiError "internal server error"
 //
-// @Router  /api/users/{uid}/channels/{cid}/subscriptions [GET]
+// @Router  /api/v2/users/{uid}/channels/{cid}/subscriptions [GET]
 func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID    models.UserID    `uri:"uid" binding:"entityid"`
@@ -1127,7 +1127,7 @@ func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPRespons
 // @Failure 404 {object} ginresp.apiError "subscription not found"
 // @Failure 500 {object} ginresp.apiError "internal server error"
 //
-// @Router  /api/users/{uid}/subscriptions/{sid} [GET]
+// @Router  /api/v2/users/{uid}/subscriptions/{sid} [GET]
 func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID         models.UserID         `uri:"uid" binding:"entityid"`
@@ -1174,7 +1174,7 @@ func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404 {object} ginresp.apiError "subscription not found"
 // @Failure 500 {object} ginresp.apiError "internal server error"
 //
-// @Router  /api/users/{uid}/subscriptions/{sid} [DELETE]
+// @Router  /api/v2/users/{uid}/subscriptions/{sid} [DELETE]
 func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID         models.UserID         `uri:"uid" binding:"entityid"`
@@ -1227,7 +1227,7 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Failure     401        {object} ginresp.apiError "user is not authorized / has missing permissions"
 // @Failure     500        {object} ginresp.apiError "internal server error"
 //
-// @Router      /api/users/{uid}/subscriptions [POST]
+// @Router      /api/v2/users/{uid}/subscriptions [POST]
 func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
@@ -1316,7 +1316,7 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Failure 404       {object} ginresp.apiError "subscription not found"
 // @Failure 500       {object} ginresp.apiError "internal server error"
 //
-// @Router  /api/users/{uid}/subscriptions/{sid} [PATCH]
+// @Router  /api/v2/users/{uid}/subscriptions/{sid} [PATCH]
 func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID         models.UserID         `uri:"uid" binding:"entityid"`
@@ -1386,7 +1386,7 @@ func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 // @Failure     401        {object} ginresp.apiError "user is not authorized / has missing permissions"
 // @Failure     500        {object} ginresp.apiError "internal server error"
 //
-// @Router      /api/messages [GET]
+// @Router      /api/v2/messages [GET]
 func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
 		PageSize      *int    `json:"page_size"       form:"page_size"`
@@ -1469,7 +1469,7 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 // @Failure     404 {object} ginresp.apiError "message not found"
 // @Failure     500 {object} ginresp.apiError "internal server error"
 //
-// @Router      /api/messages/{mid} [PATCH]
+// @Router      /api/v2/messages/{mid} [PATCH]
 func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		MessageID models.MessageID `uri:"mid" binding:"entityid"`
@@ -1539,7 +1539,7 @@ func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 // @Failure     404 {object} ginresp.apiError "message not found"
 // @Failure     500 {object} ginresp.apiError "internal server error"
 //
-// @Router      /api/messages/{mid} [DELETE]
+// @Router      /api/v2/messages/{mid} [DELETE]
 func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		MessageID models.MessageID `uri:"mid" binding:"entityid"`
