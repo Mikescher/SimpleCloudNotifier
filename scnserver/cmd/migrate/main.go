@@ -455,6 +455,14 @@ func migrateUser(ctx context.Context, dbnew sq.DB, dbold sq.DB, user OldUser, ap
 				}
 			}
 
+			_, err = dbnew.Exec(ctx, "INSERT INTO compat_acks (user_id, message_id) VALUES (:uid, :mid)", sq.PP{
+				"uid": userid,
+				"mid": messageid,
+			})
+			if err != nil {
+				panic(err)
+			}
+
 		} else if len(oldmessage.Ack) == 1 && oldmessage.Ack[0] == 0 {
 
 			if clientid != nil {

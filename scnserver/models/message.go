@@ -14,8 +14,8 @@ const (
 
 type Message struct {
 	MessageID           MessageID
-	SenderUserID        UserID
-	OwnerUserID         UserID
+	SenderUserID        UserID // user that sent the message
+	OwnerUserID         UserID // oner of the message (= owner of the channel that contains it)
 	ChannelInternalName string
 	ChannelID           ChannelID
 	SenderName          *string

@@ -82,3 +82,6 @@
  - cannot open sqlite in dbbrowsr (cannot parse schema?)
    -> https://github.com/sqlitebrowser/sqlitebrowser/issues/292 -> https://github.com/sqlitebrowser/sqlitebrowser/issues/29266
 
+#### FUTURE
+
+ - Remove compat, especially do not create compat id for every new message...

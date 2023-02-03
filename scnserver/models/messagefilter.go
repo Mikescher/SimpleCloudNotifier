@@ -39,6 +39,7 @@ type MessageFilter struct {
 	UserMessageID           *[]string
 	OnlyDeleted             bool
 	IncludeDeleted          bool
+	CompatAcknowledged      *bool
 }
 
 func (f MessageFilter) SQL() (string, string, sq.PP, error) {
@@ -79,7 +80,7 @@ func (f MessageFilter) SQL() (string, string, sq.PP, error) {
 
 	if f.Owner != nil {
 		filter := make([]string, 0)
-		for i, v := range *f.Sender {
+		for i, v := range *f.Owner {
 			filter = append(filter, fmt.Sprintf("(owner_user_id = :owner_%d)", i))
 			params[fmt.Sprintf("owner_%d", i)] = v
 		}
@@ -207,6 +208,16 @@ func (f MessageFilter) SQL() (string, string, sq.PP, error) {
 			params[fmt.Sprintf("usermessageid_%d", i)] = v
 		}
 		sqlClauses = append(sqlClauses, "(usr_message_id IS NOT NULL AND ("+strings.Join(filter, " OR ")+"))")
+	}
+
+	if f.CompatAcknowledged != nil {
+		joinClause += " LEFT JOIN compat_acks AS filter_compatack_compat_acks on messages.message_id = filter_compatack_compat_acks.message_id "
+
+		if *f.CompatAcknowledged {
+			sqlClauses = append(sqlClauses, "(filter_compatack_compat_acks.message_id IS NOT NULL)")
+		} else {
+			sqlClauses = append(sqlClauses, "(filter_compatack_compat_acks.message_id IS     NULL)")
+		}
 	}
 
 	if f.SearchString != nil {

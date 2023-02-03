@@ -3,7 +3,7 @@ package handler
 import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
-	"blackforestbytes.com/simplecloudnotifier/db/cursortoken"
+	ct "blackforestbytes.com/simplecloudnotifier/db/cursortoken"
 	primarydb "blackforestbytes.com/simplecloudnotifier/db/impl/primary"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
@@ -930,7 +930,7 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 	}
 
-	tok, err := cursortoken.Decode(langext.Coalesce(q.NextPageToken, ""))
+	tok, err := ct.Decode(langext.Coalesce(q.NextPageToken, ""))
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.PAGETOKEN_ERROR, "Failed to decode next_page_token", err)
 	}
@@ -1419,7 +1419,7 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 
 	userid := *ctx.GetPermissionUserID()
 
-	tok, err := cursortoken.Decode(langext.Coalesce(q.NextPageToken, ""))
+	tok, err := ct.Decode(langext.Coalesce(q.NextPageToken, ""))
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.PAGETOKEN_ERROR, "Failed to decode next_page_token", err)
 	}

@@ -20,9 +20,10 @@ import (
 )
 
 type SendMessageResponse struct {
-	User         models.User
-	Message      models.Message
-	MessageIsOld bool
+	User            models.User
+	Message         models.Message
+	MessageIsOld    bool
+	CompatMessageID int64
 }
 
 type MessageHandler struct {
@@ -195,11 +196,26 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 			return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query existing message", err))
 		}
 		if msg != nil {
+
+			existingCompID, _, err := h.database.ConvertToCompatID(ctx, msg.MessageID.String())
+			if err != nil {
+				return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query compat-id", err))
+			}
+
+			if existingCompID == nil {
+				v, err := h.database.CreateCompatID(ctx, "messageid", msg.MessageID.String())
+				if err != nil {
+					return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to create compat-id", err))
+				}
+				existingCompID = &v
+			}
+
 			//the found message can be deleted (!), but we still return NO_ERROR here...
 			return &SendMessageResponse{
-				User:         user,
-				Message:      *msg,
-				MessageIsOld: true,
+				User:            user,
+				Message:         *msg,
+				MessageIsOld:    true,
+				CompatMessageID: *existingCompID,
 			}, nil
 		}
 	}
@@ -251,6 +267,11 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to create message in db", err))
 	}
 
+	cid, err := h.database.CreateCompatID(ctx, "messageid", msg.MessageID.String())
+	if err != nil {
+		return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to create compat-id", err))
+	}
+
 	subscriptions, err := h.database.ListSubscriptionsByChannel(ctx, channel.ChannelID)
 	if err != nil {
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query subscriptions", err))
@@ -295,8 +316,9 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 	}
 
 	return &SendMessageResponse{
-		User:         user,
-		Message:      msg,
-		MessageIsOld: false,
+		User:            user,
+		Message:         msg,
+		MessageIsOld:    false,
+		CompatMessageID: cid,
 	}, nil
 }

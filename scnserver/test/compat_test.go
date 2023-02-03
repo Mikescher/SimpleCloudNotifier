@@ -463,35 +463,6 @@ func TestCompatExpand(t *testing.T) {
 
 }
 
-func TestCompatRequery(t *testing.T) {
-	_, baseUrl, stop := tt.StartSimpleWebserver(t)
-	defer stop()
-
-	r0 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/register.php?fcm_token=%s&pro=%s&pro_token=%s", "DUMMY_FCM", "0", ""))
-	tt.AssertEqual(t, "success", true, r0["success"])
-
-	userid := int64(r0["user_id"].(float64))
-	userkey := r0["user_key"].(string)
-
-	rq1 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/requery.php?user_id=%d&user_key=%s", userid, userkey))
-	tt.AssertEqual(t, "success", true, rq1["success"])
-	tt.AssertEqual(t, "count", 0, rq1["count"])
-	tt.AssertStrRepEqual(t, "data", make([]any, 0), rq1["data"])
-
-	r1 := tt.RequestPost[gin.H](t, baseUrl, "/send.php", tt.FormData{
-		"user_id":  fmt.Sprintf("%d", userid),
-		"user_key": userkey,
-		"title":    "_title_",
-	})
-	tt.AssertEqual(t, "success", true, r1["success"])
-
-	rq2 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/requery.php?user_id=%d&user_key=%s", userid, userkey))
-	tt.AssertEqual(t, "success", true, rq2["success"])
-	tt.AssertEqual(t, "count", 0, rq2["count"])
-	tt.AssertStrRepEqual(t, "data", make([]any, 0), rq2["data"])
-
-}
-
 func TestCompatUpdateUserKey(t *testing.T) {
 	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
@@ -586,4 +557,140 @@ func TestCompatUpgrade(t *testing.T) {
 	tt.AssertEqual(t, "quota", 0, r1["quota"])
 	tt.AssertEqual(t, "quota_max", 1000, r1["quota_max"])
 	tt.AssertEqual(t, "is_pro", true, r1["is_pro"])
+}
+
+func TestCompatRequery(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/register.php?fcm_token=%s&pro=%s&pro_token=%s", "DUMMY_FCM", "0", ""))
+	tt.AssertEqual(t, "success", true, r0["success"])
+
+	userid := int64(r0["user_id"].(float64))
+	userkey := r0["user_key"].(string)
+	useridnew := tt.ConvertCompatID(t, ws, userid, "userid")
+
+	rq1 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/requery.php?user_id=%d&user_key=%s", userid, userkey))
+	tt.AssertEqual(t, "success", true, rq1["success"])
+	tt.AssertEqual(t, "count", 0, rq1["count"])
+	tt.AssertStrRepEqual(t, "data", make([]any, 0), rq1["data"])
+
+	r1 := tt.RequestPost[gin.H](t, baseUrl, "/send.php", tt.FormData{
+		"user_id":  fmt.Sprintf("%d", userid),
+		"user_key": userkey,
+		"title":    "_title_",
+		"msg_id":   "r1",
+	})
+	tt.AssertEqual(t, "success", true, r1["success"])
+
+	type respRequery struct {
+		Success bool    `json:"success"`
+		Message string  `json:"message"`
+		Count   int     `json:"count"`
+		Data    []gin.H `json:"data"`
+	}
+
+	rq2 := tt.RequestGet[respRequery](t, baseUrl, fmt.Sprintf("/api/requery.php?user_id=%d&user_key=%s", userid, userkey))
+	tt.AssertEqual(t, "success", true, rq2.Success)
+	tt.AssertEqual(t, "count", 1, rq2.Count)
+	tt.AssertMappedSet(t, "data", []string{"r1"}, rq2.Data, "usr_msg_id")
+
+	rq3 := tt.RequestGet[respRequery](t, baseUrl, fmt.Sprintf("/api/requery.php?user_id=%d&user_key=%s", userid, userkey))
+	tt.AssertEqual(t, "success", true, rq3.Success)
+	tt.AssertEqual(t, "count", 1, rq3.Count)
+	tt.AssertMappedSet(t, "data", []string{"r1"}, rq3.Data, "usr_msg_id")
+
+	a2 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/ack.php?user_id=%d&user_key=%s&scn_msg_id=%d", userid, userkey, int(r1["scn_msg_id"].(float64))))
+	tt.AssertEqual(t, "success", true, a2["success"])
+
+	rq31 := tt.RequestGet[respRequery](t, baseUrl, fmt.Sprintf("/api/requery.php?user_id=%d&user_key=%s", userid, userkey))
+	tt.AssertEqual(t, "success", true, rq31.Success)
+	tt.AssertEqual(t, "count", 0, rq31.Count)
+
+	r2 := tt.RequestPost[gin.H](t, baseUrl, "/send.php", tt.FormData{
+		"user_id":  fmt.Sprintf("%d", userid),
+		"user_key": userkey,
+		"title":    "_title_",
+		"msg_id":   "r2",
+	})
+	tt.AssertEqual(t, "success", true, r2["success"])
+
+	rq4 := tt.RequestGet[respRequery](t, baseUrl, fmt.Sprintf("/api/requery.php?user_id=%d&user_key=%s", userid, userkey))
+	tt.AssertEqual(t, "success", true, rq4.Success)
+	tt.AssertEqual(t, "count", 1, rq4.Count)
+	tt.AssertMappedSet(t, "data", []string{"r2"}, rq4.Data, "usr_msg_id")
+
+	r3 := tt.RequestPost[gin.H](t, baseUrl, "/send.php", tt.FormData{
+		"user_id":  fmt.Sprintf("%d", userid),
+		"user_key": userkey,
+		"title":    "_title_",
+		"msg_id":   "r3",
+	})
+	tt.AssertEqual(t, "success", true, r3["success"])
+
+	r4 := tt.RequestPost[gin.H](t, baseUrl, "/send.php", tt.FormData{
+		"user_id":  fmt.Sprintf("%d", userid),
+		"user_key": userkey,
+		"title":    "_title_",
+		"msg_id":   "r4",
+	})
+	tt.AssertEqual(t, "success", true, r4["success"])
+
+	r5 := tt.RequestPost[gin.H](t, baseUrl, "/send.php", tt.FormData{
+		"user_id":  fmt.Sprintf("%d", userid),
+		"user_key": userkey,
+		"title":    "_title_",
+		"msg_id":   "r5",
+	})
+	tt.AssertEqual(t, "success", true, r5["success"])
+
+	a1 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/ack.php?user_id=%d&user_key=%s&scn_msg_id=%d", userid, userkey, int(r4["scn_msg_id"].(float64))))
+	tt.AssertEqual(t, "success", true, a1["success"])
+
+	rq5 := tt.RequestGet[respRequery](t, baseUrl, fmt.Sprintf("/api/requery.php?user_id=%d&user_key=%s", userid, userkey))
+	tt.AssertEqual(t, "success", true, rq5.Success)
+	tt.AssertEqual(t, "count", 3, rq5.Count)
+	tt.AssertMappedSet(t, "data", []string{"r2", "r3", "r5"}, rq5.Data, "usr_msg_id")
+
+	a7 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/ack.php?user_id=%d&user_key=%s&scn_msg_id=%d", userid, userkey, int(r2["scn_msg_id"].(float64))))
+	tt.AssertEqual(t, "success", true, a7["success"])
+
+	a3 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/ack.php?user_id=%d&user_key=%s&scn_msg_id=%d", userid, userkey, int(r3["scn_msg_id"].(float64))))
+	tt.AssertEqual(t, "success", true, a3["success"])
+	tt.AssertEqual(t, "prev_ack", 0, a3["prev_ack"])
+	tt.AssertEqual(t, "new_ack", 1, a3["new_ack"])
+
+	a4 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/ack.php?user_id=%d&user_key=%s&scn_msg_id=%d", userid, userkey, int(r3["scn_msg_id"].(float64))))
+	tt.AssertEqual(t, "success", true, a4["success"])
+	tt.AssertEqual(t, "prev_ack", 1, a4["prev_ack"])
+	tt.AssertEqual(t, "new_ack", 1, a4["new_ack"])
+
+	a5 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/ack.php?user_id=%d&user_key=%s&scn_msg_id=%d", userid, userkey, int(r5["scn_msg_id"].(float64))))
+	tt.AssertEqual(t, "success", true, a5["success"])
+	tt.AssertEqual(t, "prev_ack", 0, a5["prev_ack"])
+	tt.AssertEqual(t, "new_ack", 1, a5["new_ack"])
+
+	r6 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"user_id":  useridnew,
+		"user_key": userkey,
+		"title":    "HelloWorld_001",
+		"msg_id":   "r6",
+	})
+	tt.AssertEqual(t, "success", true, r6["success"])
+
+	rq6 := tt.RequestGet[respRequery](t, baseUrl, fmt.Sprintf("/api/requery.php?user_id=%d&user_key=%s", userid, userkey))
+	tt.AssertEqual(t, "success", true, rq6.Success)
+	tt.AssertEqual(t, "count", 1, rq6.Count)
+	tt.AssertMappedSet(t, "data", []string{"r6"}, rq6.Data, "usr_msg_id")
+
+	a6 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/ack.php?user_id=%d&user_key=%s&scn_msg_id=%d", userid, userkey, tt.ConvertToCompatID(t, ws, r6["scn_msg_id"].(string))))
+	tt.AssertEqual(t, "success", true, a6["success"])
+	tt.AssertEqual(t, "prev_ack", 0, a6["prev_ack"])
+	tt.AssertEqual(t, "new_ack", 1, a6["new_ack"])
+	tt.AssertEqual(t, "message", "ok", a6["message"])
+
+	rq7 := tt.RequestGet[respRequery](t, baseUrl, fmt.Sprintf("/api/requery.php?user_id=%d&user_key=%s", userid, userkey))
+	tt.AssertEqual(t, "success", true, rq7.Success)
+	tt.AssertEqual(t, "count", 0, rq7.Count)
+
 }

@@ -1,6 +1,7 @@
 package primary
 
 import (
+	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"errors"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
@@ -97,4 +98,60 @@ func (db *Database) ConvertToCompatID(ctx TxContext, newid string) (*int64, *str
 	}
 
 	return &oldid, &idtype, nil
+}
+
+func (db *Database) ConvertToCompatIDOrCreate(ctx TxContext, idtype string, newid string) (int64, error) {
+	id1, _, err := db.ConvertToCompatID(ctx, newid)
+	if err != nil {
+		return 0, err
+	}
+	if id1 != nil {
+		return *id1, nil
+	}
+
+	id2, err := db.CreateCompatID(ctx, idtype, newid)
+	if err != nil {
+		return 0, err
+	}
+	return id2, nil
+}
+
+func (db *Database) GetAck(ctx TxContext, msgid models.MessageID) (bool, error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return false, err
+	}
+
+	rows, err := tx.Query(ctx, "SELECT * FROM compat_acks WHERE message_id = :msgid LIMIT 1", sq.PP{
+		"msgid": msgid,
+	})
+	if err != nil {
+		return false, err
+	}
+
+	res := rows.Next()
+
+	err = rows.Close()
+	if err != nil {
+		return false, err
+	}
+
+	return res, nil
+}
+
+func (db *Database) SetAck(ctx TxContext, userid models.UserID, msgid models.MessageID) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, "INSERT INTO compat_acks (user_id, message_id) VALUES (:uid, :mid)", sq.PP{
+		"uid": userid,
+		"mid": msgid,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

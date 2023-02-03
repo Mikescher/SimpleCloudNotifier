@@ -426,165 +426,6 @@
                 }
             }
         },
-        "/api/messages": {
-            "get": {
-                "description": "The next_page_token is an opaque token, the special value \"@start\" (or empty-string) is the beginning and \"@end\" is the end\nSimply start the pagination without a next_page_token and get the next page by calling this endpoint with the returned next_page_token of the last query\nIf there are no more entries the token \"@end\" will be returned\nBy default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)",
-                "tags": [
-                    "API-v2"
-                ],
-                "summary": "List all (subscribed) messages",
-                "operationId": "api-messages-list",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "name": "filter",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "next_page_token",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "page_size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "TODO more filter (sender-name, channel, timestamps, prio, )",
-                        "name": "trimmed",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.ListMessages.response"
-                        }
-                    },
-                    "400": {
-                        "description": "supplied values/parameters cannot be parsed / are invalid",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "401": {
-                        "description": "user is not authorized / has missing permissions",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "500": {
-                        "description": "internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/messages/{mid}": {
-            "delete": {
-                "description": "The user must own the message and request the resource with the ADMIN Key",
-                "tags": [
-                    "API-v2"
-                ],
-                "summary": "Delete a single message",
-                "operationId": "api-messages-delete",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MessageID",
-                        "name": "mid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.MessageJSON"
-                        }
-                    },
-                    "400": {
-                        "description": "supplied values/parameters cannot be parsed / are invalid",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "401": {
-                        "description": "user is not authorized / has missing permissions",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "404": {
-                        "description": "message not found",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "500": {
-                        "description": "internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "description": "The user must either own the message and request the resource with the READ or ADMIN Key\nOr the user must subscribe to the corresponding channel (and be confirmed) and request the resource with the READ or ADMIN Key\nThe returned message is never trimmed",
-                "tags": [
-                    "API-v2"
-                ],
-                "summary": "Get a single message (untrimmed)",
-                "operationId": "api-messages-get",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MessageID",
-                        "name": "mid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.MessageJSON"
-                        }
-                    },
-                    "400": {
-                        "description": "supplied values/parameters cannot be parsed / are invalid",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "401": {
-                        "description": "user is not authorized / has missing permissions",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "404": {
-                        "description": "message not found",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "500": {
-                        "description": "internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    }
-                }
-            }
-        },
         "/api/ping": {
             "get": {
                 "tags": [
@@ -1013,7 +854,166 @@
                 }
             }
         },
-        "/api/users": {
+        "/api/v2/messages": {
+            "get": {
+                "description": "The next_page_token is an opaque token, the special value \"@start\" (or empty-string) is the beginning and \"@end\" is the end\nSimply start the pagination without a next_page_token and get the next page by calling this endpoint with the returned next_page_token of the last query\nIf there are no more entries the token \"@end\" will be returned\nBy default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)",
+                "tags": [
+                    "API-v2"
+                ],
+                "summary": "List all (subscribed) messages",
+                "operationId": "api-messages-list",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "filter",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "next_page_token",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "TODO more filter (sender-name, channel, timestamps, prio, )",
+                        "name": "trimmed",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ListMessages.response"
+                        }
+                    },
+                    "400": {
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "user is not authorized / has missing permissions",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v2/messages/{mid}": {
+            "delete": {
+                "description": "The user must own the message and request the resource with the ADMIN Key",
+                "tags": [
+                    "API-v2"
+                ],
+                "summary": "Delete a single message",
+                "operationId": "api-messages-delete",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MessageID",
+                        "name": "mid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "user is not authorized / has missing permissions",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "message not found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "The user must either own the message and request the resource with the READ or ADMIN Key\nOr the user must subscribe to the corresponding channel (and be confirmed) and request the resource with the READ or ADMIN Key\nThe returned message is never trimmed",
+                "tags": [
+                    "API-v2"
+                ],
+                "summary": "Get a single message (untrimmed)",
+                "operationId": "api-messages-get",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MessageID",
+                        "name": "mid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "user is not authorized / has missing permissions",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "message not found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v2/users": {
             "post": {
                 "tags": [
                     "API-v2"
@@ -1052,7 +1052,7 @@
                 }
             }
         },
-        "/api/users/{uid}": {
+        "/api/v2/users/{uid}": {
             "get": {
                 "tags": [
                     "API-v2"
@@ -1191,7 +1191,7 @@
                 }
             }
         },
-        "/api/users/{uid}/channels": {
+        "/api/v2/users/{uid}/channels": {
             "get": {
                 "description": "The possible values for 'selector' are:\n- \"owned\"          Return all channels of the user\n- \"subscribed\"     Return all channels that the user is subscribing to\n- \"all\"            Return channels that the user owns or is subscribing\n- \"subscribed_any\" Return all channels that the user is subscribing to (even unconfirmed)\n- \"all_any\"        Return channels that the user owns or is subscribing (even unconfirmed)",
                 "tags": [
@@ -1305,7 +1305,7 @@
                 }
             }
         },
-        "/api/users/{uid}/channels/{cid}": {
+        "/api/v2/users/{uid}/channels/{cid}": {
             "get": {
                 "tags": [
                     "API-v2"
@@ -1441,7 +1441,7 @@
                 }
             }
         },
-        "/api/users/{uid}/channels/{cid}/messages": {
+        "/api/v2/users/{uid}/channels/{cid}/messages": {
             "get": {
                 "description": "The next_page_token is an opaque token, the special value \"@start\" (or empty-string) is the beginning and \"@end\" is the end\nSimply start the pagination without a next_page_token and get the next page by calling this endpoint with the returned next_page_token of the last query\nIf there are no more entries the token \"@end\" will be returned\nBy default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)",
                 "tags": [
@@ -1519,7 +1519,7 @@
                 }
             }
         },
-        "/api/users/{uid}/channels/{cid}/subscriptions": {
+        "/api/v2/users/{uid}/channels/{cid}/subscriptions": {
             "get": {
                 "tags": [
                     "API-v2"
@@ -1576,7 +1576,7 @@
                 }
             }
         },
-        "/api/users/{uid}/clients": {
+        "/api/v2/users/{uid}/clients": {
             "get": {
                 "tags": [
                     "API-v2"
@@ -1670,7 +1670,7 @@
                 }
             }
         },
-        "/api/users/{uid}/clients/{cid}": {
+        "/api/v2/users/{uid}/clients/{cid}": {
             "get": {
                 "tags": [
                     "API-v2"
@@ -1782,7 +1782,7 @@
                 }
             }
         },
-        "/api/users/{uid}/subscriptions": {
+        "/api/v2/users/{uid}/subscriptions": {
             "get": {
                 "description": "The possible values for 'selector' are:\n- \"outgoing_all\"         All subscriptions (confirmed/unconfirmed) with the user as subscriber (= subscriptions he can use to read channels)\n- \"outgoing_confirmed\"   Confirmed subscriptions with the user as subscriber\n- \"outgoing_unconfirmed\" Unconfirmed (Pending) subscriptions with the user as subscriber\n- \"incoming_all\"         All subscriptions (confirmed/unconfirmed) from other users to channels of this user (= incoming subscriptions and subscription requests)\n- \"incoming_confirmed\"   Confirmed subscriptions from other users to channels of this user\n- \"incoming_unconfirmed\" Unconfirmed subscriptions from other users to channels of this user (= requests)",
                 "tags": [
@@ -1898,7 +1898,7 @@
                 }
             }
         },
-        "/api/users/{uid}/subscriptions/{sid}": {
+        "/api/v2/users/{uid}/subscriptions/{sid}": {
             "get": {
                 "tags": [
                     "API-v2"
@@ -2645,7 +2645,7 @@
             "type": "object",
             "properties": {
                 "is_pro": {
-                    "type": "integer"
+                    "type": "boolean"
                 },
                 "message": {
                     "type": "string"

@@ -179,7 +179,7 @@ definitions:
   handler.Register.response:
     properties:
       is_pro:
-        type: integer
+        type: boolean
       message:
         type: string
       quota:
@@ -823,119 +823,6 @@ paths:
       summary: Get information about the current user
       tags:
       - API-v1
-  /api/messages:
-    get:
-      description: |-
-        The next_page_token is an opaque token, the special value "@start" (or empty-string) is the beginning and "@end" is the end
-        Simply start the pagination without a next_page_token and get the next page by calling this endpoint with the returned next_page_token of the last query
-        If there are no more entries the token "@end" will be returned
-        By default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)
-      operationId: api-messages-list
-      parameters:
-      - in: query
-        name: filter
-        type: string
-      - in: query
-        name: next_page_token
-        type: string
-      - in: query
-        name: page_size
-        type: integer
-      - description: TODO more filter (sender-name, channel, timestamps, prio, )
-        in: query
-        name: trimmed
-        type: boolean
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.ListMessages.response'
-        "400":
-          description: supplied values/parameters cannot be parsed / are invalid
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: user is not authorized / has missing permissions
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: internal server error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: List all (subscribed) messages
-      tags:
-      - API-v2
-  /api/messages/{mid}:
-    delete:
-      description: The user must own the message and request the resource with the
-        ADMIN Key
-      operationId: api-messages-delete
-      parameters:
-      - description: MessageID
-        in: path
-        name: mid
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.MessageJSON'
-        "400":
-          description: supplied values/parameters cannot be parsed / are invalid
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: user is not authorized / has missing permissions
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: message not found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: internal server error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: Delete a single message
-      tags:
-      - API-v2
-    patch:
-      description: |-
-        The user must either own the message and request the resource with the READ or ADMIN Key
-        Or the user must subscribe to the corresponding channel (and be confirmed) and request the resource with the READ or ADMIN Key
-        The returned message is never trimmed
-      operationId: api-messages-get
-      parameters:
-      - description: MessageID
-        in: path
-        name: mid
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.MessageJSON'
-        "400":
-          description: supplied values/parameters cannot be parsed / are invalid
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: user is not authorized / has missing permissions
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: message not found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: internal server error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: Get a single message (untrimmed)
-      tags:
-      - API-v2
   /api/ping:
     delete:
       responses:
@@ -1227,7 +1114,120 @@ paths:
       summary: Upgrade a free account to a paid account
       tags:
       - API-v1
-  /api/users:
+  /api/v2/messages:
+    get:
+      description: |-
+        The next_page_token is an opaque token, the special value "@start" (or empty-string) is the beginning and "@end" is the end
+        Simply start the pagination without a next_page_token and get the next page by calling this endpoint with the returned next_page_token of the last query
+        If there are no more entries the token "@end" will be returned
+        By default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)
+      operationId: api-messages-list
+      parameters:
+      - in: query
+        name: filter
+        type: string
+      - in: query
+        name: next_page_token
+        type: string
+      - in: query
+        name: page_size
+        type: integer
+      - description: TODO more filter (sender-name, channel, timestamps, prio, )
+        in: query
+        name: trimmed
+        type: boolean
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListMessages.response'
+        "400":
+          description: supplied values/parameters cannot be parsed / are invalid
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: user is not authorized / has missing permissions
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: List all (subscribed) messages
+      tags:
+      - API-v2
+  /api/v2/messages/{mid}:
+    delete:
+      description: The user must own the message and request the resource with the
+        ADMIN Key
+      operationId: api-messages-delete
+      parameters:
+      - description: MessageID
+        in: path
+        name: mid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MessageJSON'
+        "400":
+          description: supplied values/parameters cannot be parsed / are invalid
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: user is not authorized / has missing permissions
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: message not found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Delete a single message
+      tags:
+      - API-v2
+    patch:
+      description: |-
+        The user must either own the message and request the resource with the READ or ADMIN Key
+        Or the user must subscribe to the corresponding channel (and be confirmed) and request the resource with the READ or ADMIN Key
+        The returned message is never trimmed
+      operationId: api-messages-get
+      parameters:
+      - description: MessageID
+        in: path
+        name: mid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MessageJSON'
+        "400":
+          description: supplied values/parameters cannot be parsed / are invalid
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: user is not authorized / has missing permissions
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: message not found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Get a single message (untrimmed)
+      tags:
+      - API-v2
+  /api/v2/users:
     post:
       operationId: api-user-create
       parameters:
@@ -1252,7 +1252,7 @@ paths:
       summary: Create a new user
       tags:
       - API-v2
-  /api/users/{uid}:
+  /api/v2/users/{uid}:
     get:
       operationId: api-user-get
       parameters:
@@ -1343,7 +1343,7 @@ paths:
       summary: (Partially) update a user
       tags:
       - API-v2
-  /api/users/{uid}/channels:
+  /api/v2/users/{uid}/channels:
     get:
       description: |-
         The possible values for 'selector' are:
@@ -1426,7 +1426,7 @@ paths:
       summary: Create a new (empty) channel
       tags:
       - API-v2
-  /api/users/{uid}/channels/{cid}:
+  /api/v2/users/{uid}/channels/{cid}:
     get:
       operationId: api-channels-get
       parameters:
@@ -1517,7 +1517,7 @@ paths:
       summary: (Partially) update a channel
       tags:
       - API-v2
-  /api/users/{uid}/channels/{cid}/messages:
+  /api/v2/users/{uid}/channels/{cid}/messages:
     get:
       description: |-
         The next_page_token is an opaque token, the special value "@start" (or empty-string) is the beginning and "@end" is the end
@@ -1572,7 +1572,7 @@ paths:
       summary: List messages of a channel
       tags:
       - API-v2
-  /api/users/{uid}/channels/{cid}/subscriptions:
+  /api/v2/users/{uid}/channels/{cid}/subscriptions:
     get:
       operationId: api-chan-subscriptions-list
       parameters:
@@ -1610,7 +1610,7 @@ paths:
       summary: List all subscriptions of a channel
       tags:
       - API-v2
-  /api/users/{uid}/clients:
+  /api/v2/users/{uid}/clients:
     get:
       operationId: api-clients-list
       parameters:
@@ -1672,7 +1672,7 @@ paths:
       summary: Add a new clients
       tags:
       - API-v2
-  /api/users/{uid}/clients/{cid}:
+  /api/v2/users/{uid}/clients/{cid}:
     delete:
       operationId: api-clients-delete
       parameters:
@@ -1747,7 +1747,7 @@ paths:
       summary: Get a single client
       tags:
       - API-v2
-  /api/users/{uid}/subscriptions:
+  /api/v2/users/{uid}/subscriptions:
     get:
       description: |-
         The possible values for 'selector' are:
@@ -1834,7 +1834,7 @@ paths:
       summary: Create/Request a subscription
       tags:
       - API-v2
-  /api/users/{uid}/subscriptions/{sid}:
+  /api/v2/users/{uid}/subscriptions/{sid}:
     delete:
       operationId: api-subscriptions-delete
       parameters:

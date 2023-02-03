@@ -1,7 +1,7 @@
 package primary
 
 import (
-	"blackforestbytes.com/simplecloudnotifier/db/cursortoken"
+	ct "blackforestbytes.com/simplecloudnotifier/db/cursortoken"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
@@ -116,18 +116,18 @@ func (db *Database) DeleteMessage(ctx TxContext, messageID models.MessageID) err
 	return nil
 }
 
-func (db *Database) ListMessages(ctx TxContext, filter models.MessageFilter, pageSize int, inTok cursortoken.CursorToken) ([]models.Message, cursortoken.CursorToken, error) {
+func (db *Database) ListMessages(ctx TxContext, filter models.MessageFilter, pageSize int, inTok ct.CursorToken) ([]models.Message, ct.CursorToken, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
-		return nil, cursortoken.CursorToken{}, err
+		return nil, ct.CursorToken{}, err
 	}
 
-	if inTok.Mode == cursortoken.CTMEnd {
-		return make([]models.Message, 0), cursortoken.End(), nil
+	if inTok.Mode == ct.CTMEnd {
+		return make([]models.Message, 0), ct.End(), nil
 	}
 
 	pageCond := "1=1"
-	if inTok.Mode == cursortoken.CTMNormal {
+	if inTok.Mode == ct.CTMNormal {
 		pageCond = "timestamp_real < :tokts OR (timestamp_real = :tokts AND message_id < :tokid )"
 	}
 
@@ -143,18 +143,18 @@ func (db *Database) ListMessages(ctx TxContext, filter models.MessageFilter, pag
 
 	rows, err := tx.Query(ctx, sqlQuery, prepParams)
 	if err != nil {
-		return nil, cursortoken.CursorToken{}, err
+		return nil, ct.CursorToken{}, err
 	}
 
 	data, err := models.DecodeMessages(rows)
 	if err != nil {
-		return nil, cursortoken.CursorToken{}, err
+		return nil, ct.CursorToken{}, err
 	}
 
 	if len(data) <= pageSize {
-		return data, cursortoken.End(), nil
+		return data, ct.End(), nil
 	} else {
-		outToken := cursortoken.Normal(data[pageSize-1].Timestamp(), data[pageSize-1].MessageID.String(), "DESC", filter.Hash())
+		outToken := ct.Normal(data[pageSize-1].Timestamp(), data[pageSize-1].MessageID.String(), "DESC", filter.Hash())
 		return data[0:pageSize], outToken, nil
 	}
 }

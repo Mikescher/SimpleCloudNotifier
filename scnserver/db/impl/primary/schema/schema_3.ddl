@@ -183,6 +183,16 @@ CREATE UNIQUE INDEX "idx_compatids_new" ON compat_ids (new);
 CREATE UNIQUE INDEX "idx_compatids_old" ON compat_ids (old, type);
 
 
+CREATE TABLE compat_acks
+(
+    user_id         TEXT NOT NULL,
+    message_id      TEXT NOT NULL
+) STRICT;
+CREATE        INDEX "idx_compatacks_userid"           ON compat_acks (user_id);
+CREATE UNIQUE INDEX "idx_compatacks_messageid"        ON compat_acks (message_id);
+CREATE UNIQUE INDEX "idx_compatacks_userid_messageid" ON compat_acks (user_id, message_id);
+
+
 CREATE TABLE `meta`
 (
     meta_key     TEXT       NOT NULL,

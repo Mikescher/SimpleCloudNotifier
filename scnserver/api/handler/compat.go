@@ -4,6 +4,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	hl "blackforestbytes.com/simplecloudnotifier/api/apihighlight"
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
+	ct "blackforestbytes.com/simplecloudnotifier/db/cursortoken"
 	primarydb "blackforestbytes.com/simplecloudnotifier/db/impl/primary"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
@@ -90,19 +91,6 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 		return *errResp
 	} else {
 		if okResp.MessageIsOld {
-
-			compatMessageID, _, err := h.database.ConvertToCompatID(ctx, okResp.Message.MessageID.String())
-			if err != nil {
-				return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query compat-id", err)
-			}
-			if compatMessageID == nil {
-				v, err := h.database.CreateCompatID(ctx, "messageid", okResp.Message.MessageID.String())
-				if err != nil {
-					return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to create compat-id", err)
-				}
-				compatMessageID = &v
-			}
-
 			return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
 				Success:        true,
 				ErrorID:        apierr.NO_ERROR,
@@ -113,15 +101,9 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 				Quota:          okResp.User.QuotaUsedToday(),
 				IsPro:          okResp.User.IsPro,
 				QuotaMax:       okResp.User.QuotaPerDay(),
-				SCNMessageID:   *compatMessageID,
+				SCNMessageID:   okResp.CompatMessageID,
 			}))
 		} else {
-
-			compatMessageID, err := h.database.CreateCompatID(ctx, "messageid", okResp.Message.MessageID.String())
-			if err != nil {
-				return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to create compat-id", err)
-			}
-
 			return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
 				Success:        true,
 				ErrorID:        apierr.NO_ERROR,
@@ -132,7 +114,7 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 				Quota:          okResp.User.QuotaUsedToday() + 1,
 				IsPro:          okResp.User.IsPro,
 				QuotaMax:       okResp.User.QuotaPerDay(),
-				SCNMessageID:   compatMessageID,
+				SCNMessageID:   okResp.CompatMessageID,
 			}))
 		}
 	}
@@ -420,12 +402,30 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 
-	// we no longer ack messages - this is a no-op
+	messageIdComp, err := h.database.ConvertCompatID(ctx, *data.MessageID, "messageid")
+	if err != nil {
+		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query messageid<old>", err)
+	}
+	if useridCompNew == nil {
+		return ginresp.SendAPIError(g, 400, apierr.MESSAGE_NOT_FOUND, hl.USER_ID, "Message not found (compat)", nil)
+	}
+
+	ackBefore, err := h.database.GetAck(ctx, models.MessageID(*messageIdComp))
+	if err != nil {
+		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query ack", err)
+	}
+
+	if !ackBefore {
+		err = h.database.SetAck(ctx, user.UserID, models.MessageID(*messageIdComp))
+		if err != nil {
+			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to set ack", err)
+		}
+	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
 		Success:      true,
 		Message:      "ok",
-		PrevAckValue: 0,
+		PrevAckValue: langext.Conditional(ackBefore, 1, 0),
 		NewAckValue:  1,
 	}))
 }
@@ -497,11 +497,40 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 
+	filter := models.MessageFilter{
+		Owner:              langext.Ptr([]models.UserID{user.UserID}),
+		CompatAcknowledged: langext.Ptr(false),
+	}
+
+	msgs, _, err := h.database.ListMessages(ctx, filter, 16, ct.Start())
+	if err != nil {
+		return ginresp.CompatAPIError(0, "Failed to query user")
+	}
+
+	compMsgs := make([]models.CompatMessage, 0, len(msgs))
+	for _, v := range msgs {
+
+		messageIdComp, err := h.database.ConvertToCompatIDOrCreate(ctx, v.MessageID.String(), "messageid")
+		if err != nil {
+			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query/create messageid<old>", err)
+		}
+
+		compMsgs = append(compMsgs, models.CompatMessage{
+			Title:         v.Title,
+			Body:          v.Content,
+			Priority:      v.Priority,
+			Timestamp:     v.Timestamp().Unix(),
+			UserMessageID: v.UserMessageID,
+			SCNMessageID:  messageIdComp,
+			Trimmed:       nil,
+		})
+	}
+
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
 		Success: true,
 		Message: "ok",
-		Count:   0,
-		Data:    make([]models.CompatMessage, 0),
+		Count:   len(compMsgs),
+		Data:    compMsgs,
 	}))
 }
 
