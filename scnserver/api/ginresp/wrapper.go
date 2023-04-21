@@ -108,6 +108,11 @@ func createRequestLog(g *gin.Context, t0 time.Time, ctr int, resp HTTPResponse, 
 
 	permObj, hasPerm := g.Get("perm")
 
+	hasTok := false
+	if hasPerm {
+		hasTok = permObj.(models.PermissionSet).Token != nil
+	}
+
 	return models.RequestLog{
 		Method:              g.Request.Method,
 		URI:                 g.Request.URL.String(),
@@ -117,8 +122,9 @@ func createRequestLog(g *gin.Context, t0 time.Time, ctr int, resp HTTPResponse, 
 		RequestBodySize:     int64(len(reqbody)),
 		RequestContentType:  ct,
 		RemoteIP:            g.RemoteIP(),
-		UserID:              langext.ConditionalFn10(hasPerm, func() *models.UserID { return permObj.(models.PermissionSet).UserID }, nil),
-		Permissions:         langext.ConditionalFn10(hasPerm, func() *string { return langext.Ptr(string(permObj.(models.PermissionSet).KeyType)) }, nil),
+		TokenID:             langext.ConditionalFn10(hasTok, func() *models.KeyTokenID { return langext.Ptr(permObj.(models.PermissionSet).Token.KeyTokenID) }, nil),
+		UserID:              langext.ConditionalFn10(hasTok, func() *models.UserID { return langext.Ptr(permObj.(models.PermissionSet).Token.OwnerUserID) }, nil),
+		Permissions:         langext.ConditionalFn10(hasTok, func() *string { return langext.Ptr(permObj.(models.PermissionSet).Token.Permissions.String()) }, nil),
 		ResponseStatuscode:  langext.ConditionalFn10(resp != nil, func() *int64 { return langext.Ptr(int64(resp.Statuscode())) }, nil),
 		ResponseBodySize:    langext.ConditionalFn10(strrespbody != nil, func() *int64 { return langext.Ptr(int64(len(*respbody))) }, nil),
 		ResponseBody:        strrespbody,

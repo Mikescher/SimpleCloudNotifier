@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type ClientType string
+type ClientType string //@enum:type
 
 const (
 	ClientTypeAndroid ClientType = "ANDROID"
@@ -62,7 +62,7 @@ func (c ClientDB) Model() Client {
 		UserID:           c.UserID,
 		Type:             c.Type,
 		FCMToken:         c.FCMToken,
-		TimestampCreated: time.UnixMilli(c.TimestampCreated),
+		TimestampCreated: timeFromMilli(c.TimestampCreated),
 		AgentModel:       c.AgentModel,
 		AgentVersion:     c.AgentVersion,
 	}

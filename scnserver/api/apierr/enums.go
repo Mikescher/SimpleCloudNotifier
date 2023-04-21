@@ -1,6 +1,6 @@
 package apierr
 
-type APIError int
+type APIError int //@enum:type
 
 //goland:noinspection GoSnakeCaseUsage
 const (
@@ -37,11 +37,13 @@ const (
 	SUBSCRIPTION_NOT_FOUND     APIError = 1304
 	MESSAGE_NOT_FOUND          APIError = 1305
 	SUBSCRIPTION_USER_MISMATCH APIError = 1306
+	KEY_NOT_FOUND              APIError = 1307
 	USER_AUTH_FAILED           APIError = 1311
 
 	NO_DEVICE_LINKED APIError = 1401
 
 	CHANNEL_ALREADY_EXISTS APIError = 1501
+	CANNOT_SELFDELETE_KEY  APIError = 1511
 
 	QUOTA_REACHED APIError = 2101
 

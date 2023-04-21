@@ -19,12 +19,6 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "example": "qhnUbKcLgp6tg",
-                        "name": "chan_key",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
                         "example": "test",
                         "name": "channel",
                         "in": "query"
@@ -33,6 +27,12 @@
                         "type": "string",
                         "example": "This is a message",
                         "name": "content",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "P3TNH8mvv14fm",
+                        "name": "key",
                         "in": "query"
                     },
                     {
@@ -74,12 +74,6 @@
                         "type": "string",
                         "example": "7725",
                         "name": "user_id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "P3TNH8mvv14fm",
-                        "name": "user_key",
                         "in": "query"
                     },
                     {
@@ -92,12 +86,6 @@
                     },
                     {
                         "type": "string",
-                        "example": "qhnUbKcLgp6tg",
-                        "name": "chan_key",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
                         "example": "test",
                         "name": "channel",
                         "in": "formData"
@@ -106,6 +94,12 @@
                         "type": "string",
                         "example": "This is a message",
                         "name": "content",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "example": "P3TNH8mvv14fm",
+                        "name": "key",
                         "in": "formData"
                     },
                     {
@@ -147,12 +141,6 @@
                         "type": "string",
                         "example": "7725",
                         "name": "user_id",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "example": "P3TNH8mvv14fm",
-                        "name": "user_key",
                         "in": "formData"
                     }
                 ],
@@ -1034,11 +1022,287 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.UserJSONWithClients"
+                            "$ref": "#/definitions/models.UserJSONWithClientsAndKeys"
                         }
                     },
                     "400": {
                         "description": "supplied values/parameters cannot be parsed / are invalid",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v2/users/:uid/keys": {
+            "get": {
+                "description": "The request must be done with an ADMIN key, the returned keys are without their token.",
+                "tags": [
+                    "API-v2"
+                ],
+                "summary": "List keys of the user",
+                "operationId": "api-tokenkeys-list",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ListUserKeys.response"
+                        }
+                    },
+                    "400": {
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "user is not authorized / has missing permissions",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "message not found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "API-v2"
+                ],
+                "summary": "Create a new key",
+                "operationId": "api-tokenkeys-create",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": " ",
+                        "name": "post_body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/handler.CreateUserKey.body"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.KeyTokenJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "user is not authorized / has missing permissions",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "message not found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v2/users/:uid/keys/:kid": {
+            "get": {
+                "description": "The request must be done with an ADMIN key, the returned key does not include its token.",
+                "tags": [
+                    "API-v2"
+                ],
+                "summary": "Get a single key",
+                "operationId": "api-tokenkeys-get",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "TokenKeyID",
+                        "name": "kid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.KeyTokenJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "user is not authorized / has missing permissions",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "message not found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Cannot be used to delete the key used in the request itself",
+                "tags": [
+                    "API-v2"
+                ],
+                "summary": "Delete a key",
+                "operationId": "api-tokenkeys-delete",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "TokenKeyID",
+                        "name": "kid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.KeyTokenJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "user is not authorized / has missing permissions",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "message not found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "API-v2"
+                ],
+                "summary": "Update a key",
+                "operationId": "api-tokenkeys-update",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "TokenKeyID",
+                        "name": "kid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.KeyTokenJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "user is not authorized / has missing permissions",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "message not found",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -2083,12 +2347,6 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "example": "qhnUbKcLgp6tg",
-                        "name": "chan_key",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
                         "example": "test",
                         "name": "channel",
                         "in": "query"
@@ -2097,6 +2355,12 @@
                         "type": "string",
                         "example": "This is a message",
                         "name": "content",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "P3TNH8mvv14fm",
+                        "name": "key",
                         "in": "query"
                     },
                     {
@@ -2138,12 +2402,6 @@
                         "type": "string",
                         "example": "7725",
                         "name": "user_id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "P3TNH8mvv14fm",
-                        "name": "user_key",
                         "in": "query"
                     },
                     {
@@ -2156,12 +2414,6 @@
                     },
                     {
                         "type": "string",
-                        "example": "qhnUbKcLgp6tg",
-                        "name": "chan_key",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
                         "example": "test",
                         "name": "channel",
                         "in": "formData"
@@ -2170,6 +2422,12 @@
                         "type": "string",
                         "example": "This is a message",
                         "name": "content",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "example": "P3TNH8mvv14fm",
+                        "name": "key",
                         "in": "formData"
                     },
                     {
@@ -2211,12 +2469,6 @@
                         "type": "string",
                         "example": "7725",
                         "name": "user_id",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "example": "P3TNH8mvv14fm",
-                        "name": "user_key",
                         "in": "formData"
                     }
                 ],
@@ -2370,6 +2622,97 @@
         }
     },
     "definitions": {
+        "apierr.APIError": {
+            "type": "integer",
+            "enum": [
+                -1,
+                0,
+                1101,
+                1102,
+                1103,
+                1104,
+                1105,
+                1106,
+                1121,
+                1151,
+                1152,
+                1153,
+                1161,
+                1171,
+                1201,
+                1202,
+                1203,
+                1204,
+                1205,
+                1206,
+                1207,
+                1208,
+                1251,
+                1301,
+                1302,
+                1303,
+                1304,
+                1305,
+                1306,
+                1307,
+                1311,
+                1401,
+                1501,
+                1511,
+                2101,
+                3001,
+                3002,
+                9901,
+                9902,
+                9903,
+                9904,
+                9905
+            ],
+            "x-enum-varnames": [
+                "UNDEFINED",
+                "NO_ERROR",
+                "MISSING_UID",
+                "MISSING_TOK",
+                "MISSING_TITLE",
+                "INVALID_PRIO",
+                "REQ_METHOD",
+                "INVALID_CLIENTTYPE",
+                "PAGETOKEN_ERROR",
+                "BINDFAIL_QUERY_PARAM",
+                "BINDFAIL_BODY_PARAM",
+                "BINDFAIL_URI_PARAM",
+                "INVALID_BODY_PARAM",
+                "INVALID_ENUM_VALUE",
+                "NO_TITLE",
+                "TITLE_TOO_LONG",
+                "CONTENT_TOO_LONG",
+                "USR_MSG_ID_TOO_LONG",
+                "TIMESTAMP_OUT_OF_RANGE",
+                "SENDERNAME_TOO_LONG",
+                "CHANNEL_TOO_LONG",
+                "CHANNEL_DESCRIPTION_TOO_LONG",
+                "CHANNEL_NAME_WOULD_CHANGE",
+                "USER_NOT_FOUND",
+                "CLIENT_NOT_FOUND",
+                "CHANNEL_NOT_FOUND",
+                "SUBSCRIPTION_NOT_FOUND",
+                "MESSAGE_NOT_FOUND",
+                "SUBSCRIPTION_USER_MISMATCH",
+                "KEY_NOT_FOUND",
+                "USER_AUTH_FAILED",
+                "NO_DEVICE_LINKED",
+                "CHANNEL_ALREADY_EXISTS",
+                "CANNOT_SELFDELETE_KEY",
+                "QUOTA_REACHED",
+                "FAILED_VERIFY_PRO_TOKEN",
+                "INVALID_PRO_TOKEN",
+                "FIREBASE_COM_FAILED",
+                "FIREBASE_COM_ERRORED",
+                "INTERNAL_EXCEPTION",
+                "PANIC",
+                "NOT_IMPLEMENTED"
+            ]
+        },
         "ginresp.apiError": {
             "type": "object",
             "properties": {
@@ -2488,6 +2831,32 @@
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.CreateUserKey.body": {
+            "type": "object",
+            "required": [
+                "all_channels",
+                "channels",
+                "name",
+                "permissions"
+            ],
+            "properties": {
+                "all_channels": {
+                    "type": "boolean"
+                },
+                "channels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "permissions": {
                     "type": "string"
                 }
             }
@@ -2630,6 +2999,17 @@
                 }
             }
         },
+        "handler.ListUserKeys.response": {
+            "type": "object",
+            "properties": {
+                "tokens": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.KeyTokenJSON"
+                    }
+                }
+            }
+        },
         "handler.ListUserSubscriptions.response": {
             "type": "object",
             "properties": {
@@ -2690,10 +3070,6 @@
         "handler.SendMessage.combined": {
             "type": "object",
             "properties": {
-                "chan_key": {
-                    "type": "string",
-                    "example": "qhnUbKcLgp6tg"
-                },
                 "channel": {
                     "type": "string",
                     "example": "test"
@@ -2701,6 +3077,10 @@
                 "content": {
                     "type": "string",
                     "example": "This is a message"
+                },
+                "key": {
+                    "type": "string",
+                    "example": "P3TNH8mvv14fm"
                 },
                 "msg_id": {
                     "type": "string",
@@ -2730,10 +3110,6 @@
                 "user_id": {
                     "type": "string",
                     "example": "7725"
-                },
-                "user_key": {
-                    "type": "string",
-                    "example": "P3TNH8mvv14fm"
                 }
             }
         },
@@ -2744,7 +3120,7 @@
                     "type": "integer"
                 },
                 "error": {
-                    "type": "integer"
+                    "$ref": "#/definitions/apierr.APIError"
                 },
                 "is_pro": {
                     "type": "boolean"
@@ -2779,7 +3155,7 @@
                     "type": "integer"
                 },
                 "error": {
-                    "type": "integer"
+                    "$ref": "#/definitions/apierr.APIError"
                 },
                 "is_pro": {
                     "type": "boolean"
@@ -2936,10 +3312,6 @@
                 "owner_user_id": {
                     "type": "string"
                 },
-                "send_key": {
-                    "description": "can be nil, depending on endpoint",
-                    "type": "string"
-                },
                 "subscribe_key": {
                     "description": "can be nil, depending on endpoint",
                     "type": "string"
@@ -2974,12 +3346,23 @@
                     "type": "string"
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/models.ClientType"
                 },
                 "user_id": {
                     "type": "string"
                 }
             }
+        },
+        "models.ClientType": {
+            "type": "string",
+            "enum": [
+                "ANDROID",
+                "IOS"
+            ],
+            "x-enum-varnames": [
+                "ClientTypeAndroid",
+                "ClientTypeIOS"
+            ]
         },
         "models.CompatMessage": {
             "type": "object",
@@ -3003,6 +3386,41 @@
                     "type": "boolean"
                 },
                 "usr_msg_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.KeyTokenJSON": {
+            "type": "object",
+            "properties": {
+                "all_channels": {
+                    "type": "boolean"
+                },
+                "channels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "keytoken_id": {
+                    "type": "string"
+                },
+                "messages_sent": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_user_id": {
+                    "type": "string"
+                },
+                "permissions": {
+                    "type": "string"
+                },
+                "timestamp_created": {
+                    "type": "string"
+                },
+                "timestamp_lastused": {
                     "type": "string"
                 }
             }
@@ -3080,9 +3498,6 @@
         "models.UserJSON": {
             "type": "object",
             "properties": {
-                "admin_key": {
-                    "type": "string"
-                },
                 "default_channel": {
                     "type": "string"
                 },
@@ -3101,12 +3516,6 @@
                 "quota_used": {
                     "type": "integer"
                 },
-                "read_key": {
-                    "type": "string"
-                },
-                "send_key": {
-                    "type": "string"
-                },
                 "timestamp_created": {
                     "type": "string"
                 },
@@ -3124,7 +3533,7 @@
                 }
             }
         },
-        "models.UserJSONWithClients": {
+        "models.UserJSONWithClientsAndKeys": {
             "type": "object",
             "properties": {
                 "admin_key": {

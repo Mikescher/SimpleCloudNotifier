@@ -1,6 +1,6 @@
 package apihighlight
 
-type ErrHighlight int
+type ErrHighlight int //@enum:type
 
 //goland:noinspection GoSnakeCaseUsage
 const (

@@ -32,7 +32,6 @@ func TestGetClient(t *testing.T) {
 	r1 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid)
 
 	tt.AssertEqual(t, "uid", uid, fmt.Sprintf("%v", r1["user_id"]))
-	tt.AssertEqual(t, "admin_key", admintok, r1["admin_key"])
 	tt.AssertEqual(t, "username", nil, r1["username"])
 
 	type rt2 struct {

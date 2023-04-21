@@ -439,18 +439,6 @@ func TestChannelUpdate(t *testing.T) {
 		tt.AssertEqual(t, "channels.send_key", chan0["send_key"], chan1["send_key"])
 	}
 
-	// [4] renew send_key
-
-	tt.RequestAuthPatch[tt.Void](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels/%s", uid, chanid), gin.H{
-		"send_key": true,
-	})
-
-	{
-		chan1 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels/%s", uid, chanid))
-		tt.AssertNotEqual(t, "channels.subscribe_key", chan0["subscribe_key"], chan1["subscribe_key"])
-		tt.AssertNotEqual(t, "channels.send_key", chan0["send_key"], chan1["send_key"])
-	}
-
 	// [5] update description_name
 
 	tt.RequestAuthPatch[tt.Void](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels/%s", uid, chanid), gin.H{

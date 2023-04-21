@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+//go:generate go run ../_gen/enum-generate.go -- enums_gen.go
+
 func timeOptFmt(t *time.Time, fmt string) *string {
 	if t == nil {
 		return nil
@@ -18,4 +20,8 @@ func timeOptFromMilli(millis *int64) *time.Time {
 		return nil
 	}
 	return langext.Ptr(time.UnixMilli(*millis))
+}
+
+func timeFromMilli(millis int64) time.Time {
+	return time.UnixMilli(millis)
 }

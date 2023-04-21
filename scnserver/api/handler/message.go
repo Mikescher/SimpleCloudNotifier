@@ -40,28 +40,27 @@ func NewMessageHandler(app *logic.Application) MessageHandler {
 
 // SendMessage swaggerdoc
 //
-// @Summary     Send a new message
-// @Description All parameter can be set via query-parameter or the json body. Only UserID, UserKey and Title are required
-// @Tags        External
+//	@Summary		Send a new message
+//	@Description	All parameter can be set via query-parameter or the json body. Only UserID, UserKey and Title are required
+//	@Tags			External
 //
-// @Param       query_data query    handler.SendMessage.combined false " "
-// @Param       post_body  body     handler.SendMessage.combined false " "
-// @Param       form_body  formData handler.SendMessage.combined false " "
+//	@Param			query_data	query		handler.SendMessage.combined	false	" "
+//	@Param			post_body	body		handler.SendMessage.combined	false	" "
+//	@Param			form_body	formData	handler.SendMessage.combined	false	" "
 //
-// @Success     200        {object} handler.SendMessage.response
-// @Failure     400        {object} ginresp.apiError
-// @Failure     401        {object} ginresp.apiError "The user_id was not found or the user_key is wrong"
-// @Failure     403        {object} ginresp.apiError "The user has exceeded its daily quota - wait 24 hours or upgrade your account"
-// @Failure     500        {object} ginresp.apiError "An internal server error occurred - try again later"
+//	@Success		200			{object}	handler.SendMessage.response
+//	@Failure		400			{object}	ginresp.apiError
+//	@Failure		401			{object}	ginresp.apiError	"The user_id was not found or the user_key is wrong"
+//	@Failure		403			{object}	ginresp.apiError	"The user has exceeded its daily quota - wait 24 hours or upgrade your account"
+//	@Failure		500			{object}	ginresp.apiError	"An internal server error occurred - try again later"
 //
-// @Router      /     [POST]
-// @Router      /send [POST]
+//	@Router			/     [POST]
+//	@Router			/send [POST]
 func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 	type combined struct {
 		UserID        *models.UserID `json:"user_id"     form:"user_id"     example:"7725"                               `
-		UserKey       *string        `json:"user_key"    form:"user_key"    example:"P3TNH8mvv14fm"                      `
+		KeyToken      *string        `json:"key"         form:"key"         example:"P3TNH8mvv14fm"                      `
 		Channel       *string        `json:"channel"     form:"channel"     example:"test"                               `
-		ChanKey       *string        `json:"chan_key"    form:"chan_key"    example:"qhnUbKcLgp6tg"                      `
 		Title         *string        `json:"title"       form:"title"       example:"Hello World"                        `
 		Content       *string        `json:"content"     form:"content"     example:"This is a message"                  `
 		Priority      *int           `json:"priority"    form:"priority"    example:"1"                   enums:"0,1,2"  `
@@ -95,7 +94,7 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 	// query has highest prio, then form, then json
 	data := dataext.ObjectMerge(dataext.ObjectMerge(b, f), q)
 
-	okResp, errResp := h.sendMessageInternal(g, ctx, data.UserID, data.UserKey, data.Channel, data.ChanKey, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp, data.SenderName)
+	okResp, errResp := h.sendMessageInternal(g, ctx, data.UserID, data.KeyToken, data.Channel, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp, data.SenderName)
 	if errResp != nil {
 		return *errResp
 	} else {
@@ -129,7 +128,7 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 	}
 }
 
-func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContext, UserID *models.UserID, UserKey *string, Channel *string, ChanKey *string, Title *string, Content *string, Priority *int, UserMessageID *string, SendTimestamp *float64, SenderName *string) (*SendMessageResponse, *ginresp.HTTPResponse) {
+func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContext, UserID *models.UserID, Key *string, Channel *string, Title *string, Content *string, Priority *int, UserMessageID *string, SendTimestamp *float64, SenderName *string) (*SendMessageResponse, *ginresp.HTTPResponse) {
 	if Title != nil {
 		Title = langext.Ptr(strings.TrimSpace(*Title))
 	}
@@ -140,8 +139,8 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 	if UserID == nil {
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 400, apierr.MISSING_UID, hl.USER_ID, "Missing parameter [[user_id]]", nil))
 	}
-	if UserKey == nil {
-		return nil, langext.Ptr(ginresp.SendAPIError(g, 400, apierr.MISSING_TOK, hl.USER_KEY, "Missing parameter [[user_token]]", nil))
+	if Key == nil {
+		return nil, langext.Ptr(ginresp.SendAPIError(g, 400, apierr.MISSING_TOK, hl.USER_KEY, "Missing parameter [[key]]", nil))
 	}
 	if Title == nil {
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 400, apierr.MISSING_TITLE, hl.TITLE, "Missing parameter [[title]]", nil))
@@ -224,32 +223,13 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 403, apierr.QUOTA_REACHED, hl.NONE, fmt.Sprintf("Daily quota reached (%d)", user.QuotaPerDay()), nil))
 	}
 
-	var channel models.Channel
-	if ChanKey != nil {
-		// foreign channel (+ channel send-key)
-
-		foreignChan, err := h.database.GetChannelByNameAndSendKey(ctx, channelInternalName, *ChanKey)
-		if err != nil {
-			return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query (foreign) channel", err))
-		}
-		if foreignChan == nil {
-			return nil, langext.Ptr(ginresp.SendAPIError(g, 400, apierr.CHANNEL_NOT_FOUND, hl.CHANNEL, "(Foreign) Channel not found", err))
-		}
-		channel = *foreignChan
-	} else {
-		// own channel
-
-		channel, err = h.app.GetOrCreateChannel(ctx, *UserID, channelDisplayName, channelInternalName)
-		if err != nil {
-			return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query/create (owned) channel", err))
-		}
+	channel, err := h.app.GetOrCreateChannel(ctx, *UserID, channelDisplayName, channelInternalName)
+	if err != nil {
+		return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query/create (owned) channel", err))
 	}
 
-	selfChanAdmin := *UserID == channel.OwnerUserID && *UserKey == user.AdminKey
-	selfChanSend := *UserID == channel.OwnerUserID && *UserKey == user.SendKey
-	forgChanSend := *UserID != channel.OwnerUserID && ChanKey != nil && *ChanKey == channel.SendKey
-
-	if !selfChanAdmin && !selfChanSend && !forgChanSend {
+	keytok, permResp := ctx.CheckPermissionSend(channel, *Key)
+	if permResp != nil {
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 401, apierr.USER_AUTH_FAILED, hl.USER_KEY, "You are not authorized for this action", nil))
 	}
 
@@ -285,6 +265,11 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 	err = h.database.IncChannelMessageCounter(ctx, channel)
 	if err != nil {
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to inc channel msg-counter", err))
+	}
+
+	err = h.database.IncKeyTokenMessageCounter(ctx, keytok.KeyTokenID)
+	if err != nil {
+		return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to inc token msg-counter", err))
 	}
 
 	for _, sub := range subscriptions {

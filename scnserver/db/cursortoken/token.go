@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type Mode string
+type Mode string //@enum:type
 
 const (
 	CTMStart  = "START"

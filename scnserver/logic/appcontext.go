@@ -14,6 +14,7 @@ import (
 )
 
 type AppContext struct {
+	app         *Application
 	inner       context.Context
 	cancelFunc  context.CancelFunc
 	cancelled   bool
@@ -22,8 +23,9 @@ type AppContext struct {
 	ginContext  *gin.Context
 }
 
-func CreateAppContext(g *gin.Context, innerCtx context.Context, cancelFn context.CancelFunc) *AppContext {
+func CreateAppContext(app *Application, g *gin.Context, innerCtx context.Context, cancelFn context.CancelFunc) *AppContext {
 	return &AppContext{
+		app:         app,
 		inner:       innerCtx,
 		cancelFunc:  cancelFn,
 		cancelled:   false,

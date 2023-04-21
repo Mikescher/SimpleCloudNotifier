@@ -26,11 +26,11 @@
             </p>
             <p>
                 To receive them you will need to install the <a href="https://play.google.com/store/apps/details?id=com.blackforestbytes.simplecloudnotifier">SimpleCloudNotifier</a> app from the play store.
-                When you open the app you can click on the account tab to see you unique <code>user_id</code> and <code>user_key</code>.
+                When you open the app you can click on the account tab to see you unique <code>user_id</code> and <code>key</code>.
                 These two values are used to identify and authenticate your device so that send messages can be routed to your phone.
             </p>
             <p>
-                You can at any time generate a new <code>user_key</code> in the app and invalidate the old one.
+                You can at any time generate a new <code>key</code> in the app and invalidate the old one.
             </p>
             <p>
                 There is also a <a href="/">web interface</a> for this API to manually send notifications to your phone or to test your setup.
@@ -52,7 +52,7 @@
                 All Parameters can either directly be submitted as URL parameters or they can be put into the POST body (either multipart/form-data or JSON).
             </p>
             <p>
-                You <i>need</i> to supply a valid <code>[user_id, user_key]</code> pair and a <code>title</code> for your message, all other parameter are optional.
+                You <i>need</i> to supply a valid <code>[user_id, key]</code> pair and a <code>title</code> for your message, all other parameter are optional.
             </p>
         </div>
 
@@ -90,7 +90,7 @@
                 </tr>
                 <tr>
                     <td data-label="Statuscode">401 (Unauthorized)</td>
-                    <td data-label="Explanation">The user_id was not found or the user_key is wrong</td>
+                    <td data-label="Explanation">The user_id was not found or the key is wrong</td>
                 </tr>
                 <tr>
                     <td data-label="Statuscode">403 (Forbidden)</td>
@@ -126,7 +126,7 @@
             </p>
             <pre>curl                                          \
     --data "user_id={userid}"                 \
-    --data "user_key={userkey}"               \
+    --data "key={key}"                        \
     --data "title={message_title}"            \
     --data "content={message_content}"        \
     {{config|baseURL}}/</pre>
@@ -144,7 +144,7 @@
             </p>
             <pre>curl                                          \
     --data "user_id={userid}"                 \
-    --data "user_key={userkey}"               \
+    --data "key={key}"                        \
     --data "title={message_title}"            \
     --data "priority={0|1|2}"                 \
     {{config|baseURL}}/</pre>
@@ -159,7 +159,7 @@
             </p>
             <pre>curl                                          \
     --data "user_id={userid}"                 \
-    --data "user_key={userkey}"               \
+    --data "key={key}"                        \
     --data "title={message_title}"            \
     --data "channel={my_channel}"             \
     {{config|baseURL}}/</pre>
@@ -179,7 +179,7 @@
             </p>
             <pre>curl                                          \
     --data "user_id={userid}"                 \
-    --data "user_key={userkey}"               \
+    --data "key={key}"                        \
     --data "title={message_title}"            \
     --data "msg_id={message_id}"              \
     {{config|baseURL}}/</pre>
@@ -198,7 +198,7 @@
             </p>
             <pre>curl                                          \
     --data "user_id={userid}"                 \
-    --data "user_key={userkey}"               \
+    --data "key={key}"                        \
     --data "title={message_title}"            \
     --data "timestamp={unix_timestamp}"       \
     {{config|baseURL}}/</pre>

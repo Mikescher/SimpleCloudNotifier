@@ -135,7 +135,7 @@ func (m MessageDB) Model() Message {
 		ChannelID:           m.ChannelID,
 		SenderName:          m.SenderName,
 		SenderIP:            m.SenderIP,
-		TimestampReal:       time.UnixMilli(m.TimestampReal),
+		TimestampReal:       timeFromMilli(m.TimestampReal),
 		TimestampClient:     timeOptFromMilli(m.TimestampClient),
 		Title:               m.Title,
 		Content:             m.Content,

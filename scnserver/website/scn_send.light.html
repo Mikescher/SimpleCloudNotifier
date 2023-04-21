@@ -26,7 +26,7 @@
 <span style="color: #008800; font-style: italic"># INSERT YOUR DATA HERE                                                        #</span>
 <span style="color: #008800; font-style: italic">################################################################################</span>
 user_id=<span style="color: #0000FF">&quot;999&quot;</span>
-user_key=<span style="color: #0000FF">&quot;??&quot;</span>
+key=<span style="color: #0000FF">&quot;??&quot;</span>
 <span style="color: #008800; font-style: italic">################################################################################</span>
 
 usage() {
@@ -89,7 +89,7 @@ content=<span style="color: #0000FF">&quot;&quot;</span>
                     --output /dev/null                   <span style="color: #0000FF">\</span>
                     --write-out <span style="color: #0000FF">&quot;%{http_code}&quot;</span>           <span style="color: #0000FF">\</span>
                     --data <span style="color: #0000FF">&quot;user_id=$user_id&quot;</span>            <span style="color: #0000FF">\</span>
-                    --data <span style="color: #0000FF">&quot;user_key=$user_key&quot;</span>          <span style="color: #0000FF">\</span>
+                    --data <span style="color: #0000FF">&quot;key=$key&quot;</span>                    <span style="color: #0000FF">\</span>
                     --data <span style="color: #0000FF">&quot;title=$title&quot;</span>                <span style="color: #0000FF">\</span>
                     --data <span style="color: #0000FF">&quot;timestamp=$sendtime&quot;</span>         <span style="color: #0000FF">\</span>
                     --data <span style="color: #0000FF">&quot;content=$content&quot;</span>            <span style="color: #0000FF">\</span>

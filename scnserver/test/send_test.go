@@ -31,21 +31,21 @@ func TestSendSimpleMessageJSON(t *testing.T) {
 	sendtok := r0["send_key"].(string)
 
 	msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "HelloWorld_001",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "HelloWorld_001",
 	})
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
-		"user_key": readtok,
-		"user_id":  uid,
-		"title":    "HelloWorld_001",
+		"key":     readtok,
+		"user_id": uid,
+		"title":   "HelloWorld_001",
 	}, 401, apierr.USER_AUTH_FAILED)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
-		"user_key": "asdf",
-		"user_id":  uid,
-		"title":    "HelloWorld_001",
+		"key":     "asdf",
+		"user_id": uid,
+		"title":   "HelloWorld_001",
 	}, 401, apierr.USER_AUTH_FAILED)
 
 	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
@@ -82,7 +82,7 @@ func TestSendSimpleMessageQuery(t *testing.T) {
 	admintok := r0["admin_key"].(string)
 	sendtok := r0["send_key"].(string)
 
-	msg1 := tt.RequestPost[gin.H](t, baseUrl, fmt.Sprintf("/?user_id=%s&user_key=%s&title=%s", uid, sendtok, url.QueryEscape("Hello World 2134")), nil)
+	msg1 := tt.RequestPost[gin.H](t, baseUrl, fmt.Sprintf("/?user_id=%s&key=%s&title=%s", uid, sendtok, url.QueryEscape("Hello World 2134")), nil)
 
 	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
 	tt.AssertStrRepEqual(t, "msg.title", "Hello World 2134", pusher.Last().Message.Title)
@@ -119,9 +119,9 @@ func TestSendSimpleMessageForm(t *testing.T) {
 	sendtok := r0["send_key"].(string)
 
 	msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", tt.FormData{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "Hello World 9999 [$$$]",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "Hello World 9999 [$$$]",
 	})
 
 	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
@@ -157,10 +157,10 @@ func TestSendSimpleMessageFormAndQuery(t *testing.T) {
 	uid := r0["user_id"].(string)
 	sendtok := r0["send_key"].(string)
 
-	msg1 := tt.RequestPost[gin.H](t, baseUrl, fmt.Sprintf("/?user_id=%s&user_key=%s&title=%s", uid, sendtok, url.QueryEscape("1111111")), tt.FormData{
-		"user_key": "ERR",
-		"user_id":  "999999",
-		"title":    "2222222",
+	msg1 := tt.RequestPost[gin.H](t, baseUrl, fmt.Sprintf("/?user_id=%s&key=%s&title=%s", uid, sendtok, url.QueryEscape("1111111")), tt.FormData{
+		"key":     "ERR",
+		"user_id": "999999",
+		"title":   "2222222",
 	})
 
 	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
@@ -185,10 +185,10 @@ func TestSendSimpleMessageJSONAndQuery(t *testing.T) {
 	sendtok := r0["send_key"].(string)
 
 	// query overwrite body
-	msg1 := tt.RequestPost[gin.H](t, baseUrl, fmt.Sprintf("/?user_id=%s&user_key=%s&title=%s", uid, sendtok, url.QueryEscape("1111111")), gin.H{
-		"user_key": "ERR",
-		"user_id":  models.NewUserID(),
-		"title":    "2222222",
+	msg1 := tt.RequestPost[gin.H](t, baseUrl, fmt.Sprintf("/?user_id=%s&key=%s&title=%s", uid, sendtok, url.QueryEscape("1111111")), gin.H{
+		"key":     "ERR",
+		"user_id": models.NewUserID(),
+		"title":   "2222222",
 	})
 
 	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
@@ -215,15 +215,15 @@ func TestSendSimpleMessageAlt1(t *testing.T) {
 	sendtok := r0["send_key"].(string)
 
 	msg1 := tt.RequestPost[gin.H](t, baseUrl, "/send", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "HelloWorld_001",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "HelloWorld_001",
 	})
 
 	tt.RequestPostShouldFail(t, baseUrl, "/send", gin.H{
-		"user_key": readtok,
-		"user_id":  uid,
-		"title":    "HelloWorld_001",
+		"key":     readtok,
+		"user_id": uid,
+		"title":   "HelloWorld_001",
 	}, 401, apierr.USER_AUTH_FAILED)
 
 	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
@@ -261,10 +261,10 @@ func TestSendContentMessage(t *testing.T) {
 	sendtok := r0["send_key"].(string)
 
 	msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "HelloWorld_042",
-		"content":  "I am Content\nasdf",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "HelloWorld_042",
+		"content": "I am Content\nasdf",
 	})
 
 	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
@@ -306,7 +306,7 @@ func TestSendWithSendername(t *testing.T) {
 	admintok := r0["admin_key"].(string)
 
 	msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key":    sendtok,
+		"key":         sendtok,
 		"user_id":     uid,
 		"title":       "HelloWorld_xyz",
 		"content":     "Unicode: 日本 - yäy\000\n\t\x00...",
@@ -360,10 +360,10 @@ func TestSendLongContent(t *testing.T) {
 	}
 
 	msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "HelloWorld_042",
-		"content":  longContent,
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "HelloWorld_042",
+		"content": longContent,
 	})
 
 	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
@@ -416,10 +416,10 @@ func TestSendTooLongContent(t *testing.T) {
 	}
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "HelloWorld_042",
-		"content":  longContent,
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "HelloWorld_042",
+		"content": longContent,
 	}, 400, apierr.CONTENT_TOO_LONG)
 }
 
@@ -445,10 +445,10 @@ func TestSendLongContentPro(t *testing.T) {
 		}
 
 		tt.RequestPost[tt.Void](t, baseUrl, "/", gin.H{
-			"user_key": sendtok,
-			"user_id":  uid,
-			"title":    "HelloWorld_042",
-			"content":  longContent,
+			"key":     sendtok,
+			"user_id": uid,
+			"title":   "HelloWorld_042",
+			"content": longContent,
 		})
 	}
 
@@ -459,10 +459,10 @@ func TestSendLongContentPro(t *testing.T) {
 		}
 
 		tt.RequestPost[tt.Void](t, baseUrl, "/", gin.H{
-			"user_key": sendtok,
-			"user_id":  uid,
-			"title":    "HelloWorld_042",
-			"content":  longContent,
+			"key":     sendtok,
+			"user_id": uid,
+			"title":   "HelloWorld_042",
+			"content": longContent,
 		})
 
 	}
@@ -474,10 +474,10 @@ func TestSendLongContentPro(t *testing.T) {
 		}
 
 		tt.RequestPost[tt.Void](t, baseUrl, "/", gin.H{
-			"user_key": sendtok,
-			"user_id":  uid,
-			"title":    "HelloWorld_042",
-			"content":  longContent,
+			"key":     sendtok,
+			"user_id": uid,
+			"title":   "HelloWorld_042",
+			"content": longContent,
 		})
 	}
 
@@ -488,10 +488,10 @@ func TestSendLongContentPro(t *testing.T) {
 		}
 
 		tt.RequestPost[tt.Void](t, baseUrl, "/", gin.H{
-			"user_key": sendtok,
-			"user_id":  uid,
-			"title":    "HelloWorld_042",
-			"content":  longContent,
+			"key":     sendtok,
+			"user_id": uid,
+			"title":   "HelloWorld_042",
+			"content": longContent,
 		})
 	}
 
@@ -502,10 +502,10 @@ func TestSendLongContentPro(t *testing.T) {
 		}
 
 		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
-			"user_key": sendtok,
-			"user_id":  uid,
-			"title":    "HelloWorld_042",
-			"content":  longContent,
+			"key":     sendtok,
+			"user_id": uid,
+			"title":   "HelloWorld_042",
+			"content": longContent,
 		}, 400, apierr.CONTENT_TOO_LONG)
 	}
 }
@@ -525,9 +525,9 @@ func TestSendTooLongTitle(t *testing.T) {
 	sendtok := r0["send_key"].(string)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
 	}, 400, apierr.TITLE_TOO_LONG)
 }
 
@@ -549,11 +549,11 @@ func TestSendIdempotent(t *testing.T) {
 	sendtok := r0["send_key"].(string)
 
 	msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "Hello SCN",
-		"content":  "mamma mia",
-		"msg_id":   "c0235a49-dabc-4cdc-a0ce-453966e0c2d5",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "Hello SCN",
+		"content": "mamma mia",
+		"msg_id":  "c0235a49-dabc-4cdc-a0ce-453966e0c2d5",
 	})
 
 	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
@@ -571,11 +571,11 @@ func TestSendIdempotent(t *testing.T) {
 	tt.AssertEqual(t, "len(messages)", 1, len(msgList1.Messages))
 
 	msg2 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "Hello again",
-		"content":  "mother mia",
-		"msg_id":   "c0235a49-dabc-4cdc-a0ce-453966e0c2d5",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "Hello again",
+		"content": "mother mia",
+		"msg_id":  "c0235a49-dabc-4cdc-a0ce-453966e0c2d5",
 	})
 
 	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
@@ -590,11 +590,11 @@ func TestSendIdempotent(t *testing.T) {
 	tt.AssertEqual(t, "len(messages)", 1, len(msgList2.Messages))
 
 	msg3 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "Hello third",
-		"content":  "let me go",
-		"msg_id":   "3238e68e-c1ea-44ce-b21b-2576614082b5",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "Hello third",
+		"content": "let me go",
+		"msg_id":  "3238e68e-c1ea-44ce-b21b-2576614082b5",
 	})
 
 	tt.AssertEqual(t, "messageCount", 2, len(pusher.Data))
@@ -628,10 +628,10 @@ func TestSendWithPriority(t *testing.T) {
 
 	{
 		msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-			"user_key": sendtok,
-			"user_id":  uid,
-			"title":    "M_001",
-			"content":  "TestSendWithPriority#001",
+			"key":     sendtok,
+			"user_id": uid,
+			"title":   "M_001",
+			"content": "TestSendWithPriority#001",
 		})
 
 		tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
@@ -646,7 +646,7 @@ func TestSendWithPriority(t *testing.T) {
 
 	{
 		msg2 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-			"user_key": sendtok,
+			"key":      sendtok,
 			"user_id":  uid,
 			"title":    "M_002",
 			"content":  "TestSendWithPriority#002",
@@ -665,7 +665,7 @@ func TestSendWithPriority(t *testing.T) {
 
 	{
 		msg3 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-			"user_key": sendtok,
+			"key":      sendtok,
 			"user_id":  uid,
 			"title":    "M_003",
 			"content":  "TestSendWithPriority#003",
@@ -684,7 +684,7 @@ func TestSendWithPriority(t *testing.T) {
 
 	{
 		msg4 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-			"user_key": sendtok,
+			"key":      sendtok,
 			"user_id":  uid,
 			"title":    "M_004",
 			"content":  "TestSendWithPriority#004",
@@ -720,7 +720,7 @@ func TestSendInvalidPriority(t *testing.T) {
 	admintok := r0["admin_key"].(string)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
+		"key":      sendtok,
 		"user_id":  uid,
 		"title":    "(title)",
 		"content":  "(content)",
@@ -728,7 +728,7 @@ func TestSendInvalidPriority(t *testing.T) {
 	}, 400, apierr.INVALID_PRIO)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
+		"key":      sendtok,
 		"user_id":  uid,
 		"title":    "(title)",
 		"content":  "(content)",
@@ -736,7 +736,7 @@ func TestSendInvalidPriority(t *testing.T) {
 	}, 400, apierr.INVALID_PRIO)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
+		"key":      sendtok,
 		"user_id":  uid,
 		"title":    "(title)",
 		"content":  "(content)",
@@ -744,7 +744,7 @@ func TestSendInvalidPriority(t *testing.T) {
 	}, 400, apierr.INVALID_PRIO)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
-		"user_key": admintok,
+		"key":      admintok,
 		"user_id":  uid,
 		"title":    "(title)",
 		"content":  "(content)",
@@ -752,7 +752,7 @@ func TestSendInvalidPriority(t *testing.T) {
 	}, 400, apierr.INVALID_PRIO)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
-		"user_key": admintok,
+		"key":      admintok,
 		"user_id":  uid,
 		"title":    "(title)",
 		"content":  "(content)",
@@ -760,7 +760,7 @@ func TestSendInvalidPriority(t *testing.T) {
 	}, 400, apierr.INVALID_PRIO)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
-		"user_key": admintok,
+		"key":      admintok,
 		"user_id":  uid,
 		"title":    "(title)",
 		"content":  "(content)",
@@ -768,7 +768,7 @@ func TestSendInvalidPriority(t *testing.T) {
 	}, 400, apierr.INVALID_PRIO)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", tt.FormData{
-		"user_key": sendtok,
+		"key":      sendtok,
 		"user_id":  uid,
 		"title":    "(title)",
 		"content":  "(content)",
@@ -776,7 +776,7 @@ func TestSendInvalidPriority(t *testing.T) {
 	}, 400, apierr.INVALID_PRIO)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", tt.FormData{
-		"user_key": sendtok,
+		"key":      sendtok,
 		"user_id":  uid,
 		"title":    "(title)",
 		"content":  "(content)",
@@ -784,7 +784,7 @@ func TestSendInvalidPriority(t *testing.T) {
 	}, 400, apierr.INVALID_PRIO)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", tt.FormData{
-		"user_key": sendtok,
+		"key":      sendtok,
 		"user_id":  uid,
 		"title":    "(title)",
 		"content":  "(content)",
@@ -792,7 +792,7 @@ func TestSendInvalidPriority(t *testing.T) {
 	}, 400, apierr.INVALID_PRIO)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", tt.FormData{
-		"user_key": admintok,
+		"key":      admintok,
 		"user_id":  uid,
 		"title":    "(title)",
 		"content":  "(content)",
@@ -800,7 +800,7 @@ func TestSendInvalidPriority(t *testing.T) {
 	}, 400, apierr.INVALID_PRIO)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", tt.FormData{
-		"user_key": admintok,
+		"key":      admintok,
 		"user_id":  uid,
 		"title":    "(title)",
 		"content":  "(content)",
@@ -808,7 +808,7 @@ func TestSendInvalidPriority(t *testing.T) {
 	}, 400, apierr.INVALID_PRIO)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", tt.FormData{
-		"user_key": admintok,
+		"key":      admintok,
 		"user_id":  uid,
 		"title":    "(title)",
 		"content":  "(content)",
@@ -838,7 +838,7 @@ func TestSendWithTimestamp(t *testing.T) {
 	ts := time.Now().Unix() - int64(time.Hour.Seconds())
 
 	msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", tt.FormData{
-		"user_key":  sendtok,
+		"key":       sendtok,
 		"user_id":   fmt.Sprintf("%s", uid),
 		"title":     "TTT",
 		"timestamp": fmt.Sprintf("%d", ts),
@@ -892,83 +892,83 @@ func TestSendInvalidTimestamp(t *testing.T) {
 	sendtok := r0["send_key"].(string)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", tt.FormData{
-		"user_key":  sendtok,
+		"key":       sendtok,
 		"user_id":   fmt.Sprintf("%s", uid),
 		"title":     "TTT",
 		"timestamp": "-10000",
 	}, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", tt.FormData{
-		"user_key":  sendtok,
+		"key":       sendtok,
 		"user_id":   fmt.Sprintf("%s", uid),
 		"title":     "TTT",
 		"timestamp": "0",
 	}, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", tt.FormData{
-		"user_key":  sendtok,
+		"key":       sendtok,
 		"user_id":   fmt.Sprintf("%s", uid),
 		"title":     "TTT",
 		"timestamp": fmt.Sprintf("%d", time.Now().Unix()-int64(25*time.Hour.Seconds())),
 	}, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", tt.FormData{
-		"user_key":  sendtok,
+		"key":       sendtok,
 		"user_id":   fmt.Sprintf("%s", uid),
 		"title":     "TTT",
 		"timestamp": fmt.Sprintf("%d", time.Now().Unix()+int64(25*time.Hour.Seconds())),
 	}, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
-		"user_key":  sendtok,
+		"key":       sendtok,
 		"user_id":   uid,
 		"title":     "TTT",
 		"timestamp": -10000,
 	}, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
-		"user_key":  sendtok,
+		"key":       sendtok,
 		"user_id":   uid,
 		"title":     "TTT",
 		"timestamp": 0,
 	}, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
-		"user_key":  sendtok,
+		"key":       sendtok,
 		"user_id":   uid,
 		"title":     "TTT",
 		"timestamp": time.Now().Unix() - int64(25*time.Hour.Seconds()),
 	}, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
-		"user_key":  sendtok,
+		"key":       sendtok,
 		"user_id":   uid,
 		"title":     "TTT",
 		"timestamp": time.Now().Unix() + int64(25*time.Hour.Seconds()),
 	}, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
 
-	tt.RequestPostShouldFail(t, baseUrl, fmt.Sprintf("/?user_key=%s&user_id=%s&title=%s&timestamp=%d",
+	tt.RequestPostShouldFail(t, baseUrl, fmt.Sprintf("/?key=%s&user_id=%s&title=%s&timestamp=%d",
 		sendtok,
 		uid,
 		"TTT",
 		-10000,
 	), nil, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
 
-	tt.RequestPostShouldFail(t, baseUrl, fmt.Sprintf("/?user_key=%s&user_id=%s&title=%s&timestamp=%d",
+	tt.RequestPostShouldFail(t, baseUrl, fmt.Sprintf("/?key=%s&user_id=%s&title=%s&timestamp=%d",
 		sendtok,
 		uid,
 		"TTT",
 		0,
 	), nil, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
 
-	tt.RequestPostShouldFail(t, baseUrl, fmt.Sprintf("/?user_key=%s&user_id=%s&title=%s&timestamp=%d",
+	tt.RequestPostShouldFail(t, baseUrl, fmt.Sprintf("/?key=%s&user_id=%s&title=%s&timestamp=%d",
 		sendtok,
 		uid,
 		"TTT",
 		time.Now().Unix()-int64(25*time.Hour.Seconds()),
 	), nil, 400, apierr.TIMESTAMP_OUT_OF_RANGE)
 
-	tt.RequestPostShouldFail(t, baseUrl, fmt.Sprintf("/?user_key=%s&user_id=%s&title=%s&timestamp=%d",
+	tt.RequestPostShouldFail(t, baseUrl, fmt.Sprintf("/?key=%s&user_id=%s&title=%s&timestamp=%d",
 		sendtok,
 		uid,
 		"TTT",
@@ -1003,9 +1003,9 @@ func TestSendToNewChannel(t *testing.T) {
 	}
 
 	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "M0",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "M0",
 	})
 
 	{
@@ -1015,11 +1015,11 @@ func TestSendToNewChannel(t *testing.T) {
 	}
 
 	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "M1",
-		"content":  tt.ShortLipsum0(4),
-		"channel":  "main",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "M1",
+		"content": tt.ShortLipsum0(4),
+		"channel": "main",
 	})
 
 	{
@@ -1029,11 +1029,11 @@ func TestSendToNewChannel(t *testing.T) {
 	}
 
 	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "M2",
-		"content":  tt.ShortLipsum0(4),
-		"channel":  "test",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "M2",
+		"content": tt.ShortLipsum0(4),
+		"channel": "test",
 	})
 
 	{
@@ -1043,10 +1043,10 @@ func TestSendToNewChannel(t *testing.T) {
 	}
 
 	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "M3",
-		"channel":  "test",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "M3",
+		"channel": "test",
 	})
 
 	{
@@ -1082,9 +1082,9 @@ func TestSendToManualChannel(t *testing.T) {
 	}
 
 	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "M0",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "M0",
 	})
 
 	{
@@ -1094,11 +1094,11 @@ func TestSendToManualChannel(t *testing.T) {
 	}
 
 	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "M1",
-		"content":  tt.ShortLipsum0(4),
-		"channel":  "main",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "M1",
+		"content": tt.ShortLipsum0(4),
+		"channel": "main",
 	})
 
 	{
@@ -1119,11 +1119,11 @@ func TestSendToManualChannel(t *testing.T) {
 	}
 
 	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "M2",
-		"content":  tt.ShortLipsum0(4),
-		"channel":  "test",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "M2",
+		"content": tt.ShortLipsum0(4),
+		"channel": "test",
 	})
 
 	{
@@ -1133,10 +1133,10 @@ func TestSendToManualChannel(t *testing.T) {
 	}
 
 	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "M3",
-		"channel":  "test",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "M3",
+		"channel": "test",
 	})
 
 	{
@@ -1161,24 +1161,24 @@ func TestSendToTooLongChannel(t *testing.T) {
 	sendtok := r0["send_key"].(string)
 
 	tt.RequestPost[tt.Void](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "M3",
-		"channel":  "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "M3",
+		"channel": "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
 	})
 
 	tt.RequestPost[tt.Void](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "M3",
-		"channel":  "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "M3",
+		"channel": "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
 	})
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "M3",
-		"channel":  "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "M3",
+		"channel": "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901",
 	}, 400, apierr.CHANNEL_TOO_LONG)
 }
 
@@ -1203,9 +1203,9 @@ func TestQuotaExceededNoPro(t *testing.T) {
 
 	{
 		msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-			"user_key": sendtok,
-			"user_id":  uid,
-			"title":    tt.ShortLipsum0(2),
+			"key":     sendtok,
+			"user_id": uid,
+			"title":   tt.ShortLipsum0(2),
 		})
 		tt.AssertStrRepEqual(t, "quota.msg.1", 1, msg1["quota"])
 		tt.AssertStrRepEqual(t, "quota.msg.1", 50, msg1["quota_max"])
@@ -1222,9 +1222,9 @@ func TestQuotaExceededNoPro(t *testing.T) {
 	for i := 0; i < 48; i++ {
 
 		tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-			"user_key": sendtok,
-			"user_id":  uid,
-			"title":    tt.ShortLipsum0(2),
+			"key":     sendtok,
+			"user_id": uid,
+			"title":   tt.ShortLipsum0(2),
 		})
 	}
 
@@ -1237,9 +1237,9 @@ func TestQuotaExceededNoPro(t *testing.T) {
 	}
 
 	msg50 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    tt.ShortLipsum0(2),
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   tt.ShortLipsum0(2),
 	})
 	tt.AssertStrRepEqual(t, "quota.msg.50", 50, msg50["quota"])
 	tt.AssertStrRepEqual(t, "quota.msg.50", 50, msg50["quota_max"])
@@ -1253,9 +1253,9 @@ func TestQuotaExceededNoPro(t *testing.T) {
 	}
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    tt.ShortLipsum0(2),
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   tt.ShortLipsum0(2),
 	}, 403, apierr.QUOTA_REACHED)
 }
 
@@ -1281,9 +1281,9 @@ func TestQuotaExceededPro(t *testing.T) {
 
 	{
 		msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-			"user_key": sendtok,
-			"user_id":  uid,
-			"title":    tt.ShortLipsum0(2),
+			"key":     sendtok,
+			"user_id": uid,
+			"title":   tt.ShortLipsum0(2),
 		})
 		tt.AssertStrRepEqual(t, "quota.msg.1", 1, msg1["quota"])
 		tt.AssertStrRepEqual(t, "quota.msg.1", 1000, msg1["quota_max"])
@@ -1300,9 +1300,9 @@ func TestQuotaExceededPro(t *testing.T) {
 	for i := 0; i < 998; i++ {
 
 		tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-			"user_key": sendtok,
-			"user_id":  uid,
-			"title":    tt.ShortLipsum0(2),
+			"key":     sendtok,
+			"user_id": uid,
+			"title":   tt.ShortLipsum0(2),
 		})
 	}
 
@@ -1315,9 +1315,9 @@ func TestQuotaExceededPro(t *testing.T) {
 	}
 
 	msg50 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    tt.ShortLipsum0(2),
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   tt.ShortLipsum0(2),
 	})
 	tt.AssertStrRepEqual(t, "quota.msg.1000", 1000, msg50["quota"])
 	tt.AssertStrRepEqual(t, "quota.msg.1000", 1000, msg50["quota_max"])
@@ -1331,9 +1331,9 @@ func TestQuotaExceededPro(t *testing.T) {
 	}
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    tt.ShortLipsum0(2),
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   tt.ShortLipsum0(2),
 	}, 403, apierr.QUOTA_REACHED)
 }
 
@@ -1361,9 +1361,9 @@ func TestSendParallel(t *testing.T) {
 				sem <- tt.Void{}
 			}()
 			tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-				"user_key": sendtok,
-				"user_id":  uid,
-				"title":    tt.ShortLipsum0(2),
+				"key":     sendtok,
+				"user_id": uid,
+				"title":   tt.ShortLipsum0(2),
 			})
 		}()
 	}

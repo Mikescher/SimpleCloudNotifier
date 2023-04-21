@@ -40,6 +40,7 @@ const (
 	prefixSubscriptionID = "SUB"
 	prefixClientID       = "CLN"
 	prefixRequestID      = "REQ"
+	prefixKeyTokenID     = "TOK"
 )
 
 var (
@@ -50,6 +51,7 @@ var (
 	regexSubscriptionID = generateRegex(prefixSubscriptionID)
 	regexClientID       = generateRegex(prefixClientID)
 	regexRequestID      = generateRegex(prefixRequestID)
+	regexKeyTokenID     = generateRegex(prefixKeyTokenID)
 )
 
 func generateRegex(prefix string) rext.Regex {
@@ -374,4 +376,36 @@ func (id RequestID) CheckString() string {
 
 func (id RequestID) Regex() rext.Regex {
 	return regexRequestID
+}
+
+// ------------------------------------------------------------
+
+type KeyTokenID string
+
+func NewKeyTokenID() KeyTokenID {
+	return KeyTokenID(generateID(prefixKeyTokenID))
+}
+
+func (id KeyTokenID) Valid() error {
+	return validateID(prefixKeyTokenID, string(id))
+}
+
+func (id KeyTokenID) String() string {
+	return string(id)
+}
+
+func (id KeyTokenID) Prefix() string {
+	return prefixKeyTokenID
+}
+
+func (id KeyTokenID) Raw() string {
+	return getRawData(prefixKeyTokenID, string(id))
+}
+
+func (id KeyTokenID) CheckString() string {
+	return getCheckString(prefixKeyTokenID, string(id))
+}
+
+func (id KeyTokenID) Regex() rext.Regex {
+	return regexKeyTokenID
 }

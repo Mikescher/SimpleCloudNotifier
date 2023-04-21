@@ -248,7 +248,7 @@ func (app *Application) StartRequest(g *gin.Context, uri any, query any, body an
 	}
 
 	ictx, cancel := context.WithTimeout(context.Background(), app.Config.RequestTimeout)
-	actx := CreateAppContext(g, ictx, cancel)
+	actx := CreateAppContext(app, g, ictx, cancel)
 
 	authheader := g.GetHeader("Authorization")
 
@@ -280,19 +280,19 @@ func (app *Application) getPermissions(ctx *AppContext, hdr string) (models.Perm
 
 	key := strings.TrimSpace(hdr[4:])
 
-	user, err := app.Database.Primary.GetUserByKey(ctx, key)
+	tok, err := app.Database.Primary.GetKeyTokenByToken(ctx, key)
 	if err != nil {
 		return models.PermissionSet{}, err
 	}
 
-	if user != nil && user.SendKey == key {
-		return models.PermissionSet{UserID: langext.Ptr(user.UserID), KeyType: models.PermKeyTypeUserSend}, nil
-	}
-	if user != nil && user.ReadKey == key {
-		return models.PermissionSet{UserID: langext.Ptr(user.UserID), KeyType: models.PermKeyTypeUserRead}, nil
-	}
-	if user != nil && user.AdminKey == key {
-		return models.PermissionSet{UserID: langext.Ptr(user.UserID), KeyType: models.PermKeyTypeUserAdmin}, nil
+	if tok != nil {
+
+		err = app.Database.Primary.UpdateKeyTokenLastUsed(ctx, tok.KeyTokenID)
+		if err != nil {
+			return models.PermissionSet{}, err
+		}
+
+		return models.PermissionSet{Token: tok}, nil
 	}
 
 	return models.NewEmptyPermissions(), nil
@@ -309,9 +309,8 @@ func (app *Application) GetOrCreateChannel(ctx *AppContext, userid models.UserID
 	}
 
 	subscribeKey := app.GenerateRandomAuthKey()
-	sendKey := app.GenerateRandomAuthKey()
 
-	newChan, err := app.Database.Primary.CreateChannel(ctx, userid, displayChanName, intChanName, subscribeKey, sendKey)
+	newChan, err := app.Database.Primary.CreateChannel(ctx, userid, displayChanName, intChanName, subscribeKey)
 	if err != nil {
 		return models.Channel{}, err
 	}

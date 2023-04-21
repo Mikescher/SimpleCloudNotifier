@@ -35,7 +35,7 @@ func NewAndroidPublisherAPI(conf scn.Config) (AndroidPublisherClient, error) {
 	}, nil
 }
 
-type PurchaseType int
+type PurchaseType int //@enum:type
 
 const (
 	PurchaseTypeTest     PurchaseType = 0 // i.e. purchased from a license testing account
@@ -43,14 +43,14 @@ const (
 	PurchaseTypeRewarded PurchaseType = 2 // i.e. from watching a video ad instead of paying
 )
 
-type ConsumptionState int
+type ConsumptionState int //@enum:type
 
 const (
 	ConsumptionStateYetToBeConsumed ConsumptionState = 0
 	ConsumptionStateConsumed        ConsumptionState = 1
 )
 
-type PurchaseState int
+type PurchaseState int //@enum:type
 
 const (
 	PurchaseStatePurchased PurchaseState = 0
@@ -58,7 +58,7 @@ const (
 	PurchaseStatePending   PurchaseState = 2
 )
 
-type AcknowledgementState int
+type AcknowledgementState int //@enum:type
 
 const (
 	AcknowledgementStateYetToBeAcknowledged AcknowledgementState = 0

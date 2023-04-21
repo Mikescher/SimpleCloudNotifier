@@ -11,9 +11,6 @@ import (
 type User struct {
 	UserID            UserID
 	Username          *string
-	SendKey           string
-	ReadKey           string
-	AdminKey          string
 	TimestampCreated  time.Time
 	TimestampLastRead *time.Time
 	TimestampLastSent *time.Time
@@ -28,9 +25,6 @@ func (u User) JSON() UserJSON {
 	return UserJSON{
 		UserID:            u.UserID,
 		Username:          u.Username,
-		ReadKey:           u.ReadKey,
-		SendKey:           u.SendKey,
-		AdminKey:          u.AdminKey,
 		TimestampCreated:  u.TimestampCreated.Format(time.RFC3339Nano),
 		TimestampLastRead: timeOptFmt(u.TimestampLastRead, time.RFC3339Nano),
 		TimestampLastSent: timeOptFmt(u.TimestampLastSent, time.RFC3339Nano),
@@ -43,10 +37,13 @@ func (u User) JSON() UserJSON {
 	}
 }
 
-func (u User) JSONWithClients(clients []Client) UserJSONWithClients {
-	return UserJSONWithClients{
+func (u User) JSONWithClients(clients []Client, ak string, sk string, rk string) UserJSONWithClientsAndKeys {
+	return UserJSONWithClientsAndKeys{
 		UserJSON: u.JSON(),
 		Clients:  langext.ArrMap(clients, func(v Client) ClientJSON { return v.JSON() }),
+		SendKey:  sk,
+		ReadKey:  rk,
+		AdminKey: ak,
 	}
 }
 
@@ -114,9 +111,6 @@ func (u User) MaxTimestampDiffHours() int {
 type UserJSON struct {
 	UserID            UserID  `json:"user_id"`
 	Username          *string `json:"username"`
-	ReadKey           string  `json:"read_key"`
-	SendKey           string  `json:"send_key"`
-	AdminKey          string  `json:"admin_key"`
 	TimestampCreated  string  `json:"timestamp_created"`
 	TimestampLastRead *string `json:"timestamp_lastread"`
 	TimestampLastSent *string `json:"timestamp_lastsent"`
@@ -128,17 +122,17 @@ type UserJSON struct {
 	DefaultChannel    string  `json:"default_channel"`
 }
 
-type UserJSONWithClients struct {
+type UserJSONWithClientsAndKeys struct {
 	UserJSON
-	Clients []ClientJSON `json:"clients"`
+	Clients  []ClientJSON `json:"clients"`
+	SendKey  string       `json:"send_key"`
+	ReadKey  string       `json:"read_key"`
+	AdminKey string       `json:"admin_key"`
 }
 
 type UserDB struct {
 	UserID            UserID  `db:"user_id"`
 	Username          *string `db:"username"`
-	SendKey           string  `db:"send_key"`
-	ReadKey           string  `db:"read_key"`
-	AdminKey          string  `db:"admin_key"`
 	TimestampCreated  int64   `db:"timestamp_created"`
 	TimestampLastRead *int64  `db:"timestamp_lastread"`
 	TimestampLastSent *int64  `db:"timestamp_lastsent"`
@@ -153,10 +147,7 @@ func (u UserDB) Model() User {
 	return User{
 		UserID:            u.UserID,
 		Username:          u.Username,
-		SendKey:           u.SendKey,
-		ReadKey:           u.ReadKey,
-		AdminKey:          u.AdminKey,
-		TimestampCreated:  time.UnixMilli(u.TimestampCreated),
+		TimestampCreated:  timeFromMilli(u.TimestampCreated),
 		TimestampLastRead: timeOptFromMilli(u.TimestampLastRead),
 		TimestampLastSent: timeOptFromMilli(u.TimestampLastSent),
 		MessagesSent:      u.MessagesSent,

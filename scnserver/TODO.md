@@ -49,11 +49,27 @@
 
  - ios purchase verification
 
- - re-add ack labels as compat table for v1 api user
+ - [X] re-add ack labels as compat table for v1 api user
  - return channel as "[..] asdf" in compat methods (mark clients as compat and send compat FB to them...)
    (then we can replace the old server without switching phone clients)
    (still needs switching of the send-script)
- - 
+
+ - do not use uuidgen in bash script (potetnially not installed) - use `head /dev/urandom | tr -dc A-Za-z0-9 | head -c 13 `
+
+ - move to KeyToken model
+     * [X] User can have multiple keys with different permissions
+     * [X] compat simply uses default-keys
+     * [X] CRUD routes for keys
+     * [X] KeyToken.messagecounter
+     * [ ] update old-data migration to create keys
+     * [ ] unit tests
+
+ - We no longer have a route to reshuffle all keys (previously in updateUser), add a /user/:uid/keys/reset ?
+   Would delete all existing keys and create 3 new ones?
+
+ - the explanation of user_id and key in ./website is now wrong (was already wrong and is even wronger now that there are multiple KeyToken's with permissions etc)
+
+ - swagger broken?
 
 #### PERSONAL
 

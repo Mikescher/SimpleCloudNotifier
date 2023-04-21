@@ -10,11 +10,16 @@ HASH=$(shell git rev-parse HEAD)
 build: swagger fmt
 	mkdir -p _build
 	rm -f ./_build/scn_backend
+	go generate ./...
 	CGO_ENABLED=1 go build -v -o _build/scn_backend -tags "timetzdata sqlite_fts5 sqlite_foreign_keys" ./cmd/scnserver
 
 run: build
 	mkdir -p .run-data
 	_build/scn_backend
+
+gow:
+	# go install github.com/mitranim/gow@latest
+	gow run blackforestbytes.com/portfoliomanager2/cmd/server
 
 docker: build
 	[ ! -f "DOCKER_GIT_INFO" ] || rm DOCKER_GIT_INFO

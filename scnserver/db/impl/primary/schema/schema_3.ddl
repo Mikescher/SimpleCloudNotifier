@@ -4,10 +4,6 @@ CREATE TABLE users
 
     username           TEXT                                    NULL  DEFAULT NULL,
 
-    send_key           TEXT                                NOT NULL,
-    read_key           TEXT                                NOT NULL,
-    admin_key          TEXT                                NOT NULL,
-
     timestamp_created  INTEGER                             NOT NULL,
     timestamp_lastread INTEGER                                 NULL   DEFAULT NULL,
     timestamp_lastsent INTEGER                                 NULL   DEFAULT NULL,
@@ -23,6 +19,29 @@ CREATE TABLE users
     PRIMARY KEY (user_id)
 ) STRICT;
 CREATE  UNIQUE INDEX "idx_users_protoken" ON users (pro_token) WHERE pro_token IS NOT NULL;
+
+
+CREATE TABLE keytokens
+(
+    keytoken_id        TEXT                                      NOT NULL,
+
+    timestamp_created  INTEGER                                   NOT NULL,
+    timestamp_lastused INTEGER                                       NULL   DEFAULT NULL,
+
+    name               TEXT                                      NOT NULL,
+
+    owner_user_id      TEXT                                      NOT NULL,
+
+    all_channels       INTEGER   CHECK(all_channels IN (0, 1))   NOT NULL,
+    channels           TEXT                                      NOT NULL,
+    token              TEXT                                      NOT NULL,
+    permissions        TEXT                                      NOT NULL,
+
+    messages_sent      INTEGER                                   NOT NULL   DEFAULT '0',
+
+    PRIMARY KEY (keytoken_id)
+) STRICT;
+CREATE  UNIQUE INDEX "idx_keytokens_token" ON keytokens (token);
 
 
 CREATE TABLE clients
@@ -55,7 +74,6 @@ CREATE TABLE channels
     description_name   TEXT            NULL,
 
     subscribe_key      TEXT        NOT NULL,
-    send_key           TEXT        NOT NULL,
 
     timestamp_created  INTEGER     NOT NULL,
     timestamp_lastsent INTEGER         NULL   DEFAULT NULL,

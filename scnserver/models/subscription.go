@@ -7,6 +7,13 @@ import (
 	"time"
 )
 
+// [!] subscriptions are read-access to channels,
+//
+// The set of subscriptions specifies which messages the ListMessages() API call returns
+// also single messages/channels that are subscribed can be queries
+//
+// (use keytokens for write-access)
+
 type Subscription struct {
 	SubscriptionID      SubscriptionID
 	SubscriberUserID    UserID
@@ -56,7 +63,7 @@ func (s SubscriptionDB) Model() Subscription {
 		ChannelOwnerUserID:  s.ChannelOwnerUserID,
 		ChannelID:           s.ChannelID,
 		ChannelInternalName: s.ChannelInternalName,
-		TimestampCreated:    time.UnixMilli(s.TimestampCreated),
+		TimestampCreated:    timeFromMilli(s.TimestampCreated),
 		Confirmed:           s.Confirmed != 0,
 	}
 }

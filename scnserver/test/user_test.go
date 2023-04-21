@@ -19,7 +19,6 @@ func TestCreateUserNoClient(t *testing.T) {
 	tt.AssertEqual(t, "len(clients)", 0, len(r0["clients"].([]any)))
 
 	uid := fmt.Sprintf("%v", r0["user_id"])
-	admintok := r0["admin_key"].(string)
 	readtok := r0["read_key"].(string)
 	sendtok := r0["send_key"].(string)
 
@@ -29,7 +28,6 @@ func TestCreateUserNoClient(t *testing.T) {
 	r1 := tt.RequestAuthGet[gin.H](t, readtok, baseUrl, "/api/v2/users/"+uid)
 
 	tt.AssertEqual(t, "uid", uid, fmt.Sprintf("%v", r1["user_id"]))
-	tt.AssertEqual(t, "admin_key", admintok, r1["admin_key"])
 }
 
 func TestCreateUserDummyClient(t *testing.T) {
@@ -52,7 +50,6 @@ func TestCreateUserDummyClient(t *testing.T) {
 	r1 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid)
 
 	tt.AssertEqual(t, "uid", uid, fmt.Sprintf("%v", r1["user_id"]))
-	tt.AssertEqual(t, "admin_key", admintok, r1["admin_key"])
 	tt.AssertEqual(t, "username", nil, r1["username"])
 
 	type rt2 struct {
@@ -92,7 +89,6 @@ func TestCreateUserWithUsername(t *testing.T) {
 	r1 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid)
 
 	tt.AssertEqual(t, "uid", uid, fmt.Sprintf("%v", r1["user_id"]))
-	tt.AssertEqual(t, "admin_key", admintok, r1["admin_key"])
 	tt.AssertEqual(t, "username", "my_user", r1["username"])
 }
 
@@ -186,65 +182,6 @@ func TestFailedUgradeUserToPro(t *testing.T) {
 	tt.RequestAuthPatchShouldFail(t, admintok0, baseUrl, "/api/v2/users/"+uid0, gin.H{"pro_token": "ANDROID|v99|PURCHASED"}, 400, apierr.INVALID_PRO_TOKEN)
 
 	tt.RequestAuthPatchShouldFail(t, admintok0, baseUrl, "/api/v2/users/"+uid0, gin.H{"pro_token": "@INVALID"}, 400, apierr.INVALID_PRO_TOKEN)
-}
-
-func TestRecreateKeys(t *testing.T) {
-	_, baseUrl, stop := tt.StartSimpleWebserver(t)
-	defer stop()
-
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
-		"agent_model":   "DUMMY_PHONE",
-		"agent_version": "4X",
-		"client_type":   "ANDROID",
-		"fcm_token":     "DUMMY_FCM",
-	})
-	tt.AssertEqual(t, "username", nil, r0["username"])
-
-	uid := fmt.Sprintf("%v", r0["user_id"])
-
-	admintok := r0["admin_key"].(string)
-	readtok := r0["read_key"].(string)
-	sendtok := r0["send_key"].(string)
-
-	tt.RequestAuthPatchShouldFail(t, readtok, baseUrl, "/api/v2/users/"+uid, gin.H{"read_key": true}, 401, apierr.USER_AUTH_FAILED)
-
-	tt.RequestAuthPatchShouldFail(t, sendtok, baseUrl, "/api/v2/users/"+uid, gin.H{"read_key": true}, 401, apierr.USER_AUTH_FAILED)
-
-	r1 := tt.RequestAuthPatch[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid, gin.H{})
-	tt.AssertEqual(t, "admin_key", admintok, r1["admin_key"])
-	tt.AssertEqual(t, "read_key", readtok, r1["read_key"])
-	tt.AssertEqual(t, "send_key", sendtok, r1["send_key"])
-
-	r2 := tt.RequestAuthPatch[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid, gin.H{"read_key": true})
-	tt.AssertEqual(t, "admin_key", admintok, r2["admin_key"])
-	tt.AssertNotEqual(t, "read_key", readtok, r2["read_key"])
-	tt.AssertEqual(t, "send_key", sendtok, r2["send_key"])
-	readtok = r2["read_key"].(string)
-
-	r3 := tt.RequestAuthPatch[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid, gin.H{"read_key": true, "send_key": true})
-	tt.AssertEqual(t, "admin_key", admintok, r3["admin_key"])
-	tt.AssertNotEqual(t, "read_key", readtok, r3["read_key"])
-	tt.AssertNotEqual(t, "send_key", sendtok, r3["send_key"])
-	readtok = r3["read_key"].(string)
-	sendtok = r3["send_key"].(string)
-
-	r4 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid)
-	tt.AssertEqual(t, "admin_key", admintok, r4["admin_key"])
-	tt.AssertEqual(t, "read_key", readtok, r4["read_key"])
-	tt.AssertEqual(t, "send_key", sendtok, r4["send_key"])
-
-	r5 := tt.RequestAuthPatch[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid, gin.H{"admin_key": true})
-	tt.AssertNotEqual(t, "admin_key", admintok, r5["admin_key"])
-	tt.AssertEqual(t, "read_key", readtok, r5["read_key"])
-	tt.AssertEqual(t, "send_key", sendtok, r5["send_key"])
-	admintokNew := r5["admin_key"].(string)
-
-	tt.RequestAuthGetShouldFail(t, admintok, baseUrl, "/api/v2/users/"+uid, 401, apierr.USER_AUTH_FAILED)
-
-	r6 := tt.RequestAuthGet[gin.H](t, admintokNew, baseUrl, "/api/v2/users/"+uid)
-	tt.AssertEqual(t, "admin_key", admintokNew, r6["admin_key"])
-	tt.AssertEqual(t, "read_key", readtok, r6["read_key"])
-	tt.AssertEqual(t, "send_key", sendtok, r6["send_key"])
 }
 
 func TestDeleteUser(t *testing.T) {

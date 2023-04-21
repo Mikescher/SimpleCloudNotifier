@@ -32,31 +32,6 @@ func (db *Database) GetChannelByName(ctx TxContext, userid models.UserID, chanNa
 	return &channel, nil
 }
 
-func (db *Database) GetChannelByNameAndSendKey(ctx TxContext, chanName string, sendKey string) (*models.Channel, error) {
-	tx, err := ctx.GetOrCreateTransaction(db)
-	if err != nil {
-		return nil, err
-	}
-
-	rows, err := tx.Query(ctx, "SELECT * FROM channels WHERE internal_name = :chan_name OR send_key = :send_key LIMIT 1", sq.PP{
-		"chan_name": chanName,
-		"send_key":  sendKey,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	channel, err := models.DecodeChannel(rows)
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	return &channel, nil
-}
-
 func (db *Database) GetChannelByID(ctx TxContext, chanid models.ChannelID) (*models.Channel, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
@@ -81,7 +56,7 @@ func (db *Database) GetChannelByID(ctx TxContext, chanid models.ChannelID) (*mod
 	return &channel, nil
 }
 
-func (db *Database) CreateChannel(ctx TxContext, userid models.UserID, dispName string, intName string, subscribeKey string, sendKey string) (models.Channel, error) {
+func (db *Database) CreateChannel(ctx TxContext, userid models.UserID, dispName string, intName string, subscribeKey string) (models.Channel, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Channel{}, err
@@ -91,15 +66,14 @@ func (db *Database) CreateChannel(ctx TxContext, userid models.UserID, dispName 
 
 	channelid := models.NewChannelID()
 
-	_, err = tx.Exec(ctx, "INSERT INTO channels (channel_id, owner_user_id, display_name, internal_name, description_name, subscribe_key, send_key, timestamp_created) VALUES (:cid, :ouid, :dnam, :inam, :hnam, :subkey, :sendkey, :ts)", sq.PP{
-		"cid":     channelid,
-		"ouid":    userid,
-		"dnam":    dispName,
-		"inam":    intName,
-		"hnam":    nil,
-		"subkey":  subscribeKey,
-		"sendkey": sendKey,
-		"ts":      time2DB(now),
+	_, err = tx.Exec(ctx, "INSERT INTO channels (channel_id, owner_user_id, display_name, internal_name, description_name, subscribe_key, timestamp_created) VALUES (:cid, :ouid, :dnam, :inam, :hnam, :subkey, :ts)", sq.PP{
+		"cid":    channelid,
+		"ouid":   userid,
+		"dnam":   dispName,
+		"inam":   intName,
+		"hnam":   nil,
+		"subkey": subscribeKey,
+		"ts":     time2DB(now),
 	})
 	if err != nil {
 		return models.Channel{}, err
@@ -111,7 +85,6 @@ func (db *Database) CreateChannel(ctx TxContext, userid models.UserID, dispName 
 		DisplayName:       dispName,
 		InternalName:      intName,
 		SubscribeKey:      subscribeKey,
-		SendKey:           sendKey,
 		TimestampCreated:  now,
 		TimestampLastSent: nil,
 		MessagesSent:      0,
@@ -236,23 +209,6 @@ func (db *Database) IncChannelMessageCounter(ctx TxContext, channel models.Chann
 		"ctr": channel.MessagesSent + 1,
 		"cid": time2DB(time.Now()),
 		"ts":  channel.ChannelID,
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (db *Database) UpdateChannelSendKey(ctx TxContext, channelid models.ChannelID, newkey string) error {
-	tx, err := ctx.GetOrCreateTransaction(db)
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Exec(ctx, "UPDATE channels SET send_key = :key WHERE channel_id = :cid", sq.PP{
-		"key": newkey,
-		"cid": channelid,
 	})
 	if err != nil {
 		return err

@@ -54,9 +54,9 @@ func TestDeleteMessage(t *testing.T) {
 	admintok := r0["admin_key"].(string)
 
 	msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "Message_1",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "Message_1",
 	})
 
 	tt.RequestAuthGet[tt.Void](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
@@ -82,10 +82,10 @@ func TestDeleteMessageAndResendUsrMsgId(t *testing.T) {
 	admintok := r0["admin_key"].(string)
 
 	msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "Message_1",
-		"msg_id":   "bef8dd3d-078e-4f89-abf4-5258ad22a2e4",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "Message_1",
+		"msg_id":  "bef8dd3d-078e-4f89-abf4-5258ad22a2e4",
 	})
 
 	tt.AssertEqual(t, "suppress_send", false, msg1["suppress_send"])
@@ -93,10 +93,10 @@ func TestDeleteMessageAndResendUsrMsgId(t *testing.T) {
 	tt.RequestAuthGet[tt.Void](t, admintok, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msg1["scn_msg_id"]))
 
 	msg2 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "Message_1",
-		"msg_id":   "bef8dd3d-078e-4f89-abf4-5258ad22a2e4",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "Message_1",
+		"msg_id":  "bef8dd3d-078e-4f89-abf4-5258ad22a2e4",
 	})
 
 	tt.AssertEqual(t, "suppress_send", true, msg2["suppress_send"])
@@ -106,10 +106,10 @@ func TestDeleteMessageAndResendUsrMsgId(t *testing.T) {
 	// even though message is deleted, we still get a `suppress_send` on send_message
 
 	msg3 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": sendtok,
-		"user_id":  uid,
-		"title":    "Message_1",
-		"msg_id":   "bef8dd3d-078e-4f89-abf4-5258ad22a2e4",
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   "Message_1",
+		"msg_id":  "bef8dd3d-078e-4f89-abf4-5258ad22a2e4",
 	})
 
 	tt.AssertEqual(t, "suppress_send", true, msg3["suppress_send"])
@@ -123,9 +123,9 @@ func TestGetMessageSimple(t *testing.T) {
 	data := tt.InitDefaultData(t, ws)
 
 	msgOut := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key": data.User[0].SendKey,
-		"user_id":  data.User[0].UID,
-		"title":    "Message_1",
+		"key":     data.User[0].SendKey,
+		"user_id": data.User[0].UID,
+		"title":   "Message_1",
 	})
 
 	msgIn := tt.RequestAuthGet[gin.H](t, data.User[0].AdminKey, baseUrl, "/api/v2/messages/"+fmt.Sprintf("%v", msgOut["scn_msg_id"]))
@@ -163,7 +163,7 @@ func TestGetMessageFull(t *testing.T) {
 	content := tt.ShortLipsum0(2)
 
 	msgOut := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_key":    data.User[0].SendKey,
+		"key":         data.User[0].SendKey,
 		"user_id":     data.User[0].UID,
 		"title":       "Message_1",
 		"content":     content,

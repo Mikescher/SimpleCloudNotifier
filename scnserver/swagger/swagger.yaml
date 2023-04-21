@@ -1,5 +1,93 @@
 basePath: /
 definitions:
+  apierr.APIError:
+    enum:
+    - -1
+    - 0
+    - 1101
+    - 1102
+    - 1103
+    - 1104
+    - 1105
+    - 1106
+    - 1121
+    - 1151
+    - 1152
+    - 1153
+    - 1161
+    - 1171
+    - 1201
+    - 1202
+    - 1203
+    - 1204
+    - 1205
+    - 1206
+    - 1207
+    - 1208
+    - 1251
+    - 1301
+    - 1302
+    - 1303
+    - 1304
+    - 1305
+    - 1306
+    - 1307
+    - 1311
+    - 1401
+    - 1501
+    - 1511
+    - 2101
+    - 3001
+    - 3002
+    - 9901
+    - 9902
+    - 9903
+    - 9904
+    - 9905
+    type: integer
+    x-enum-varnames:
+    - UNDEFINED
+    - NO_ERROR
+    - MISSING_UID
+    - MISSING_TOK
+    - MISSING_TITLE
+    - INVALID_PRIO
+    - REQ_METHOD
+    - INVALID_CLIENTTYPE
+    - PAGETOKEN_ERROR
+    - BINDFAIL_QUERY_PARAM
+    - BINDFAIL_BODY_PARAM
+    - BINDFAIL_URI_PARAM
+    - INVALID_BODY_PARAM
+    - INVALID_ENUM_VALUE
+    - NO_TITLE
+    - TITLE_TOO_LONG
+    - CONTENT_TOO_LONG
+    - USR_MSG_ID_TOO_LONG
+    - TIMESTAMP_OUT_OF_RANGE
+    - SENDERNAME_TOO_LONG
+    - CHANNEL_TOO_LONG
+    - CHANNEL_DESCRIPTION_TOO_LONG
+    - CHANNEL_NAME_WOULD_CHANGE
+    - USER_NOT_FOUND
+    - CLIENT_NOT_FOUND
+    - CHANNEL_NOT_FOUND
+    - SUBSCRIPTION_NOT_FOUND
+    - MESSAGE_NOT_FOUND
+    - SUBSCRIPTION_USER_MISMATCH
+    - KEY_NOT_FOUND
+    - USER_AUTH_FAILED
+    - NO_DEVICE_LINKED
+    - CHANNEL_ALREADY_EXISTS
+    - CANNOT_SELFDELETE_KEY
+    - QUOTA_REACHED
+    - FAILED_VERIFY_PRO_TOKEN
+    - INVALID_PRO_TOKEN
+    - FIREBASE_COM_FAILED
+    - FIREBASE_COM_ERRORED
+    - INTERNAL_EXCEPTION
+    - PANIC
+    - NOT_IMPLEMENTED
   ginresp.apiError:
     properties:
       errhighlight:
@@ -79,6 +167,24 @@ definitions:
         type: string
       username:
         type: string
+    type: object
+  handler.CreateUserKey.body:
+    properties:
+      all_channels:
+        type: boolean
+      channels:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      permissions:
+        type: string
+    required:
+    - all_channels
+    - channels
+    - name
+    - permissions
     type: object
   handler.DatabaseTest.response:
     properties:
@@ -169,6 +275,13 @@ definitions:
       page_size:
         type: integer
     type: object
+  handler.ListUserKeys.response:
+    properties:
+      tokens:
+        items:
+          $ref: '#/definitions/models.KeyTokenJSON'
+        type: array
+    type: object
   handler.ListUserSubscriptions.response:
     properties:
       subscriptions:
@@ -208,14 +321,14 @@ definitions:
     type: object
   handler.SendMessage.combined:
     properties:
-      chan_key:
-        example: qhnUbKcLgp6tg
-        type: string
       channel:
         example: test
         type: string
       content:
         example: This is a message
+        type: string
+      key:
+        example: P3TNH8mvv14fm
         type: string
       msg_id:
         example: db8b0e6a-a08c-4646
@@ -239,16 +352,13 @@ definitions:
       user_id:
         example: "7725"
         type: string
-      user_key:
-        example: P3TNH8mvv14fm
-        type: string
     type: object
   handler.SendMessage.response:
     properties:
       errhighlight:
         type: integer
       error:
-        type: integer
+        $ref: '#/definitions/apierr.APIError'
       is_pro:
         type: boolean
       message:
@@ -271,7 +381,7 @@ definitions:
       errhighlight:
         type: integer
       error:
-        type: integer
+        $ref: '#/definitions/apierr.APIError'
       is_pro:
         type: boolean
       message:
@@ -373,9 +483,6 @@ definitions:
         type: integer
       owner_user_id:
         type: string
-      send_key:
-        description: can be nil, depending on endpoint
-        type: string
       subscribe_key:
         description: can be nil, depending on endpoint
         type: string
@@ -399,10 +506,18 @@ definitions:
       timestamp_created:
         type: string
       type:
-        type: string
+        $ref: '#/definitions/models.ClientType'
       user_id:
         type: string
     type: object
+  models.ClientType:
+    enum:
+    - ANDROID
+    - IOS
+    type: string
+    x-enum-varnames:
+    - ClientTypeAndroid
+    - ClientTypeIOS
   models.CompatMessage:
     properties:
       body:
@@ -418,6 +533,29 @@ definitions:
       trimmed:
         type: boolean
       usr_msg_id:
+        type: string
+    type: object
+  models.KeyTokenJSON:
+    properties:
+      all_channels:
+        type: boolean
+      channels:
+        items:
+          type: string
+        type: array
+      keytoken_id:
+        type: string
+      messages_sent:
+        type: integer
+      name:
+        type: string
+      owner_user_id:
+        type: string
+      permissions:
+        type: string
+      timestamp_created:
+        type: string
+      timestamp_lastused:
         type: string
     type: object
   models.MessageJSON:
@@ -468,8 +606,6 @@ definitions:
     type: object
   models.UserJSON:
     properties:
-      admin_key:
-        type: string
       default_channel:
         type: string
       is_pro:
@@ -482,10 +618,6 @@ definitions:
         type: integer
       quota_used:
         type: integer
-      read_key:
-        type: string
-      send_key:
-        type: string
       timestamp_created:
         type: string
       timestamp_lastread:
@@ -497,7 +629,7 @@ definitions:
       username:
         type: string
     type: object
-  models.UserJSONWithClients:
+  models.UserJSONWithClientsAndKeys:
     properties:
       admin_key:
         type: string
@@ -544,10 +676,6 @@ paths:
       description: All parameter can be set via query-parameter or the json body.
         Only UserID, UserKey and Title are required
       parameters:
-      - example: qhnUbKcLgp6tg
-        in: query
-        name: chan_key
-        type: string
       - example: test
         in: query
         name: channel
@@ -555,6 +683,10 @@ paths:
       - example: This is a message
         in: query
         name: content
+        type: string
+      - example: P3TNH8mvv14fm
+        in: query
+        name: key
         type: string
       - example: db8b0e6a-a08c-4646
         in: query
@@ -583,20 +715,12 @@ paths:
       - example: "7725"
         in: query
         name: user_id
-        type: string
-      - example: P3TNH8mvv14fm
-        in: query
-        name: user_key
         type: string
       - description: ' '
         in: body
         name: post_body
         schema:
           $ref: '#/definitions/handler.SendMessage.combined'
-      - example: qhnUbKcLgp6tg
-        in: formData
-        name: chan_key
-        type: string
       - example: test
         in: formData
         name: channel
@@ -604,6 +728,10 @@ paths:
       - example: This is a message
         in: formData
         name: content
+        type: string
+      - example: P3TNH8mvv14fm
+        in: formData
+        name: key
         type: string
       - example: db8b0e6a-a08c-4646
         in: formData
@@ -632,10 +760,6 @@ paths:
       - example: "7725"
         in: formData
         name: user_id
-        type: string
-      - example: P3TNH8mvv14fm
-        in: formData
-        name: user_key
         type: string
       responses:
         "200":
@@ -1240,7 +1364,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.UserJSONWithClients'
+            $ref: '#/definitions/models.UserJSONWithClientsAndKeys'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1250,6 +1374,193 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Create a new user
+      tags:
+      - API-v2
+  /api/v2/users/:uid/keys:
+    get:
+      description: The request must be done with an ADMIN key, the returned keys are
+        without their token.
+      operationId: api-tokenkeys-list
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListUserKeys.response'
+        "400":
+          description: supplied values/parameters cannot be parsed / are invalid
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: user is not authorized / has missing permissions
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: message not found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: List keys of the user
+      tags:
+      - API-v2
+    post:
+      operationId: api-tokenkeys-create
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: ' '
+        in: body
+        name: post_body
+        schema:
+          $ref: '#/definitions/handler.CreateUserKey.body'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.KeyTokenJSON'
+        "400":
+          description: supplied values/parameters cannot be parsed / are invalid
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: user is not authorized / has missing permissions
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: message not found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Create a new key
+      tags:
+      - API-v2
+  /api/v2/users/:uid/keys/:kid:
+    delete:
+      description: Cannot be used to delete the key used in the request itself
+      operationId: api-tokenkeys-delete
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: TokenKeyID
+        in: path
+        name: kid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.KeyTokenJSON'
+        "400":
+          description: supplied values/parameters cannot be parsed / are invalid
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: user is not authorized / has missing permissions
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: message not found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Delete a key
+      tags:
+      - API-v2
+    get:
+      description: The request must be done with an ADMIN key, the returned key does
+        not include its token.
+      operationId: api-tokenkeys-get
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: TokenKeyID
+        in: path
+        name: kid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.KeyTokenJSON'
+        "400":
+          description: supplied values/parameters cannot be parsed / are invalid
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: user is not authorized / has missing permissions
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: message not found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Get a single key
+      tags:
+      - API-v2
+    patch:
+      operationId: api-tokenkeys-update
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: TokenKeyID
+        in: path
+        name: kid
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.KeyTokenJSON'
+        "400":
+          description: supplied values/parameters cannot be parsed / are invalid
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: user is not authorized / has missing permissions
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: message not found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Update a key
       tags:
       - API-v2
   /api/v2/users/{uid}:
@@ -1956,10 +2267,6 @@ paths:
       description: All parameter can be set via query-parameter or the json body.
         Only UserID, UserKey and Title are required
       parameters:
-      - example: qhnUbKcLgp6tg
-        in: query
-        name: chan_key
-        type: string
       - example: test
         in: query
         name: channel
@@ -1967,6 +2274,10 @@ paths:
       - example: This is a message
         in: query
         name: content
+        type: string
+      - example: P3TNH8mvv14fm
+        in: query
+        name: key
         type: string
       - example: db8b0e6a-a08c-4646
         in: query
@@ -1995,20 +2306,12 @@ paths:
       - example: "7725"
         in: query
         name: user_id
-        type: string
-      - example: P3TNH8mvv14fm
-        in: query
-        name: user_key
         type: string
       - description: ' '
         in: body
         name: post_body
         schema:
           $ref: '#/definitions/handler.SendMessage.combined'
-      - example: qhnUbKcLgp6tg
-        in: formData
-        name: chan_key
-        type: string
       - example: test
         in: formData
         name: channel
@@ -2016,6 +2319,10 @@ paths:
       - example: This is a message
         in: formData
         name: content
+        type: string
+      - example: P3TNH8mvv14fm
+        in: formData
+        name: key
         type: string
       - example: db8b0e6a-a08c-4646
         in: formData
@@ -2044,10 +2351,6 @@ paths:
       - example: "7725"
         in: formData
         name: user_id
-        type: string
-      - example: P3TNH8mvv14fm
-        in: formData
-        name: user_key
         type: string
       responses:
         "200":

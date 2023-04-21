@@ -39,17 +39,17 @@ type pingResponseInfo struct {
 
 // Ping swaggerdoc
 //
-// @Summary Simple endpoint to test connection (any http method)
-// @Tags    Common
+//	@Summary	Simple endpoint to test connection (any http method)
+//	@Tags		Common
 //
-// @Success 200 {object} pingResponse
-// @Failure 500 {object} ginresp.apiError
+//	@Success	200	{object}	pingResponse
+//	@Failure	500	{object}	ginresp.apiError
 //
-// @Router  /api/ping [get]
-// @Router  /api/ping [post]
-// @Router  /api/ping [put]
-// @Router  /api/ping [delete]
-// @Router  /api/ping [patch]
+//	@Router		/api/ping [get]
+//	@Router		/api/ping [post]
+//	@Router		/api/ping [put]
+//	@Router		/api/ping [delete]
+//	@Router		/api/ping [patch]
 func (h CommonHandler) Ping(g *gin.Context) ginresp.HTTPResponse {
 	buf := new(bytes.Buffer)
 	_, _ = buf.ReadFrom(g.Request.Body)
@@ -69,14 +69,14 @@ func (h CommonHandler) Ping(g *gin.Context) ginresp.HTTPResponse {
 
 // DatabaseTest swaggerdoc
 //
-// @Summary Check for a working database connection
-// @ID      api-common-dbtest
-// @Tags    Common
+//	@Summary	Check for a working database connection
+//	@ID			api-common-dbtest
+//	@Tags		Common
 //
-// @Success 200 {object} handler.DatabaseTest.response
-// @Failure 500 {object} ginresp.apiError
+//	@Success	200	{object}	handler.DatabaseTest.response
+//	@Failure	500	{object}	ginresp.apiError
 //
-// @Router  /api/db-test [post]
+//	@Router		/api/db-test [post]
 func (h CommonHandler) DatabaseTest(g *gin.Context) ginresp.HTTPResponse {
 	type response struct {
 		Success          bool   `json:"success"`
@@ -105,14 +105,14 @@ func (h CommonHandler) DatabaseTest(g *gin.Context) ginresp.HTTPResponse {
 
 // Health swaggerdoc
 //
-// @Summary Server Health-checks
-// @ID      api-common-health
-// @Tags    Common
+//	@Summary	Server Health-checks
+//	@ID			api-common-health
+//	@Tags		Common
 //
-// @Success 200 {object} handler.Health.response
-// @Failure 500 {object} ginresp.apiError
+//	@Success	200	{object}	handler.Health.response
+//	@Failure	500	{object}	ginresp.apiError
 //
-// @Router  /api/health [get]
+//	@Router		/api/health [get]
 func (h CommonHandler) Health(g *gin.Context) ginresp.HTTPResponse {
 	type response struct {
 		Status string `json:"status"`
@@ -163,17 +163,17 @@ func (h CommonHandler) Health(g *gin.Context) ginresp.HTTPResponse {
 
 // Sleep swaggerdoc
 //
-// @Summary Return 200 after x seconds
-// @ID      api-common-sleep
-// @Tags    Common
+//	@Summary	Return 200 after x seconds
+//	@ID			api-common-sleep
+//	@Tags		Common
 //
-// @Param   secs path     number true "sleep delay (in seconds)"
+//	@Param		secs	path		number	true	"sleep delay (in seconds)"
 //
-// @Success 200  {object} handler.Sleep.response
-// @Failure 400  {object} ginresp.apiError
-// @Failure 500  {object} ginresp.apiError
+//	@Success	200		{object}	handler.Sleep.response
+//	@Failure	400		{object}	ginresp.apiError
+//	@Failure	500		{object}	ginresp.apiError
 //
-// @Router  /api/sleep/{secs} [post]
+//	@Router		/api/sleep/{secs} [post]
 func (h CommonHandler) Sleep(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		Seconds float64 `uri:"secs"`

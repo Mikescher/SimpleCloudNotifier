@@ -3,12 +3,11 @@ package primary
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/models"
-	"database/sql"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
 
-func (db *Database) CreateUser(ctx TxContext, readKey string, sendKey string, adminKey string, protoken *string, username *string) (models.User, error) {
+func (db *Database) CreateUser(ctx TxContext, protoken *string, username *string) (models.User, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.User{}, err
@@ -18,12 +17,9 @@ func (db *Database) CreateUser(ctx TxContext, readKey string, sendKey string, ad
 
 	userid := models.NewUserID()
 
-	_, err = tx.Exec(ctx, "INSERT INTO users (user_id, username, read_key, send_key, admin_key, is_pro, pro_token, timestamp_created) VALUES (:uid, :un, :rk, :sk, :ak, :pro, :tok, :ts)", sq.PP{
+	_, err = tx.Exec(ctx, "INSERT INTO users (user_id, username, is_pro, pro_token, timestamp_created) VALUES (:uid, :un, :pro, :tok, :ts)", sq.PP{
 		"uid": userid,
 		"un":  username,
-		"rk":  readKey,
-		"sk":  sendKey,
-		"ak":  adminKey,
 		"pro": bool2DB(protoken != nil),
 		"tok": protoken,
 		"ts":  time2DB(now),
@@ -35,9 +31,6 @@ func (db *Database) CreateUser(ctx TxContext, readKey string, sendKey string, ad
 	return models.User{
 		UserID:            userid,
 		Username:          username,
-		ReadKey:           readKey,
-		SendKey:           sendKey,
-		AdminKey:          adminKey,
 		TimestampCreated:  now,
 		TimestampLastRead: nil,
 		TimestampLastSent: nil,
@@ -61,28 +54,6 @@ func (db *Database) ClearProTokens(ctx TxContext, protoken string) error {
 	}
 
 	return nil
-}
-
-func (db *Database) GetUserByKey(ctx TxContext, key string) (*models.User, error) {
-	tx, err := ctx.GetOrCreateTransaction(db)
-	if err != nil {
-		return nil, err
-	}
-
-	rows, err := tx.Query(ctx, "SELECT * FROM users WHERE admin_key = :key OR send_key = :key OR read_key = :key LIMIT 1", sq.PP{"key": key})
-	if err != nil {
-		return nil, err
-	}
-
-	user, err := models.DecodeUser(rows)
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	return &user, nil
 }
 
 func (db *Database) GetUser(ctx TxContext, userid models.UserID) (models.User, error) {
@@ -169,76 +140,6 @@ func (db *Database) UpdateUserLastRead(ctx TxContext, userid models.UserID) erro
 
 	_, err = tx.Exec(ctx, "UPDATE users SET timestamp_lastread = :ts WHERE user_id = :uid", sq.PP{
 		"ts":  time2DB(time.Now()),
-		"uid": userid,
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (db *Database) UpdateUserKeys(ctx TxContext, userid models.UserID, sendKey string, readKey string, adminKey string) error {
-	tx, err := ctx.GetOrCreateTransaction(db)
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Exec(ctx, "UPDATE users SET send_key = :sk, read_key = :rk, admin_key = :ak WHERE user_id = :uid", sq.PP{
-		"sk":  sendKey,
-		"rk":  readKey,
-		"ak":  adminKey,
-		"uid": userid,
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (db *Database) UpdateUserSendKey(ctx TxContext, userid models.UserID, newkey string) error {
-	tx, err := ctx.GetOrCreateTransaction(db)
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Exec(ctx, "UPDATE users SET send_key = :sk WHERE user_id = :uid", sq.PP{
-		"sk":  newkey,
-		"uid": userid,
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (db *Database) UpdateUserReadKey(ctx TxContext, userid models.UserID, newkey string) error {
-	tx, err := ctx.GetOrCreateTransaction(db)
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Exec(ctx, "UPDATE users SET read_key = :rk WHERE user_id = :uid", sq.PP{
-		"rk":  newkey,
-		"uid": userid,
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (db *Database) UpdateUserAdminKey(ctx TxContext, userid models.UserID, newkey string) error {
-	tx, err := ctx.GetOrCreateTransaction(db)
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Exec(ctx, "UPDATE users SET admin_key = :ak WHERE user_id = :uid", sq.PP{
-		"ak":  newkey,
 		"uid": userid,
 	})
 	if err != nil {

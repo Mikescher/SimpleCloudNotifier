@@ -23,7 +23,7 @@ function send()
 
 	let data = new FormData();
 	data.append('user_id', uid.value);
-	data.append('user_key', key.value);
+	data.append('key', key.value);
 	if (tit.value !== '') data.append('title', tit.value);
 	if (cnt.value !== '') data.append('content', cnt.value);
 	if (pio.value !== '') data.append('priority', pio.value);

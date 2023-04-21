@@ -352,9 +352,9 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 		body["user_id"] = users[mex.User].UID
 		switch mex.Key {
 		case AKEY:
-			body["user_key"] = users[mex.User].AdminKey
+			body["key"] = users[mex.User].AdminKey
 		case SKEY:
-			body["user_key"] = users[mex.User].SendKey
+			body["key"] = users[mex.User].SendKey
 		}
 		if mex.Content != "" {
 			body["content"] = mex.Content

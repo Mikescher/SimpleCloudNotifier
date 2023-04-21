@@ -14,7 +14,6 @@ type Channel struct {
 	DisplayName       string
 	DescriptionName   *string
 	SubscribeKey      string
-	SendKey           string
 	TimestampCreated  time.Time
 	TimestampLastSent *time.Time
 	MessagesSent      int
@@ -28,7 +27,6 @@ func (c Channel) JSON(includeKey bool) ChannelJSON {
 		DisplayName:       c.DisplayName,
 		DescriptionName:   c.DescriptionName,
 		SubscribeKey:      langext.Conditional(includeKey, langext.Ptr(c.SubscribeKey), nil),
-		SendKey:           langext.Conditional(includeKey, langext.Ptr(c.SendKey), nil),
 		TimestampCreated:  c.TimestampCreated.Format(time.RFC3339Nano),
 		TimestampLastSent: timeOptFmt(c.TimestampLastSent, time.RFC3339Nano),
 		MessagesSent:      c.MessagesSent,
@@ -65,7 +63,6 @@ type ChannelJSON struct {
 	DisplayName       string    `json:"display_name"`
 	DescriptionName   *string   `json:"description_name"`
 	SubscribeKey      *string   `json:"subscribe_key"` // can be nil, depending on endpoint
-	SendKey           *string   `json:"send_key"`      // can be nil, depending on endpoint
 	TimestampCreated  string    `json:"timestamp_created"`
 	TimestampLastSent *string   `json:"timestamp_lastsent"`
 	MessagesSent      int       `json:"messages_sent"`
@@ -98,8 +95,7 @@ func (c ChannelDB) Model() Channel {
 		DisplayName:       c.DisplayName,
 		DescriptionName:   c.DescriptionName,
 		SubscribeKey:      c.SubscribeKey,
-		SendKey:           c.SendKey,
-		TimestampCreated:  time.UnixMilli(c.TimestampCreated),
+		TimestampCreated:  timeFromMilli(c.TimestampCreated),
 		TimestampLastSent: timeOptFromMilli(c.TimestampLastSent),
 		MessagesSent:      c.MessagesSent,
 	}

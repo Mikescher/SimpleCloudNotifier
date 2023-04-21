@@ -30,17 +30,17 @@ func NewAPIHandler(app *logic.Application) APIHandler {
 
 // CreateUser swaggerdoc
 //
-// @Summary Create a new user
-// @ID      api-user-create
-// @Tags    API-v2
+//	@Summary	Create a new user
+//	@ID			api-user-create
+//	@Tags		API-v2
 //
-// @Param   post_body body     handler.CreateUser.body false " "
+//	@Param		post_body	body		handler.CreateUser.body	false	" "
 //
-// @Success 200       {object} models.UserJSONWithClients
-// @Failure 400       {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure 500       {object} ginresp.apiError "internal server error"
+//	@Success	200			{object}	models.UserJSONWithClientsAndKeys
+//	@Failure	400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure	500			{object}	ginresp.apiError	"internal server error"
 //
-// @Router  /api/v2/users [POST]
+//	@Router		/api/v2/users [POST]
 func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 	type body struct {
 		FCMToken     string  `json:"fcm_token"`
@@ -111,13 +111,28 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 		username = langext.Ptr(h.app.NormalizeUsername(*username))
 	}
 
-	userobj, err := h.database.CreateUser(ctx, readKey, sendKey, adminKey, b.ProToken, username)
+	userobj, err := h.database.CreateUser(ctx, b.ProToken, username)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create user in db", err)
 	}
 
+	_, err = h.database.CreateKeyToken(ctx, "AdminKey (default)", userobj.UserID, true, make([]models.ChannelID, 0), models.TokenPermissionList{models.PermAdmin}, adminKey)
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create admin-key in db", err)
+	}
+
+	_, err = h.database.CreateKeyToken(ctx, "SendKey (default)", userobj.UserID, true, make([]models.ChannelID, 0), models.TokenPermissionList{models.PermChannelSend}, sendKey)
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create send-key in db", err)
+	}
+
+	_, err = h.database.CreateKeyToken(ctx, "ReadKey (default)", userobj.UserID, true, make([]models.ChannelID, 0), models.TokenPermissionList{models.PermUserRead, models.PermChannelRead}, readKey)
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create read-key in db", err)
+	}
+
 	if b.NoClient {
-		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, userobj.JSONWithClients(make([]models.Client, 0))))
+		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, userobj.JSONWithClients(make([]models.Client, 0), adminKey, sendKey, readKey)))
 	} else {
 		err := h.database.DeleteClientsByFCM(ctx, b.FCMToken)
 		if err != nil {
@@ -129,26 +144,26 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create client in db", err)
 		}
 
-		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, userobj.JSONWithClients([]models.Client{client})))
+		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, userobj.JSONWithClients([]models.Client{client}, adminKey, sendKey, readKey)))
 	}
 
 }
 
 // GetUser swaggerdoc
 //
-// @Summary Get a user
-// @ID      api-user-get
-// @Tags    API-v2
+//	@Summary	Get a user
+//	@ID			api-user-get
+//	@Tags		API-v2
 //
-// @Param   uid path     int true "UserID"
+//	@Param		uid	path		int	true	"UserID"
 //
-// @Success 200 {object} models.UserJSON
-// @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure 404 {object} ginresp.apiError "user not found"
-// @Failure 500 {object} ginresp.apiError "internal server error"
+//	@Success	200	{object}	models.UserJSON
+//	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure	404	{object}	ginresp.apiError	"user not found"
+//	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
-// @Router  /api/v2/users/{uid} [GET]
+//	@Router		/api/v2/users/{uid} [GET]
 func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
@@ -178,36 +193,33 @@ func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 
 // UpdateUser swaggerdoc
 //
-// @Summary     (Partially) update a user
-// @Description The body-values are optional, only send the ones you want to update
-// @ID          api-user-update
-// @Tags        API-v2
+//	@Summary		(Partially) update a user
+//	@Description	The body-values are optional, only send the ones you want to update
+//	@ID				api-user-update
+//	@Tags			API-v2
 //
-// @Param       uid       path     int    true  "UserID"
+//	@Param			uid			path		int		true	"UserID"
 //
-// @Param       username  body     string false "Change the username (send an empty string to clear it)"
-// @Param       pro_token body     string false "Send a verification of permium purchase"
-// @Param       read_key  body     string false "Send `true` to create a new read_key"
-// @Param       send_key  body     string false "Send `true` to create a new send_key"
-// @Param       admin_key body     string false "Send `true` to create a new admin_key"
+//	@Param			username	body		string	false	"Change the username (send an empty string to clear it)"
+//	@Param			pro_token	body		string	false	"Send a verification of permium purchase"
+//	@Param			read_key	body		string	false	"Send `true` to create a new read_key"
+//	@Param			send_key	body		string	false	"Send `true` to create a new send_key"
+//	@Param			admin_key	body		string	false	"Send `true` to create a new admin_key"
 //
-// @Success     200       {object} models.UserJSON
-// @Failure     400       {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure     401       {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure     404       {object} ginresp.apiError "user not found"
-// @Failure     500       {object} ginresp.apiError "internal server error"
+//	@Success		200			{object}	models.UserJSON
+//	@Failure		400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure		401			{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure		404			{object}	ginresp.apiError	"user not found"
+//	@Failure		500			{object}	ginresp.apiError	"internal server error"
 //
-// @Router      /api/v2/users/{uid} [PATCH]
+//	@Router			/api/v2/users/{uid} [PATCH]
 func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 	type body struct {
-		Username        *string `json:"username"`
-		ProToken        *string `json:"pro_token"`
-		RefreshReadKey  *bool   `json:"read_key"`
-		RefreshSendKey  *bool   `json:"send_key"`
-		RefreshAdminKey *bool   `json:"admin_key"`
+		Username *string `json:"username"`
+		ProToken *string `json:"pro_token"`
 	}
 
 	var u uri
@@ -262,33 +274,6 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 		}
 	}
 
-	if langext.Coalesce(b.RefreshSendKey, false) {
-		newkey := h.app.GenerateRandomAuthKey()
-
-		err := h.database.UpdateUserSendKey(ctx, u.UserID, newkey)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update user", err)
-		}
-	}
-
-	if langext.Coalesce(b.RefreshReadKey, false) {
-		newkey := h.app.GenerateRandomAuthKey()
-
-		err := h.database.UpdateUserReadKey(ctx, u.UserID, newkey)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update user", err)
-		}
-	}
-
-	if langext.Coalesce(b.RefreshAdminKey, false) {
-		newkey := h.app.GenerateRandomAuthKey()
-
-		err := h.database.UpdateUserAdminKey(ctx, u.UserID, newkey)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update user", err)
-		}
-	}
-
 	user, err := h.database.GetUser(ctx, u.UserID)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query (updated) user", err)
@@ -299,18 +284,18 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 
 // ListClients swaggerdoc
 //
-// @Summary List all clients
-// @ID      api-clients-list
-// @Tags    API-v2
+//	@Summary	List all clients
+//	@ID			api-clients-list
+//	@Tags		API-v2
 //
-// @Param   uid path     int true "UserID"
+//	@Param		uid	path		int	true	"UserID"
 //
-// @Success 200 {object} handler.ListClients.response
-// @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure 500 {object} ginresp.apiError "internal server error"
+//	@Success	200	{object}	handler.ListClients.response
+//	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
-// @Router  /api/v2/users/{uid}/clients [GET]
+//	@Router		/api/v2/users/{uid}/clients [GET]
 func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
@@ -342,20 +327,20 @@ func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
 
 // GetClient swaggerdoc
 //
-// @Summary Get a single client
-// @ID      api-clients-get
-// @Tags    API-v2
+//	@Summary	Get a single client
+//	@ID			api-clients-get
+//	@Tags		API-v2
 //
-// @Param   uid path     int true "UserID"
-// @Param   cid path     int true "ClientID"
+//	@Param		uid	path		int	true	"UserID"
+//	@Param		cid	path		int	true	"ClientID"
 //
-// @Success 200 {object} models.ClientJSON
-// @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure 404 {object} ginresp.apiError "client not found"
-// @Failure 500 {object} ginresp.apiError "internal server error"
+//	@Success	200	{object}	models.ClientJSON
+//	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure	404	{object}	ginresp.apiError	"client not found"
+//	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
-// @Router  /api/v2/users/{uid}/clients/{cid} [GET]
+//	@Router		/api/v2/users/{uid}/clients/{cid} [GET]
 func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID   models.UserID   `uri:"uid" binding:"entityid"`
@@ -386,20 +371,20 @@ func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
 
 // AddClient swaggerdoc
 //
-// @Summary Add a new clients
-// @ID      api-clients-create
-// @Tags    API-v2
+//	@Summary	Add a new clients
+//	@ID			api-clients-create
+//	@Tags		API-v2
 //
-// @Param   uid       path     int                    true  "UserID"
+//	@Param		uid			path		int						true	"UserID"
 //
-// @Param   post_body body     handler.AddClient.body false " "
+//	@Param		post_body	body		handler.AddClient.body	false	" "
 //
-// @Success 200       {object} models.ClientJSON
-// @Failure 400       {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure 401       {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure 500       {object} ginresp.apiError "internal server error"
+//	@Success	200			{object}	models.ClientJSON
+//	@Failure	400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure	401			{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure	500			{object}	ginresp.apiError	"internal server error"
 //
-// @Router  /api/v2/users/{uid}/clients [POST]
+//	@Router		/api/v2/users/{uid}/clients [POST]
 func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
@@ -447,20 +432,20 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 
 // DeleteClient swaggerdoc
 //
-// @Summary Delete a client
-// @ID      api-clients-delete
-// @Tags    API-v2
+//	@Summary	Delete a client
+//	@ID			api-clients-delete
+//	@Tags		API-v2
 //
-// @Param   uid path     int true "UserID"
-// @Param   cid path     int true "ClientID"
+//	@Param		uid	path		int	true	"UserID"
+//	@Param		cid	path		int	true	"ClientID"
 //
-// @Success 200 {object} models.ClientJSON
-// @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure 404 {object} ginresp.apiError "client not found"
-// @Failure 500 {object} ginresp.apiError "internal server error"
+//	@Success	200	{object}	models.ClientJSON
+//	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure	404	{object}	ginresp.apiError	"client not found"
+//	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
-// @Router  /api/v2/users/{uid}/clients/{cid} [DELETE]
+//	@Router		/api/v2/users/{uid}/clients/{cid} [DELETE]
 func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID   models.UserID   `uri:"uid" binding:"entityid"`
@@ -496,26 +481,26 @@ func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 
 // ListChannels swaggerdoc
 //
-// @Summary     List channels of a user (subscribed/owned/all)
-// @Description The possible values for 'selector' are:
-// @Description - "owned"          Return all channels of the user
-// @Description - "subscribed"     Return all channels that the user is subscribing to
-// @Description - "all"            Return channels that the user owns or is subscribing
-// @Description - "subscribed_any" Return all channels that the user is subscribing to (even unconfirmed)
-// @Description - "all_any"        Return channels that the user owns or is subscribing (even unconfirmed)
+//	@Summary		List channels of a user (subscribed/owned/all)
+//	@Description	The possible values for 'selector' are:
+//	@Description	- "owned"          Return all channels of the user
+//	@Description	- "subscribed"     Return all channels that the user is subscribing to
+//	@Description	- "all"            Return channels that the user owns or is subscribing
+//	@Description	- "subscribed_any" Return all channels that the user is subscribing to (even unconfirmed)
+//	@Description	- "all_any"        Return channels that the user owns or is subscribing (even unconfirmed)
 //
-// @ID          api-channels-list
-// @Tags        API-v2
+//	@ID				api-channels-list
+//	@Tags			API-v2
 //
-// @Param       uid      path     int    true  "UserID"
-// @Param       selector query    string false "Filter channels (default: owned)" Enums(owned, subscribed, all, subscribed_any, all_any)
+//	@Param			uid			path		int		true	"UserID"
+//	@Param			selector	query		string	false	"Filter channels (default: owned)"	Enums(owned, subscribed, all, subscribed_any, all_any)
 //
-// @Success     200      {object} handler.ListChannels.response
-// @Failure     400      {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure     401      {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure     500      {object} ginresp.apiError "internal server error"
+//	@Success		200			{object}	handler.ListChannels.response
+//	@Failure		400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure		401			{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure		500			{object}	ginresp.apiError	"internal server error"
 //
-// @Router      /api/v2/users/{uid}/channels [GET]
+//	@Router			/api/v2/users/{uid}/channels [GET]
 func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
@@ -594,20 +579,20 @@ func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 
 // GetChannel swaggerdoc
 //
-// @Summary Get a single channel
-// @ID      api-channels-get
-// @Tags    API-v2
+//	@Summary	Get a single channel
+//	@ID			api-channels-get
+//	@Tags		API-v2
 //
-// @Param   uid path     int true "UserID"
-// @Param   cid path     int true "ChannelID"
+//	@Param		uid	path		int	true	"UserID"
+//	@Param		cid	path		int	true	"ChannelID"
 //
-// @Success 200 {object} models.ChannelWithSubscriptionJSON
-// @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure 404 {object} ginresp.apiError "channel not found"
-// @Failure 500 {object} ginresp.apiError "internal server error"
+//	@Success	200	{object}	models.ChannelWithSubscriptionJSON
+//	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure	404	{object}	ginresp.apiError	"channel not found"
+//	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
-// @Router  /api/v2/users/{uid}/channels/{cid} [GET]
+//	@Router		/api/v2/users/{uid}/channels/{cid} [GET]
 func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID    models.UserID    `uri:"uid" binding:"entityid"`
@@ -638,20 +623,20 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 
 // CreateChannel swaggerdoc
 //
-// @Summary Create a new (empty) channel
-// @ID      api-channels-create
-// @Tags    API-v2
+//	@Summary	Create a new (empty) channel
+//	@ID			api-channels-create
+//	@Tags		API-v2
 //
-// @Param   uid       path     int                        true  "UserID"
-// @Param   post_body body     handler.CreateChannel.body false " "
+//	@Param		uid			path		int							true	"UserID"
+//	@Param		post_body	body		handler.CreateChannel.body	false	" "
 //
-// @Success 200       {object} models.ChannelWithSubscriptionJSON
-// @Failure 400       {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure 401       {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure 409       {object} ginresp.apiError "channel already exists"
-// @Failure 500       {object} ginresp.apiError "internal server error"
+//	@Success	200			{object}	models.ChannelWithSubscriptionJSON
+//	@Failure	400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure	401			{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure	409			{object}	ginresp.apiError	"channel already exists"
+//	@Failure	500			{object}	ginresp.apiError	"internal server error"
 //
-// @Router  /api/v2/users/{uid}/channels [POST]
+//	@Router		/api/v2/users/{uid}/channels [POST]
 func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
@@ -705,9 +690,8 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	subscribeKey := h.app.GenerateRandomAuthKey()
-	sendKey := h.app.GenerateRandomAuthKey()
 
-	channel, err := h.database.CreateChannel(ctx, u.UserID, channelDisplayName, channelInternalName, subscribeKey, sendKey)
+	channel, err := h.database.CreateChannel(ctx, u.UserID, channelDisplayName, channelInternalName, subscribeKey)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create channel", err)
 	}
@@ -731,24 +715,24 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 
 // UpdateChannel swaggerdoc
 //
-// @Summary (Partially) update a channel
-// @ID      api-channels-update
-// @Tags    API-v2
+//	@Summary	(Partially) update a channel
+//	@ID			api-channels-update
+//	@Tags		API-v2
 //
-// @Param   uid           path     int    true  "UserID"
-// @Param   cid           path     int    true  "ChannelID"
+//	@Param		uid				path		int		true	"UserID"
+//	@Param		cid				path		int		true	"ChannelID"
 //
-// @Param   subscribe_key body     string false "Send `true` to create a new subscribe_key"
-// @Param   send_key      body     string false "Send `true` to create a new send_key"
-// @Param   display_name  body     string false "Change the cahnnel display-name (only chnages to lowercase/uppercase are allowed - internal_name must stay the same)"
+//	@Param		subscribe_key	body		string	false	"Send `true` to create a new subscribe_key"
+//	@Param		send_key		body		string	false	"Send `true` to create a new send_key"
+//	@Param		display_name	body		string	false	"Change the cahnnel display-name (only chnages to lowercase/uppercase are allowed - internal_name must stay the same)"
 //
-// @Success 200           {object} models.ChannelWithSubscriptionJSON
-// @Failure 400           {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure 401           {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure 404           {object} ginresp.apiError "channel not found"
-// @Failure 500           {object} ginresp.apiError "internal server error"
+//	@Success	200				{object}	models.ChannelWithSubscriptionJSON
+//	@Failure	400				{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure	401				{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure	404				{object}	ginresp.apiError	"channel not found"
+//	@Failure	500				{object}	ginresp.apiError	"internal server error"
 //
-// @Router  /api/v2/users/{uid}/channels/{cid} [PATCH]
+//	@Router		/api/v2/users/{uid}/channels/{cid} [PATCH]
 func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID    models.UserID    `uri:"uid" binding:"entityid"`
@@ -756,7 +740,6 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 	}
 	type body struct {
 		RefreshSubscribeKey *bool   `json:"subscribe_key"`
-		RefreshSendKey      *bool   `json:"send_key"`
 		DisplayName         *string `json:"display_name"`
 		DescriptionName     *string `json:"description_name"`
 	}
@@ -787,15 +770,6 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 	}
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query user", err)
-	}
-
-	if langext.Coalesce(b.RefreshSendKey, false) {
-		newkey := h.app.GenerateRandomAuthKey()
-
-		err := h.database.UpdateChannelSendKey(ctx, u.ChannelID, newkey)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update channel", err)
-		}
 	}
 
 	if langext.Coalesce(b.RefreshSubscribeKey, false) {
@@ -855,25 +829,25 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 
 // ListChannelMessages swaggerdoc
 //
-// @Summary     List messages of a channel
-// @Description The next_page_token is an opaque token, the special value "@start" (or empty-string) is the beginning and "@end" is the end
-// @Description Simply start the pagination without a next_page_token and get the next page by calling this endpoint with the returned next_page_token of the last query
-// @Description If there are no more entries the token "@end" will be returned
-// @Description By default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)
-// @ID          api-channel-messages
-// @Tags        API-v2
+//	@Summary		List messages of a channel
+//	@Description	The next_page_token is an opaque token, the special value "@start" (or empty-string) is the beginning and "@end" is the end
+//	@Description	Simply start the pagination without a next_page_token and get the next page by calling this endpoint with the returned next_page_token of the last query
+//	@Description	If there are no more entries the token "@end" will be returned
+//	@Description	By default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)
+//	@ID				api-channel-messages
+//	@Tags			API-v2
 //
-// @Param       query_data query    handler.ListChannelMessages.query false " "
-// @Param       uid        path     int                               true  "UserID"
-// @Param       cid        path     int                               true  "ChannelID"
+//	@Param			query_data	query		handler.ListChannelMessages.query	false	" "
+//	@Param			uid			path		int									true	"UserID"
+//	@Param			cid			path		int									true	"ChannelID"
 //
-// @Success     200        {object} handler.ListChannelMessages.response
-// @Failure     400        {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure     401        {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure     404        {object} ginresp.apiError "channel not found"
-// @Failure     500        {object} ginresp.apiError "internal server error"
+//	@Success		200			{object}	handler.ListChannelMessages.response
+//	@Failure		400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure		401			{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure		404			{object}	ginresp.apiError	"channel not found"
+//	@Failure		500			{object}	ginresp.apiError	"internal server error"
 //
-// @Router      /api/v2/users/{uid}/channels/{cid}/messages [GET]
+//	@Router			/api/v2/users/{uid}/channels/{cid}/messages [GET]
 func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		ChannelUserID models.UserID    `uri:"uid" binding:"entityid"`
@@ -905,10 +879,6 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 
 	pageSize := mathext.Clamp(langext.Coalesce(q.PageSize, 64), 1, maxPageSize)
 
-	if permResp := ctx.CheckPermissionRead(); permResp != nil {
-		return *permResp
-	}
-
 	channel, err := h.database.GetChannel(ctx, u.ChannelUserID, u.ChannelID)
 	if err == sql.ErrNoRows {
 		return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
@@ -917,17 +887,8 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
 	}
 
-	userid := *ctx.GetPermissionUserID()
-
-	sub, err := h.database.GetSubscriptionBySubscriber(ctx, userid, channel.ChannelID)
-	if err == sql.ErrNoRows {
-		return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
-	}
-	if !sub.Confirmed {
-		return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+	if permResp := ctx.CheckPermissionChanMessagesRead(channel.Channel); permResp != nil {
+		return *permResp
 	}
 
 	tok, err := ct.Decode(langext.Coalesce(q.NextPageToken, ""))
@@ -956,27 +917,27 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 
 // ListUserSubscriptions swaggerdoc
 //
-// @Summary     List all subscriptions of a user (incoming/owned)
-// @Description The possible values for 'selector' are:
-// @Description - "outgoing_all"         All subscriptions (confirmed/unconfirmed) with the user as subscriber (= subscriptions he can use to read channels)
-// @Description - "outgoing_confirmed"   Confirmed subscriptions with the user as subscriber
-// @Description - "outgoing_unconfirmed" Unconfirmed (Pending) subscriptions with the user as subscriber
-// @Description - "incoming_all"         All subscriptions (confirmed/unconfirmed) from other users to channels of this user (= incoming subscriptions and subscription requests)
-// @Description - "incoming_confirmed"   Confirmed subscriptions from other users to channels of this user
-// @Description - "incoming_unconfirmed" Unconfirmed subscriptions from other users to channels of this user (= requests)
+//	@Summary		List all subscriptions of a user (incoming/owned)
+//	@Description	The possible values for 'selector' are:
+//	@Description	- "outgoing_all"         All subscriptions (confirmed/unconfirmed) with the user as subscriber (= subscriptions he can use to read channels)
+//	@Description	- "outgoing_confirmed"   Confirmed subscriptions with the user as subscriber
+//	@Description	- "outgoing_unconfirmed" Unconfirmed (Pending) subscriptions with the user as subscriber
+//	@Description	- "incoming_all"         All subscriptions (confirmed/unconfirmed) from other users to channels of this user (= incoming subscriptions and subscription requests)
+//	@Description	- "incoming_confirmed"   Confirmed subscriptions from other users to channels of this user
+//	@Description	- "incoming_unconfirmed" Unconfirmed subscriptions from other users to channels of this user (= requests)
 //
-// @ID          api-user-subscriptions-list
-// @Tags        API-v2
+//	@ID				api-user-subscriptions-list
+//	@Tags			API-v2
 //
-// @Param       uid      path     int    true "UserID"
-// @Param       selector query    string true "Filter subscriptions (default: owner_all)" Enums(outgoing_all, outgoing_confirmed, outgoing_unconfirmed, incoming_all, incoming_confirmed, incoming_unconfirmed)
+//	@Param			uid			path		int		true	"UserID"
+//	@Param			selector	query		string	true	"Filter subscriptions (default: owner_all)"	Enums(outgoing_all, outgoing_confirmed, outgoing_unconfirmed, incoming_all, incoming_confirmed, incoming_unconfirmed)
 //
-// @Success     200      {object} handler.ListUserSubscriptions.response
-// @Failure     400      {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure     401      {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure     500      {object} ginresp.apiError "internal server error"
+//	@Success		200			{object}	handler.ListUserSubscriptions.response
+//	@Failure		400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure		401			{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure		500			{object}	ginresp.apiError	"internal server error"
 //
-// @Router      /api/v2/users/{uid}/subscriptions [GET]
+//	@Router			/api/v2/users/{uid}/subscriptions [GET]
 func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
@@ -1060,20 +1021,20 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 
 // ListChannelSubscriptions swaggerdoc
 //
-// @Summary List all subscriptions of a channel
-// @ID      api-chan-subscriptions-list
-// @Tags    API-v2
+//	@Summary	List all subscriptions of a channel
+//	@ID			api-chan-subscriptions-list
+//	@Tags		API-v2
 //
-// @Param   uid path     int true "UserID"
-// @Param   cid path     int true "ChannelID"
+//	@Param		uid	path		int	true	"UserID"
+//	@Param		cid	path		int	true	"ChannelID"
 //
-// @Success 200 {object} handler.ListChannelSubscriptions.response
-// @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure 404 {object} ginresp.apiError "channel not found"
-// @Failure 500 {object} ginresp.apiError "internal server error"
+//	@Success	200	{object}	handler.ListChannelSubscriptions.response
+//	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure	404	{object}	ginresp.apiError	"channel not found"
+//	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
-// @Router  /api/v2/users/{uid}/channels/{cid}/subscriptions [GET]
+//	@Router		/api/v2/users/{uid}/channels/{cid}/subscriptions [GET]
 func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID    models.UserID    `uri:"uid" binding:"entityid"`
@@ -1114,20 +1075,20 @@ func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPRespons
 
 // GetSubscription swaggerdoc
 //
-// @Summary Get a single subscription
-// @ID      api-subscriptions-get
-// @Tags    API-v2
+//	@Summary	Get a single subscription
+//	@ID			api-subscriptions-get
+//	@Tags		API-v2
 //
-// @Param   uid path     int true "UserID"
-// @Param   sid path     int true "SubscriptionID"
+//	@Param		uid	path		int	true	"UserID"
+//	@Param		sid	path		int	true	"SubscriptionID"
 //
-// @Success 200 {object} models.SubscriptionJSON
-// @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure 404 {object} ginresp.apiError "subscription not found"
-// @Failure 500 {object} ginresp.apiError "internal server error"
+//	@Success	200	{object}	models.SubscriptionJSON
+//	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure	404	{object}	ginresp.apiError	"subscription not found"
+//	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
-// @Router  /api/v2/users/{uid}/subscriptions/{sid} [GET]
+//	@Router		/api/v2/users/{uid}/subscriptions/{sid} [GET]
 func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID         models.UserID         `uri:"uid" binding:"entityid"`
@@ -1161,20 +1122,20 @@ func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 
 // CancelSubscription swaggerdoc
 //
-// @Summary Cancel (delete) subscription
-// @ID      api-subscriptions-delete
-// @Tags    API-v2
+//	@Summary	Cancel (delete) subscription
+//	@ID			api-subscriptions-delete
+//	@Tags		API-v2
 //
-// @Param   uid path     int true "UserID"
-// @Param   sid path     int true "SubscriptionID"
+//	@Param		uid	path		int	true	"UserID"
+//	@Param		sid	path		int	true	"SubscriptionID"
 //
-// @Success 200 {object} models.SubscriptionJSON
-// @Failure 400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure 401 {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure 404 {object} ginresp.apiError "subscription not found"
-// @Failure 500 {object} ginresp.apiError "internal server error"
+//	@Success	200	{object}	models.SubscriptionJSON
+//	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure	404	{object}	ginresp.apiError	"subscription not found"
+//	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
-// @Router  /api/v2/users/{uid}/subscriptions/{sid} [DELETE]
+//	@Router		/api/v2/users/{uid}/subscriptions/{sid} [DELETE]
 func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID         models.UserID         `uri:"uid" binding:"entityid"`
@@ -1213,21 +1174,21 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 
 // CreateSubscription swaggerdoc
 //
-// @Summary     Create/Request a subscription
-// @Description Either [channel_owner_user_id, channel_internal_name] or [channel_id] must be supplied in the request body
-// @ID          api-subscriptions-create
-// @Tags        API-v2
+//	@Summary		Create/Request a subscription
+//	@Description	Either [channel_owner_user_id, channel_internal_name] or [channel_id] must be supplied in the request body
+//	@ID				api-subscriptions-create
+//	@Tags			API-v2
 //
-// @Param       uid        path     int                              true  "UserID"
-// @Param       query_data query    handler.CreateSubscription.query false " "
-// @Param       post_data  body     handler.CreateSubscription.body  false " "
+//	@Param			uid			path		int									true	"UserID"
+//	@Param			query_data	query		handler.CreateSubscription.query	false	" "
+//	@Param			post_data	body		handler.CreateSubscription.body		false	" "
 //
-// @Success     200        {object} models.SubscriptionJSON
-// @Failure     400        {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure     401        {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure     500        {object} ginresp.apiError "internal server error"
+//	@Success		200			{object}	models.SubscriptionJSON
+//	@Failure		400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure		401			{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure		500			{object}	ginresp.apiError	"internal server error"
 //
-// @Router      /api/v2/users/{uid}/subscriptions [POST]
+//	@Router			/api/v2/users/{uid}/subscriptions [POST]
 func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
@@ -1302,21 +1263,21 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 
 // UpdateSubscription swaggerdoc
 //
-// @Summary Update a subscription (e.g. confirm)
-// @ID      api-subscriptions-update
-// @Tags    API-v2
+//	@Summary	Update a subscription (e.g. confirm)
+//	@ID			api-subscriptions-update
+//	@Tags		API-v2
 //
-// @Param   uid       path     int                             true  "UserID"
-// @Param   sid       path     int                             true  "SubscriptionID"
-// @Param   post_data body     handler.UpdateSubscription.body false " "
+//	@Param		uid			path		int								true	"UserID"
+//	@Param		sid			path		int								true	"SubscriptionID"
+//	@Param		post_data	body		handler.UpdateSubscription.body	false	" "
 //
-// @Success 200       {object} models.SubscriptionJSON
-// @Failure 400       {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure 401       {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure 404       {object} ginresp.apiError "subscription not found"
-// @Failure 500       {object} ginresp.apiError "internal server error"
+//	@Success	200			{object}	models.SubscriptionJSON
+//	@Failure	400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure	401			{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure	404			{object}	ginresp.apiError	"subscription not found"
+//	@Failure	500			{object}	ginresp.apiError	"internal server error"
 //
-// @Router  /api/v2/users/{uid}/subscriptions/{sid} [PATCH]
+//	@Router		/api/v2/users/{uid}/subscriptions/{sid} [PATCH]
 func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID         models.UserID         `uri:"uid" binding:"entityid"`
@@ -1371,22 +1332,22 @@ func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 
 // ListMessages swaggerdoc
 //
-// @Summary     List all (subscribed) messages
-// @Description The next_page_token is an opaque token, the special value "@start" (or empty-string) is the beginning and "@end" is the end
-// @Description Simply start the pagination without a next_page_token and get the next page by calling this endpoint with the returned next_page_token of the last query
-// @Description If there are no more entries the token "@end" will be returned
-// @Description By default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)
-// @ID          api-messages-list
-// @Tags        API-v2
+//	@Summary		List all (subscribed) messages
+//	@Description	The next_page_token is an opaque token, the special value "@start" (or empty-string) is the beginning and "@end" is the end
+//	@Description	Simply start the pagination without a next_page_token and get the next page by calling this endpoint with the returned next_page_token of the last query
+//	@Description	If there are no more entries the token "@end" will be returned
+//	@Description	By default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)
+//	@ID				api-messages-list
+//	@Tags			API-v2
 //
-// @Param       query_data query    handler.ListMessages.query false " "
+//	@Param			query_data	query		handler.ListMessages.query	false	" "
 //
-// @Success     200        {object} handler.ListMessages.response
-// @Failure     400        {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure     401        {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure     500        {object} ginresp.apiError "internal server error"
+//	@Success		200			{object}	handler.ListMessages.response
+//	@Failure		400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure		401			{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure		500			{object}	ginresp.apiError	"internal server error"
 //
-// @Router      /api/v2/messages [GET]
+//	@Router			/api/v2/messages [GET]
 func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
 		PageSize      *int    `json:"page_size"       form:"page_size"`
@@ -1413,7 +1374,7 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 
 	pageSize := mathext.Clamp(langext.Coalesce(q.PageSize, 64), 1, maxPageSize)
 
-	if permResp := ctx.CheckPermissionRead(); permResp != nil {
+	if permResp := ctx.CheckPermissionSelfAllMessagesRead(); permResp != nil {
 		return *permResp
 	}
 
@@ -1454,22 +1415,22 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 
 // GetMessage swaggerdoc
 //
-// @Summary     Get a single message (untrimmed)
-// @Description The user must either own the message and request the resource with the READ or ADMIN Key
-// @Description Or the user must subscribe to the corresponding channel (and be confirmed) and request the resource with the READ or ADMIN Key
-// @Description The returned message is never trimmed
-// @ID          api-messages-get
-// @Tags        API-v2
+//	@Summary		Get a single message (untrimmed)
+//	@Description	The user must either own the message and request the resource with the READ or ADMIN Key
+//	@Description	Or the user must subscribe to the corresponding channel (and be confirmed) and request the resource with the READ or ADMIN Key
+//	@Description	The returned message is never trimmed
+//	@ID				api-messages-get
+//	@Tags			API-v2
 //
-// @Param       mid path     int true "MessageID"
+//	@Param			mid	path		int	true	"MessageID"
 //
-// @Success     200 {object} models.MessageJSON
-// @Failure     400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure     401 {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure     404 {object} ginresp.apiError "message not found"
-// @Failure     500 {object} ginresp.apiError "internal server error"
+//	@Success		200	{object}	models.MessageJSON
+//	@Failure		400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure		401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure		404	{object}	ginresp.apiError	"message not found"
+//	@Failure		500	{object}	ginresp.apiError	"internal server error"
 //
-// @Router      /api/v2/messages/{mid} [PATCH]
+//	@Router			/api/v2/messages/{mid} [PATCH]
 func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		MessageID models.MessageID `uri:"mid" binding:"entityid"`
@@ -1494,52 +1455,50 @@ func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query message", err)
 	}
 
-	if !ctx.CheckPermissionMessageReadDirect(msg) {
+	// either we have direct read permissions (it is our message + read/admin key)
+	// or we subscribe (+confirmed) to the channel and have read/admin key
 
-		// either we have direct read permissions (it is our message + read/admin key)
-		// or we subscribe (+confirmed) to the channel and have read/admin key
+	if ctx.CheckPermissionMessageRead(msg) {
+		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, msg.FullJSON()))
+	}
 
-		if uid := ctx.GetPermissionUserID(); uid != nil && ctx.IsPermissionUserRead() {
-			sub, err := h.database.GetSubscriptionBySubscriber(ctx, *uid, msg.ChannelID)
-			if err != nil {
-				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
-			}
-			if sub == nil {
-				// not subbed
-				return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
-			}
-			if !sub.Confirmed {
-				// sub not confirmed
-				return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
-			}
-			// => perm okay
-
-		} else {
-			// auth-key is not set or not a user:x variant
+	if uid := ctx.GetPermissionUserID(); uid != nil && ctx.CheckPermissionUserRead(*uid) == nil {
+		sub, err := h.database.GetSubscriptionBySubscriber(ctx, *uid, msg.ChannelID)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
+		}
+		if sub == nil {
+			// not subbed
+			return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+		}
+		if !sub.Confirmed {
+			// sub not confirmed
 			return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 		}
 
+		// => perm okay
+		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, msg.FullJSON()))
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, msg.FullJSON()))
+	return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 }
 
 // DeleteMessage swaggerdoc
 //
-// @Summary     Delete a single message
-// @Description The user must own the message and request the resource with the ADMIN Key
-// @ID          api-messages-delete
-// @Tags        API-v2
+//	@Summary		Delete a single message
+//	@Description	The user must own the message and request the resource with the ADMIN Key
+//	@ID				api-messages-delete
+//	@Tags			API-v2
 //
-// @Param       mid path     int true "MessageID"
+//	@Param			mid	path		int	true	"MessageID"
 //
-// @Success     200 {object} models.MessageJSON
-// @Failure     400 {object} ginresp.apiError "supplied values/parameters cannot be parsed / are invalid"
-// @Failure     401 {object} ginresp.apiError "user is not authorized / has missing permissions"
-// @Failure     404 {object} ginresp.apiError "message not found"
-// @Failure     500 {object} ginresp.apiError "internal server error"
+//	@Success		200	{object}	models.MessageJSON
+//	@Failure		400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure		401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure		404	{object}	ginresp.apiError	"message not found"
+//	@Failure		500	{object}	ginresp.apiError	"internal server error"
 //
-// @Router      /api/v2/messages/{mid} [DELETE]
+//	@Router			/api/v2/messages/{mid} [DELETE]
 func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		MessageID models.MessageID `uri:"mid" binding:"entityid"`
@@ -1564,7 +1523,7 @@ func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query message", err)
 	}
 
-	if !ctx.CheckPermissionMessageReadDirect(msg) {
+	if !ctx.CheckPermissionMessageRead(msg) {
 		return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 	}
 
@@ -1579,4 +1538,285 @@ func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, msg.FullJSON()))
+}
+
+// ListUserKeys swaggerdoc
+//
+//	@Summary		List keys of the user
+//	@Description	The request must be done with an ADMIN key, the returned keys are without their token.
+//	@ID				api-tokenkeys-list
+//	@Tags			API-v2
+//
+//	@Param			uid	path		int	true	"UserID"
+//
+//	@Success		200	{object}	handler.ListUserKeys.response
+//	@Failure		400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure		401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure		404	{object}	ginresp.apiError	"message not found"
+//	@Failure		500	{object}	ginresp.apiError	"internal server error"
+//
+//	@Router			/api/v2/users/:uid/keys [GET]
+func (h APIHandler) ListUserKeys(g *gin.Context) ginresp.HTTPResponse {
+	type uri struct {
+		UserID models.UserID `uri:"uid" binding:"entityid"`
+	}
+	type response struct {
+		Tokens []models.KeyTokenJSON `json:"tokens"`
+	}
+
+	var u uri
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+		return *permResp
+	}
+
+	clients, err := h.database.ListKeyTokens(ctx, u.UserID)
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query keys", err)
+	}
+
+	res := langext.ArrMap(clients, func(v models.KeyToken) models.KeyTokenJSON { return v.JSON() })
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{Tokens: res}))
+}
+
+// GetUserKey swaggerdoc
+//
+//	@Summary		Get a single key
+//	@Description	The request must be done with an ADMIN key, the returned key does not include its token.
+//	@ID				api-tokenkeys-get
+//	@Tags			API-v2
+//
+//	@Param			uid	path		int	true	"UserID"
+//	@Param			kid	path		int	true	"TokenKeyID"
+//
+//	@Success		200	{object}	models.KeyTokenJSON
+//	@Failure		400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure		401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure		404	{object}	ginresp.apiError	"message not found"
+//	@Failure		500	{object}	ginresp.apiError	"internal server error"
+//
+//	@Router			/api/v2/users/:uid/keys/:kid [GET]
+func (h APIHandler) GetUserKey(g *gin.Context) ginresp.HTTPResponse {
+	type uri struct {
+		UserID models.UserID     `uri:"uid" binding:"entityid"`
+		KeyID  models.KeyTokenID `uri:"kid" binding:"entityid"`
+	}
+
+	var u uri
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+		return *permResp
+	}
+
+	client, err := h.database.GetKeyToken(ctx, u.UserID, u.KeyID)
+	if err == sql.ErrNoRows {
+		return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
+	}
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
+	}
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, client.JSON()))
+}
+
+// UpdateUserKey swaggerdoc
+//
+//	@Summary	Update a key
+//	@ID			api-tokenkeys-update
+//	@Tags		API-v2
+//
+//	@Param		uid	path		int	true	"UserID"
+//	@Param		kid	path		int	true	"TokenKeyID"
+//
+//	@Success	200	{object}	models.KeyTokenJSON
+//	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure	404	{object}	ginresp.apiError	"message not found"
+//	@Failure	500	{object}	ginresp.apiError	"internal server error"
+//
+//	@Router		/api/v2/users/:uid/keys/:kid [PATCH]
+func (h APIHandler) UpdateUserKey(g *gin.Context) ginresp.HTTPResponse {
+	type uri struct {
+		UserID models.UserID     `uri:"uid" binding:"entityid"`
+		KeyID  models.KeyTokenID `uri:"kid" binding:"entityid"`
+	}
+	type body struct {
+		Name        *string             `json:"name"`
+		AllChannels *bool               `json:"all_channels"`
+		Channels    *[]models.ChannelID `json:"channels"`
+		Permissions *string             `json:"permissions"`
+	}
+
+	var u uri
+	var b body
+	ctx, errResp := h.app.StartRequest(g, &u, nil, &b, nil)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+		return *permResp
+	}
+
+	client, err := h.database.GetKeyToken(ctx, u.UserID, u.KeyID)
+	if err == sql.ErrNoRows {
+		return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
+	}
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
+	}
+
+	if b.Name != nil {
+		err := h.database.UpdateKeyTokenName(ctx, u.KeyID, *b.Name)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update name", err)
+		}
+	}
+
+	if b.Permissions != nil {
+		err := h.database.UpdateKeyTokenPermissions(ctx, u.KeyID, models.ParseTokenPermissionList(*b.Permissions))
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update permissions", err)
+		}
+	}
+
+	if b.AllChannels != nil {
+		err := h.database.UpdateKeyTokenAllChannels(ctx, u.KeyID, *b.AllChannels)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update all_channels", err)
+		}
+	}
+
+	if b.Channels != nil {
+		err := h.database.UpdateKeyTokenChannels(ctx, u.KeyID, *b.Channels)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update channels", err)
+		}
+	}
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, client.JSON()))
+}
+
+// CreateUserKey swaggerdoc
+//
+//	@Summary	Create a new key
+//	@ID			api-tokenkeys-create
+//	@Tags		API-v2
+//
+//	@Param		uid			path		int							true	"UserID"
+//
+//	@Param		post_body	body		handler.CreateUserKey.body	false	" "
+//
+//	@Success	200			{object}	models.KeyTokenJSON
+//	@Failure	400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure	401			{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure	404			{object}	ginresp.apiError	"message not found"
+//	@Failure	500			{object}	ginresp.apiError	"internal server error"
+//
+//	@Router		/api/v2/users/:uid/keys [POST]
+func (h APIHandler) CreateUserKey(g *gin.Context) ginresp.HTTPResponse {
+	type uri struct {
+		UserID models.UserID `uri:"uid" binding:"entityid"`
+	}
+	type body struct {
+		Name        string              `json:"name"         binding:"required"`
+		AllChannels *bool               `json:"all_channels" binding:"required"`
+		Channels    *[]models.ChannelID `json:"channels"     binding:"required"`
+		Permissions *string             `json:"permissions"  binding:"required"`
+	}
+
+	var u uri
+	var b body
+	ctx, errResp := h.app.StartRequest(g, &u, nil, &b, nil)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	for _, c := range *b.Channels {
+		if err := c.Valid(); err != nil {
+			return ginresp.APIError(g, 400, apierr.INVALID_BODY_PARAM, "Invalid ChannelID", err)
+		}
+	}
+
+	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+		return *permResp
+	}
+
+	token := h.app.GenerateRandomAuthKey()
+
+	perms := models.ParseTokenPermissionList(*b.Permissions)
+
+	keytok, err := h.database.CreateKeyToken(ctx, b.Name, *ctx.GetPermissionUserID(), *b.AllChannels, *b.Channels, perms, token)
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create keytoken in db", err)
+	}
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, keytok.JSON().WithToken(token)))
+}
+
+// DeleteUserKey swaggerdoc
+//
+//	@Summary		Delete a key
+//	@Description	Cannot be used to delete the key used in the request itself
+//	@ID				api-tokenkeys-delete
+//	@Tags			API-v2
+//
+//	@Param			uid	path		int	true	"UserID"
+//	@Param			kid	path		int	true	"TokenKeyID"
+//
+//	@Success		200	{object}	models.KeyTokenJSON
+//	@Failure		400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure		401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure		404	{object}	ginresp.apiError	"message not found"
+//	@Failure		500	{object}	ginresp.apiError	"internal server error"
+//
+//	@Router			/api/v2/users/:uid/keys/:kid [DELETE]
+func (h APIHandler) DeleteUserKey(g *gin.Context) ginresp.HTTPResponse {
+	type uri struct {
+		UserID models.UserID     `uri:"uid" binding:"entityid"`
+		KeyID  models.KeyTokenID `uri:"kid" binding:"entityid"`
+	}
+
+	var u uri
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+		return *permResp
+	}
+
+	client, err := h.database.GetKeyToken(ctx, u.UserID, u.KeyID)
+	if err == sql.ErrNoRows {
+		return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
+	}
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
+	}
+
+	if u.KeyID == *ctx.GetPermissionKeyTokenID() {
+		return ginresp.APIError(g, 404, apierr.CANNOT_SELFDELETE_KEY, "Cannot delete the currently used key", err)
+	}
+
+	err = h.database.DeleteKeyToken(ctx, u.KeyID)
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete client", err)
+	}
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, client.JSON()))
 }

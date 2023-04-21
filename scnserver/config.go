@@ -12,36 +12,36 @@ import (
 
 type Config struct {
 	Namespace                string
-	BaseURL                  string        `env:"SCN_URL"`
-	GinDebug                 bool          `env:"SCN_GINDEBUG"`
-	LogLevel                 zerolog.Level `env:"SCN_LOGLEVEL"`
-	ServerIP                 string        `env:"SCN_IP"`
-	ServerPort               string        `env:"SCN_PORT"`
-	DBMain                   DBConfig      `env:"SCN_DB_MAIN"`
-	DBRequests               DBConfig      `env:"SCN_DB_REQUESTS"`
-	DBLogs                   DBConfig      `env:"SCN_DB_LOGS"`
-	RequestTimeout           time.Duration `env:"SCN_REQUEST_TIMEOUT"`
-	RequestMaxRetry          int           `env:"SCN_REQUEST_MAXRETRY"`
-	RequestRetrySleep        time.Duration `env:"SCN_REQUEST_RETRYSLEEP"`
-	Cors                     bool          `env:"SCN_CORS"`
-	ReturnRawErrors          bool          `env:"SCN_ERROR_RETURN"`
-	DummyFirebase            bool          `env:"SCN_DUMMY_FB"`
-	DummyGoogleAPI           bool          `env:"SCN_DUMMY_GOOG"`
-	FirebaseTokenURI         string        `env:"SCN_FB_TOKENURI"`
-	FirebaseProjectID        string        `env:"SCN_FB_PROJECTID"`
-	FirebasePrivKeyID        string        `env:"SCN_FB_PRIVATEKEYID"`
-	FirebaseClientMail       string        `env:"SCN_FB_CLIENTEMAIL"`
-	FirebasePrivateKey       string        `env:"SCN_FB_PRIVATEKEY"`
-	GoogleAPITokenURI        string        `env:"SCN_GOOG_TOKENURI"`
-	GoogleAPIPrivKeyID       string        `env:"SCN_GOOG_PRIVATEKEYID"`
-	GoogleAPIClientMail      string        `env:"SCN_GOOG_CLIENTEMAIL"`
-	GoogleAPIPrivateKey      string        `env:"SCN_GOOG_PRIVATEKEY"`
-	GooglePackageName        string        `env:"SCN_GOOG_PACKAGENAME"`
-	GoogleProProductID       string        `env:"SCN_GOOG_PROPRODUCTID"`
-	ReqLogEnabled            bool          `env:"SCN_REQUESTLOG_ENABLED"`
-	ReqLogMaxBodySize        int           `env:"SCN_REQUESTLOG_MAXBODYSIZE"`
-	ReqLogHistoryMaxCount    int           `env:"SCN_REQUESTLOG_HISTORY_MAXCOUNT"`
-	ReqLogHistoryMaxDuration time.Duration `env:"SCN_REQUESTLOG_HISTORY_MAXDURATION"`
+	BaseURL                  string        `env:"URL"`
+	GinDebug                 bool          `env:"GINDEBUG"`
+	LogLevel                 zerolog.Level `env:"LOGLEVEL"`
+	ServerIP                 string        `env:"IP"`
+	ServerPort               string        `env:"PORT"`
+	DBMain                   DBConfig      `env:"DB_MAIN"`
+	DBRequests               DBConfig      `env:"DB_REQUESTS"`
+	DBLogs                   DBConfig      `env:"DB_LOGS"`
+	RequestTimeout           time.Duration `env:"REQUEST_TIMEOUT"`
+	RequestMaxRetry          int           `env:"REQUEST_MAXRETRY"`
+	RequestRetrySleep        time.Duration `env:"REQUEST_RETRYSLEEP"`
+	Cors                     bool          `env:"CORS"`
+	ReturnRawErrors          bool          `env:"ERROR_RETURN"`
+	DummyFirebase            bool          `env:"DUMMY_FB"`
+	DummyGoogleAPI           bool          `env:"DUMMY_GOOG"`
+	FirebaseTokenURI         string        `env:"FB_TOKENURI"`
+	FirebaseProjectID        string        `env:"FB_PROJECTID"`
+	FirebasePrivKeyID        string        `env:"FB_PRIVATEKEYID"`
+	FirebaseClientMail       string        `env:"FB_CLIENTEMAIL"`
+	FirebasePrivateKey       string        `env:"FB_PRIVATEKEY"`
+	GoogleAPITokenURI        string        `env:"GOOG_TOKENURI"`
+	GoogleAPIPrivKeyID       string        `env:"GOOG_PRIVATEKEYID"`
+	GoogleAPIClientMail      string        `env:"GOOG_CLIENTEMAIL"`
+	GoogleAPIPrivateKey      string        `env:"GOOG_PRIVATEKEY"`
+	GooglePackageName        string        `env:"GOOG_PACKAGENAME"`
+	GoogleProProductID       string        `env:"GOOG_PROPRODUCTID"`
+	ReqLogEnabled            bool          `env:"REQUESTLOG_ENABLED"`
+	ReqLogMaxBodySize        int           `env:"REQUESTLOG_MAXBODYSIZE"`
+	ReqLogHistoryMaxCount    int           `env:"REQUESTLOG_HISTORY_MAXCOUNT"`
+	ReqLogHistoryMaxDuration time.Duration `env:"REQUESTLOG_HISTORY_MAXDURATION"`
 }
 
 type DBConfig struct {
@@ -430,7 +430,7 @@ func GetConfig(ns string) (Config, bool) {
 	}
 	if cfn, ok := allConfig[ns]; ok {
 		c := cfn()
-		err := confext.ApplyEnvOverrides(&c, "_")
+		err := confext.ApplyEnvOverrides("SCN_", &c, "_")
 		if err != nil {
 			panic(err)
 		}

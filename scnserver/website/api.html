@@ -23,7 +23,7 @@
         <pre>
 curl                                           \
     --data "user_id=${userid}"                 \
-    --data "user_key=${userkey}"               \
+    --data "key=${key}"                        \
     --data "title=${message_title}"            \
     --data "content=${message_body}"           \
     --data "priority=${0|1|2}"                 \
@@ -36,7 +36,7 @@ curl                                           \
         <pre>
 curl                                          \
     --data "user_id={userid}"                 \
-    --data "user_key={userkey}"               \
+    --data "key={key}"                        \
     --data "title={message_title}"            \
     {{config|baseURL}}/</pre>
 

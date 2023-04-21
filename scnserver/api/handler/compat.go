@@ -29,22 +29,22 @@ func NewCompatHandler(app *logic.Application) CompatHandler {
 
 // SendMessageCompat swaggerdoc
 //
-// @Deprecated
+//	@Deprecated
 //
-// @Summary     Send a new message (compatibility)
-// @Description All parameter can be set via query-parameter or form-data body. Only UserID, UserKey and Title are required
-// @Tags        External
+//	@Summary		Send a new message (compatibility)
+//	@Description	All parameter can be set via query-parameter or form-data body. Only UserID, UserKey and Title are required
+//	@Tags			External
 //
-// @Param       query_data query    handler.SendMessageCompat.combined false " "
-// @Param       form_data  formData handler.SendMessageCompat.combined false " "
+//	@Param			query_data	query		handler.SendMessageCompat.combined	false	" "
+//	@Param			form_data	formData	handler.SendMessageCompat.combined	false	" "
 //
-// @Success     200        {object} handler.SendMessageCompat.response
-// @Failure     400        {object} ginresp.apiError
-// @Failure     401        {object} ginresp.apiError
-// @Failure     403        {object} ginresp.apiError
-// @Failure     500        {object} ginresp.apiError
+//	@Success		200			{object}	handler.SendMessageCompat.response
+//	@Failure		400			{object}	ginresp.apiError
+//	@Failure		401			{object}	ginresp.apiError
+//	@Failure		403			{object}	ginresp.apiError
+//	@Failure		500			{object}	ginresp.apiError
 //
-// @Router      /send.php [POST]
+//	@Router			/send.php [POST]
 func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 	type combined struct {
 		UserID        *int64   `json:"user_id"   form:"user_id"`
@@ -86,7 +86,7 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
 	}
 
-	okResp, errResp := h.sendMessageInternal(g, ctx, langext.Ptr(models.UserID(*newid)), data.UserKey, nil, nil, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp, nil)
+	okResp, errResp := h.sendMessageInternal(g, ctx, langext.Ptr(models.UserID(*newid)), data.UserKey, nil, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp, nil)
 	if errResp != nil {
 		return *errResp
 	} else {
@@ -122,24 +122,24 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 
 // Register swaggerdoc
 //
-// @Summary Register a new account
-// @ID      compat-register
-// @Tags    API-v1
+//	@Summary	Register a new account
+//	@ID			compat-register
+//	@Tags		API-v1
 //
-// @Deprecated
+//	@Deprecated
 //
-// @Param   fcm_token query    string true "the (android) fcm token"
-// @Param   pro       query    string true "if the user is a paid account" Enums(true, false)
-// @Param   pro_token query    string true "the (android) IAP token"
+//	@Param		fcm_token	query		string	true	"the (android) fcm token"
+//	@Param		pro			query		string	true	"if the user is a paid account"	Enums(true, false)
+//	@Param		pro_token	query		string	true	"the (android) IAP token"
 //
-// @Param   fcm_token formData string true "the (android) fcm token"
-// @Param   pro       formData string true "if the user is a paid account" Enums(true, false)
-// @Param   pro_token formData string true "the (android) IAP token"
+//	@Param		fcm_token	formData	string	true	"the (android) fcm token"
+//	@Param		pro			formData	string	true	"if the user is a paid account"	Enums(true, false)
+//	@Param		pro_token	formData	string	true	"the (android) IAP token"
 //
-// @Success 200       {object} handler.Register.response
-// @Failure default   {object} ginresp.compatAPIError
+//	@Success	200			{object}	handler.Register.response
+//	@Failure	default		{object}	ginresp.compatAPIError
 //
-// @Router  /api/register.php [get]
+//	@Router		/api/register.php [get]
 func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
 		FCMToken *string `json:"fcm_token" form:"fcm_token"`
@@ -195,8 +195,6 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 		}
 	}
 
-	readKey := h.app.GenerateRandomAuthKey()
-	sendKey := h.app.GenerateRandomAuthKey()
 	adminKey := h.app.GenerateRandomAuthKey()
 
 	err := h.database.ClearFCMTokens(ctx, *data.FCMToken)
@@ -211,9 +209,14 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 		}
 	}
 
-	user, err := h.database.CreateUser(ctx, readKey, sendKey, adminKey, data.ProToken, nil)
+	user, err := h.database.CreateUser(ctx, data.ProToken, nil)
 	if err != nil {
 		return ginresp.CompatAPIError(0, "Failed to create user in db")
+	}
+
+	_, err = h.database.CreateKeyToken(ctx, "CompatKey", user.UserID, true, make([]models.ChannelID, 0), models.TokenPermissionList{models.PermAdmin}, adminKey)
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create admin-key in db", err)
 	}
 
 	_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, *data.FCMToken, "compat", "compat")
@@ -230,7 +233,7 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 		Success:   true,
 		Message:   "New user registered",
 		UserID:    oldid,
-		UserKey:   user.AdminKey,
+		UserKey:   adminKey,
 		QuotaUsed: user.QuotaUsedToday(),
 		QuotaMax:  user.QuotaPerDay(),
 		IsPro:     user.IsPro,
@@ -239,22 +242,22 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 
 // Info swaggerdoc
 //
-// @Summary Get information about the current user
-// @ID      compat-info
-// @Tags    API-v1
+//	@Summary	Get information about the current user
+//	@ID			compat-info
+//	@Tags		API-v1
 //
-// @Deprecated
+//	@Deprecated
 //
-// @Param   user_id  query    string true "the user_id"
-// @Param   user_key query    string true "the user_key"
+//	@Param		user_id		query		string	true	"the user_id"
+//	@Param		user_key	query		string	true	"the user_key"
 //
-// @Param   user_id  formData string true "the user_id"
-// @Param   user_key formData string true "the user_key"
+//	@Param		user_id		formData	string	true	"the user_id"
+//	@Param		user_key	formData	string	true	"the user_key"
 //
-// @Success 200      {object} handler.Info.response
-// @Failure default  {object} ginresp.compatAPIError
+//	@Success	200			{object}	handler.Info.response
+//	@Failure	default		{object}	ginresp.compatAPIError
 //
-// @Router  /api/info.php [get]
+//	@Router		/api/info.php [get]
 func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
 		UserID  *int64  `json:"user_id"  form:"user_id"`
@@ -305,7 +308,14 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(0, "Failed to query user")
 	}
 
-	if user.AdminKey != *data.UserKey {
+	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
+	if err == sql.ErrNoRows {
+		return ginresp.CompatAPIError(204, "Authentification failed")
+	}
+	if err != nil {
+		return ginresp.CompatAPIError(0, "Failed to query token")
+	}
+	if !keytok.IsAdmin(user.UserID) {
 		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 
@@ -320,7 +330,7 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 		Success:    true,
 		Message:    "ok",
 		UserID:     *data.UserID,
-		UserKey:    user.AdminKey,
+		UserKey:    keytok.Token,
 		QuotaUsed:  user.QuotaUsedToday(),
 		QuotaMax:   user.QuotaPerDay(),
 		IsPro:      langext.Conditional(user.IsPro, 1, 0),
@@ -331,24 +341,24 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 
 // Ack swaggerdoc
 //
-// @Summary Acknowledge that a message was received
-// @ID      compat-ack
-// @Tags    API-v1
+//	@Summary	Acknowledge that a message was received
+//	@ID			compat-ack
+//	@Tags		API-v1
 //
-// @Deprecated
+//	@Deprecated
 //
-// @Param   user_id    query    string true "the user_id"
-// @Param   user_key   query    string true "the user_key"
-// @Param   scn_msg_id query    string true "the message id"
+//	@Param		user_id		query		string	true	"the user_id"
+//	@Param		user_key	query		string	true	"the user_key"
+//	@Param		scn_msg_id	query		string	true	"the message id"
 //
-// @Param   user_id    formData string true "the user_id"
-// @Param   user_key   formData string true "the user_key"
-// @Param   scn_msg_id formData string true "the message id"
+//	@Param		user_id		formData	string	true	"the user_id"
+//	@Param		user_key	formData	string	true	"the user_key"
+//	@Param		scn_msg_id	formData	string	true	"the message id"
 //
-// @Success 200        {object} handler.Ack.response
-// @Failure default    {object} ginresp.compatAPIError
+//	@Success	200			{object}	handler.Ack.response
+//	@Failure	default		{object}	ginresp.compatAPIError
 //
-// @Router  /api/ack.php [get]
+//	@Router		/api/ack.php [get]
 func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
 		UserID    *int64  `json:"user_id"    form:"user_id"`
@@ -398,7 +408,14 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(0, "Failed to query user")
 	}
 
-	if user.AdminKey != *data.UserKey {
+	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
+	if err == sql.ErrNoRows {
+		return ginresp.CompatAPIError(204, "Authentification failed")
+	}
+	if err != nil {
+		return ginresp.CompatAPIError(0, "Failed to query token")
+	}
+	if !keytok.IsAdmin(user.UserID) {
 		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 
@@ -432,22 +449,22 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 
 // Requery swaggerdoc
 //
-// @Summary Return all not-acknowledged messages
-// @ID      compat-requery
-// @Tags    API-v1
+//	@Summary	Return all not-acknowledged messages
+//	@ID			compat-requery
+//	@Tags		API-v1
 //
-// @Deprecated
+//	@Deprecated
 //
-// @Param   user_id  query    string true "the user_id"
-// @Param   user_key query    string true "the user_key"
+//	@Param		user_id		query		string	true	"the user_id"
+//	@Param		user_key	query		string	true	"the user_key"
 //
-// @Param   user_id  formData string true "the user_id"
-// @Param   user_key formData string true "the user_key"
+//	@Param		user_id		formData	string	true	"the user_id"
+//	@Param		user_key	formData	string	true	"the user_key"
 //
-// @Success 200      {object} handler.Requery.response
-// @Failure default  {object} ginresp.compatAPIError
+//	@Success	200			{object}	handler.Requery.response
+//	@Failure	default		{object}	ginresp.compatAPIError
 //
-// @Router  /api/requery.php [get]
+//	@Router		/api/requery.php [get]
 func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
 		UserID  *int64  `json:"user_id"  form:"user_id"`
@@ -493,7 +510,14 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(0, "Failed to query user")
 	}
 
-	if user.AdminKey != *data.UserKey {
+	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
+	if err == sql.ErrNoRows {
+		return ginresp.CompatAPIError(204, "Authentification failed")
+	}
+	if err != nil {
+		return ginresp.CompatAPIError(0, "Failed to query token")
+	}
+	if !keytok.IsAdmin(user.UserID) {
 		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 
@@ -536,24 +560,24 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 
 // Update swaggerdoc
 //
-// @Summary Set the fcm-token (android)
-// @ID      compat-update
-// @Tags    API-v1
+//	@Summary	Set the fcm-token (android)
+//	@ID			compat-update
+//	@Tags		API-v1
 //
-// @Deprecated
+//	@Deprecated
 //
-// @Param   user_id   query    string true "the user_id"
-// @Param   user_key  query    string true "the user_key"
-// @Param   fcm_token query    string true "the (android) fcm token"
+//	@Param		user_id		query		string	true	"the user_id"
+//	@Param		user_key	query		string	true	"the user_key"
+//	@Param		fcm_token	query		string	true	"the (android) fcm token"
 //
-// @Param   user_id   formData string true "the user_id"
-// @Param   user_key  formData string true "the user_key"
-// @Param   fcm_token formData string true "the (android) fcm token"
+//	@Param		user_id		formData	string	true	"the user_id"
+//	@Param		user_key	formData	string	true	"the user_key"
+//	@Param		fcm_token	formData	string	true	"the (android) fcm token"
 //
-// @Success 200       {object} handler.Update.response
-// @Failure default   {object} ginresp.compatAPIError
+//	@Success	200			{object}	handler.Update.response
+//	@Failure	default		{object}	ginresp.compatAPIError
 //
-// @Router  /api/update.php [get]
+//	@Router		/api/update.php [get]
 func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
 		UserID   *int64  `json:"user_id"   form:"user_id"`
@@ -603,7 +627,14 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(0, "Failed to query user")
 	}
 
-	if user.AdminKey != *data.UserKey {
+	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
+	if err == sql.ErrNoRows {
+		return ginresp.CompatAPIError(204, "Authentification failed")
+	}
+	if err != nil {
+		return ginresp.CompatAPIError(0, "Failed to query token")
+	}
+	if !keytok.IsAdmin(user.UserID) {
 		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 
@@ -613,10 +644,13 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	newAdminKey := h.app.GenerateRandomAuthKey()
-	newReadKey := h.app.GenerateRandomAuthKey()
-	newSendKey := h.app.GenerateRandomAuthKey()
 
-	err = h.database.UpdateUserKeys(ctx, user.UserID, newSendKey, newReadKey, newAdminKey)
+	_, err = h.database.CreateKeyToken(ctx, "CompatKey", user.UserID, true, make([]models.ChannelID, 0), models.TokenPermissionList{models.PermAdmin}, newAdminKey)
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create admin-key in db", err)
+	}
+
+	err = h.database.DeleteKeyToken(ctx, keytok.KeyTokenID)
 	if err != nil {
 		return ginresp.CompatAPIError(0, "Failed to update keys")
 	}
@@ -648,7 +682,7 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 		Success:   true,
 		Message:   "user updated",
 		UserID:    *data.UserID,
-		UserKey:   user.AdminKey,
+		UserKey:   newAdminKey,
 		QuotaUsed: user.QuotaUsedToday(),
 		QuotaMax:  user.QuotaPerDay(),
 		IsPro:     langext.Conditional(user.IsPro, 1, 0),
@@ -657,24 +691,24 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 
 // Expand swaggerdoc
 //
-// @Summary Get a whole (potentially truncated) message
-// @ID      compat-expand
-// @Tags    API-v1
+//	@Summary	Get a whole (potentially truncated) message
+//	@ID			compat-expand
+//	@Tags		API-v1
 //
-// @Deprecated
+//	@Deprecated
 //
-// @Param   user_id    query    string true "The user_id"
-// @Param   user_key   query    string true "The user_key"
-// @Param   scn_msg_id query    string true "The message-id"
+//	@Param		user_id		query		string	true	"The user_id"
+//	@Param		user_key	query		string	true	"The user_key"
+//	@Param		scn_msg_id	query		string	true	"The message-id"
 //
-// @Param   user_id    formData string true "The user_id"
-// @Param   user_key   formData string true "The user_key"
-// @Param   scn_msg_id formData string true "The message-id"
+//	@Param		user_id		formData	string	true	"The user_id"
+//	@Param		user_key	formData	string	true	"The user_key"
+//	@Param		scn_msg_id	formData	string	true	"The message-id"
 //
-// @Success 200        {object} handler.Expand.response
-// @Failure default    {object} ginresp.compatAPIError
+//	@Success	200			{object}	handler.Expand.response
+//	@Failure	default		{object}	ginresp.compatAPIError
 //
-// @Router  /api/expand.php [get]
+//	@Router		/api/expand.php [get]
 func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
 		UserID    *int64  `json:"user_id"    form:"user_id"`
@@ -723,7 +757,14 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(0, "Failed to query user")
 	}
 
-	if user.AdminKey != *data.UserKey {
+	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
+	if err == sql.ErrNoRows {
+		return ginresp.CompatAPIError(204, "Authentification failed")
+	}
+	if err != nil {
+		return ginresp.CompatAPIError(0, "Failed to query token")
+	}
+	if !keytok.IsAdmin(user.UserID) {
 		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 
@@ -760,26 +801,26 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 
 // Upgrade swaggerdoc
 //
-// @Summary Upgrade a free account to a paid account
-// @ID      compat-upgrade
-// @Tags    API-v1
+//	@Summary	Upgrade a free account to a paid account
+//	@ID			compat-upgrade
+//	@Tags		API-v1
 //
-// @Deprecated
+//	@Deprecated
 //
-// @Param   user_id   query    string true "the user_id"
-// @Param   user_key  query    string true "the user_key"
-// @Param   pro       query    string true "if the user is a paid account" Enums(true, false)
-// @Param   pro_token query    string true "the (android) IAP token"
+//	@Param		user_id		query		string	true	"the user_id"
+//	@Param		user_key	query		string	true	"the user_key"
+//	@Param		pro			query		string	true	"if the user is a paid account"	Enums(true, false)
+//	@Param		pro_token	query		string	true	"the (android) IAP token"
 //
-// @Param   user_id   formData string true "the user_id"
-// @Param   user_key  formData string true "the user_key"
-// @Param   pro       formData string true "if the user is a paid account" Enums(true, false)
-// @Param   pro_token formData string true "the (android) IAP token"
+//	@Param		user_id		formData	string	true	"the user_id"
+//	@Param		user_key	formData	string	true	"the user_key"
+//	@Param		pro			formData	string	true	"if the user is a paid account"	Enums(true, false)
+//	@Param		pro_token	formData	string	true	"the (android) IAP token"
 //
-// @Success 200       {object} handler.Upgrade.response
-// @Failure default   {object} ginresp.compatAPIError
+//	@Success	200			{object}	handler.Upgrade.response
+//	@Failure	default		{object}	ginresp.compatAPIError
 //
-// @Router  /api/upgrade.php [get]
+//	@Router		/api/upgrade.php [get]
 func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
 		UserID   *int64  `json:"user_id"   form:"user_id"`
@@ -835,7 +876,14 @@ func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(0, "Failed to query user")
 	}
 
-	if user.AdminKey != *data.UserKey {
+	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
+	if err == sql.ErrNoRows {
+		return ginresp.CompatAPIError(204, "Authentification failed")
+	}
+	if err != nil {
+		return ginresp.CompatAPIError(0, "Failed to query token")
+	}
+	if !keytok.IsAdmin(user.UserID) {
 		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 

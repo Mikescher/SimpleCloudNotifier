@@ -37,17 +37,17 @@ func NewRouter(app *logic.Application) *Router {
 
 // Init swaggerdocs
 //
-// @title       SimpleCloudNotifier API
-// @version     2.0
-// @description API for SCN
-// @host        scn.blackforestbytes.com
+//	@title			SimpleCloudNotifier API
+//	@version		2.0
+//	@description	API for SCN
+//	@host			scn.blackforestbytes.com
 //
-// @tag.name    External
-// @tag.name    API-v1
-// @tag.name    API-v2
-// @tag.name    Common
+//	@tag.name		External
+//	@tag.name		API-v1
+//	@tag.name		API-v2
+//	@tag.name		Common
 //
-// @BasePath    /
+//	@BasePath		/
 func (r *Router) Init(e *gin.Engine) error {
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
@@ -126,6 +126,12 @@ func (r *Router) Init(e *gin.Engine) error {
 		apiv2.POST("/users", r.Wrap(r.apiHandler.CreateUser))
 		apiv2.GET("/users/:uid", r.Wrap(r.apiHandler.GetUser))
 		apiv2.PATCH("/users/:uid", r.Wrap(r.apiHandler.UpdateUser))
+
+		apiv2.GET("/users/:uid/keys", r.Wrap(r.apiHandler.ListUserKeys))
+		apiv2.POST("/users/:uid/keys", r.Wrap(r.apiHandler.CreateUserKey))
+		apiv2.GET("/users/:uid/keys/:kid", r.Wrap(r.apiHandler.GetUserKey))
+		apiv2.PATCH("/users/:uid/keys/:kid", r.Wrap(r.apiHandler.UpdateUserKey))
+		apiv2.DELETE("/users/:uid/keys/:kid", r.Wrap(r.apiHandler.DeleteUserKey))
 
 		apiv2.GET("/users/:uid/clients", r.Wrap(r.apiHandler.ListClients))
 		apiv2.GET("/users/:uid/clients/:cid", r.Wrap(r.apiHandler.GetClient))

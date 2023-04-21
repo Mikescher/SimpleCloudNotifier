@@ -671,10 +671,10 @@ func TestCompatRequery(t *testing.T) {
 	tt.AssertEqual(t, "new_ack", 1, a5["new_ack"])
 
 	r6 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"user_id":  useridnew,
-		"user_key": userkey,
-		"title":    "HelloWorld_001",
-		"msg_id":   "r6",
+		"user_id": useridnew,
+		"key":     userkey,
+		"title":   "HelloWorld_001",
+		"msg_id":  "r6",
 	})
 	tt.AssertEqual(t, "success", true, r6["success"])
 

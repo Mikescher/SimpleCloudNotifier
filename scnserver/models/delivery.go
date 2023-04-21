@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type DeliveryStatus string
+type DeliveryStatus string //@enum:type
 
 const (
 	DeliveryStatusRetry   DeliveryStatus = "RETRY"
@@ -79,7 +79,7 @@ func (d DeliveryDB) Model() Delivery {
 		MessageID:          d.MessageID,
 		ReceiverUserID:     d.ReceiverUserID,
 		ReceiverClientID:   d.ReceiverClientID,
-		TimestampCreated:   time.UnixMilli(d.TimestampCreated),
+		TimestampCreated:   timeFromMilli(d.TimestampCreated),
 		TimestampFinalized: timeOptFromMilli(d.TimestampFinalized),
 		Status:             d.Status,
 		RetryCount:         d.RetryCount,
