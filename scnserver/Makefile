@@ -37,7 +37,7 @@ docker: build
             .
 
 swagger:
-	which swag || go install github.com/swaggo/swag/cmd/swag@latest
+	which swag || go install github.com/swaggo/swag/cmd/swag@v1.8.12
 	swag init -generalInfo api/router.go --propertyStrategy snakecase --output ./swagger/ --outputTypes "json,yaml"
 
 run-docker-local: docker
