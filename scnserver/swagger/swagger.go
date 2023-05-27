@@ -14,6 +14,7 @@ import (
 //go:embed *.yaml
 //go:embed *.js
 //go:embed *.css
+//go:embed *.png
 //go:embed themes/*
 var assets embed.FS
 

@@ -1,35 +1,19 @@
+<!-- HTML for static distribution bundle build -->
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>API Documentation</title>
-    <link rel="stylesheet" href="swagger-ui.css" />
-    <!-- <link rel="stylesheet" href="themes/theme-feeling-blue.css" /> -->
-    <!-- <link rel="stylesheet" href="themes/theme-flattop.css" /> -->
-    <!-- <link rel="stylesheet" href="themes/theme-material.css" /> -->
-    <!-- <link rel="stylesheet" href="themes/theme-monokai.css" /> -->
-    <!-- <link rel="stylesheet" href="themes/theme-muted.css" /> -->
-    <!-- <link rel="stylesheet" href="themes/theme-newspaper.css" /> -->
-    <!-- <link rel="stylesheet" href="themes/theme-outline.css" /> -->
-</head>
-<body>
-<div id="swagger-ui"></div>
-<script src="swagger-ui-bundle.js" crossorigin></script>
-<script src="swagger-ui-standalone-preset.js" crossorigin></script>
-<script>
-    window.onload = () => {
-        window.ui = SwaggerUIBundle({
-            url: './swagger.json',
-            dom_id: '#swagger-ui',
-            presets: [
-                SwaggerUIBundle.presets.apis,
-                SwaggerUIStandalonePreset
-            ],
-            layout: "StandaloneLayout",
-            defaultModelsExpandDepth: 0,
-        });
-    };
-</script>
-</body>
+  <head>
+    <meta charset="UTF-8">
+    <title>Swagger UI</title>
+    <link rel="stylesheet" type="text/css" href="./swagger-ui.css" />
+    <link rel="stylesheet" type="text/css" href="index.css" />
+    <link rel="icon" type="image/png" href="./favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="./favicon-16x16.png" sizes="16x16" />
+  </head>
+
+  <body>
+    <div id="swagger-ui"></div>
+    <script src="./swagger-ui-bundle.js" charset="UTF-8"> </script>
+    <script src="./swagger-ui-standalone-preset.js" charset="UTF-8"> </script>
+    <script src="./swagger-initializer.js" charset="UTF-8"> </script>
+  </body>
 </html>

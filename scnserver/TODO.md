@@ -64,8 +64,6 @@
 
  - the explanation of user_id and key in ./website is now wrong (was already wrong and is even wronger now that there are multiple KeyToken's with permissions etc)
 
- - swagger broken?
-
 #### PERSONAL
 
  - in my script: use `srvname` for sendername
