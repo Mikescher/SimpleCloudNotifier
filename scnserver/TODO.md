@@ -44,7 +44,7 @@
      * [X] CRUD routes for keys
      * [X] KeyToken.messagecounter
      * [x] update old-data migration to create token-keys
-     * [ ] unit tests
+     * [x] unit tests
 
  - We no longer have a route to reshuffle all keys (previously in updateUser), add a /user/:uid/keys/reset ?
    Would delete all existing keys and create 3 new ones?

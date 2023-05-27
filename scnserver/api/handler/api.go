@@ -201,10 +201,7 @@ func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 //	@Param			uid			path		int		true	"UserID"
 //
 //	@Param			username	body		string	false	"Change the username (send an empty string to clear it)"
-//	@Param			pro_token	body		string	false	"Send a verification of permium purchase"
-//	@Param			read_key	body		string	false	"Send `true` to create a new read_key"
-//	@Param			send_key	body		string	false	"Send `true` to create a new send_key"
-//	@Param			admin_key	body		string	false	"Send `true` to create a new admin_key"
+//	@Param			pro_token	body		string	false	"Send a verification of premium purchase"
 //
 //	@Success		200			{object}	models.UserJSON
 //	@Failure		400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
@@ -1619,7 +1616,7 @@ func (h APIHandler) GetUserKey(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	client, err := h.database.GetKeyToken(ctx, u.UserID, u.KeyID)
+	keytoken, err := h.database.GetKeyToken(ctx, u.UserID, u.KeyID)
 	if err == sql.ErrNoRows {
 		return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
 	}
@@ -1627,7 +1624,7 @@ func (h APIHandler) GetUserKey(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, client.JSON()))
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, keytoken.JSON()))
 }
 
 // UpdateUserKey swaggerdoc
@@ -1638,6 +1635,8 @@ func (h APIHandler) GetUserKey(g *gin.Context) ginresp.HTTPResponse {
 //
 //	@Param		uid	path		int	true	"UserID"
 //	@Param		kid	path		int	true	"TokenKeyID"
+//
+//	@Param			post_body	body		handler.UpdateUserKey.body	false	" "
 //
 //	@Success	200	{object}	models.KeyTokenJSON
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
@@ -1670,7 +1669,7 @@ func (h APIHandler) UpdateUserKey(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	client, err := h.database.GetKeyToken(ctx, u.UserID, u.KeyID)
+	keytoken, err := h.database.GetKeyToken(ctx, u.UserID, u.KeyID)
 	if err == sql.ErrNoRows {
 		return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
 	}
@@ -1683,30 +1682,47 @@ func (h APIHandler) UpdateUserKey(g *gin.Context) ginresp.HTTPResponse {
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update name", err)
 		}
+		keytoken.Name = *b.Name
 	}
 
 	if b.Permissions != nil {
-		err := h.database.UpdateKeyTokenPermissions(ctx, u.KeyID, models.ParseTokenPermissionList(*b.Permissions))
+		if keytoken.KeyTokenID == *ctx.GetPermissionKeyTokenID() {
+			return ginresp.APIError(g, 400, apierr.CANNOT_SELFUPDATE_KEY, "Cannot update the currently used key", err)
+		}
+
+		permlist := models.ParseTokenPermissionList(*b.Permissions)
+		err := h.database.UpdateKeyTokenPermissions(ctx, u.KeyID, permlist)
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update permissions", err)
 		}
+		keytoken.Permissions = permlist
 	}
 
 	if b.AllChannels != nil {
+		if keytoken.KeyTokenID == *ctx.GetPermissionKeyTokenID() {
+			return ginresp.APIError(g, 400, apierr.CANNOT_SELFUPDATE_KEY, "Cannot update the currently used key", err)
+		}
+
 		err := h.database.UpdateKeyTokenAllChannels(ctx, u.KeyID, *b.AllChannels)
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update all_channels", err)
 		}
+		keytoken.AllChannels = *b.AllChannels
 	}
 
 	if b.Channels != nil {
+		if keytoken.KeyTokenID == *ctx.GetPermissionKeyTokenID() {
+			return ginresp.APIError(g, 400, apierr.CANNOT_SELFUPDATE_KEY, "Cannot update the currently used key", err)
+		}
+
 		err := h.database.UpdateKeyTokenChannels(ctx, u.KeyID, *b.Channels)
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update channels", err)
 		}
+		keytoken.Channels = *b.Channels
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, client.JSON()))
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, keytoken.JSON()))
 }
 
 // CreateUserKey swaggerdoc
@@ -1810,7 +1826,7 @@ func (h APIHandler) DeleteUserKey(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	if u.KeyID == *ctx.GetPermissionKeyTokenID() {
-		return ginresp.APIError(g, 404, apierr.CANNOT_SELFDELETE_KEY, "Cannot delete the currently used key", err)
+		return ginresp.APIError(g, 400, apierr.CANNOT_SELFDELETE_KEY, "Cannot delete the currently used key", err)
 	}
 
 	err = h.database.DeleteKeyToken(ctx, u.KeyID)
