@@ -18,15 +18,6 @@
 
  - deploy
 
- - diff my currently used scnsend script vs the one in the docs here
-
-- (?) use str-ids (hide counts and prevents wrong-joins) -> see psycho
-  -> ensre that all queries that return multiple are properly ordered
-  -> how does it work with existing data? 
-  -> do i care, there are only 2 active users... (are there?)
-
- - convert existing user-ids on compat /send endpoint
-
  - error logging as goroutine, gets all errors via channel,
    (channel buffered - nonblocking send, second channel that gets a message when sender failed )
    (then all errors end up in _second_ sqlite table)
@@ -47,10 +38,6 @@
 
  - ios purchase verification
 
- - return channel as "[..] asdf" in compat methods (mark clients as compat and send compat FB to them...)
-   (then we can replace the old server without switching phone clients)
-   (still needs switching of the send-script)
-
  - move to KeyToken model
      * [X] User can have multiple keys with different permissions
      * [X] compat simply uses default-keys
@@ -62,11 +49,13 @@
  - We no longer have a route to reshuffle all keys (previously in updateUser), add a /user/:uid/keys/reset ?
    Would delete all existing keys and create 3 new ones?
 
-- TODO comments
+- TODO-comments
 
 #### PERSONAL
 
  - in my script: use `srvname` for sendername
+
+ - switch send script everywhere (we can use the new server, but we need to send correct channels)
 
 #### UNSURE
 

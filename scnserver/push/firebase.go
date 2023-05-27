@@ -50,7 +50,7 @@ type Notification struct {
 	Priority int
 }
 
-func (fb FirebaseConnector) SendNotification(ctx context.Context, client models.Client, msg models.Message) (string, error) {
+func (fb FirebaseConnector) SendNotification(ctx context.Context, client models.Client, msg models.Message, compatTitleOverride *string) (string, error) {
 
 	uri := "https://fcm.googleapis.com/v1/projects/" + fb.fbProject + "/messages:send"
 
@@ -62,7 +62,7 @@ func (fb FirebaseConnector) SendNotification(ctx context.Context, client models.
 			"timestamp":  strconv.FormatInt(msg.Timestamp().Unix(), 10),
 			"priority":   strconv.Itoa(msg.Priority),
 			"trimmed":    langext.Conditional(msg.NeedsTrim(), "true", "false"),
-			"title":      msg.Title,
+			"title":      langext.Coalesce(compatTitleOverride, msg.Title),
 			"body":       langext.Coalesce(msg.TrimmedContent(), ""),
 		},
 		"token": *client.FCMToken,

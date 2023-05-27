@@ -155,3 +155,26 @@ func (db *Database) SetAck(ctx TxContext, userid models.UserID, msgid models.Mes
 
 	return nil
 }
+
+func (db *Database) IsCompatClient(ctx TxContext, clientid models.ClientID) (bool, error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return false, err
+	}
+
+	rows, err := tx.Query(ctx, "SELECT * FROM compat_clients WHERE client_id = :id LIMIT 1", sq.PP{
+		"id": clientid,
+	})
+	if err != nil {
+		return false, err
+	}
+
+	res := rows.Next()
+
+	err = rows.Close()
+	if err != nil {
+		return false, err
+	}
+
+	return res, nil
+}

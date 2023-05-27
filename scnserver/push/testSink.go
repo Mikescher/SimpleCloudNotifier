@@ -8,8 +8,9 @@ import (
 )
 
 type SinkData struct {
-	Message models.Message
-	Client  models.Client
+	Message             models.Message
+	Client              models.Client
+	CompatTitleOverride *string
 }
 
 type TestSink struct {
@@ -24,7 +25,7 @@ func (d *TestSink) Last() SinkData {
 	return d.Data[len(d.Data)-1]
 }
 
-func (d *TestSink) SendNotification(ctx context.Context, client models.Client, msg models.Message) (string, error) {
+func (d *TestSink) SendNotification(ctx context.Context, client models.Client, msg models.Message, compatTitleOverride *string) (string, error) {
 	id, err := langext.NewHexUUID()
 	if err != nil {
 		return "", err
@@ -33,8 +34,9 @@ func (d *TestSink) SendNotification(ctx context.Context, client models.Client, m
 	key := "TestSink[" + id + "]"
 
 	d.Data = append(d.Data, SinkData{
-		Message: msg,
-		Client:  client,
+		Message:             msg,
+		Client:              client,
+		CompatTitleOverride: compatTitleOverride,
 	})
 
 	return key, nil

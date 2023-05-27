@@ -2,6 +2,7 @@ package util
 
 import (
 	"blackforestbytes.com/simplecloudnotifier/logic"
+	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"testing"
 	"time"
 )
@@ -63,4 +64,15 @@ func CreateCompatID(t *testing.T, ws *logic.Application, idtype string, newid st
 	}
 
 	return uidold
+}
+
+func SetCompatClient(t *testing.T, ws *logic.Application, cid string) {
+	ctx := ws.NewSimpleTransactionContext(5 * time.Second)
+	defer ctx.Cancel()
+
+	_, err := ws.Database.Primary.DB().Exec(ctx, "INSERT INTO compat_clients (client_id) VALUES (:cid)", sq.PP{"cid": cid})
+	TestFailIfErr(t, err)
+
+	err = ctx.CommitTransaction()
+	TestFailIfErr(t, err)
 }

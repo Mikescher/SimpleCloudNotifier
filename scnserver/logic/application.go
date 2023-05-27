@@ -347,9 +347,9 @@ func (app *Application) NormalizeUsername(v string) string {
 	return v
 }
 
-func (app *Application) DeliverMessage(ctx context.Context, client models.Client, msg models.Message) (*string, error) {
+func (app *Application) DeliverMessage(ctx context.Context, client models.Client, msg models.Message, compatTitleOverride *string) (*string, error) {
 	if client.FCMToken != nil {
-		fcmDelivID, err := app.Pusher.SendNotification(ctx, client, msg)
+		fcmDelivID, err := app.Pusher.SendNotification(ctx, client, msg, compatTitleOverride)
 		if err != nil {
 			log.Warn().Str("MessageID", msg.MessageID.String()).Str("ClientID", client.ClientID.String()).Err(err).Msg("FCM Delivery failed")
 			return nil, err

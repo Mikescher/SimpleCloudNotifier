@@ -266,6 +266,11 @@ func migrateUser(ctx context.Context, dbnew sq.DB, dbold sq.DB, user OldUser, ap
 			clientid = &_clientid
 
 			usedFCM[*user.FcmToken] = _clientid
+
+			_, err = dbnew.Exec(ctx, "INSERT INTO compat_clients (client_id) VALUES (:cid)", sq.PP{"cid": _clientid})
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 

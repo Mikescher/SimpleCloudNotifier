@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/dataext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"runtime/debug"
 	"time"
 )
 
@@ -37,10 +38,11 @@ func Wrap(rlacc RequestLogAcceptor, fn WHandlerFunc) gin.HandlerFunc {
 
 		for ctr := 1; ; ctr++ {
 
-			wrap, panicObj := callPanicSafe(fn, g)
+			wrap, stackTrace, panicObj := callPanicSafe(fn, g)
 			if panicObj != nil {
 				log.Error().Interface("panicObj", panicObj).Msg("Panic occured (in gin handler)")
-				wrap = APIError(g, 500, apierr.PANIC, "A panic occured in the HTTP handler", errors.New(fmt.Sprintf("%+v", panicObj)))
+				log.Error().Msg(stackTrace)
+				wrap = APIError(g, 500, apierr.PANIC, "A panic occured in the HTTP handler", errors.New(fmt.Sprintf("%+v\n\n@:\n%s", panicObj, stackTrace)))
 			}
 
 			if g.Writer.Written() {
@@ -138,16 +140,17 @@ func createRequestLog(g *gin.Context, t0 time.Time, ctr int, resp HTTPResponse, 
 	}
 }
 
-func callPanicSafe(fn WHandlerFunc, g *gin.Context) (res HTTPResponse, panicObj any) {
+func callPanicSafe(fn WHandlerFunc, g *gin.Context) (res HTTPResponse, stackTrace string, panicObj any) {
 	defer func() {
 		if rec := recover(); rec != nil {
 			res = nil
+			stackTrace = string(debug.Stack())
 			panicObj = rec
 		}
 	}()
 
 	res = fn(g)
-	return res, nil
+	return res, "", nil
 }
 
 func resetBody(g *gin.Context) error {

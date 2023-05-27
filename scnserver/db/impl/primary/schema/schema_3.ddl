@@ -214,6 +214,13 @@ CREATE UNIQUE INDEX "idx_compatacks_messageid"        ON compat_acks (message_id
 CREATE UNIQUE INDEX "idx_compatacks_userid_messageid" ON compat_acks (user_id, message_id);
 
 
+CREATE TABLE compat_clients
+(
+    client_id         TEXT    NOT NULL
+) STRICT;
+CREATE UNIQUE INDEX "idx_compatclient_clientid" ON compat_clients (client_id);
+
+
 CREATE TABLE `meta`
 (
     meta_key     TEXT       NOT NULL,

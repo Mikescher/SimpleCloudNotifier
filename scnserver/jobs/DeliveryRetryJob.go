@@ -154,7 +154,7 @@ func (j *DeliveryRetryJob) redeliver(ctx *logic.SimpleContext, delivery models.D
 		}
 	} else {
 
-		fcmDelivID, err := j.app.DeliverMessage(ctx, client, msg)
+		fcmDelivID, err := j.app.DeliverMessage(ctx, client, msg, nil)
 		if err == nil {
 			err = j.app.Database.Primary.SetDeliverySuccess(ctx, delivery, *fcmDelivID)
 			if err != nil {

@@ -284,7 +284,17 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 
 		for _, client := range clients {
 
-			fcmDelivID, err := h.app.DeliverMessage(ctx, client, msg)
+			isCompatClient, err := h.database.IsCompatClient(ctx, client.ClientID)
+			if err != nil {
+				return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query compat_clients", err))
+			}
+
+			var titleOverride *string = nil
+			if isCompatClient {
+				titleOverride = langext.Ptr(compatizeMessageTitle(ctx, h.app, msg))
+			}
+
+			fcmDelivID, err := h.app.DeliverMessage(ctx, client, msg, titleOverride)
 			if err != nil {
 				_, err = h.database.CreateRetryDelivery(ctx, client, msg)
 				if err != nil {
