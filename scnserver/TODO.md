@@ -39,8 +39,6 @@
       
  - jobs to clear requests-db and logs-db after to only keep X entries...
 
- -> logs and request-logging into their own sqlite files (sqlite-files are prepped)
-
  - /send endpoint should be compatible with the [ webhook ] notifier of uptime-kuma
    (or add another /kuma endpoint)
    -> https://webhook.site/
@@ -49,12 +47,9 @@
 
  - ios purchase verification
 
- - [X] re-add ack labels as compat table for v1 api user
  - return channel as "[..] asdf" in compat methods (mark clients as compat and send compat FB to them...)
    (then we can replace the old server without switching phone clients)
    (still needs switching of the send-script)
-
- - do not use uuidgen in bash script (potetnially not installed) - use `head /dev/urandom | tr -dc A-Za-z0-9 | head -c 13 `
 
  - move to KeyToken model
      * [X] User can have multiple keys with different permissions

@@ -1,0 +1,141 @@
+#!/usr/bin/env bash
+
+#
+# Wrapper around SCN ( https://scn.blackforestbytes.com/ )
+# ========================================================
+#
+# ./scn_send [@channel] title [content] [priority]
+#
+#
+# Call with   scn_send              "${title}"
+#        or   scn_send              "${title}" ${content}"
+#        or   scn_send              "${title}" ${content}" "${priority:0|1|2}"
+#        or   scn_send "@${channel} "${title}"
+#        or   scn_send "@${channel} "${title}" ${content}"
+#        or   scn_send "@${channel} "${title}" ${content}" "${priority:0|1|2}"
+#
+#
+
+################################################################################
+# INSERT YOUR DATA HERE                                                        #
+################################################################################
+user_id="999"    # your user_id
+user_key="??"    # use userkey with SEND permissions on the used channel
+################################################################################
+
+usage() {
+    echo "Usage: "
+    echo "  scn_send [@channel] title [content] [priority]"
+    echo ""
+}
+
+function cfgcol { [ -t 1 ] && [ -n "$(tput colors)" ] && [ "$(tput colors)" -ge 8 ]; }
+
+function rederr() { if cfgcol; then >&2 echo -e "\x1B[31m$1\x1B[0m"; else >&2 echo "$1"; fi; }
+function green()  { if cfgcol; then     echo -e "\x1B[32m$1\x1B[0m"; else     echo "$1"; fi; }
+
+args=( "$@" )
+
+title=$1
+content=""
+channel=""
+priority=1
+usr_msg_id="$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 32)"
+sendtime="$(date +%s)"
+sender="$(hostname)"
+
+if [ ${#args[@]} -lt 1 ]; then
+    rederr "[ERROR]: no title supplied via parameter"
+    usage
+    exit 1
+fi
+
+if [[ "${args[0]}" =~ ^@.* ]]; then
+	channel="${args[0]}"
+    unset "args[0]"
+	channel="${channel:1}"
+fi
+
+if [ ${#args[@]} -lt 1 ]; then
+    rederr "[ERROR]: no title supplied via parameter"
+    usage
+    exit 1
+fi
+
+title="${args[0]}"
+content=""
+
+if [ ${#args[@]} -gt 1 ]; then
+    content="${args[0]}"
+    unset "args[0]"
+fi
+
+if [ ${#args[@]} -gt 1 ]; then
+    priority="${args[0]}"
+    unset "args[0]"
+fi
+
+if [ ${#args[@]} -gt 1 ]; then
+        rederr "Too many arguments to scn_send"
+        usage
+        exit 1
+fi
+
+
+while true ; do
+
+    outf="$(mktemp)"
+
+    curlresp=$(curl --silent                             \
+                    --output "${outf}"                   \
+                    --write-out "%{http_code}"           \
+                    --data "user_id=$user_id"            \
+                    --data "key=$user_key"               \
+                    --data "title=$title"                \
+                    --data "timestamp=$sendtime"         \
+                    --data "content=$content"            \
+                    --data "priority=$priority"          \
+                    --data "msg_id=$usr_msg_id"          \
+                    --data "channel=$channel"            \
+                    --data "sender_name=$sender"         \
+                    "https://scn.blackforestbytes.com/"  )
+
+    curlout="$(cat "$outf")"
+    rm "$outf"
+
+    if [ "$curlresp" == 200 ] ; then
+        green "Successfully send"
+        exit 0
+    fi
+
+    if [ "$curlresp" == 400 ] ; then
+        rederr "Bad request - something went wrong"
+        echo "$curlout"
+        echo ""
+        exit 1
+    fi
+
+    if [ "$curlresp" == 401 ] ; then
+        rederr "Unauthorized - wrong userid/userkey"
+        exit 1
+    fi
+
+    if [ "$curlresp" == 403 ] ; then
+        rederr "Quota exceeded - wait 5 min before re-try"
+        sleep 300
+    fi
+
+    if [ "$curlresp" == 412 ] ; then
+        rederr "Precondition Failed - No device linked"
+        exit 1
+    fi
+
+    if [ "$curlresp" == 500 ] ; then
+        rederr "Internal server error - waiting for better times"
+        sleep 60
+    fi
+
+    # if none of the above matched we probably have no network ...
+    rederr "Send failed (response code $curlresp) ... try again in 5s"
+    sleep 5
+done

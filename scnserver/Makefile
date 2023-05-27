@@ -5,9 +5,9 @@ PORT=9090
 NAMESPACE=$(shell git rev-parse --abbrev-ref HEAD)
 HASH=$(shell git rev-parse HEAD)
 
-.PHONY: test swagger
+.PHONY: test swagger pygmentize
 
-build: swagger fmt
+build: swagger pygmentize fmt
 	mkdir -p _build
 	rm -f ./_build/scn_backend
 	go generate ./...
@@ -18,8 +18,8 @@ run: build
 	_build/scn_backend
 
 gow:
-	# go install github.com/mitranim/gow@latest
-	gow run blackforestbytes.com/portfoliomanager2/cmd/server
+	which gow || go install github.com/mitranim/gow@latest
+	gow -e "go,mod,html,css,json,yaml,js" run -tags "timetzdata sqlite_fts5 sqlite_foreign_keys" blackforestbytes.com/simplecloudnotifier/cmd/scnserver
 
 docker: build
 	[ ! -f "DOCKER_GIT_INFO" ] || rm DOCKER_GIT_INFO
@@ -39,6 +39,13 @@ docker: build
 swagger:
 	which swag || go install github.com/swaggo/swag/cmd/swag@v1.8.12
 	swag init -generalInfo api/router.go --propertyStrategy snakecase --output ./swagger/ --outputTypes "json,yaml"
+
+pygmentize: website/scn_send.html
+
+website/scn_send.html: website/scn_send.sh.txt
+	_pygments/pygmentizew -l bash    -f html "$(shell pwd)/website/scn_send.sh.txt" > "$(shell pwd)/website/scn_send.html"
+	_pygments/pygmentizew -S monokai -f html                                        > "$(shell pwd)/website/css/pygmnetize-dark.css"
+	_pygments/pygmentizew -S borland -f html                                        > "$(shell pwd)/website/css/pygmnetize-light.css"
 
 run-docker-local: docker
 	mkdir -p .run-data

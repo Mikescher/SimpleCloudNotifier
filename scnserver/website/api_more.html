@@ -171,7 +171,7 @@
                 Sometimes your script can run in an environment with an unstable connection and you want to implement an automatic re-try mechanism to send a message again if the last try failed due to bad connectivity.
             </p>
             <p>
-                To ensure that a message is only send once you can generate a unique id for your message (I would recommend a simple <code>uuidgen</code>).
+                To ensure that a message is only send once you can generate a unique id for your message (I would recommend a simple <code>uuidgen</code> or <code>head /dev/urandom | tr -dc A-Za-z0-9 | head -c 32</code>).
                 If you send a message with a UUID that was already used in the near past the API still returns OK, but no new message is sent.
             </p>
             <p>
@@ -210,7 +210,7 @@
                 Depending on your use case it can be useful to create a bash script that handles things like resending messages if you have connection problems or waiting if there is no quota left.<br/>
                 Here is an example how such a scrippt could look like, you can put it into <code>/usr/local/sbin</code> and call it with <code>scn_send "title" "content"</code> (or with more parameters, see the script itself)
             </p>
-            {{template|scn_send.[theme].html}}
+            <div class="yellow-code">{{template|scn_send.html}}</div>
         </div>
     </div>
 

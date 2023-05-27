@@ -21,16 +21,16 @@
 
         <p>Get your user-id and user-key from the android or iOS app.<br/>And send notifications to your phone by performing a POST request against <code>{{config|baseURL}}/</code> from anywhere</p>
         <pre>
-curl                                           \
-    --data "user_id=${userid}"                 \
-    --data "key=${key}"                        \
-    --data "title=${message_title}"            \
-    --data "content=${message_body}"           \
-    --data "priority=${0|1|2}"                 \
-    --data "msg_id=$(uuidgen)"                 \
-    --data "timestamp=$(date +%s)"             \
-    --data "channel={channel_name}"            \
-    --data "sender_name=$(hostname)"           \
+curl                                                                        \
+    --data "user_id=${userid}"                                              \
+    --data "key=${key}"                                                     \
+    --data "title=${message_title}"                                         \
+    --data "content=${message_body}"                                        \
+    --data "priority=${0|1|2}"                                              \
+    --data "msg_id=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 32)"    \
+    --data "timestamp=$(date +%s)"                                          \
+    --data "channel={channel_name}"                                         \
+    --data "sender_name=$(hostname)"                                        \
     {{config|baseURL}}/</pre>
     <p>Most parameters are optional, you can send a message with only a title (default priority and channel will be used)</p>
         <pre>

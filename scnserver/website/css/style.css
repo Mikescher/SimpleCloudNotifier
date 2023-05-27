@@ -41,7 +41,7 @@ body
     border-left: .25rem solid #E53935;
 }
 
-.yellow-code
+.yellow-code pre
 {
     border-left: .25rem solid #FFCB05;
 }
@@ -270,6 +270,7 @@ a.card:hover
 
 table.scode_table {
     max-height: none;
+    overflow: hidden;
 }
 
 table.scode_table td:nth-child(2) {
@@ -300,7 +301,7 @@ pre, pre span
 }
 
 #theme-switch {
-    position: absolute;
+    position: fixed;
     top: 0.75rem;
     right: 0.75rem;
     cursor: pointer;
@@ -310,4 +311,9 @@ pre, pre span
 #theme-switch:hover {
     filter: blur(1px);
     fill: #008;
+}
+
+code {
+    background: #F9F9F9;
+    border: .0625rem solid var(--secondary-border-color);
 }

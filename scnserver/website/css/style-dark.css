@@ -20,8 +20,9 @@
     border-color: #888 !important;
 }
 
-pre.yellow-code,
-pre.yellow-code span {
+.yellow-code,
+.yellow-code pre,
+.yellow-code span {
     background: none;
 }
 
@@ -31,4 +32,9 @@ pre.yellow-code span {
 
 #theme-switch:hover {
     fill: #88F;
+}
+
+code {
+    background: var(--secondary-back-color);
+    border: .0625rem solid #444;
 }
