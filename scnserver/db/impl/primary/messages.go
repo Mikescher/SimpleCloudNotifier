@@ -118,7 +118,7 @@ func (db *Database) DeleteMessage(ctx TxContext, messageID models.MessageID) err
 	return nil
 }
 
-func (db *Database) ListMessages(ctx TxContext, filter models.MessageFilter, pageSize int, inTok ct.CursorToken) ([]models.Message, ct.CursorToken, error) {
+func (db *Database) ListMessages(ctx TxContext, filter models.MessageFilter, pageSize *int, inTok ct.CursorToken) ([]models.Message, ct.CursorToken, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, ct.CursorToken{}, err
@@ -135,11 +135,16 @@ func (db *Database) ListMessages(ctx TxContext, filter models.MessageFilter, pag
 
 	filterCond, filterJoin, prepParams, err := filter.SQL()
 
-	orderClause := "ORDER BY COALESCE(timestamp_client, timestamp_real) DESC, message_id DESC LIMIT :lim"
+	orderClause := ""
+	if pageSize != nil {
+		orderClause = "ORDER BY COALESCE(timestamp_client, timestamp_real) DESC, message_id DESC LIMIT :lim"
+		prepParams["lim"] = *pageSize + 1
+	} else {
+		orderClause = "ORDER BY COALESCE(timestamp_client, timestamp_real) DESC, message_id DESC"
+	}
 
 	sqlQuery := "SELECT " + "messages.*" + " FROM messages " + filterJoin + " WHERE ( " + pageCond + " ) AND ( " + filterCond + " ) " + orderClause
 
-	prepParams["lim"] = pageSize + 1
 	prepParams["tokts"] = inTok.Timestamp
 	prepParams["tokid"] = inTok.Id
 
@@ -153,10 +158,10 @@ func (db *Database) ListMessages(ctx TxContext, filter models.MessageFilter, pag
 		return nil, ct.CursorToken{}, err
 	}
 
-	if len(data) <= pageSize {
+	if pageSize == nil || len(data) <= *pageSize {
 		return data, ct.End(), nil
 	} else {
-		outToken := ct.Normal(data[pageSize-1].Timestamp(), data[pageSize-1].MessageID.String(), "DESC", filter.Hash())
-		return data[0:pageSize], outToken, nil
+		outToken := ct.Normal(data[*pageSize-1].Timestamp(), data[*pageSize-1].MessageID.String(), "DESC", filter.Hash())
+		return data[0:*pageSize], outToken, nil
 	}
 }

@@ -14,44 +14,48 @@ import (
 	"testing"
 )
 
+func RequestRaw(t *testing.T, baseURL string, urlSuffix string) {
+	RequestAny[Void](t, "", "GET", baseURL, urlSuffix, nil, false)
+}
+
 func RequestGet[TResult any](t *testing.T, baseURL string, urlSuffix string) TResult {
-	return RequestAny[TResult](t, "", "GET", baseURL, urlSuffix, nil)
+	return RequestAny[TResult](t, "", "GET", baseURL, urlSuffix, nil, true)
 }
 
 func RequestAuthGet[TResult any](t *testing.T, akey string, baseURL string, urlSuffix string) TResult {
-	return RequestAny[TResult](t, akey, "GET", baseURL, urlSuffix, nil)
+	return RequestAny[TResult](t, akey, "GET", baseURL, urlSuffix, nil, true)
 }
 
 func RequestPost[TResult any](t *testing.T, baseURL string, urlSuffix string, body any) TResult {
-	return RequestAny[TResult](t, "", "POST", baseURL, urlSuffix, body)
+	return RequestAny[TResult](t, "", "POST", baseURL, urlSuffix, body, true)
 }
 
 func RequestAuthPost[TResult any](t *testing.T, akey string, baseURL string, urlSuffix string, body any) TResult {
-	return RequestAny[TResult](t, akey, "POST", baseURL, urlSuffix, body)
+	return RequestAny[TResult](t, akey, "POST", baseURL, urlSuffix, body, true)
 }
 
 func RequestPut[TResult any](t *testing.T, baseURL string, urlSuffix string, body any) TResult {
-	return RequestAny[TResult](t, "", "PUT", baseURL, urlSuffix, body)
+	return RequestAny[TResult](t, "", "PUT", baseURL, urlSuffix, body, true)
 }
 
 func RequestAuthPUT[TResult any](t *testing.T, akey string, baseURL string, urlSuffix string, body any) TResult {
-	return RequestAny[TResult](t, akey, "PUT", baseURL, urlSuffix, body)
+	return RequestAny[TResult](t, akey, "PUT", baseURL, urlSuffix, body, true)
 }
 
 func RequestPatch[TResult any](t *testing.T, baseURL string, urlSuffix string, body any) TResult {
-	return RequestAny[TResult](t, "", "PATCH", baseURL, urlSuffix, body)
+	return RequestAny[TResult](t, "", "PATCH", baseURL, urlSuffix, body, true)
 }
 
 func RequestAuthPatch[TResult any](t *testing.T, akey string, baseURL string, urlSuffix string, body any) TResult {
-	return RequestAny[TResult](t, akey, "PATCH", baseURL, urlSuffix, body)
+	return RequestAny[TResult](t, akey, "PATCH", baseURL, urlSuffix, body, true)
 }
 
 func RequestDelete[TResult any](t *testing.T, baseURL string, urlSuffix string, body any) TResult {
-	return RequestAny[TResult](t, "", "DELETE", baseURL, urlSuffix, body)
+	return RequestAny[TResult](t, "", "DELETE", baseURL, urlSuffix, body, true)
 }
 
 func RequestAuthDelete[TResult any](t *testing.T, akey string, baseURL string, urlSuffix string, body any) TResult {
-	return RequestAny[TResult](t, akey, "DELETE", baseURL, urlSuffix, body)
+	return RequestAny[TResult](t, akey, "DELETE", baseURL, urlSuffix, body, true)
 }
 
 func RequestGetShouldFail(t *testing.T, baseURL string, urlSuffix string, statusCode int, errcode apierr.APIError) {
@@ -86,7 +90,7 @@ func RequestAuthDeleteShouldFail(t *testing.T, akey string, baseURL string, urlS
 	RequestAuthAnyShouldFail(t, akey, "DELETE", baseURL, urlSuffix, body, statusCode, errcode)
 }
 
-func RequestAny[TResult any](t *testing.T, akey string, method string, baseURL string, urlSuffix string, body any) TResult {
+func RequestAny[TResult any](t *testing.T, akey string, method string, baseURL string, urlSuffix string, body any, deserialize bool) TResult {
 	client := http.Client{}
 
 	TPrintf("[-> REQUEST] (%s) %s%s [%s] [%s]\n", method, baseURL, urlSuffix, langext.Conditional(akey == "", "NO AUTH", "AUTH"), langext.Conditional(body == nil, "NO BODY", "BODY"))
@@ -156,8 +160,10 @@ func RequestAny[TResult any](t *testing.T, akey string, method string, baseURL s
 	}
 
 	var data TResult
-	if err := json.Unmarshal(respBodyBin, &data); err != nil {
-		TestFailErr(t, err)
+	if deserialize {
+		if err := json.Unmarshal(respBodyBin, &data); err != nil {
+			TestFailErr(t, err)
+		}
 	}
 
 	return data

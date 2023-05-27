@@ -1,6 +1,7 @@
 package requests
 
 import (
+	ct "blackforestbytes.com/simplecloudnotifier/db/cursortoken"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"context"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
@@ -11,7 +12,7 @@ func (db *Database) InsertRequestLog(ctx context.Context, requestid models.Reque
 
 	now := time.Now()
 
-	_, err := db.db.Exec(ctx, "INSERT INTO requests (request_id, method, uri, user_agent, authentication, request_body, request_body_size, request_content_type, remote_ip, userid, permissions, response_statuscode, response_body_size, response_body, response_content_type, retry_count, panicked, panic_str, processing_time, timestamp_created, timestamp_start, timestamp_finish) VALUES (:request_id, :method, :uri, :user_agent, :authentication, :request_body, :request_body_size, :request_content_type, :remote_ip, :userid, :permissions, :response_statuscode, :response_body_size, :response_body, :response_content_type, :retry_count, :panicked, :panic_str, :processing_time, :timestamp_created, :timestamp_start, :timestamp_finish)", sq.PP{
+	_, err := db.db.Exec(ctx, "INSERT INTO requests (request_id, method, uri, user_agent, authentication, request_body, request_body_size, request_content_type, remote_ip, userid, permissions, response_statuscode, response_body_size, response_body, response_content_type, retry_count, panicked, panic_str, processing_time, timestamp_created, timestamp_start, timestamp_finish, key_id) VALUES (:request_id, :method, :uri, :user_agent, :authentication, :request_body, :request_body_size, :request_content_type, :remote_ip, :userid, :permissions, :response_statuscode, :response_body_size, :response_body, :response_content_type, :retry_count, :panicked, :panic_str, :processing_time, :timestamp_created, :timestamp_start, :timestamp_finish, :kid)", sq.PP{
 		"request_id":            requestid,
 		"method":                data.Method,
 		"uri":                   data.URI,
@@ -34,6 +35,7 @@ func (db *Database) InsertRequestLog(ctx context.Context, requestid models.Reque
 		"timestamp_created":     now.UnixMilli(),
 		"timestamp_start":       data.TimestampStart,
 		"timestamp_finish":      data.TimestampFinish,
+		"kid":                   data.KeyID,
 	})
 	if err != nil {
 		return models.RequestLogDB{}, err
@@ -62,6 +64,7 @@ func (db *Database) InsertRequestLog(ctx context.Context, requestid models.Reque
 		TimestampCreated:    now.UnixMilli(),
 		TimestampStart:      data.TimestampStart,
 		TimestampFinish:     data.TimestampFinish,
+		KeyID:               data.KeyID,
 	}, nil
 }
 
@@ -89,4 +92,47 @@ func (db *Database) Cleanup(ctx context.Context, count int, duration time.Durati
 	}
 
 	return affected1 + affected2, nil
+}
+
+func (db *Database) ListRequestLogs(ctx context.Context, filter models.RequestLogFilter, pageSize *int, inTok ct.CursorToken) ([]models.RequestLog, ct.CursorToken, error) {
+	if inTok.Mode == ct.CTMEnd {
+		return make([]models.RequestLog, 0), ct.End(), nil
+	}
+
+	pageCond := "1=1"
+	if inTok.Mode == ct.CTMNormal {
+		pageCond = "timestamp_created < :tokts OR (timestamp_created = :tokts AND request_id < :tokid )"
+	}
+
+	filterCond, filterJoin, prepParams, err := filter.SQL()
+
+	orderClause := ""
+	if pageSize != nil {
+		orderClause = "ORDER BY timestamp_created DESC, request_id DESC LIMIT :lim"
+		prepParams["lim"] = *pageSize + 1
+	} else {
+		orderClause = "ORDER BY timestamp_created DESC, request_id DESC"
+	}
+
+	sqlQuery := "SELECT " + "requests.*" + " FROM requests " + filterJoin + " WHERE ( " + pageCond + " ) AND ( " + filterCond + " ) " + orderClause
+
+	prepParams["tokts"] = inTok.Timestamp
+	prepParams["tokid"] = inTok.Id
+
+	rows, err := db.db.Query(ctx, sqlQuery, prepParams)
+	if err != nil {
+		return nil, ct.CursorToken{}, err
+	}
+
+	data, err := models.DecodeRequestLogs(rows)
+	if err != nil {
+		return nil, ct.CursorToken{}, err
+	}
+
+	if pageSize == nil || len(data) <= *pageSize {
+		return data, ct.End(), nil
+	} else {
+		outToken := ct.Normal(data[*pageSize-1].TimestampCreated, data[*pageSize-1].RequestID.String(), "DESC", filter.Hash())
+		return data[0:*pageSize], outToken, nil
+	}
 }

@@ -527,7 +527,7 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 		CompatAcknowledged: langext.Ptr(false),
 	}
 
-	msgs, _, err := h.database.ListMessages(ctx, filter, 16, ct.Start())
+	msgs, _, err := h.database.ListMessages(ctx, filter, langext.Ptr(16), ct.Start())
 	if err != nil {
 		return ginresp.CompatAPIError(0, "Failed to query user")
 	}

@@ -320,3 +320,5 @@ code {
     background: #F9F9F9;
     border: .0625rem solid var(--secondary-border-color);
 }
+
+code { white-space: pre; }

@@ -18,7 +18,7 @@ type RequestLog struct {
 	RequestBodySize     int64
 	RequestContentType  string
 	RemoteIP            string
-	TokenID             *KeyTokenID
+	KeyID               *KeyTokenID
 	UserID              *UserID
 	Permissions         *string
 	ResponseStatuscode  *int64
@@ -45,7 +45,7 @@ func (c RequestLog) JSON() RequestLogJSON {
 		RequestBodySize:     c.RequestBodySize,
 		RequestContentType:  c.RequestContentType,
 		RemoteIP:            c.RemoteIP,
-		TokenID:             c.TokenID,
+		KeyID:               c.KeyID,
 		UserID:              c.UserID,
 		Permissions:         c.Permissions,
 		ResponseStatuscode:  c.ResponseStatuscode,
@@ -73,7 +73,7 @@ func (c RequestLog) DB() RequestLogDB {
 		RequestBodySize:     c.RequestBodySize,
 		RequestContentType:  c.RequestContentType,
 		RemoteIP:            c.RemoteIP,
-		TokenID:             c.TokenID,
+		KeyID:               c.KeyID,
 		UserID:              c.UserID,
 		Permissions:         c.Permissions,
 		ResponseStatuscode:  c.ResponseStatuscode,
@@ -100,7 +100,7 @@ type RequestLogJSON struct {
 	RequestBodySize     int64       `json:"request_body_size"`
 	RequestContentType  string      `json:"request_content_type"`
 	RemoteIP            string      `json:"remote_ip"`
-	TokenID             *KeyTokenID `json:"token_id"`
+	KeyID               *KeyTokenID `json:"key_id"`
 	UserID              *UserID     `json:"userid"`
 	Permissions         *string     `json:"permissions"`
 	ResponseStatuscode  *int64      `json:"response_statuscode"`
@@ -117,7 +117,7 @@ type RequestLogJSON struct {
 }
 
 type RequestLogDB struct {
-	RequestID           RequestID   `db:"requestLog_id"`
+	RequestID           RequestID   `db:"request_id"`
 	Method              string      `db:"method"`
 	URI                 string      `db:"uri"`
 	UserAgent           *string     `db:"user_agent"`
@@ -126,13 +126,13 @@ type RequestLogDB struct {
 	RequestBodySize     int64       `db:"request_body_size"`
 	RequestContentType  string      `db:"request_content_type"`
 	RemoteIP            string      `db:"remote_ip"`
-	TokenID             *KeyTokenID `db:"token_id"`
+	KeyID               *KeyTokenID `db:"key_id"`
 	UserID              *UserID     `db:"userid"`
 	Permissions         *string     `db:"permissions"`
 	ResponseStatuscode  *int64      `db:"response_statuscode"`
 	ResponseBodySize    *int64      `db:"response_body_size"`
 	ResponseBody        *string     `db:"response_body"`
-	ResponseContentType string      `db:"request_content_type"`
+	ResponseContentType string      `db:"response_content_type"`
 	RetryCount          int64       `db:"retry_count"`
 	Panicked            int64       `db:"panicked"`
 	PanicStr            *string     `db:"panic_str"`
@@ -153,6 +153,7 @@ func (c RequestLogDB) Model() RequestLog {
 		RequestBodySize:     c.RequestBodySize,
 		RequestContentType:  c.RequestContentType,
 		RemoteIP:            c.RemoteIP,
+		KeyID:               c.KeyID,
 		UserID:              c.UserID,
 		Permissions:         c.Permissions,
 		ResponseStatuscode:  c.ResponseStatuscode,

@@ -11,6 +11,7 @@ CREATE TABLE `requests`
     request_body_size     INTEGER                                NOT NULL,
     request_content_type  TEXT                                   NOT NULL,
     remote_ip             TEXT                                   NOT NULL,
+    key_id                TEXT                                       NULL,
 
     userid                TEXT                                       NULL,
     permissions           TEXT                                       NULL,

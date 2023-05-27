@@ -395,6 +395,57 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 	return DefData{User: users}
 }
 
+type SingleData struct {
+	UserID   string
+	AdminKey string
+	SendKey  string
+	ReadKey  string
+	ClientID string
+}
+
+func InitSingleData(t *testing.T, ws *logic.Application) SingleData {
+
+	// set logger to buffer, only output if error occured
+	success := false
+	SetBufLogger()
+	defer func() {
+		ClearBufLogger(!success)
+		if success {
+			log.Info().Msgf("Succesfully initialized default data (%d messages, %d users)", len(messageExamples), len(userExamples))
+		}
+	}()
+
+	baseUrl := "http://127.0.0.1:" + ws.Port
+
+	type R struct {
+		Clients []struct {
+			ClientId string `json:"client_id"`
+			UserId   string `json:"user_id"`
+		} `json:"clients"`
+		ReadKey  string `json:"read_key"`
+		SendKey  string `json:"send_key"`
+		AdminKey string `json:"admin_key"`
+		UserId   string `json:"user_id"`
+	}
+
+	r0 := RequestPost[R](t, baseUrl, "/api/v2/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	success = true
+
+	return SingleData{
+		UserID:   r0.UserId,
+		AdminKey: r0.AdminKey,
+		SendKey:  r0.SendKey,
+		ReadKey:  r0.ReadKey,
+		ClientID: r0.Clients[0].ClientId,
+	}
+}
+
 func doSubscribe(t *testing.T, baseUrl string, user Userdat, chanOwner Userdat, chanInternalName string) {
 
 	if user == chanOwner {

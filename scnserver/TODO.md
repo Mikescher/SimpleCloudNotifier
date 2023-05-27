@@ -77,6 +77,8 @@
 
  - Pagination for ListChannels / ListSubscriptions / ListClients / ListChannelSubscriptions / ListUserSubscriptions
 
+ - Add .Insert() function to sq.DB interface (auto generate insert for an object based on struct keys)
+
  - cannot open sqlite in dbbrowsr (cannot parse schema?)
    -> https://github.com/sqlitebrowser/sqlitebrowser/issues/292 -> https://github.com/sqlitebrowser/sqlitebrowser/issues/29266
 

@@ -140,6 +140,10 @@ func AssertEqual(t *testing.T, key string, expected any, actual any) {
 
 	}
 
+	if langext.IsNil(expected) && langext.IsNil(actual) {
+		return
+	}
+
 	if expected != actual {
 		t.Errorf("Value [%s] differs (%T <-> %T):\n", key, expected, actual)
 
@@ -173,7 +177,7 @@ func AssertTrue(t *testing.T, key string, v bool) {
 }
 
 func AssertNotEqual(t *testing.T, key string, expected any, actual any) {
-	if expected == actual {
+	if expected == actual || (langext.IsNil(expected) && langext.IsNil(actual)) {
 		t.Errorf("Value [%s] does not differ (%T <-> %T):\n", key, expected, actual)
 
 		str1 := fmt.Sprintf("%v", expected)

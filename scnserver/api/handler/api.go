@@ -900,7 +900,7 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 		ChannelID: langext.Ptr([]models.ChannelID{channel.ChannelID}),
 	}
 
-	messages, npt, err := h.database.ListMessages(ctx, filter, pageSize, tok)
+	messages, npt, err := h.database.ListMessages(ctx, filter, &pageSize, tok)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query messages", err)
 	}
@@ -1398,7 +1398,7 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 		filter.SearchString = langext.Ptr([]string{strings.TrimSpace(*q.Filter)})
 	}
 
-	messages, npt, err := h.database.ListMessages(ctx, filter, pageSize, tok)
+	messages, npt, err := h.database.ListMessages(ctx, filter, &pageSize, tok)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query messages", err)
 	}
@@ -1561,7 +1561,7 @@ func (h APIHandler) ListUserKeys(g *gin.Context) ginresp.HTTPResponse {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 	type response struct {
-		Tokens []models.KeyTokenJSON `json:"tokens"`
+		Keys []models.KeyTokenJSON `json:"keys"`
 	}
 
 	var u uri
@@ -1582,7 +1582,7 @@ func (h APIHandler) ListUserKeys(g *gin.Context) ginresp.HTTPResponse {
 
 	res := langext.ArrMap(clients, func(v models.KeyToken) models.KeyTokenJSON { return v.JSON() })
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{Tokens: res}))
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{Keys: res}))
 }
 
 // GetUserKey swaggerdoc
