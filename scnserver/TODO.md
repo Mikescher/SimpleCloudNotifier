@@ -61,7 +61,7 @@
      * [X] compat simply uses default-keys
      * [X] CRUD routes for keys
      * [X] KeyToken.messagecounter
-     * [ ] update old-data migration to create keys
+     * [ ] update old-data migration to create token-keys
      * [ ] unit tests
 
  - We no longer have a route to reshuffle all keys (previously in updateUser), add a /user/:uid/keys/reset ?

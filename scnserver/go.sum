@@ -73,14 +73,6 @@ github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/ugorji/go v1.2.7/go.mod h1:nF9osbDWLy6bDVv/Rtoh6QgnvNDpmCalQV5urGCCS6M=
 github.com/ugorji/go/codec v1.2.7 h1:YPXUKf7fYbp/y8xloBqZOw2qaVggbfwMlI8WM3wZUJ0=
 github.com/ugorji/go/codec v1.2.7/go.mod h1:WGN1fab3R1fzQlVQTkfxVtIBhWDRqOviHU95kRgeqEY=
-gogs.mikescher.com/BlackForestBytes/goext v0.0.56 h1:nl+2mP3BmkeB3kT6zFNXqYkOLc3JnFF3m8QwhxZJf2A=
-gogs.mikescher.com/BlackForestBytes/goext v0.0.56/go.mod h1:ZEXyKUr8t0EKdPN1FYdk0klY7N8OwXxipGE9lWgpVE8=
-gogs.mikescher.com/BlackForestBytes/goext v0.0.57 h1:R5M0Y+4kS6v5GtsXcHlDBYbcfenj1nOmAaNj4XQUous=
-gogs.mikescher.com/BlackForestBytes/goext v0.0.57/go.mod h1:ZEXyKUr8t0EKdPN1FYdk0klY7N8OwXxipGE9lWgpVE8=
-gogs.mikescher.com/BlackForestBytes/goext v0.0.58 h1:W53yfHhpFQS13zgtzCjfJQ42WG0OORa+kQWKrp+W73Q=
-gogs.mikescher.com/BlackForestBytes/goext v0.0.58/go.mod h1:ZEXyKUr8t0EKdPN1FYdk0klY7N8OwXxipGE9lWgpVE8=
-gogs.mikescher.com/BlackForestBytes/goext v0.0.59 h1:3bHSjqgty9yp0EIyqwGAb06ZS7bLvm806zRj6j+WOEE=
-gogs.mikescher.com/BlackForestBytes/goext v0.0.59/go.mod h1:ZEXyKUr8t0EKdPN1FYdk0klY7N8OwXxipGE9lWgpVE8=
 gogs.mikescher.com/BlackForestBytes/goext v0.0.103 h1:CkRVpRrTlq9k3mdTNGQAr4cxaXHsKdUJNjHt5Maas4k=
 gogs.mikescher.com/BlackForestBytes/goext v0.0.103/go.mod h1:w8JlyUHpoOJmW5GxsiheZkFh3vn8Mp80ynSVOFLszL0=
 golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=
