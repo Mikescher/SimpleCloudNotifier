@@ -270,16 +270,19 @@ a.card:hover
 
 table.scode_table {
     max-height: none;
-    overflow: hidden;
+    overflow: hidden !important;
 }
+table.scode_table td:nth-child(2),
+table.scode_table th:nth-child(2){flex-grow: 3;}
 
-table.scode_table td:nth-child(2) {
-    flex-grow: 3;
+table.permlist_table {
+    max-height: none;
+    overflow: hidden !important;
 }
-
-table.scode_table th:nth-child(2) {
-    flex-grow: 3;
-}
+table.permlist_table td:nth-child(2),
+table.permlist_table th:nth-child(2) {flex-grow: 0; min-width:80px;}
+table.permlist_table td:nth-child(3),
+table.permlist_table th:nth-child(3) {flex-grow: 3;}
 
 #mainpnl h2 {
     margin-top: 1.75rem;

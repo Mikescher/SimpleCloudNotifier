@@ -30,7 +30,7 @@
                 These two values are used to identify and authenticate your device so that send messages can be routed to your phone.
             </p>
             <p>
-                You can at any time generate a new <code>key</code> in the app and invalidate the old one.
+                You can at any time generate new <code>key</code>s in the app with different permissions.
             </p>
             <p>
                 There is also a <a href="/">web interface</a> for this API to manually send notifications to your phone or to test your setup.
@@ -90,7 +90,7 @@
                 </tr>
                 <tr>
                     <td data-label="Statuscode">401 (Unauthorized)</td>
-                    <td data-label="Explanation">The user_id was not found or the key is wrong</td>
+                    <td data-label="Explanation">The user_id was not found, the key is wrong or the [user_id, key] combination does not have the SEND permissions on the specified channel</td>
                 </tr>
                 <tr>
                     <td data-label="Statuscode">403 (Forbidden)</td>
@@ -165,10 +165,61 @@
     {{config|baseURL}}/</pre>
         </div>
 
+        <h2>Permissions</h2>
+        <div class="section">
+            <p>
+                A user account can have multiple keys with different permissions.
+                A Key has one or more permissions assigned:
+            </p>
+
+            <table class="permlist_table">
+                <thead>
+                <tr>
+                    <th>Permission</th>
+                    <th>Identifier</th>
+                    <th>Explanation</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td data-label="Permission" >ADMIN</td>
+                    <td data-label="Identifier" ><code>A</code></td>
+                    <td data-label="Explanation">Allows modification of the current user, creating/editing keys, channels, subsriptions, etc. and includes all other permissions</td>
+                </tr>
+                <tr>
+                    <td data-label="Permission" >CHANNEL READ</td>
+                    <td data-label="Identifier" ><code>CR</code></td>
+                    <td data-label="Explanation">Allows reading and listing messages</td>
+                </tr>
+                <tr>
+                    <td data-label="Permission" >CHANNEL SEND</td>
+                    <td data-label="Identifier" ><code>CS</code></td>
+                    <td data-label="Explanation">Allows sending messages</td>
+                </tr>
+                <tr>
+                    <td data-label="Permission" >USER READ</td>
+                    <td data-label="Identifier" ><code>UR</code></td>
+                    <td data-label="Explanation">Allows querying the current user</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <p>
+                Keys can also be scoped to specific channels.
+                A Key can either have access to all channels the user has access to, or only to a subset.
+                The permitted channels can either be channels of the user or foreign channels with an active subscription.
+            </p>
+
+            <p>
+                A common use case is to create a key with only the <code>CS</code> (Channel Send) permission and only a single channel.
+                This key can then be used to send messages without having full access to the account.
+            </p>
+        </div>
+
         <h2>Message Uniqueness (Idempotency)</h2>
         <div class="section">
             <p>
-                Sometimes your script can run in an environment with an unstable connection and you want to implement an automatic re-try mechanism to send a message again if the last try failed due to bad connectivity.
+                Sometimes your script can run in an environment with an unstable connection, and you want to implement an automatic re-try mechanism to send a message again if the last try failed due to bad connectivity.
             </p>
             <p>
                 To ensure that a message is only send once you can generate a unique id for your message (I would recommend a simple <code>uuidgen</code> or <code>head /dev/urandom | tr -dc A-Za-z0-9 | head -c 32</code>).

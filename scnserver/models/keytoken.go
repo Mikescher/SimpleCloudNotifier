@@ -11,10 +11,10 @@ import (
 type TokenPerm string //@enum:type
 
 const (
-	PermAdmin       TokenPerm = "A"
-	PermChannelRead TokenPerm = "CR"
-	PermChannelSend TokenPerm = "CS"
-	PermUserRead    TokenPerm = "UR"
+	PermAdmin       TokenPerm = "A"  // Edit userdata (+ includes all othe permissions)
+	PermChannelRead TokenPerm = "CR" // Read messages
+	PermChannelSend TokenPerm = "CS" // Send messages
+	PermUserRead    TokenPerm = "UR" // Read userdata
 )
 
 type TokenPermissionList []TokenPerm

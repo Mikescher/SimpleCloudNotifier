@@ -62,8 +62,6 @@
  - We no longer have a route to reshuffle all keys (previously in updateUser), add a /user/:uid/keys/reset ?
    Would delete all existing keys and create 3 new ones?
 
- - the explanation of user_id and key in ./website is now wrong (was already wrong and is even wronger now that there are multiple KeyToken's with permissions etc)
-
 #### PERSONAL
 
  - in my script: use `srvname` for sendername
