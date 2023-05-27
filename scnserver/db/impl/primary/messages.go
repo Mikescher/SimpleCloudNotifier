@@ -56,7 +56,7 @@ func (db *Database) GetMessage(ctx TxContext, scnMessageID models.MessageID, all
 	return msg, nil
 }
 
-func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, channel models.Channel, timestampSend *time.Time, title string, content *string, priority int, userMsgId *string, senderIP string, senderName *string) (models.Message, error) {
+func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, channel models.Channel, timestampSend *time.Time, title string, content *string, priority int, userMsgId *string, senderIP string, senderName *string, usedKeyID models.KeyTokenID) (models.Message, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Message{}, err
@@ -66,7 +66,7 @@ func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, cha
 
 	messageid := models.NewMessageID()
 
-	_, err = tx.Exec(ctx, "INSERT INTO messages (message_id, sender_user_id, owner_user_id, channel_internal_name, channel_id, timestamp_real, timestamp_client, title, content, priority, usr_message_id, sender_ip, sender_name) VALUES (:mid, :suid, :ouid, :cnam, :cid, :tsr, :tsc, :tit, :cnt, :prio, :umid, :ip, :snam)", sq.PP{
+	_, err = tx.Exec(ctx, "INSERT INTO messages (message_id, sender_user_id, owner_user_id, channel_internal_name, channel_id, timestamp_real, timestamp_client, title, content, priority, usr_message_id, sender_ip, sender_name, used_key_id) VALUES (:mid, :suid, :ouid, :cnam, :cid, :tsr, :tsc, :tit, :cnt, :prio, :umid, :ip, :snam, :uk)", sq.PP{
 		"mid":  messageid,
 		"suid": senderUserID,
 		"ouid": channel.OwnerUserID,
@@ -80,6 +80,7 @@ func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, cha
 		"umid": userMsgId,
 		"ip":   senderIP,
 		"snam": senderName,
+		"uk":   usedKeyID,
 	})
 	if err != nil {
 		return models.Message{}, err
@@ -99,6 +100,7 @@ func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, cha
 		Content:             content,
 		Priority:            priority,
 		UserMessageID:       userMsgId,
+		UsedKeyID:           usedKeyID,
 	}, nil
 }
 

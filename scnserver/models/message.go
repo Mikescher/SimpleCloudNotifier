@@ -26,6 +26,7 @@ type Message struct {
 	Content             *string
 	Priority            int
 	UserMessageID       *string
+	UsedKeyID           KeyTokenID
 	Deleted             bool
 }
 
@@ -43,6 +44,7 @@ func (m Message) FullJSON() MessageJSON {
 		Content:             m.Content,
 		Priority:            m.Priority,
 		UserMessageID:       m.UserMessageID,
+		UsedKeyID:           m.UsedKeyID,
 		Trimmed:             false,
 	}
 }
@@ -61,6 +63,7 @@ func (m Message) TrimmedJSON() MessageJSON {
 		Content:             m.TrimmedContent(),
 		Priority:            m.Priority,
 		UserMessageID:       m.UserMessageID,
+		UsedKeyID:           m.UsedKeyID,
 		Trimmed:             m.NeedsTrim(),
 	}
 }
@@ -94,36 +97,38 @@ func (m Message) ShortContent() string {
 }
 
 type MessageJSON struct {
-	MessageID           MessageID `json:"message_id"`
-	SenderUserID        UserID    `json:"sender_user_id"`
-	OwnerUserID         UserID    `json:"owner_user_id"`
-	ChannelInternalName string    `json:"channel_internal_name"`
-	ChannelID           ChannelID `json:"channel_id"`
-	SenderName          *string   `json:"sender_name"`
-	SenderIP            string    `json:"sender_ip"`
-	Timestamp           string    `json:"timestamp"`
-	Title               string    `json:"title"`
-	Content             *string   `json:"content"`
-	Priority            int       `json:"priority"`
-	UserMessageID       *string   `json:"usr_message_id"`
-	Trimmed             bool      `json:"trimmed"`
+	MessageID           MessageID  `json:"message_id"`
+	SenderUserID        UserID     `json:"sender_user_id"`
+	OwnerUserID         UserID     `json:"owner_user_id"`
+	ChannelInternalName string     `json:"channel_internal_name"`
+	ChannelID           ChannelID  `json:"channel_id"`
+	SenderName          *string    `json:"sender_name"`
+	SenderIP            string     `json:"sender_ip"`
+	Timestamp           string     `json:"timestamp"`
+	Title               string     `json:"title"`
+	Content             *string    `json:"content"`
+	Priority            int        `json:"priority"`
+	UserMessageID       *string    `json:"usr_message_id"`
+	UsedKeyID           KeyTokenID `json:"used_key_id"`
+	Trimmed             bool       `json:"trimmed"`
 }
 
 type MessageDB struct {
-	MessageID           MessageID `db:"message_id"`
-	SenderUserID        UserID    `db:"sender_user_id"`
-	OwnerUserID         UserID    `db:"owner_user_id"`
-	ChannelInternalName string    `db:"channel_internal_name"`
-	ChannelID           ChannelID `db:"channel_id"`
-	SenderName          *string   `db:"sender_name"`
-	SenderIP            string    `db:"sender_ip"`
-	TimestampReal       int64     `db:"timestamp_real"`
-	TimestampClient     *int64    `db:"timestamp_client"`
-	Title               string    `db:"title"`
-	Content             *string   `db:"content"`
-	Priority            int       `db:"priority"`
-	UserMessageID       *string   `db:"usr_message_id"`
-	Deleted             int       `db:"deleted"`
+	MessageID           MessageID  `db:"message_id"`
+	SenderUserID        UserID     `db:"sender_user_id"`
+	OwnerUserID         UserID     `db:"owner_user_id"`
+	ChannelInternalName string     `db:"channel_internal_name"`
+	ChannelID           ChannelID  `db:"channel_id"`
+	SenderName          *string    `db:"sender_name"`
+	SenderIP            string     `db:"sender_ip"`
+	TimestampReal       int64      `db:"timestamp_real"`
+	TimestampClient     *int64     `db:"timestamp_client"`
+	Title               string     `db:"title"`
+	Content             *string    `db:"content"`
+	Priority            int        `db:"priority"`
+	UserMessageID       *string    `db:"usr_message_id"`
+	UsedKeyID           KeyTokenID `db:"used_key_id"`
+	Deleted             int        `db:"deleted"`
 }
 
 func (m MessageDB) Model() Message {
@@ -141,6 +146,7 @@ func (m MessageDB) Model() Message {
 		Content:             m.Content,
 		Priority:            m.Priority,
 		UserMessageID:       m.UserMessageID,
+		UsedKeyID:           m.UsedKeyID,
 		Deleted:             m.Deleted != 0,
 	}
 }

@@ -242,7 +242,7 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 
 	clientIP := g.ClientIP()
 
-	msg, err := h.database.CreateMessage(ctx, *UserID, channel, sendTimestamp, *Title, Content, priority, UserMessageID, clientIP, SenderName)
+	msg, err := h.database.CreateMessage(ctx, *UserID, channel, sendTimestamp, *Title, Content, priority, UserMessageID, clientIP, SenderName, keytok.KeyTokenID)
 	if err != nil {
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to create message in db", err))
 	}

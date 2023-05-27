@@ -195,21 +195,17 @@ func migrateUser(ctx context.Context, dbnew sq.DB, dbold sq.DB, user OldUser, ap
 
 	fmt.Printf("New UserID: %s\n", userid)
 
-	readKey := scn.RandomAuthKey()
-	sendKey := scn.RandomAuthKey()
-	adminKey := user.UserKey
+	tokKeyID := models.NewKeyTokenID()
+	tokKeySec := user.UserKey
 
 	protoken := user.ProToken
 	if protoken != nil {
 		protoken = langext.Ptr("ANDROID|v1|" + *protoken)
 	}
 
-	_, err = dbnew.Exec(ctx, "INSERT INTO users (user_id, username, read_key, send_key, admin_key, is_pro, pro_token, timestamp_created) VALUES (:uid, :un, :rk, :sk, :ak, :pro, :tok, :ts)", sq.PP{
+	_, err = dbnew.Exec(ctx, "INSERT INTO users (user_id, username, is_pro, pro_token, timestamp_created) VALUES (:uid, :un, :pro, :tok, :ts)", sq.PP{
 		"uid": userid,
 		"un":  nil,
-		"rk":  readKey,
-		"sk":  sendKey,
-		"ak":  adminKey,
 		"pro": langext.Conditional(user.IsPro, 1, 0),
 		"tok": protoken,
 		"ts":  user.TimestampCreated.UnixMilli(),
@@ -222,6 +218,20 @@ func migrateUser(ctx context.Context, dbnew sq.DB, dbold sq.DB, user OldUser, ap
 		"old": user.UserId,
 		"new": userid,
 		"typ": "userid",
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = dbnew.Exec(ctx, "INSERT INTO keytokens (keytoken_id, name, timestamp_created, owner_user_id, all_channels, channels, token, permissions) VALUES (:tid, :nam, :tsc, :owr, :all, :cha, :tok, :prm)", sq.PP{
+		"tid": tokKeyID,
+		"nam": "AdminKey (migrated)",
+		"tsc": user.TimestampCreated.UnixMilli(),
+		"owr": userid,
+		"all": 1,
+		"cha": "",
+		"tok": tokKeySec,
+		"prm": "A",
 	})
 	if err != nil {
 		panic(err)
@@ -260,15 +270,14 @@ func migrateUser(ctx context.Context, dbnew sq.DB, dbold sq.DB, user OldUser, ap
 	}
 
 	mainChannelID := models.NewChannelID()
-	_, err = dbnew.Exec(ctx, "INSERT INTO channels (channel_id, owner_user_id, display_name, internal_name, description_name, subscribe_key, send_key, timestamp_created) VALUES (:cid, :ouid, :dnam, :inam, :hnam, :subkey, :sendkey, :ts)", sq.PP{
-		"cid":     mainChannelID,
-		"ouid":    userid,
-		"dnam":    "main",
-		"inam":    "main",
-		"hnam":    nil,
-		"subkey":  scn.RandomAuthKey(),
-		"sendkey": scn.RandomAuthKey(),
-		"ts":      user.TimestampCreated.UnixMilli(),
+	_, err = dbnew.Exec(ctx, "INSERT INTO channels (channel_id, owner_user_id, display_name, internal_name, description_name, subscribe_key, timestamp_created) VALUES (:cid, :ouid, :dnam, :inam, :hnam, :subkey, :ts)", sq.PP{
+		"cid":    mainChannelID,
+		"ouid":   userid,
+		"dnam":   "main",
+		"inam":   "main",
+		"hnam":   nil,
+		"subkey": scn.RandomAuthKey(),
+		"ts":     user.TimestampCreated.UnixMilli(),
 	})
 	if err != nil {
 		panic(err)
@@ -334,15 +343,14 @@ func migrateUser(ctx context.Context, dbnew sq.DB, dbold sq.DB, user OldUser, ap
 					channelID = models.NewChannelID()
 					channelInternalName = intName
 
-					_, err = dbnew.Exec(ctx, "INSERT INTO channels (channel_id, owner_user_id, display_name, internal_name, description_name, subscribe_key, send_key, timestamp_created) VALUES (:cid, :ouid, :dnam, :inam, :hnam, :subkey, :sendkey, :ts)", sq.PP{
-						"cid":     channelID,
-						"ouid":    userid,
-						"dnam":    dispName,
-						"inam":    intName,
-						"hnam":    nil,
-						"subkey":  scn.RandomAuthKey(),
-						"sendkey": scn.RandomAuthKey(),
-						"ts":      oldmessage.TimestampReal.UnixMilli(),
+					_, err = dbnew.Exec(ctx, "INSERT INTO channels (channel_id, owner_user_id, display_name, internal_name, description_name, subscribe_key, timestamp_created) VALUES (:cid, :ouid, :dnam, :inam, :hnam, :subkey, :ts)", sq.PP{
+						"cid":    channelID,
+						"ouid":   userid,
+						"dnam":   dispName,
+						"inam":   intName,
+						"hnam":   nil,
+						"subkey": scn.RandomAuthKey(),
+						"ts":     oldmessage.TimestampReal.UnixMilli(),
 					})
 					if err != nil {
 						panic(err)
@@ -419,8 +427,9 @@ func migrateUser(ctx context.Context, dbnew sq.DB, dbold sq.DB, user OldUser, ap
 			"umid": oldmessage.UsrMessageId,
 			"ip":   "",
 			"snam": sendername,
+			"ukid": tokKeyID,
 		}
-		_, err = dbnew.Exec(ctx, "INSERT INTO messages (message_id, sender_user_id, owner_user_id, channel_internal_name, channel_id, timestamp_real, timestamp_client, title, content, priority, usr_message_id, sender_ip, sender_name) VALUES (:mid, :suid, :ouid, :cnam, :cid, :tsr, :tsc, :tit, :cnt, :prio, :umid, :ip, :snam)", pp)
+		_, err = dbnew.Exec(ctx, "INSERT INTO messages (message_id, sender_user_id, owner_user_id, channel_internal_name, channel_id, timestamp_real, timestamp_client, title, content, priority, usr_message_id, sender_ip, sender_name, used_key_id) VALUES (:mid, :suid, :ouid, :cnam, :cid, :tsr, :tsc, :tit, :cnt, :prio, :umid, :ip, :snam, :ukid)", pp)
 		if err != nil {
 			jv, _ := json.MarshalIndent(pp, "", "  ")
 			fmt.Printf("%s", string(jv))

@@ -40,6 +40,7 @@ type MessageFilter struct {
 	OnlyDeleted             bool
 	IncludeDeleted          bool
 	CompatAcknowledged      *bool
+	UsedKeyID               *[]KeyTokenID
 }
 
 func (f MessageFilter) SQL() (string, string, sq.PP, error) {
@@ -218,6 +219,15 @@ func (f MessageFilter) SQL() (string, string, sq.PP, error) {
 		} else {
 			sqlClauses = append(sqlClauses, "(filter_compatack_compat_acks.message_id IS     NULL)")
 		}
+	}
+
+	if f.UsedKeyID != nil {
+		filter := make([]string, 0)
+		for i, v := range *f.UsedKeyID {
+			filter = append(filter, fmt.Sprintf("(used_key_id = :usedkeyid_%d)", i))
+			params[fmt.Sprintf("usedkeyid_%d", i)] = v
+		}
+		sqlClauses = append(sqlClauses, "("+strings.Join(filter, " OR ")+")")
 	}
 
 	if f.SearchString != nil {
