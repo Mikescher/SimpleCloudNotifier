@@ -667,5 +667,190 @@ func TestListSubscribedChannelMessages(t *testing.T) {
 }
 
 func TestListChannelSubscriptions(t *testing.T) {
-	t.SkipNow() //TODO
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data1 := tt.InitSingleData(t, ws)
+	data2 := tt.InitSingleData(t, ws)
+
+	type chanobj struct {
+		ChannelId       string `json:"channel_id"`
+		DescriptionName string `json:"description_name"`
+		DisplayName     string `json:"display_name"`
+		InternalName    string `json:"internal_name"`
+		MessagesSent    int    `json:"messages_sent"`
+		OwnerUserId     string `json:"owner_user_id"`
+		SubscribeKey    string `json:"subscribe_key"`
+		Subscription    struct {
+			ChannelId           string `json:"channel_id"`
+			ChannelInternalName string `json:"channel_internal_name"`
+			ChannelOwnerUserId  string `json:"channel_owner_user_id"`
+			Confirmed           bool   `json:"confirmed"`
+			SubscriberUserId    string `json:"subscriber_user_id"`
+			SubscriptionId      string `json:"subscription_id"`
+			TimestampCreated    string `json:"timestamp_created"`
+		} `json:"subscription"`
+		TimestampCreated  string `json:"timestamp_created"`
+		TimestampLastsent string `json:"timestamp_lastsent"`
+	}
+	type subobj struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		ChannelOwnerUserId  string `json:"channel_owner_user_id"`
+		Confirmed           bool   `json:"confirmed"`
+		SubscriberUserId    string `json:"subscriber_user_id"`
+		SubscriptionId      string `json:"subscription_id"`
+		TimestampCreated    string `json:"timestamp_created"`
+	}
+	type sublist struct {
+		Subscriptions []subobj `json:"subscriptions"`
+	}
+
+	countBoth := func(oa1, oc1, ou1, ia1, ic1, iu1, oa2, oc2, ou2, ia2, ic2, iu2 int) {
+		sublist1oa := tt.RequestAuthGet[sublist](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data1.UserID, "outgoing_all"))
+		tt.AssertEqual(t, "1:outgoing_all", oa1, len(sublist1oa.Subscriptions))
+
+		sublist1oc := tt.RequestAuthGet[sublist](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data1.UserID, "outgoing_confirmed"))
+		tt.AssertEqual(t, "1:outgoing_confirmed", oc1, len(sublist1oc.Subscriptions))
+
+		sublist1ou := tt.RequestAuthGet[sublist](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data1.UserID, "outgoing_unconfirmed"))
+		tt.AssertEqual(t, "1:outgoing_unconfirmed", ou1, len(sublist1ou.Subscriptions))
+
+		sublist1ia := tt.RequestAuthGet[sublist](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data1.UserID, "incoming_all"))
+		tt.AssertEqual(t, "1:incoming_all", ia1, len(sublist1ia.Subscriptions))
+
+		sublist1ic := tt.RequestAuthGet[sublist](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data1.UserID, "incoming_confirmed"))
+		tt.AssertEqual(t, "1:incoming_confirmed", ic1, len(sublist1ic.Subscriptions))
+
+		sublist1iu := tt.RequestAuthGet[sublist](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data1.UserID, "incoming_unconfirmed"))
+		tt.AssertEqual(t, "1:incoming_unconfirmed", iu1, len(sublist1iu.Subscriptions))
+
+		sublist2oa := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data2.UserID, "outgoing_all"))
+		tt.AssertEqual(t, "2:outgoing_all", oa2, len(sublist2oa.Subscriptions))
+
+		sublist2oc := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data2.UserID, "outgoing_confirmed"))
+		tt.AssertEqual(t, "2:outgoing_confirmed", oc2, len(sublist2oc.Subscriptions))
+
+		sublist2ou := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data2.UserID, "outgoing_unconfirmed"))
+		tt.AssertEqual(t, "2:outgoing_unconfirmed", ou2, len(sublist2ou.Subscriptions))
+
+		sublist2ia := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data2.UserID, "incoming_all"))
+		tt.AssertEqual(t, "2:incoming_all", ia2, len(sublist2ia.Subscriptions))
+
+		sublist2ic := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data2.UserID, "incoming_confirmed"))
+		tt.AssertEqual(t, "2:incoming_confirmed", ic2, len(sublist2ic.Subscriptions))
+
+		sublist2iu := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data2.UserID, "incoming_unconfirmed"))
+		tt.AssertEqual(t, "2:incoming_unconfirmed", iu2, len(sublist2iu.Subscriptions))
+	}
+
+	countBoth(
+		0, 0, 0,
+		0, 0, 0,
+		0, 0, 0,
+		0, 0, 0)
+
+	chan1 := tt.RequestAuthPost[chanobj](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data2.UserID), gin.H{
+		"name": "chan1",
+	})
+	chan2 := tt.RequestAuthPost[chanobj](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data2.UserID), gin.H{
+		"name": "chan2",
+	})
+	chan3 := tt.RequestAuthPost[chanobj](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data2.UserID), gin.H{
+		"name": "chan3",
+	})
+
+	countBoth(
+		0, 0, 0,
+		0, 0, 0,
+		3, 3, 0,
+		3, 3, 0)
+
+	sub1 := tt.RequestAuthPost[gin.H](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?chan_subscribe_key=%s", data1.UserID, chan1.SubscribeKey), gin.H{
+		"channel_owner_user_id": data2.UserID,
+		"channel_internal_name": "chan1",
+	})
+	sub2 := tt.RequestAuthPost[gin.H](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?chan_subscribe_key=%s", data1.UserID, chan2.SubscribeKey), gin.H{
+		"channel_id": chan2.ChannelId,
+	})
+	sub3 := tt.RequestAuthPost[gin.H](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?chan_subscribe_key=%s", data1.UserID, chan3.SubscribeKey), gin.H{
+		"channel_owner_user_id": data2.UserID,
+		"channel_internal_name": "chan3",
+	})
+
+	countBoth(
+		3, 0, 3,
+		0, 0, 0,
+		3, 3, 0,
+		6, 3, 3)
+
+	tt.RequestAuthPatch[gin.H](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions/%s", data2.UserID, sub1["subscription_id"]), gin.H{
+		"confirmed": true,
+	})
+
+	countBoth(
+		3, 1, 2,
+		0, 0, 0,
+		3, 3, 0,
+		6, 4, 2)
+
+	tt.RequestAuthPatch[gin.H](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions/%s", data2.UserID, sub2["subscription_id"]), gin.H{
+		"confirmed": true,
+	})
+
+	countBoth(
+		3, 2, 1,
+		0, 0, 0,
+		3, 3, 0,
+		6, 5, 1)
+
+	tt.RequestAuthPatch[gin.H](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions/%s", data2.UserID, sub3["subscription_id"]), gin.H{
+		"confirmed": true,
+	})
+
+	countBoth(
+		3, 3, 0,
+		0, 0, 0,
+		3, 3, 0,
+		6, 6, 0)
+
+	tt.RequestAuthDelete[gin.H](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions/%s", data2.UserID, sub1["subscription_id"]), gin.H{})
+
+	countBoth(
+		2, 2, 0,
+		0, 0, 0,
+		3, 3, 0,
+		5, 5, 0)
+
+	tt.RequestAuthDelete[gin.H](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions/%s", data2.UserID, sub2["subscription_id"]), gin.H{})
+
+	countBoth(
+		1, 1, 0,
+		0, 0, 0,
+		3, 3, 0,
+		4, 4, 0)
+
+	tt.RequestAuthDelete[gin.H](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions/%s", data2.UserID, sub3["subscription_id"]), gin.H{})
+
+	countBoth(
+		0, 0, 0,
+		0, 0, 0,
+		3, 3, 0,
+		3, 3, 0)
+
+	sublistRem := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data2.UserID, "incoming_confirmed"))
+	for _, v := range sublistRem.Subscriptions {
+		tt.RequestAuthDelete[gin.H](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions/%s", data2.UserID, v.SubscriptionId), gin.H{})
+	}
+
+	countBoth(
+		0, 0, 0,
+		0, 0, 0,
+		0, 0, 0,
+		0, 0, 0)
+
 }
+
+//TODO test list messages of unsubscribed channel
+//TODO test list messages of sub-not-confirmed channel
+//TODO test list messages of sub-deleted channel

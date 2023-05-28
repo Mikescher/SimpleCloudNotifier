@@ -927,7 +927,7 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 //	@Tags			API-v2
 //
 //	@Param			uid			path		int		true	"UserID"
-//	@Param			selector	query		string	true	"Filter subscriptions (default: owner_all)"	Enums(outgoing_all, outgoing_confirmed, outgoing_unconfirmed, incoming_all, incoming_confirmed, incoming_unconfirmed)
+//	@Param			selector	query		string	true	"Filter subscriptions (default: outgoing_all)"	Enums(outgoing_all, outgoing_confirmed, outgoing_unconfirmed, incoming_all, incoming_confirmed, incoming_unconfirmed)
 //
 //	@Success		200			{object}	handler.ListUserSubscriptions.response
 //	@Failure		400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
@@ -940,7 +940,7 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 	type query struct {
-		Selector *string `json:"selector" form:"selector"  enums:"owner_all,owner_confirmed,owner_unconfirmed,incoming_all,incoming_confirmed,incoming_unconfirmed"`
+		Selector *string `json:"selector" form:"selector"  enums:"outgoing_all,outgoing_confirmed,outgoing_unconfirmed,incoming_all,incoming_confirmed,incoming_unconfirmed"`
 	}
 	type response struct {
 		Subscriptions []models.SubscriptionJSON `json:"subscriptions"`
@@ -958,7 +958,7 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	sel := strings.ToLower(langext.Coalesce(q.Selector, "owner_all"))
+	sel := strings.ToLower(langext.Coalesce(q.Selector, "outgoing_all"))
 
 	var res []models.Subscription
 	var err error
