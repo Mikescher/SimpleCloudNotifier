@@ -5,7 +5,7 @@ PORT=9090
 NAMESPACE=$(shell git rev-parse --abbrev-ref HEAD)
 HASH=$(shell git rev-parse HEAD)
 
-.PHONY: test swagger pygmentize
+.PHONY: test swagger pygmentize docker
 
 build: swagger pygmentize fmt
 	mkdir -p _build
@@ -21,7 +21,7 @@ gow:
 	which gow || go install github.com/mitranim/gow@latest
 	gow -e "go,mod,html,css,json,yaml,js" run -tags "timetzdata sqlite_fts5 sqlite_foreign_keys" blackforestbytes.com/simplecloudnotifier/cmd/scnserver
 
-docker: build
+docker:
 	[ ! -f "DOCKER_GIT_INFO" ] || rm DOCKER_GIT_INFO
 	git rev-parse --abbrev-ref HEAD    >> DOCKER_GIT_INFO
 	git rev-parse              HEAD    >> DOCKER_GIT_INFO

@@ -1,6 +1,14 @@
+FROM golang as builder
+
+WORKDIR /repo
+COPY  . /repo
+
+RUN make build
+
 FROM debian:bookworm
 
-COPY _build/scn_backend /app/scnserver
+COPY --from=builder /repo/_build/scn_backend /app/scnserver
+
 COPY DOCKER_GIT_INFO    /app/DOCKER_GIT_INFO
 
 RUN mkdir /data
