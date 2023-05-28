@@ -6,6 +6,7 @@ import (
 	tt "blackforestbytes.com/simplecloudnotifier/test/util"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
 	"net/url"
 	"testing"
@@ -18,25 +19,393 @@ func TestSearchMessageFTSSimple(t *testing.T) {
 
 	data := tt.InitDefaultData(t, ws)
 
+	type msg struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		Content             string `json:"content"`
+		MessageId           string `json:"message_id"`
+		OwnerUserId         string `json:"owner_user_id"`
+		Priority            int    `json:"priority"`
+		SenderIp            string `json:"sender_ip"`
+		SenderName          string `json:"sender_name"`
+		SenderUserId        string `json:"sender_user_id"`
+		Timestamp           string `json:"timestamp"`
+		Title               string `json:"title"`
+		Trimmed             bool   `json:"trimmed"`
+		UsrMessageId        string `json:"usr_message_id"`
+	}
 	type mglist struct {
-		Messages []gin.H `json:"messages"`
+		Messages []msg `json:"messages"`
 	}
 
 	msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?filter=%s", url.QueryEscape("Friday")))
 	tt.AssertEqual(t, "msgList.len", 2, len(msgList.Messages))
-	tt.AssertArrAny(t, "msgList.any<1>", msgList.Messages, func(msg gin.H) bool { return msg["title"].(string) == "Invitation" })
-	tt.AssertArrAny(t, "msgList.any<2>", msgList.Messages, func(msg gin.H) bool { return msg["title"].(string) == "Important notice" })
+	tt.AssertArrAny(t, "msgList.any<1>", msgList.Messages, func(msg msg) bool { return msg.Title == "Invitation" })
+	tt.AssertArrAny(t, "msgList.any<2>", msgList.Messages, func(msg msg) bool { return msg.Title == "Important notice" })
 }
 
 func TestSearchMessageFTSMulti(t *testing.T) {
-	t.SkipNow() //TODO search for messages by FTS
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	type msg struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		Content             string `json:"content"`
+		MessageId           string `json:"message_id"`
+		OwnerUserId         string `json:"owner_user_id"`
+		Priority            int    `json:"priority"`
+		SenderIp            string `json:"sender_ip"`
+		SenderName          string `json:"sender_name"`
+		SenderUserId        string `json:"sender_user_id"`
+		Timestamp           string `json:"timestamp"`
+		Title               string `json:"title"`
+		Trimmed             bool   `json:"trimmed"`
+		UsrMessageId        string `json:"usr_message_id"`
+	}
+	type mglist struct {
+		Messages []msg `json:"messages"`
+	}
+
+	type keyobj struct {
+		AllChannels  bool     `json:"all_channels"`
+		Channels     []string `json:"channels"`
+		KeytokenId   string   `json:"keytoken_id"`
+		MessagesSent int      `json:"messages_sent"`
+		Name         string   `json:"name"`
+		OwnerUserId  string   `json:"owner_user_id"`
+		Permissions  string   `json:"permissions"`
+		Token        string   `json:"token"` // only in create
+	}
+	type keylist struct {
+		Keys []keyobj `json:"keys"`
+	}
+
+	klist := tt.RequestAuthGet[keylist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", data.User[0].UID))
+
+	akey := langext.ArrFirstOrNil(klist.Keys, func(v keyobj) bool { return v.Permissions == "A" }).KeytokenId
+	skey := langext.ArrFirstOrNil(klist.Keys, func(v keyobj) bool { return v.Permissions == "CS" }).KeytokenId
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?sender=%s&priority=0", url.QueryEscape("Mobile Mate")))
+		tt.AssertEqual(t, "msgList.len", 1, len(msgList.Messages))
+		tt.AssertEqual(t, "msg.Title", "System update", msgList.Messages[0].Title)
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?used_key=%s&priority=%d&channel=%s", skey, 2, "Reminders"))
+		tt.AssertEqual(t, "msgList.len", 1, len(msgList.Messages))
+		tt.AssertEqual(t, "msg.Content", "Don't forget to clock in before starting your shift", msgList.Messages[0].Content)
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?used_key=%s&used_key=%s&channel=%s&filter=%s", skey, akey, "main", url.QueryEscape("tomorrow")))
+		tt.AssertEqual(t, "msgList.len", 1, len(msgList.Messages))
+		tt.AssertEqual(t, "msg.Title", "Notice", msgList.Messages[0].Title)
+	}
 }
 
-//TODO more search/list/filter message tests
+func TestListMessagesFilteredChannels(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
 
-//TODO list messages by chan_key
+	data := tt.InitDefaultData(t, ws)
 
-//TODO (fail to) list messages from channel that you cannot see
+	type msg struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		Content             string `json:"content"`
+		MessageId           string `json:"message_id"`
+		OwnerUserId         string `json:"owner_user_id"`
+		Priority            int    `json:"priority"`
+		SenderIp            string `json:"sender_ip"`
+		SenderName          string `json:"sender_name"`
+		SenderUserId        string `json:"sender_user_id"`
+		Timestamp           string `json:"timestamp"`
+		Title               string `json:"title"`
+		Trimmed             bool   `json:"trimmed"`
+		UsrMessageId        string `json:"usr_message_id"`
+	}
+	type mglist struct {
+		Messages []msg `json:"messages"`
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?channel=%s", url.QueryEscape("Chatting Chamber")))
+		tt.AssertEqual(t, "msgList.len", 3, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?channel=%s&channel=%s", url.QueryEscape("Chatting Chamber"), url.QueryEscape("Reminders")))
+		tt.AssertEqual(t, "msgList.len", 3+6, len(msgList.Messages))
+	}
+}
+
+func TestListMessagesFilteredChannelIDs(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	type msg struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		Content             string `json:"content"`
+		MessageId           string `json:"message_id"`
+		OwnerUserId         string `json:"owner_user_id"`
+		Priority            int    `json:"priority"`
+		SenderIp            string `json:"sender_ip"`
+		SenderName          string `json:"sender_name"`
+		SenderUserId        string `json:"sender_user_id"`
+		Timestamp           string `json:"timestamp"`
+		Title               string `json:"title"`
+		Trimmed             bool   `json:"trimmed"`
+		UsrMessageId        string `json:"usr_message_id"`
+	}
+	type mglist struct {
+		Messages []msg `json:"messages"`
+	}
+
+	type chanobj struct {
+		ChannelId       string `json:"channel_id"`
+		DescriptionName string `json:"description_name"`
+		DisplayName     string `json:"display_name"`
+		InternalName    string `json:"internal_name"`
+		MessagesSent    int    `json:"messages_sent"`
+		OwnerUserId     string `json:"owner_user_id"`
+		SubscribeKey    string `json:"subscribe_key"`
+		Subscription    struct {
+			ChannelId           string `json:"channel_id"`
+			ChannelInternalName string `json:"channel_internal_name"`
+			ChannelOwnerUserId  string `json:"channel_owner_user_id"`
+			Confirmed           bool   `json:"confirmed"`
+			SubscriberUserId    string `json:"subscriber_user_id"`
+			SubscriptionId      string `json:"subscription_id"`
+			TimestampCreated    string `json:"timestamp_created"`
+		} `json:"subscription"`
+		TimestampCreated  string `json:"timestamp_created"`
+		TimestampLastsent string `json:"timestamp_lastsent"`
+	}
+
+	type chanlist struct {
+		Channels []chanobj `json:"channels"`
+	}
+
+	clist := tt.RequestAuthGet[chanlist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data.User[0].UID))
+
+	chan1 := langext.ArrFirstOrNil(clist.Channels, func(v chanobj) bool { return v.InternalName == "Chatting Chamber" }).ChannelId
+	chan2 := langext.ArrFirstOrNil(clist.Channels, func(v chanobj) bool { return v.InternalName == "Reminders" }).ChannelId
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?channel_id=%s", chan1))
+		tt.AssertEqual(t, "msgList.len", 3, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?channel_id=%s&channel_id=%s", chan1, chan2))
+		tt.AssertEqual(t, "msgList.len", 3+6, len(msgList.Messages))
+	}
+}
+
+func TestListMessagesFilteredSenders(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	type msg struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		Content             string `json:"content"`
+		MessageId           string `json:"message_id"`
+		OwnerUserId         string `json:"owner_user_id"`
+		Priority            int    `json:"priority"`
+		SenderIp            string `json:"sender_ip"`
+		SenderName          string `json:"sender_name"`
+		SenderUserId        string `json:"sender_user_id"`
+		Timestamp           string `json:"timestamp"`
+		Title               string `json:"title"`
+		Trimmed             bool   `json:"trimmed"`
+		UsrMessageId        string `json:"usr_message_id"`
+	}
+	type mglist struct {
+		Messages []msg `json:"messages"`
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?sender=%s", url.QueryEscape("Mobile Mate")))
+		tt.AssertEqual(t, "msgList.len", 4, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?sender=%s&sender=%s", url.QueryEscape("Mobile Mate"), url.QueryEscape("Pocket Pal")))
+		tt.AssertEqual(t, "msgList.len", 4+3, len(msgList.Messages))
+	}
+}
+
+func TestListMessagesFilteredTime(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	type msg struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		Content             string `json:"content"`
+		MessageId           string `json:"message_id"`
+		OwnerUserId         string `json:"owner_user_id"`
+		Priority            int    `json:"priority"`
+		SenderIp            string `json:"sender_ip"`
+		SenderName          string `json:"sender_name"`
+		SenderUserId        string `json:"sender_user_id"`
+		Timestamp           string `json:"timestamp"`
+		Title               string `json:"title"`
+		Trimmed             bool   `json:"trimmed"`
+		UsrMessageId        string `json:"usr_message_id"`
+	}
+	type mglist struct {
+		Messages []msg `json:"messages"`
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[4].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages"))
+		tt.AssertEqual(t, "msgList.len", 9, len(msgList.Messages))
+	}
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[4].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?before=%s", url.QueryEscape(time.Now().Add(time.Minute).Format(time.RFC3339))))
+		tt.AssertEqual(t, "msgList.len", 7, len(msgList.Messages))
+	}
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[4].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?before=%s", url.QueryEscape(time.Now().Add(-1*time.Hour).Format(time.RFC3339))))
+		tt.AssertEqual(t, "msgList.len", 1, len(msgList.Messages))
+	}
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[4].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?after=%s", url.QueryEscape(time.Now().Add(+1*time.Minute).Format(time.RFC3339))))
+		tt.AssertEqual(t, "msgList.len", 2, len(msgList.Messages))
+	}
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[4].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?after=%s&before=%s", url.QueryEscape(time.Now().Add(-1*time.Minute).Format(time.RFC3339)), url.QueryEscape(time.Now().Add(+1*time.Minute).Format(time.RFC3339))))
+		tt.AssertEqual(t, "msgList.len", 6, len(msgList.Messages))
+	}
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[4].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?after=%s&before=%s", url.QueryEscape(time.Now().Add(-5*time.Hour).Format(time.RFC3339)), url.QueryEscape(time.Now().Add(-4*time.Hour).Format(time.RFC3339))))
+		tt.AssertEqual(t, "msgList.len", 1, len(msgList.Messages))
+	}
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[4].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?after=%s&before=%s", url.QueryEscape(time.Now().Add(6*time.Hour).Format(time.RFC3339)), url.QueryEscape(time.Now().Add(7*time.Hour).Format(time.RFC3339))))
+		tt.AssertEqual(t, "msgList.len", 2, len(msgList.Messages))
+	}
+}
+
+func TestListMessagesFilteredPriority(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	type msg struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		Content             string `json:"content"`
+		MessageId           string `json:"message_id"`
+		OwnerUserId         string `json:"owner_user_id"`
+		Priority            int    `json:"priority"`
+		SenderIp            string `json:"sender_ip"`
+		SenderName          string `json:"sender_name"`
+		SenderUserId        string `json:"sender_user_id"`
+		Timestamp           string `json:"timestamp"`
+		Title               string `json:"title"`
+		Trimmed             bool   `json:"trimmed"`
+		UsrMessageId        string `json:"usr_message_id"`
+	}
+	type mglist struct {
+		Messages []msg `json:"messages"`
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[4].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?priority=%d", 0))
+		tt.AssertEqual(t, "msgList.len", 6, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[4].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?priority=%d", 1))
+		tt.AssertEqual(t, "msgList.len", 1+1, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[4].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?priority=%d", 2))
+		tt.AssertEqual(t, "msgList.len", 1, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[4].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?priority=%d&priority=%d", 1, 2))
+		tt.AssertEqual(t, "msgList.len", 2+1, len(msgList.Messages))
+	}
+
+}
+
+func TestListMessagesFilteredKeyTokens(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	type msg struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		Content             string `json:"content"`
+		MessageId           string `json:"message_id"`
+		OwnerUserId         string `json:"owner_user_id"`
+		Priority            int    `json:"priority"`
+		SenderIp            string `json:"sender_ip"`
+		SenderName          string `json:"sender_name"`
+		SenderUserId        string `json:"sender_user_id"`
+		Timestamp           string `json:"timestamp"`
+		Title               string `json:"title"`
+		Trimmed             bool   `json:"trimmed"`
+		UsrMessageId        string `json:"usr_message_id"`
+	}
+	type mglist struct {
+		Messages []msg `json:"messages"`
+	}
+
+	type keyobj struct {
+		AllChannels  bool     `json:"all_channels"`
+		Channels     []string `json:"channels"`
+		KeytokenId   string   `json:"keytoken_id"`
+		MessagesSent int      `json:"messages_sent"`
+		Name         string   `json:"name"`
+		OwnerUserId  string   `json:"owner_user_id"`
+		Permissions  string   `json:"permissions"`
+		Token        string   `json:"token"` // only in create
+	}
+	type keylist struct {
+		Keys []keyobj `json:"keys"`
+	}
+
+	klist := tt.RequestAuthGet[keylist](t, data.User[4].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", data.User[4].UID))
+
+	akey := langext.ArrFirstOrNil(klist.Keys, func(v keyobj) bool { return v.Permissions == "A" }).KeytokenId
+	skey := langext.ArrFirstOrNil(klist.Keys, func(v keyobj) bool { return v.Permissions == "CS" }).KeytokenId
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[4].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?used_key=%s", skey))
+		tt.AssertEqual(t, "msgList.len", 7, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[4].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?used_key=%s", akey))
+		tt.AssertEqual(t, "msgList.len", 2, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[4].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?used_key=%s&used_key=%s", skey, akey))
+		tt.AssertEqual(t, "msgList.len", 9, len(msgList.Messages))
+	}
+}
 
 func TestDeleteMessage(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)

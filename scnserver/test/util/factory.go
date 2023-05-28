@@ -190,6 +190,7 @@ var messageExamples = []msgex{
 	{4, "", "Server0", P0, SKEY, "Server outage", "There is currently a server outage. We are working to resolve the issue as soon as possible", 0},
 	{4, "", "", P0, SKEY, "User account update", "Your user account has been updated with new features and improved security measures", 0},
 	{4, "", "", P1, AKEY, "Server status update", "The server is currently experiencing higher than normal traffic. We apologize for any inconvenience", 0},
+	{4, "", "Server0", P0, SKEY, "Server upgrade", "The server has been upgraded again", timeext.FromHours(6.19)},
 
 	{5, "", "localhost", P1, AKEY, "New server release", "A new version of the server has been released. Please update to the latest version to ensure optimal performance", 0},
 	{5, "Test1", "localhost", P1, AKEY, "Server maintenance schedule", "The server will be undergoing regular maintenance every Tuesday at 10pm EST", timeext.FromHours(12.45)},

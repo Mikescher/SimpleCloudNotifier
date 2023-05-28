@@ -91,7 +91,7 @@ func (f MessageFilter) SQL() (string, string, sq.PP, error) {
 	if f.ChannelNameCI != nil {
 		filter := make([]string, 0)
 		for i, v := range *f.ChannelNameCI {
-			filter = append(filter, fmt.Sprintf("(channel_name = :channelnameci_%d COLLATE NOCASE)", i))
+			filter = append(filter, fmt.Sprintf("(messages.channel_internal_name = :channelnameci_%d COLLATE NOCASE)", i))
 			params[fmt.Sprintf("channelnameci_%d", i)] = v
 		}
 		sqlClauses = append(sqlClauses, "("+strings.Join(filter, " OR ")+")")
@@ -100,7 +100,7 @@ func (f MessageFilter) SQL() (string, string, sq.PP, error) {
 	if f.ChannelNameCS != nil {
 		filter := make([]string, 0)
 		for i, v := range *f.ChannelNameCS {
-			filter = append(filter, fmt.Sprintf("(channel_name = :channelnamecs_%d COLLATE BINARY)", i))
+			filter = append(filter, fmt.Sprintf("(messages.channel_internal_name = :channelnamecs_%d COLLATE BINARY)", i))
 			params[fmt.Sprintf("channelnamecs_%d", i)] = v
 		}
 		sqlClauses = append(sqlClauses, "("+strings.Join(filter, " OR ")+")")
@@ -109,7 +109,7 @@ func (f MessageFilter) SQL() (string, string, sq.PP, error) {
 	if f.ChannelID != nil {
 		filter := make([]string, 0)
 		for i, v := range *f.ChannelID {
-			filter = append(filter, fmt.Sprintf("(channel_id = :channelid_%d)", i))
+			filter = append(filter, fmt.Sprintf("(messages.channel_id = :channelid_%d)", i))
 			params[fmt.Sprintf("channelid_%d", i)] = v
 		}
 		sqlClauses = append(sqlClauses, "("+strings.Join(filter, " OR ")+")")
@@ -117,7 +117,7 @@ func (f MessageFilter) SQL() (string, string, sq.PP, error) {
 
 	if f.SenderNameCI != nil {
 		filter := make([]string, 0)
-		for i, v := range *f.ChannelNameCI {
+		for i, v := range *f.SenderNameCI {
 			filter = append(filter, fmt.Sprintf("(sender_name = :sendernameci_%d COLLATE NOCASE)", i))
 			params[fmt.Sprintf("sendernameci_%d", i)] = v
 		}
@@ -126,7 +126,7 @@ func (f MessageFilter) SQL() (string, string, sq.PP, error) {
 
 	if f.SenderNameCS != nil {
 		filter := make([]string, 0)
-		for i, v := range *f.ChannelNameCS {
+		for i, v := range *f.SenderNameCS {
 			filter = append(filter, fmt.Sprintf("(sender_name = :sendernamecs_%d COLLATE BINARY)", i))
 			params[fmt.Sprintf("sendernamecs_%d", i)] = v
 		}
