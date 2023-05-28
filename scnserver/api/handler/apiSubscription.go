@@ -349,6 +349,22 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 	}
 
+	existingSub, err := h.database.GetSubscriptionBySubscriber(ctx, u.UserID, channel.ChannelID)
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query existing subscription", err)
+	}
+	if existingSub != nil {
+		if !existingSub.Confirmed && channel.OwnerUserID == u.UserID {
+			err = h.database.UpdateSubscriptionConfirmed(ctx, existingSub.SubscriptionID, true)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update subscription", err)
+			}
+			existingSub.Confirmed = true
+		}
+
+		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, existingSub.JSON()))
+	}
+
 	sub, err := h.database.CreateSubscription(ctx, u.UserID, channel, channel.OwnerUserID == u.UserID)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create subscription", err)

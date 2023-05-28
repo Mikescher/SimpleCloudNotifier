@@ -1412,13 +1412,13 @@ func TestSendWithAdminKey(t *testing.T) {
 		Subscriptions []subobj `json:"subscriptions"`
 	}
 
-	chan1 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+	chan1 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UID), gin.H{
 		"name": "Chan1",
 	})
-	chan2 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+	chan2 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UID), gin.H{
 		"name": "Chan2",
 	})
-	chan3 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+	chan3 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UID), gin.H{
 		"name": "Chan3",
 	})
 
@@ -1428,21 +1428,21 @@ func TestSendWithAdminKey(t *testing.T) {
 
 	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
 		"key":     data1.AdminKey,
-		"user_id": data1.UserID,
+		"user_id": data1.UID,
 		"channel": "Chan1",
 		"title":   tt.LipsumWord(1001, 1),
 	})
 
 	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
 		"key":     data1.AdminKey,
-		"user_id": data1.UserID,
+		"user_id": data1.UID,
 		"channel": "Chan2",
 		"title":   tt.LipsumWord(1001, 1),
 	})
 
 	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
 		"key":     data1.AdminKey,
-		"user_id": data1.UserID,
+		"user_id": data1.UID,
 		"channel": "Chan3",
 		"title":   tt.LipsumWord(1001, 1),
 	})
@@ -1487,13 +1487,13 @@ func TestSendWithSendKey(t *testing.T) {
 		Subscriptions []subobj `json:"subscriptions"`
 	}
 
-	chan1 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+	chan1 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UID), gin.H{
 		"name": "Chan1",
 	})
-	chan2 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+	chan2 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UID), gin.H{
 		"name": "Chan2",
 	})
-	chan3 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+	chan3 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UID), gin.H{
 		"name": "Chan3",
 	})
 
@@ -1503,21 +1503,21 @@ func TestSendWithSendKey(t *testing.T) {
 
 	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
 		"key":     data1.SendKey,
-		"user_id": data1.UserID,
+		"user_id": data1.UID,
 		"channel": "Chan1",
 		"title":   tt.LipsumWord(1001, 1),
 	})
 
 	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
 		"key":     data1.SendKey,
-		"user_id": data1.UserID,
+		"user_id": data1.UID,
 		"channel": "Chan2",
 		"title":   tt.LipsumWord(1001, 1),
 	})
 
 	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
 		"key":     data1.SendKey,
-		"user_id": data1.UserID,
+		"user_id": data1.UID,
 		"channel": "Chan3",
 		"title":   tt.LipsumWord(1001, 1),
 	})
@@ -1562,13 +1562,13 @@ func TestSendWithReadKey(t *testing.T) {
 		Subscriptions []subobj `json:"subscriptions"`
 	}
 
-	chan1 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+	chan1 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UID), gin.H{
 		"name": "Chan1",
 	})
-	chan2 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+	chan2 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UID), gin.H{
 		"name": "Chan2",
 	})
-	chan3 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+	chan3 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UID), gin.H{
 		"name": "Chan3",
 	})
 
@@ -1578,21 +1578,21 @@ func TestSendWithReadKey(t *testing.T) {
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
 		"key":     data1.ReadKey,
-		"user_id": data1.UserID,
+		"user_id": data1.UID,
 		"channel": "Chan1",
 		"title":   tt.LipsumWord(1001, 1),
 	}, 401, apierr.USER_AUTH_FAILED)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
 		"key":     data1.ReadKey,
-		"user_id": data1.UserID,
+		"user_id": data1.UID,
 		"channel": "Chan2",
 		"title":   tt.LipsumWord(1002, 1),
 	}, 401, apierr.USER_AUTH_FAILED)
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
 		"key":     data1.ReadKey,
-		"user_id": data1.UserID,
+		"user_id": data1.UID,
 		"channel": "Chan3",
 		"title":   tt.LipsumWord(1003, 1),
 	}, 401, apierr.USER_AUTH_FAILED)
@@ -1647,16 +1647,16 @@ func TestSendWithPermissionSendKey(t *testing.T) {
 		Token        string   `json:"token"` // only in create
 	}
 
-	chan1 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+	chan1 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UID), gin.H{
 		"name": "Chan1",
 	})
-	chan2 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+	chan2 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UID), gin.H{
 		"name": "Chan2",
 	})
-	chan3 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+	chan3 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UID), gin.H{
 		"name": "Chan3",
 	})
-	chan4 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+	chan4 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UID), gin.H{
 		"name": "Chan4",
 	})
 
@@ -1666,7 +1666,7 @@ func TestSendWithPermissionSendKey(t *testing.T) {
 	tt.AssertNotDefault(t, "chan4", chan4)
 
 	{
-		keyOK := tt.RequestAuthPost[keyobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", data1.UserID), gin.H{
+		keyOK := tt.RequestAuthPost[keyobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", data1.UID), gin.H{
 			"all_channels": false,
 			"channels":     []string{chan1.ChannelId, chan2.ChannelId, chan3.ChannelId},
 			"name":         "K2",
@@ -1675,28 +1675,28 @@ func TestSendWithPermissionSendKey(t *testing.T) {
 
 		tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
 			"key":     keyOK.Token,
-			"user_id": data1.UserID,
+			"user_id": data1.UID,
 			"channel": "Chan1",
 			"title":   tt.LipsumWord(1001, 1),
 		})
 
 		tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
 			"key":     keyOK.Token,
-			"user_id": data1.UserID,
+			"user_id": data1.UID,
 			"channel": "Chan2",
 			"title":   tt.LipsumWord(1002, 1),
 		})
 
 		tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
 			"key":     keyOK.Token,
-			"user_id": data1.UserID,
+			"user_id": data1.UID,
 			"channel": "Chan3",
 			"title":   tt.LipsumWord(1003, 1),
 		})
 	}
 
 	{
-		keyNOK := tt.RequestAuthPost[keyobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", data1.UserID), gin.H{
+		keyNOK := tt.RequestAuthPost[keyobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", data1.UID), gin.H{
 			"all_channels": false,
 			"channels":     []string{},
 			"name":         "K3",
@@ -1705,28 +1705,28 @@ func TestSendWithPermissionSendKey(t *testing.T) {
 
 		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
 			"key":     keyNOK.Token,
-			"user_id": data1.UserID,
+			"user_id": data1.UID,
 			"channel": "Chan1",
 			"title":   tt.LipsumWord(1001, 1),
 		}, 401, apierr.USER_AUTH_FAILED)
 
 		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
 			"key":     keyNOK.Token,
-			"user_id": data1.UserID,
+			"user_id": data1.UID,
 			"channel": "Chan2",
 			"title":   tt.LipsumWord(1002, 1),
 		}, 401, apierr.USER_AUTH_FAILED)
 
 		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
 			"key":     keyNOK.Token,
-			"user_id": data1.UserID,
+			"user_id": data1.UID,
 			"channel": "Chan3",
 			"title":   tt.LipsumWord(1003, 1),
 		}, 401, apierr.USER_AUTH_FAILED)
 	}
 
 	{
-		keyNOK := tt.RequestAuthPost[keyobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", data1.UserID), gin.H{
+		keyNOK := tt.RequestAuthPost[keyobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", data1.UID), gin.H{
 			"all_channels": false,
 			"channels":     []string{chan4.ChannelId},
 			"name":         "K4",
@@ -1735,28 +1735,28 @@ func TestSendWithPermissionSendKey(t *testing.T) {
 
 		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
 			"key":     keyNOK.Token,
-			"user_id": data1.UserID,
+			"user_id": data1.UID,
 			"channel": "Chan1",
 			"title":   tt.LipsumWord(1001, 1),
 		}, 401, apierr.USER_AUTH_FAILED)
 
 		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
 			"key":     keyNOK.Token,
-			"user_id": data1.UserID,
+			"user_id": data1.UID,
 			"channel": "Chan2",
 			"title":   tt.LipsumWord(1002, 1),
 		}, 401, apierr.USER_AUTH_FAILED)
 
 		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
 			"key":     keyNOK.Token,
-			"user_id": data1.UserID,
+			"user_id": data1.UID,
 			"channel": "Chan3",
 			"title":   tt.LipsumWord(1003, 1),
 		}, 401, apierr.USER_AUTH_FAILED)
 	}
 
 	{
-		keyNOK := tt.RequestAuthPost[keyobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", data1.UserID), gin.H{
+		keyNOK := tt.RequestAuthPost[keyobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", data1.UID), gin.H{
 			"all_channels": false,
 			"channels":     []string{chan1.ChannelId, chan2.ChannelId, chan3.ChannelId},
 			"name":         "K4",
@@ -1765,21 +1765,21 @@ func TestSendWithPermissionSendKey(t *testing.T) {
 
 		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
 			"key":     keyNOK.Token,
-			"user_id": data1.UserID,
+			"user_id": data1.UID,
 			"channel": "Chan1",
 			"title":   tt.LipsumWord(1001, 1),
 		}, 401, apierr.USER_AUTH_FAILED)
 
 		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
 			"key":     keyNOK.Token,
-			"user_id": data1.UserID,
+			"user_id": data1.UID,
 			"channel": "Chan2",
 			"title":   tt.LipsumWord(1002, 1),
 		}, 401, apierr.USER_AUTH_FAILED)
 
 		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
 			"key":     keyNOK.Token,
-			"user_id": data1.UserID,
+			"user_id": data1.UID,
 			"channel": "Chan3",
 			"title":   tt.LipsumWord(1003, 1),
 		}, 401, apierr.USER_AUTH_FAILED)

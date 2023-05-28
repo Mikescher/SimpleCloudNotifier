@@ -422,7 +422,7 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 }
 
 type SingleData struct {
-	UserID   string
+	UID      string
 	AdminKey string
 	SendKey  string
 	ReadKey  string
@@ -464,7 +464,7 @@ func InitSingleData(t *testing.T, ws *logic.Application) SingleData {
 	success = true
 
 	return SingleData{
-		UserID:   r0.UserId,
+		UID:      r0.UserId,
 		AdminKey: r0.AdminKey,
 		SendKey:  r0.SendKey,
 		ReadKey:  r0.ReadKey,
