@@ -3,13 +3,14 @@ package primary
 import (
 	server "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/db/dbtools"
-	"blackforestbytes.com/simplecloudnotifier/db/impl/primary/schema"
+	"blackforestbytes.com/simplecloudnotifier/db/schema"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
@@ -67,9 +68,20 @@ func (db *Database) Migrate(ctx context.Context) error {
 	defer cancel()
 
 	currschema, err := db.ReadSchema(ctx)
+	if err != nil {
+		return err
+	}
+
 	if currschema == 0 {
 
-		_, err = db.db.Exec(ctx, schema.PrimarySchema3, sq.PP{})
+		schemastr := schema.PrimarySchema3
+
+		schemahash, err := sq.HashSqliteSchema(ctx, schemastr)
+		if err != nil {
+			return err
+		}
+
+		_, err = db.db.Exec(ctx, schemastr, sq.PP{})
 		if err != nil {
 			return err
 		}
@@ -79,7 +91,12 @@ func (db *Database) Migrate(ctx context.Context) error {
 			return err
 		}
 
-		err = db.pp.Init(ctx)
+		err = db.WriteMetaString(ctx, "schema_hash", schemahash)
+		if err != nil {
+			return err
+		}
+
+		err = db.pp.Init(ctx) // Re-Init
 		if err != nil {
 			return err
 		}
@@ -89,8 +106,33 @@ func (db *Database) Migrate(ctx context.Context) error {
 	} else if currschema == 1 {
 		return errors.New("cannot autom. upgrade schema 1")
 	} else if currschema == 2 {
-		return errors.New("cannot autom. upgrade schema 2") //TODO
+		return errors.New("cannot autom. upgrade schema 2")
 	} else if currschema == 3 {
+
+		schemHashDB, err := sq.HashSqliteDatabase(ctx, db.db)
+		if err != nil {
+			return err
+		}
+
+		schemaHashMeta, err := db.ReadMetaString(ctx, "schema_hash")
+		if err != nil {
+			return err
+		}
+
+		schemHashAsset := schema.PrimaryHash3
+		if err != nil {
+			return err
+		}
+
+		if schemHashDB != langext.Coalesce(schemaHashMeta, "") || langext.Coalesce(schemaHashMeta, "") != schemHashAsset {
+			log.Debug().Str("schemHashDB", schemHashDB).Msg("Schema (primary db)")
+			log.Debug().Str("schemaHashMeta", langext.Coalesce(schemaHashMeta, "")).Msg("Schema (primary db)")
+			log.Debug().Str("schemHashAsset", schemHashAsset).Msg("Schema (primary db)")
+			return errors.New("database schema does not match (primary db)")
+		} else {
+			log.Debug().Str("schemHash", schemHashDB).Msg("Verified Schema consistency (primary db)")
+		}
+
 		return nil // current
 	} else {
 		return errors.New(fmt.Sprintf("Unknown DB schema: %d", currschema))
