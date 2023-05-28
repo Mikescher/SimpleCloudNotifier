@@ -94,7 +94,7 @@ func (j *RequestLogCollectorJob) insertLog(requestid models.RequestID, rl models
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	_, err := j.app.Database.Requests.InsertRequestLog(ctx, requestid, rl.DB())
+	_, err := j.app.Database.Requests.InsertRequestLog(ctx, requestid, rl)
 	if err != nil {
 		return err
 	}

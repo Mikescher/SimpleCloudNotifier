@@ -15,36 +15,25 @@ func (db *Database) CreateKeyToken(ctx TxContext, name string, owner models.User
 		return models.KeyToken{}, err
 	}
 
-	now := time.Now().UTC()
+	entity := models.KeyTokenDB{
+		KeyTokenID:        models.NewKeyTokenID(),
+		Name:              name,
+		TimestampCreated:  time2DB(time.Now()),
+		TimestampLastUsed: nil,
+		OwnerUserID:       owner,
+		AllChannels:       allChannels,
+		Channels:          strings.Join(langext.ArrMap(channels, func(v models.ChannelID) string { return v.String() }), ";"),
+		Token:             token,
+		Permissions:       permissions.String(),
+		MessagesSent:      0,
+	}
 
-	keyTokenid := models.NewKeyTokenID()
-
-	_, err = tx.Exec(ctx, "INSERT INTO keytokens (keytoken_id, name, timestamp_created, owner_user_id, all_channels, channels, token, permissions) VALUES (:tid, :nam, :tsc, :owr, :all, :cha, :tok, :prm)", sq.PP{
-		"tid": keyTokenid,
-		"nam": name,
-		"tsc": time2DB(now),
-		"owr": owner.String(),
-		"all": bool2DB(allChannels),
-		"cha": strings.Join(langext.ArrMap(channels, func(v models.ChannelID) string { return v.String() }), ";"),
-		"tok": token,
-		"prm": permissions.String(),
-	})
+	_, err = sq.InsertSingle(ctx, tx, "keytokens", entity)
 	if err != nil {
 		return models.KeyToken{}, err
 	}
 
-	return models.KeyToken{
-		KeyTokenID:        keyTokenid,
-		Name:              name,
-		TimestampCreated:  now,
-		TimestampLastUsed: nil,
-		OwnerUserID:       owner,
-		AllChannels:       allChannels,
-		Channels:          channels,
-		Token:             token,
-		Permissions:       permissions,
-		MessagesSent:      0,
-	}, nil
+	return entity.Model(), nil
 }
 
 func (db *Database) ListKeyTokens(ctx TxContext, ownerID models.UserID) ([]models.KeyToken, error) {

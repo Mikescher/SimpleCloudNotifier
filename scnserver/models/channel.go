@@ -80,9 +80,7 @@ type ChannelDB struct {
 	DisplayName       string    `db:"display_name"`
 	DescriptionName   *string   `db:"description_name"`
 	SubscribeKey      string    `db:"subscribe_key"`
-	SendKey           string    `db:"send_key"`
 	TimestampCreated  int64     `db:"timestamp_created"`
-	TimestampLastRead *int64    `db:"timestamp_lastread"`
 	TimestampLastSent *int64    `db:"timestamp_lastsent"`
 	MessagesSent      int       `db:"messages_sent"`
 }

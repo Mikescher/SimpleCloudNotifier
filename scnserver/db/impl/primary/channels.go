@@ -62,33 +62,23 @@ func (db *Database) CreateChannel(ctx TxContext, userid models.UserID, dispName 
 		return models.Channel{}, err
 	}
 
-	now := time.Now().UTC()
-
-	channelid := models.NewChannelID()
-
-	_, err = tx.Exec(ctx, "INSERT INTO channels (channel_id, owner_user_id, display_name, internal_name, description_name, subscribe_key, timestamp_created) VALUES (:cid, :ouid, :dnam, :inam, :hnam, :subkey, :ts)", sq.PP{
-		"cid":    channelid,
-		"ouid":   userid,
-		"dnam":   dispName,
-		"inam":   intName,
-		"hnam":   nil,
-		"subkey": subscribeKey,
-		"ts":     time2DB(now),
-	})
-	if err != nil {
-		return models.Channel{}, err
-	}
-
-	return models.Channel{
-		ChannelID:         channelid,
+	entity := models.ChannelDB{
+		ChannelID:         models.NewChannelID(),
 		OwnerUserID:       userid,
 		DisplayName:       dispName,
 		InternalName:      intName,
 		SubscribeKey:      subscribeKey,
-		TimestampCreated:  now,
+		TimestampCreated:  time2DB(time.Now()),
 		TimestampLastSent: nil,
 		MessagesSent:      0,
-	}, nil
+	}
+
+	_, err = sq.InsertSingle(ctx, tx, "channels", entity)
+	if err != nil {
+		return models.Channel{}, err
+	}
+
+	return entity.Model(), nil
 }
 
 func (db *Database) ListChannelsByOwner(ctx TxContext, userid models.UserID, subUserID models.UserID) ([]models.ChannelWithSubscription, error) {

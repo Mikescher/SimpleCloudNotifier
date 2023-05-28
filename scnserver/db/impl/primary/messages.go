@@ -62,46 +62,30 @@ func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, cha
 		return models.Message{}, err
 	}
 
-	now := time.Now().UTC()
-
-	messageid := models.NewMessageID()
-
-	_, err = tx.Exec(ctx, "INSERT INTO messages (message_id, sender_user_id, owner_user_id, channel_internal_name, channel_id, timestamp_real, timestamp_client, title, content, priority, usr_message_id, sender_ip, sender_name, used_key_id) VALUES (:mid, :suid, :ouid, :cnam, :cid, :tsr, :tsc, :tit, :cnt, :prio, :umid, :ip, :snam, :uk)", sq.PP{
-		"mid":  messageid,
-		"suid": senderUserID,
-		"ouid": channel.OwnerUserID,
-		"cnam": channel.InternalName,
-		"cid":  channel.ChannelID,
-		"tsr":  time2DB(now),
-		"tsc":  time2DBOpt(timestampSend),
-		"tit":  title,
-		"cnt":  content,
-		"prio": priority,
-		"umid": userMsgId,
-		"ip":   senderIP,
-		"snam": senderName,
-		"uk":   usedKeyID,
-	})
-	if err != nil {
-		return models.Message{}, err
-	}
-
-	return models.Message{
-		MessageID:           messageid,
+	entity := models.MessageDB{
+		MessageID:           models.NewMessageID(),
 		SenderUserID:        senderUserID,
 		OwnerUserID:         channel.OwnerUserID,
 		ChannelInternalName: channel.InternalName,
 		ChannelID:           channel.ChannelID,
 		SenderIP:            senderIP,
 		SenderName:          senderName,
-		TimestampReal:       now,
-		TimestampClient:     timestampSend,
+		TimestampReal:       time2DB(time.Now()),
+		TimestampClient:     time2DBOpt(timestampSend),
 		Title:               title,
 		Content:             content,
 		Priority:            priority,
 		UserMessageID:       userMsgId,
 		UsedKeyID:           usedKeyID,
-	}, nil
+		Deleted:             bool2DB(false),
+	}
+
+	_, err = sq.InsertSingle(ctx, tx, "messages", entity)
+	if err != nil {
+		return models.Message{}, err
+	}
+
+	return entity.Model(), nil
 }
 
 func (db *Database) DeleteMessage(ctx TxContext, messageID models.MessageID) error {

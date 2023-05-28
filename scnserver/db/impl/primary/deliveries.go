@@ -14,38 +14,28 @@ func (db *Database) CreateRetryDelivery(ctx TxContext, client models.Client, msg
 		return models.Delivery{}, err
 	}
 
-	now := time.Now().UTC()
+	now := time.Now()
 	next := scn.NextDeliveryTimestamp(now)
 
-	deliveryid := models.NewDeliveryID()
+	entity := models.DeliveryDB{
+		DeliveryID:         models.NewDeliveryID(),
+		MessageID:          msg.MessageID,
+		ReceiverUserID:     client.UserID,
+		ReceiverClientID:   client.ClientID,
+		TimestampCreated:   time2DB(now),
+		TimestampFinalized: nil,
+		Status:             models.DeliveryStatusRetry,
+		RetryCount:         0,
+		NextDelivery:       langext.Ptr(time2DB(next)),
+		FCMMessageID:       nil,
+	}
 
-	_, err = tx.Exec(ctx, "INSERT INTO deliveries (delivery_id, message_id, receiver_user_id, receiver_client_id, timestamp_created, timestamp_finalized, status, fcm_message_id, next_delivery) VALUES (:did, :mid, :ruid, :rcid, :tsc, :tsf, :stat, :fcm, :next)", sq.PP{
-		"did":  deliveryid,
-		"mid":  msg.MessageID,
-		"ruid": client.UserID,
-		"rcid": client.ClientID,
-		"tsc":  time2DB(now),
-		"tsf":  nil,
-		"stat": models.DeliveryStatusRetry,
-		"fcm":  nil,
-		"next": time2DB(next),
-	})
+	_, err = sq.InsertSingle(ctx, tx, "deliveries", entity)
 	if err != nil {
 		return models.Delivery{}, err
 	}
 
-	return models.Delivery{
-		DeliveryID:         deliveryid,
-		MessageID:          msg.MessageID,
-		ReceiverUserID:     client.UserID,
-		ReceiverClientID:   client.ClientID,
-		TimestampCreated:   now,
-		TimestampFinalized: nil,
-		Status:             models.DeliveryStatusRetry,
-		RetryCount:         0,
-		NextDelivery:       langext.Ptr(next),
-		FCMMessageID:       nil,
-	}, nil
+	return entity.Model(), nil
 }
 
 func (db *Database) CreateSuccessDelivery(ctx TxContext, client models.Client, msg models.Message, fcmDelivID string) (models.Delivery, error) {
@@ -54,37 +44,27 @@ func (db *Database) CreateSuccessDelivery(ctx TxContext, client models.Client, m
 		return models.Delivery{}, err
 	}
 
-	now := time.Now().UTC()
+	now := time.Now()
 
-	deliveryid := models.NewDeliveryID()
-
-	_, err = tx.Exec(ctx, "INSERT INTO deliveries (delivery_id, message_id, receiver_user_id, receiver_client_id, timestamp_created, timestamp_finalized, status, fcm_message_id, next_delivery) VALUES (:did, :mid, :ruid, :rcid, :tsc, :tsf, :stat, :fcm, :next)", sq.PP{
-		"did":  deliveryid,
-		"mid":  msg.MessageID,
-		"ruid": client.UserID,
-		"rcid": client.ClientID,
-		"tsc":  time2DB(now),
-		"tsf":  time2DB(now),
-		"stat": models.DeliveryStatusSuccess,
-		"fcm":  fcmDelivID,
-		"next": nil,
-	})
-	if err != nil {
-		return models.Delivery{}, err
-	}
-
-	return models.Delivery{
-		DeliveryID:         deliveryid,
+	entity := models.DeliveryDB{
+		DeliveryID:         models.NewDeliveryID(),
 		MessageID:          msg.MessageID,
 		ReceiverUserID:     client.UserID,
 		ReceiverClientID:   client.ClientID,
-		TimestampCreated:   now,
-		TimestampFinalized: langext.Ptr(now),
+		TimestampCreated:   time2DB(now),
+		TimestampFinalized: langext.Ptr(time2DB(now)),
 		Status:             models.DeliveryStatusSuccess,
 		RetryCount:         0,
 		NextDelivery:       nil,
 		FCMMessageID:       langext.Ptr(fcmDelivID),
-	}, nil
+	}
+
+	_, err = sq.InsertSingle(ctx, tx, "deliveries", entity)
+	if err != nil {
+		return models.Delivery{}, err
+	}
+
+	return entity.Model(), nil
 }
 
 func (db *Database) ListRetrieableDeliveries(ctx TxContext, pageSize int) ([]models.Delivery, error) {

@@ -8,64 +8,18 @@ import (
 	"time"
 )
 
-func (db *Database) InsertRequestLog(ctx context.Context, requestid models.RequestID, data models.RequestLogDB) (models.RequestLogDB, error) {
+func (db *Database) InsertRequestLog(ctx context.Context, requestid models.RequestID, data models.RequestLog) (models.RequestLog, error) {
 
-	now := time.Now()
+	entity := data.DB()
+	entity.RequestID = requestid
+	entity.TimestampCreated = time2DB(time.Now())
 
-	_, err := db.db.Exec(ctx, "INSERT INTO requests (request_id, method, uri, user_agent, authentication, request_body, request_body_size, request_content_type, remote_ip, userid, permissions, response_statuscode, response_body_size, response_body, response_content_type, retry_count, panicked, panic_str, processing_time, timestamp_created, timestamp_start, timestamp_finish, key_id) VALUES (:request_id, :method, :uri, :user_agent, :authentication, :request_body, :request_body_size, :request_content_type, :remote_ip, :userid, :permissions, :response_statuscode, :response_body_size, :response_body, :response_content_type, :retry_count, :panicked, :panic_str, :processing_time, :timestamp_created, :timestamp_start, :timestamp_finish, :kid)", sq.PP{
-		"request_id":            requestid,
-		"method":                data.Method,
-		"uri":                   data.URI,
-		"user_agent":            data.UserAgent,
-		"authentication":        data.Authentication,
-		"request_body":          data.RequestBody,
-		"request_body_size":     data.RequestBodySize,
-		"request_content_type":  data.RequestContentType,
-		"remote_ip":             data.RemoteIP,
-		"userid":                data.UserID,
-		"permissions":           data.Permissions,
-		"response_statuscode":   data.ResponseStatuscode,
-		"response_body_size":    data.ResponseBodySize,
-		"response_body":         data.ResponseBody,
-		"response_content_type": data.ResponseContentType,
-		"retry_count":           data.RetryCount,
-		"panicked":              data.Panicked,
-		"panic_str":             data.PanicStr,
-		"processing_time":       data.ProcessingTime,
-		"timestamp_created":     now.UnixMilli(),
-		"timestamp_start":       data.TimestampStart,
-		"timestamp_finish":      data.TimestampFinish,
-		"kid":                   data.KeyID,
-	})
+	_, err := sq.InsertSingle(ctx, db.db, "requests", entity)
 	if err != nil {
-		return models.RequestLogDB{}, err
+		return models.RequestLog{}, err
 	}
 
-	return models.RequestLogDB{
-		RequestID:           requestid,
-		Method:              data.Method,
-		URI:                 data.URI,
-		UserAgent:           data.UserAgent,
-		Authentication:      data.Authentication,
-		RequestBody:         data.RequestBody,
-		RequestBodySize:     data.RequestBodySize,
-		RequestContentType:  data.RequestContentType,
-		RemoteIP:            data.RemoteIP,
-		UserID:              data.UserID,
-		Permissions:         data.Permissions,
-		ResponseStatuscode:  data.ResponseStatuscode,
-		ResponseBodySize:    data.ResponseBodySize,
-		ResponseBody:        data.ResponseBody,
-		ResponseContentType: data.ResponseContentType,
-		RetryCount:          data.RetryCount,
-		Panicked:            data.Panicked,
-		PanicStr:            data.PanicStr,
-		ProcessingTime:      data.ProcessingTime,
-		TimestampCreated:    now.UnixMilli(),
-		TimestampStart:      data.TimestampStart,
-		TimestampFinish:     data.TimestampFinish,
-		KeyID:               data.KeyID,
-	}, nil
+	return entity.Model(), nil
 }
 
 func (db *Database) Cleanup(ctx context.Context, count int, duration time.Duration) (int64, error) {

@@ -13,32 +13,22 @@ func (db *Database) CreateSubscription(ctx TxContext, subscriberUID models.UserI
 		return models.Subscription{}, err
 	}
 
-	now := time.Now().UTC()
-
-	subscriptionid := models.NewSubscriptionID()
-
-	_, err = tx.Exec(ctx, "INSERT INTO subscriptions (subscription_id, subscriber_user_id, channel_owner_user_id, channel_internal_name, channel_id, timestamp_created, confirmed) VALUES (:sid, :suid, :ouid, :cnam, :cid, :ts, :conf)", sq.PP{
-		"sid":  subscriptionid,
-		"suid": subscriberUID,
-		"ouid": channel.OwnerUserID,
-		"cnam": channel.InternalName,
-		"cid":  channel.ChannelID,
-		"ts":   time2DB(now),
-		"conf": confirmed,
-	})
-	if err != nil {
-		return models.Subscription{}, err
-	}
-
-	return models.Subscription{
-		SubscriptionID:      subscriptionid,
+	entity := models.SubscriptionDB{
+		SubscriptionID:      models.NewSubscriptionID(),
 		SubscriberUserID:    subscriberUID,
 		ChannelOwnerUserID:  channel.OwnerUserID,
 		ChannelID:           channel.ChannelID,
 		ChannelInternalName: channel.InternalName,
-		TimestampCreated:    now,
-		Confirmed:           confirmed,
-	}, nil
+		TimestampCreated:    time2DB(time.Now()),
+		Confirmed:           bool2DB(confirmed),
+	}
+
+	_, err = sq.InsertSingle(ctx, tx, "subscriptions", entity)
+	if err != nil {
+		return models.Subscription{}, err
+	}
+
+	return entity.Model(), nil
 }
 
 func (db *Database) ListSubscriptionsByChannel(ctx TxContext, channelID models.ChannelID) ([]models.Subscription, error) {

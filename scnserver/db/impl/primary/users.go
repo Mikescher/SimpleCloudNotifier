@@ -13,25 +13,10 @@ func (db *Database) CreateUser(ctx TxContext, protoken *string, username *string
 		return models.User{}, err
 	}
 
-	now := time.Now().UTC()
-
-	userid := models.NewUserID()
-
-	_, err = tx.Exec(ctx, "INSERT INTO users (user_id, username, is_pro, pro_token, timestamp_created) VALUES (:uid, :un, :pro, :tok, :ts)", sq.PP{
-		"uid": userid,
-		"un":  username,
-		"pro": bool2DB(protoken != nil),
-		"tok": protoken,
-		"ts":  time2DB(now),
-	})
-	if err != nil {
-		return models.User{}, err
-	}
-
-	return models.User{
-		UserID:            userid,
+	entity := models.UserDB{
+		UserID:            models.NewUserID(),
 		Username:          username,
-		TimestampCreated:  now,
+		TimestampCreated:  time2DB(time.Now()),
 		TimestampLastRead: nil,
 		TimestampLastSent: nil,
 		MessagesSent:      0,
@@ -39,7 +24,14 @@ func (db *Database) CreateUser(ctx TxContext, protoken *string, username *string
 		QuotaUsedDay:      nil,
 		IsPro:             protoken != nil,
 		ProToken:          protoken,
-	}, nil
+	}
+
+	_, err = sq.InsertSingle(ctx, tx, "users", entity)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return entity.Model(), nil
 }
 
 func (db *Database) ClearProTokens(ctx TxContext, protoken string) error {

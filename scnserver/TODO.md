@@ -59,6 +59,8 @@
 
  - switch send script everywhere (we can use the new server, but we need to send correct channels)
 
+ - do i need bool2db()? it seems to work for keytokens without them?
+
 #### UNSURE
 
  - (?) default-priority for channels
@@ -79,7 +81,10 @@
 
  - Pagination for ListChannels / ListSubscriptions / ListClients / ListChannelSubscriptions / ListUserSubscriptions
 
- - Add .Insert() function to sq.DB interface (auto generate insert for an object based on struct keys)
+ - Use only single struct for DB|Model|JSON
+     * needs sq.Converter implementation
+     * needs to handle joined data
+     * rfctime.Time...
 
  - cannot open sqlite in dbbrowsr (cannot parse schema?)
    -> https://github.com/sqlitebrowser/sqlitebrowser/issues/292 -> https://github.com/sqlitebrowser/sqlitebrowser/issues/29266

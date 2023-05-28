@@ -13,32 +13,22 @@ func (db *Database) CreateClient(ctx TxContext, userid models.UserID, ctype mode
 		return models.Client{}, err
 	}
 
-	now := time.Now().UTC()
+	entity := models.ClientDB{
+		ClientID:         models.NewClientID(),
+		UserID:           userid,
+		Type:             ctype,
+		FCMToken:         langext.Ptr(fcmToken),
+		TimestampCreated: time2DB(time.Now()),
+		AgentModel:       agentModel,
+		AgentVersion:     agentVersion,
+	}
 
-	clientid := models.NewClientID()
-
-	_, err = tx.Exec(ctx, "INSERT INTO clients (client_id, user_id, type, fcm_token, timestamp_created, agent_model, agent_version) VALUES (:cid, :uid, :typ, :fcm, :ts, :am, :av)", sq.PP{
-		"cid": clientid,
-		"uid": userid,
-		"typ": string(ctype),
-		"fcm": fcmToken,
-		"ts":  time2DB(now),
-		"am":  agentModel,
-		"av":  agentVersion,
-	})
+	_, err = sq.InsertSingle(ctx, tx, "clients", entity)
 	if err != nil {
 		return models.Client{}, err
 	}
 
-	return models.Client{
-		ClientID:         clientid,
-		UserID:           userid,
-		Type:             ctype,
-		FCMToken:         langext.Ptr(fcmToken),
-		TimestampCreated: now,
-		AgentModel:       agentModel,
-		AgentVersion:     agentVersion,
-	}, nil
+	return entity.Model(), nil
 }
 
 func (db *Database) ClearFCMTokens(ctx TxContext, fcmtoken string) error {
