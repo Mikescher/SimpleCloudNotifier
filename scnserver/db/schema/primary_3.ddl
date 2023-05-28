@@ -50,7 +50,7 @@ CREATE TABLE clients
 
     user_id            TEXT                                           NOT NULL,
     type               TEXT       CHECK(type IN ('ANDROID', 'IOS'))   NOT NULL,
-    fcm_token          TEXT                                               NULL,
+    fcm_token          TEXT                                           NOT NULL,
 
     timestamp_created  INTEGER                                        NOT NULL,
 

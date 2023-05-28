@@ -103,7 +103,7 @@ func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
 //	@ID			api-clients-create
 //	@Tags		API-v2
 //
-//	@Param		uid			path		int						true	"UserID"
+//	@Param		uid			path		string						true	"UserID"
 //
 //	@Param		post_body	body		handler.AddClient.body	false	" "
 //
@@ -202,6 +202,92 @@ func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 	err = h.database.DeleteClient(ctx, u.ClientID)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete client", err)
+	}
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, client.JSON()))
+}
+
+// UpdateClient swaggerdoc
+//
+//	@Summary		(Partially) update a client
+//	@Description	The body-values are optional, only send the ones you want to update
+//	@ID				api-client-update
+//	@Tags			API-v2
+//
+//	@Param			uid			path		string		true	"UserID"
+//	@Param			cid			path		string		true	"ClientID"
+//
+//	@Param			clientname	body		string	false	"Change the clientname (send an empty string to clear it)"
+//	@Param			pro_token	body		string	false	"Send a verification of premium purchase"
+//
+//	@Success		200			{object}	models.ClientJSON
+//	@Failure		400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure		401			{object}	ginresp.apiError	"client is not authorized / has missing permissions"
+//	@Failure		404			{object}	ginresp.apiError	"client not found"
+//	@Failure		500			{object}	ginresp.apiError	"internal server error"
+//
+//	@Router			/api/v2/users/{uid}/clients/{cid} [PATCH]
+func (h APIHandler) UpdateClient(g *gin.Context) ginresp.HTTPResponse {
+	type uri struct {
+		UserID   models.UserID   `uri:"uid" binding:"entityid"`
+		ClientID models.ClientID `uri:"cid" binding:"entityid"`
+	}
+	type body struct {
+		FCMToken     *string `json:"fcm_token"`
+		AgentModel   *string `json:"agent_model"`
+		AgentVersion *string `json:"agent_version"`
+	}
+
+	var u uri
+	var b body
+	ctx, errResp := h.app.StartRequest(g, &u, nil, &b, nil)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+		return *permResp
+	}
+
+	client, err := h.database.GetClient(ctx, u.UserID, u.ClientID)
+	if err == sql.ErrNoRows {
+		return ginresp.APIError(g, 404, apierr.CLIENT_NOT_FOUND, "Client not found", err)
+	}
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
+	}
+
+	if b.FCMToken != nil && *b.FCMToken != client.FCMToken {
+
+		err = h.database.DeleteClientsByFCM(ctx, *b.FCMToken)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete existing clients in db", err)
+		}
+
+		err = h.database.UpdateClientFCMToken(ctx, u.ClientID, *b.FCMToken)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update client", err)
+		}
+	}
+
+	if b.AgentModel != nil {
+		err = h.database.UpdateClientAgentModel(ctx, u.ClientID, *b.AgentModel)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update client", err)
+		}
+	}
+
+	if b.AgentVersion != nil {
+		err = h.database.UpdateClientAgentVersion(ctx, u.ClientID, *b.AgentVersion)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update client", err)
+		}
+	}
+
+	client, err = h.database.GetClient(ctx, u.UserID, u.ClientID)
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query (updated) client", err)
 	}
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, client.JSON()))

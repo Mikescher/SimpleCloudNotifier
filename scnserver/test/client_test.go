@@ -57,7 +57,42 @@ func TestGetClient(t *testing.T) {
 	tt.AssertJsonMapEqual(t, "client", r3, c0)
 }
 
-func TestCreateAndDeleteClient(t *testing.T) {
+func TestCreateClient(t *testing.T) {
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	uid := fmt.Sprintf("%v", r0["user_id"])
+
+	tt.AssertEqual(t, "len(clients)", 1, len(r0["clients"].([]any)))
+
+	admintok := r0["admin_key"].(string)
+
+	fmt.Printf("uid       := %s\n", uid)
+	fmt.Printf("admin_key := %s\n", admintok)
+
+	tt.RequestAuthPost[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid+"/clients", gin.H{
+		"agent_model":   "DUMMY_PHONE_2",
+		"agent_version": "99X",
+		"client_type":   "IOS",
+		"fcm_token":     "DUMMY_FCM_2",
+	})
+
+	type rt3 struct {
+		Clients []gin.H `json:"clients"`
+	}
+
+	r3 := tt.RequestAuthGet[rt3](t, admintok, baseUrl, "/api/v2/users/"+uid+"/clients")
+	tt.AssertEqual(t, "len(clients)", 2, len(r3.Clients))
+}
+
+func TestDeleteClient(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
@@ -190,4 +225,64 @@ func TestListClients(t *testing.T) {
 	}
 
 	tt.RequestAuthGetShouldFail(t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/clients", url.QueryEscape(data.User[1].UID)), 401, apierr.USER_AUTH_FAILED)
+}
+
+func TestUpdateClient(t *testing.T) {
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	uid := fmt.Sprintf("%v", r0["user_id"])
+
+	tt.AssertEqual(t, "len(clients)", 1, len(r0["clients"].([]any)))
+
+	admintok := r0["admin_key"].(string)
+
+	fmt.Printf("uid       := %s\n", uid)
+	fmt.Printf("admin_key := %s\n", admintok)
+
+	r2 := tt.RequestAuthPost[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid+"/clients", gin.H{
+		"agent_model":   "DUMMY_PHONE_2",
+		"agent_version": "99X",
+		"client_type":   "IOS",
+		"fcm_token":     "DUMMY_FCM_2",
+	})
+
+	cid2 := fmt.Sprintf("%v", r2["client_id"])
+
+	type rt3 struct {
+		Clients []gin.H `json:"clients"`
+	}
+
+	r3 := tt.RequestAuthGet[rt3](t, admintok, baseUrl, "/api/v2/users/"+uid+"/clients")
+	tt.AssertEqual(t, "len(clients)", 2, len(r3.Clients))
+
+	r4 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid+"/clients/"+cid2)
+	tt.AssertEqual(t, "agent_model", "DUMMY_PHONE_2", r4["agent_model"])
+	tt.AssertEqual(t, "agent_version", "99X", r4["agent_version"])
+	tt.AssertEqual(t, "client_type", "IOS", r4["type"])
+	tt.AssertEqual(t, "fcm_token", "DUMMY_FCM_2", r4["fcm_token"])
+
+	r5 := tt.RequestAuthPatch[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid+"/clients/"+cid2, gin.H{
+		"agent_model":   "PP_DUMMY_PHONE_2",
+		"agent_version": "PP_99X",
+		"fcm_token":     "PP_DUMMY_FCM_2",
+	})
+	tt.AssertEqual(t, "agent_model", "PP_DUMMY_PHONE_2", r5["agent_model"])
+	tt.AssertEqual(t, "agent_version", "PP_99X", r5["agent_version"])
+	tt.AssertEqual(t, "client_type", "IOS", r5["type"])
+	tt.AssertEqual(t, "fcm_token", "PP_DUMMY_FCM_2", r5["fcm_token"])
+
+	r6 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid+"/clients/"+cid2)
+	tt.AssertEqual(t, "agent_model", "PP_DUMMY_PHONE_2", r6["agent_model"])
+	tt.AssertEqual(t, "agent_version", "PP_99X", r6["agent_version"])
+	tt.AssertEqual(t, "client_type", "IOS", r6["type"])
+	tt.AssertEqual(t, "fcm_token", "PP_DUMMY_FCM_2", r6["fcm_token"])
+
 }

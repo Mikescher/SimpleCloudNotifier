@@ -25,7 +25,7 @@ import (
 //	@ID				api-user-subscriptions-list
 //	@Tags			API-v2
 //
-//	@Param			uid			path		int		true	"UserID"
+//	@Param			uid			path		string		true	"UserID"
 //	@Param			selector	query		string	true	"Filter subscriptions (default: outgoing_all)"	Enums(outgoing_all, outgoing_confirmed, outgoing_unconfirmed, incoming_all, incoming_confirmed, incoming_unconfirmed)
 //
 //	@Success		200			{object}	handler.ListUserSubscriptions.response
@@ -275,7 +275,7 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 //	@ID				api-subscriptions-create
 //	@Tags			API-v2
 //
-//	@Param			uid			path		int									true	"UserID"
+//	@Param			uid			path		string									true	"UserID"
 //	@Param			query_data	query		handler.CreateSubscription.query	false	" "
 //	@Param			post_data	body		handler.CreateSubscription.body		false	" "
 //
@@ -363,8 +363,8 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 //	@ID			api-subscriptions-update
 //	@Tags		API-v2
 //
-//	@Param		uid			path		int								true	"UserID"
-//	@Param		sid			path		int								true	"SubscriptionID"
+//	@Param		uid			path		string								true	"UserID"
+//	@Param		sid			path		string								true	"SubscriptionID"
 //	@Param		post_data	body		handler.UpdateSubscription.body	false	" "
 //
 //	@Success	200			{object}	models.SubscriptionJSON

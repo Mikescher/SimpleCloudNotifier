@@ -158,7 +158,7 @@ func (j *DeliveryRetryJob) redeliver(ctx *logic.SimpleContext, delivery models.D
 
 		fcmDelivID, err := j.app.DeliverMessage(ctx, client, msg, nil)
 		if err == nil {
-			err = j.app.Database.Primary.SetDeliverySuccess(ctx, delivery, *fcmDelivID)
+			err = j.app.Database.Primary.SetDeliverySuccess(ctx, delivery, fcmDelivID)
 			if err != nil {
 				log.Err(err).Str("MessageID", delivery.MessageID.String()).Str("DeliveryID", delivery.DeliveryID.String()).Msg("Failed to update delivery")
 				ctx.RollbackTransaction()

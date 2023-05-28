@@ -106,8 +106,8 @@ func (h APIHandler) GetUserKey(g *gin.Context) ginresp.HTTPResponse {
 //	@ID			api-tokenkeys-update
 //	@Tags		API-v2
 //
-//	@Param		uid			path		int							true	"UserID"
-//	@Param		kid			path		int							true	"TokenKeyID"
+//	@Param		uid			path		string							true	"UserID"
+//	@Param		kid			path		string							true	"TokenKeyID"
 //
 //	@Param		post_body	body		handler.UpdateUserKey.body	false	" "
 //
@@ -204,7 +204,7 @@ func (h APIHandler) UpdateUserKey(g *gin.Context) ginresp.HTTPResponse {
 //	@ID			api-tokenkeys-create
 //	@Tags		API-v2
 //
-//	@Param		uid			path		int							true	"UserID"
+//	@Param		uid			path		string							true	"UserID"
 //
 //	@Param		post_body	body		handler.CreateUserKey.body	false	" "
 //

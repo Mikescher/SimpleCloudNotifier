@@ -477,7 +477,7 @@ func TestCompatUpdateUserKey(t *testing.T) {
 
 	s0 := tt.RequestPost[gin.H](t, baseUrl, fmt.Sprintf("/send.php?user_id=%d&user_key=%s&title=%s", userid, userkey, url.QueryEscape("msg_1")), nil)
 	tt.AssertEqual(t, "success", true, s0["success"])
-	tt.AssertEqual(t, "fcm", "DUMMY_FCM", *pusher.Last().Client.FCMToken)
+	tt.AssertEqual(t, "fcm", "DUMMY_FCM", pusher.Last().Client.FCMToken)
 
 	upd := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/update.php?user_id=%d&user_key=%s", userid, userkey))
 	tt.AssertEqual(t, "success", true, upd["success"])
@@ -497,7 +497,7 @@ func TestCompatUpdateUserKey(t *testing.T) {
 
 	s1 := tt.RequestPost[gin.H](t, baseUrl, fmt.Sprintf("/send.php?user_id=%d&user_key=%s&title=%s", userid, newkey, url.QueryEscape("msg_2")), nil)
 	tt.AssertEqual(t, "success", true, s1["success"])
-	tt.AssertEqual(t, "fcm", "DUMMY_FCM", *pusher.Last().Client.FCMToken)
+	tt.AssertEqual(t, "fcm", "DUMMY_FCM", pusher.Last().Client.FCMToken)
 }
 
 func TestCompatUpdateFCM(t *testing.T) {
@@ -514,7 +514,7 @@ func TestCompatUpdateFCM(t *testing.T) {
 
 	s0 := tt.RequestPost[gin.H](t, baseUrl, fmt.Sprintf("/send.php?user_id=%d&user_key=%s&title=%s", userid, userkey, url.QueryEscape("msg_1")), nil)
 	tt.AssertEqual(t, "success", true, s0["success"])
-	tt.AssertEqual(t, "fcm", "DUMMY_FCM", *pusher.Last().Client.FCMToken)
+	tt.AssertEqual(t, "fcm", "DUMMY_FCM", pusher.Last().Client.FCMToken)
 
 	upd := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/update.php?user_id=%d&user_key=%s&fcm_token=%s", userid, userkey, "NEW_FCM"))
 	tt.AssertEqual(t, "success", true, upd["success"])
@@ -534,7 +534,7 @@ func TestCompatUpdateFCM(t *testing.T) {
 
 	s1 := tt.RequestPost[gin.H](t, baseUrl, fmt.Sprintf("/send.php?user_id=%d&user_key=%s&title=%s", userid, newkey, url.QueryEscape("msg_2")), nil)
 	tt.AssertEqual(t, "success", true, s1["success"])
-	tt.AssertEqual(t, "fcm", "NEW_FCM", *pusher.Last().Client.FCMToken)
+	tt.AssertEqual(t, "fcm", "NEW_FCM", pusher.Last().Client.FCMToken)
 }
 
 func TestCompatUpgrade(t *testing.T) {

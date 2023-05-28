@@ -65,7 +65,7 @@ func (fb FirebaseConnector) SendNotification(ctx context.Context, client models.
 			"title":      langext.Coalesce(compatTitleOverride, msg.Title),
 			"body":       langext.Coalesce(msg.TrimmedContent(), ""),
 		},
-		"token": *client.FCMToken,
+		"token": client.FCMToken,
 		"android": gin.H{
 			"priority": "high",
 		},

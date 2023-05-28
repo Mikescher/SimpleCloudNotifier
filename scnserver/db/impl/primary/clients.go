@@ -2,7 +2,6 @@ package primary
 
 import (
 	"blackforestbytes.com/simplecloudnotifier/models"
-	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
@@ -17,7 +16,7 @@ func (db *Database) CreateClient(ctx TxContext, userid models.UserID, ctype mode
 		ClientID:         models.NewClientID(),
 		UserID:           userid,
 		Type:             ctype,
-		FCMToken:         langext.Ptr(fcmToken),
+		FCMToken:         fcmToken,
 		TimestampCreated: time2DB(time.Now()),
 		AgentModel:       agentModel,
 		AgentVersion:     agentVersion,
@@ -107,6 +106,57 @@ func (db *Database) DeleteClientsByFCM(ctx TxContext, fcmtoken string) error {
 	}
 
 	_, err = tx.Exec(ctx, "DELETE FROM clients WHERE fcm_token = :fcm", sq.PP{"fcm": fcmtoken})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *Database) UpdateClientFCMToken(ctx TxContext, clientid models.ClientID, fcmtoken string) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, "UPDATE clients SET fcm_token = :vvv WHERE client_id = :cid", sq.PP{
+		"vvv": fcmtoken,
+		"cid": clientid,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *Database) UpdateClientAgentModel(ctx TxContext, clientid models.ClientID, agentModel string) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, "UPDATE clients SET agent_model = :vvv WHERE client_id = :cid", sq.PP{
+		"vvv": agentModel,
+		"cid": clientid,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *Database) UpdateClientAgentVersion(ctx TxContext, clientid models.ClientID, agentVersion string) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, "UPDATE clients SET agent_version = :vvv WHERE client_id = :cid", sq.PP{
+		"vvv": agentVersion,
+		"cid": clientid,
+	})
 	if err != nil {
 		return err
 	}

@@ -325,8 +325,6 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(0, "Failed to query clients")
 	}
 
-	fcmSet := langext.ArrAny(clients, func(c models.Client) bool { return c.FCMToken != nil })
-
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
 		Success:    true,
 		Message:    "ok",
@@ -335,7 +333,7 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 		QuotaUsed:  user.QuotaUsedToday(),
 		QuotaMax:   user.QuotaPerDay(),
 		IsPro:      langext.Conditional(user.IsPro, 1, 0),
-		FCMSet:     fcmSet,
+		FCMSet:     len(clients) > 0,
 		UnackCount: 0,
 	}))
 }

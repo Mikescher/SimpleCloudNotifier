@@ -18,7 +18,7 @@ type Client struct {
 	ClientID         ClientID
 	UserID           UserID
 	Type             ClientType
-	FCMToken         *string
+	FCMToken         string
 	TimestampCreated time.Time
 	AgentModel       string
 	AgentVersion     string
@@ -40,7 +40,7 @@ type ClientJSON struct {
 	ClientID         ClientID   `json:"client_id"`
 	UserID           UserID     `json:"user_id"`
 	Type             ClientType `json:"type"`
-	FCMToken         *string    `json:"fcm_token"`
+	FCMToken         string     `json:"fcm_token"`
 	TimestampCreated string     `json:"timestamp_created"`
 	AgentModel       string     `json:"agent_model"`
 	AgentVersion     string     `json:"agent_version"`
@@ -50,7 +50,7 @@ type ClientDB struct {
 	ClientID         ClientID   `db:"client_id"`
 	UserID           UserID     `db:"user_id"`
 	Type             ClientType `db:"type"`
-	FCMToken         *string    `db:"fcm_token"`
+	FCMToken         string     `db:"fcm_token"`
 	TimestampCreated int64      `db:"timestamp_created"`
 	AgentModel       string     `db:"agent_model"`
 	AgentVersion     string     `db:"agent_version"`

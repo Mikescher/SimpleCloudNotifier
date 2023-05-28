@@ -307,7 +307,7 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 					return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to create delivery", err))
 				}
 			} else {
-				_, err = h.database.CreateSuccessDelivery(ctx, client, msg, *fcmDelivID)
+				_, err = h.database.CreateSuccessDelivery(ctx, client, msg, fcmDelivID)
 				if err != nil {
 					return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to create delivery", err))
 				}

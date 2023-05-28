@@ -180,7 +180,7 @@ func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 //	@ID				api-user-update
 //	@Tags			API-v2
 //
-//	@Param			uid			path		int		true	"UserID"
+//	@Param			uid			path		string		true	"UserID"
 //
 //	@Param			username	body		string	false	"Change the username (send an empty string to clear it)"
 //	@Param			pro_token	body		string	false	"Send a verification of premium purchase"

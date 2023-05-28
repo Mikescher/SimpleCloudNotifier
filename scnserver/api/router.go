@@ -135,6 +135,7 @@ func (r *Router) Init(e *gin.Engine) error {
 
 		apiv2.GET("/users/:uid/clients", r.Wrap(r.apiHandler.ListClients))
 		apiv2.GET("/users/:uid/clients/:cid", r.Wrap(r.apiHandler.GetClient))
+		apiv2.PATCH("/users/:uid/clients/:cid", r.Wrap(r.apiHandler.UpdateClient))
 		apiv2.POST("/users/:uid/clients", r.Wrap(r.apiHandler.AddClient))
 		apiv2.DELETE("/users/:uid/clients/:cid", r.Wrap(r.apiHandler.DeleteClient))
 

@@ -27,7 +27,7 @@ import (
 //	@ID				api-channels-list
 //	@Tags			API-v2
 //
-//	@Param			uid			path		int		true	"UserID"
+//	@Param			uid			path		string		true	"UserID"
 //	@Param			selector	query		string	false	"Filter channels (default: owned)"	Enums(owned, subscribed, all, subscribed_any, all_any)
 //
 //	@Success		200			{object}	handler.ListChannels.response
@@ -162,7 +162,7 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 //	@ID			api-channels-create
 //	@Tags		API-v2
 //
-//	@Param		uid			path		int							true	"UserID"
+//	@Param		uid			path		string							true	"UserID"
 //	@Param		post_body	body		handler.CreateChannel.body	false	" "
 //
 //	@Success	200			{object}	models.ChannelWithSubscriptionJSON
@@ -260,8 +260,8 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 //	@ID			api-channels-update
 //	@Tags		API-v2
 //
-//	@Param		uid				path		int		true	"UserID"
-//	@Param		cid				path		int		true	"ChannelID"
+//	@Param		uid				path		string		true	"UserID"
+//	@Param		cid				path		string		true	"ChannelID"
 //
 //	@Param		subscribe_key	body		string	false	"Send `true` to create a new subscribe_key"
 //	@Param		send_key		body		string	false	"Send `true` to create a new send_key"
@@ -378,8 +378,8 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 //	@Tags			API-v2
 //
 //	@Param			query_data	query		handler.ListChannelMessages.query	false	" "
-//	@Param			uid			path		int									true	"UserID"
-//	@Param			cid			path		int									true	"ChannelID"
+//	@Param			uid			path		string									true	"UserID"
+//	@Param			cid			path		string									true	"ChannelID"
 //
 //	@Success		200			{object}	handler.ListChannelMessages.response
 //	@Failure		400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"

@@ -339,17 +339,13 @@ func (app *Application) NormalizeUsername(v string) string {
 	return strings.TrimSpace(v)
 }
 
-func (app *Application) DeliverMessage(ctx context.Context, client models.Client, msg models.Message, compatTitleOverride *string) (*string, error) {
-	if client.FCMToken != nil {
-		fcmDelivID, err := app.Pusher.SendNotification(ctx, client, msg, compatTitleOverride)
-		if err != nil {
-			log.Warn().Str("MessageID", msg.MessageID.String()).Str("ClientID", client.ClientID.String()).Err(err).Msg("FCM Delivery failed")
-			return nil, err
-		}
-		return langext.Ptr(fcmDelivID), nil
-	} else {
-		return langext.Ptr(""), nil
+func (app *Application) DeliverMessage(ctx context.Context, client models.Client, msg models.Message, compatTitleOverride *string) (string, error) {
+	fcmDelivID, err := app.Pusher.SendNotification(ctx, client, msg, compatTitleOverride)
+	if err != nil {
+		log.Warn().Str("MessageID", msg.MessageID.String()).Str("ClientID", client.ClientID.String()).Err(err).Msg("FCM Delivery failed")
+		return "", err
 	}
+	return fcmDelivID, nil
 }
 
 func (app *Application) InsertRequestLog(data models.RequestLog) {
