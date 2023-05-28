@@ -185,7 +185,7 @@ CREATE TABLE deliveries
 
     status              TEXT     CHECK(status IN ('RETRY','SUCCESS','FAILED'))   NOT NULL,
     retry_count         INTEGER                                                  NOT NULL   DEFAULT 0,
-    next_delivery       INTEGER                                                      NULL   DEFAULT NULL,
+    next_delivery       TEXT                                                         NULL   DEFAULT NULL,
 
     fcm_message_id      TEXT                                                         NULL,
 
