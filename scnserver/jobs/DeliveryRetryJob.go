@@ -24,7 +24,7 @@ func NewDeliveryRetryJob(app *logic.Application) *DeliveryRetryJob {
 		name:       "DeliveryRetryJob",
 		isRunning:  syncext.NewAtomicBool(false),
 		isStarted:  false,
-		sigChannel: make(chan string),
+		sigChannel: make(chan string, 1),
 	}
 }
 
@@ -45,7 +45,9 @@ func (j *DeliveryRetryJob) Start() error {
 
 func (j *DeliveryRetryJob) Stop() {
 	log.Info().Msg(fmt.Sprintf("Stopping Job [%s]", j.name))
-	syncext.WriteNonBlocking(j.sigChannel, "stop")
+	if !syncext.WriteNonBlocking(j.sigChannel, "stop") {
+		log.Error().Msg(fmt.Sprintf("Failed to send Stop-Signal to Job [%s]", j.name))
+	}
 	j.isRunning.Wait(false)
 	log.Info().Msg(fmt.Sprintf("Stopped Job [%s]", j.name))
 }

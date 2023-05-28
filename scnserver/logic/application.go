@@ -144,12 +144,16 @@ func (app *Application) Run() {
 		job.Stop()
 	}
 
+	log.Info().Msg("Manually stopped Jobs")
+
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	err := app.Database.Stop(ctx)
 	if err != nil {
 		log.Info().Err(err).Msg("Error while stopping the database")
 	}
+
+	log.Info().Msg("Manually closed database connection")
 
 	app.IsRunning.Set(false)
 }

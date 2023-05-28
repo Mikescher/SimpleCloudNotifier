@@ -130,8 +130,10 @@ func StartSimpleWebserver(t *testing.T) (*logic.Application, string, func()) {
 	}
 
 	stop := func() {
+		t.Logf("Stopping App")
 		app.Stop()
 		_ = app.IsRunning.WaitWithTimeout(5*time.Second, false)
+		t.Logf("Stopped App")
 		_ = os.Remove(dbfile1)
 		_ = os.Remove(dbfile2)
 		_ = os.Remove(dbfile3)

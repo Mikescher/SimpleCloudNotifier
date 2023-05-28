@@ -25,7 +25,7 @@ func NewRequestLogCollectorJob(app *logic.Application) *RequestLogCollectorJob {
 		name:       "RequestLogCollectorJob",
 		isRunning:  syncext.NewAtomicBool(false),
 		isStarted:  false,
-		sigChannel: make(chan string),
+		sigChannel: make(chan string, 1),
 	}
 }
 
@@ -46,7 +46,9 @@ func (j *RequestLogCollectorJob) Start() error {
 
 func (j *RequestLogCollectorJob) Stop() {
 	log.Info().Msg(fmt.Sprintf("Stopping Job [%s]", j.name))
-	syncext.WriteNonBlocking(j.sigChannel, "stop")
+	if !syncext.WriteNonBlocking(j.sigChannel, "stop") {
+		log.Error().Msg(fmt.Sprintf("Failed to send Stop-Signal to Job [%s]", j.name))
+	}
 	j.isRunning.Wait(false)
 	log.Info().Msg(fmt.Sprintf("Stopped Job [%s]", j.name))
 }
@@ -61,6 +63,14 @@ func (j *RequestLogCollectorJob) mainLoop() {
 mainLoop:
 	for {
 		select {
+		case obj := <-j.app.RequestLogQueue:
+			requestid := models.NewRequestID()
+			err := j.insertLog(requestid, obj)
+			if err != nil {
+				log.Error().Err(err).Msg(fmt.Sprintf("Failed to insert RequestLog {%s} into DB", requestid))
+			} else {
+				log.Debug().Msg(fmt.Sprintf("Inserted RequestLog '%s' into DB", requestid))
+			}
 		case signal := <-j.sigChannel:
 			if signal == "stop" {
 				log.Info().Msg(fmt.Sprintf("Job [%s] received <stop> signal", j.name))
@@ -70,14 +80,6 @@ mainLoop:
 				continue
 			} else {
 				log.Error().Msg(fmt.Sprintf("Received unknown job signal: <%s> in job [%s]", signal, j.name))
-			}
-		case obj := <-j.app.RequestLogQueue:
-			requestid := models.NewRequestID()
-			err := j.insertLog(requestid, obj)
-			if err != nil {
-				log.Error().Err(err).Msg(fmt.Sprintf("Failed to insert RequestLog {%s} into DB", requestid))
-			} else {
-				log.Debug().Msg(fmt.Sprintf("Inserted RequestLog '%s' into DB", requestid))
 			}
 		}
 	}
