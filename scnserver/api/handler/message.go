@@ -176,8 +176,14 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 	if len(channelDisplayName) > user.MaxChannelNameLength() {
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 400, apierr.CHANNEL_TOO_LONG, hl.CHANNEL, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil))
 	}
+	if len(strings.TrimSpace(channelDisplayName)) == 0 {
+		return nil, langext.Ptr(ginresp.SendAPIError(g, 400, apierr.CHANNEL_NAME_EMPTY, hl.CHANNEL, fmt.Sprintf("Channel displayname cannot be empty"), nil))
+	}
 	if len(channelInternalName) > user.MaxChannelNameLength() {
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 400, apierr.CHANNEL_TOO_LONG, hl.CHANNEL, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil))
+	}
+	if len(strings.TrimSpace(channelInternalName)) == 0 {
+		return nil, langext.Ptr(ginresp.SendAPIError(g, 400, apierr.CHANNEL_NAME_EMPTY, hl.CHANNEL, fmt.Sprintf("Channel internalname cannot be empty"), nil))
 	}
 	if SenderName != nil && len(*SenderName) > user.MaxSenderName() {
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 400, apierr.SENDERNAME_TOO_LONG, hl.SENDER_NAME, fmt.Sprintf("SenderName too long (max %d characters)", user.MaxSenderName()), nil))

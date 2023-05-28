@@ -100,43 +100,23 @@ func TestChannelNameNormalization(t *testing.T) {
 	}
 
 	tt.RequestAuthPost[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid), gin.H{
-		"name": "tESt",
+		"name": "TeST-99",
 	})
 
 	{
 		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid))
-		tt.AssertMappedSet(t, "channels", []string{"tESt"}, clist.Channels, "display_name")
-		tt.AssertMappedSet(t, "channels", []string{"test"}, clist.Channels, "internal_name")
+		tt.AssertMappedSet(t, "channels", []string{"TeST-99"}, clist.Channels, "display_name")
+		tt.AssertMappedSet(t, "channels", []string{"TeST-99"}, clist.Channels, "internal_name")
 	}
 
 	tt.RequestAuthPostShouldFail(t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid), gin.H{
-		"name": "test",
-	}, 409, apierr.CHANNEL_ALREADY_EXISTS)
-
-	tt.RequestAuthPostShouldFail(t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid), gin.H{
-		"name": "TEST",
-	}, 409, apierr.CHANNEL_ALREADY_EXISTS)
-
-	tt.RequestAuthPostShouldFail(t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid), gin.H{
-		"name": "Test",
-	}, 409, apierr.CHANNEL_ALREADY_EXISTS)
-
-	tt.RequestAuthPostShouldFail(t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid), gin.H{
-		"name": "Test ",
-	}, 409, apierr.CHANNEL_ALREADY_EXISTS)
-
-	tt.RequestAuthPostShouldFail(t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid), gin.H{
-		"name": " Test",
-	}, 409, apierr.CHANNEL_ALREADY_EXISTS)
-
-	tt.RequestAuthPostShouldFail(t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid), gin.H{
-		"name": "\rTeSt\n",
+		"name": "TeST-99",
 	}, 409, apierr.CHANNEL_ALREADY_EXISTS)
 
 	{
 		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid))
-		tt.AssertMappedSet(t, "channels", []string{"tESt"}, clist.Channels, "display_name")
-		tt.AssertMappedSet(t, "channels", []string{"test"}, clist.Channels, "internal_name")
+		tt.AssertMappedSet(t, "channels", []string{"TeST-99"}, clist.Channels, "display_name")
+		tt.AssertMappedSet(t, "channels", []string{"TeST-99"}, clist.Channels, "internal_name")
 	}
 
 	tt.RequestAuthPost[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid), gin.H{
@@ -145,8 +125,8 @@ func TestChannelNameNormalization(t *testing.T) {
 
 	{
 		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid))
-		tt.AssertMappedSet(t, "channels", []string{"tESt", "WeiRD_[\uF5FF]\\stUFf"}, clist.Channels, "display_name")
-		tt.AssertMappedSet(t, "channels", []string{"test", "weird_[\uF5FF]\\stuff"}, clist.Channels, "internal_name")
+		tt.AssertMappedSet(t, "channels", []string{"TeST-99", "WeiRD_[\uF5FF]\\stUFf"}, clist.Channels, "display_name")
+		tt.AssertMappedSet(t, "channels", []string{"TeST-99", "WeiRD_[\uF5FF]\\stUFf"}, clist.Channels, "internal_name")
 	}
 
 }
@@ -162,18 +142,18 @@ func TestListChannelsDefault(t *testing.T) {
 	}
 
 	testdata := map[int][]string{
-		0:  {"main", "chatting chamber", "unicôdé häll \U0001f92a", "promotions", "reminders"},
+		0:  {"main", "Chatting Chamber", "Unicôdé Häll \U0001f92a", "Promotions", "Reminders"},
 		1:  {"main", "private"},
-		2:  {"main", "ü", "ö", "ä"},
-		3:  {"main", "\U0001f5ff", "innovations", "reminders"},
+		2:  {"main", "Ü", "Ö", "Ä"},
+		3:  {"main", "\U0001f5ff", "Innovations", "Reminders"},
 		4:  {"main"},
-		5:  {"main", "test1", "test2", "test3", "test4", "test5"},
-		6:  {"main", "security", "lipsum"},
+		5:  {"main", "Test1", "Test2", "Test3", "Test4", "Test5"},
+		6:  {"main", "Security", "Lipsum"},
 		7:  {"main"},
 		8:  {"main"},
 		9:  {"main", "manual@chan"},
 		10: {"main"},
-		11: {"promotions"},
+		11: {"Promotions"},
 		12: {},
 		13: {},
 		14: {"main", "chan_self_subscribed", "chan_self_unsub"},
@@ -197,18 +177,18 @@ func TestListChannelsOwned(t *testing.T) {
 	}
 
 	testdata := map[int][]string{
-		0:  {"main", "chatting chamber", "unicôdé häll \U0001f92a", "promotions", "reminders"},
+		0:  {"main", "Chatting Chamber", "Unicôdé Häll \U0001f92a", "Promotions", "Reminders"},
 		1:  {"main", "private"},
-		2:  {"main", "ü", "ö", "ä"},
-		3:  {"main", "\U0001f5ff", "innovations", "reminders"},
+		2:  {"main", "Ü", "Ö", "Ä"},
+		3:  {"main", "\U0001f5ff", "Innovations", "Reminders"},
 		4:  {"main"},
-		5:  {"main", "test1", "test2", "test3", "test4", "test5"},
-		6:  {"main", "security", "lipsum"},
+		5:  {"main", "Test1", "Test2", "Test3", "Test4", "Test5"},
+		6:  {"main", "Security", "Lipsum"},
 		7:  {"main"},
 		8:  {"main"},
 		9:  {"main", "manual@chan"},
 		10: {"main"},
-		11: {"promotions"},
+		11: {"Promotions"},
 		12: {},
 		13: {},
 		14: {"main", "chan_self_subscribed", "chan_self_unsub"},
@@ -232,18 +212,18 @@ func TestListChannelsSubscribedAny(t *testing.T) {
 	}
 
 	testdata := map[int][]string{
-		0:  {"main", "chatting chamber", "unicôdé häll \U0001f92a", "promotions", "reminders"},
+		0:  {"main", "Chatting Chamber", "Unicôdé Häll \U0001f92a", "Promotions", "Reminders"},
 		1:  {"main", "private"},
-		2:  {"main", "ü", "ö", "ä"},
-		3:  {"main", "\U0001f5ff", "innovations", "reminders"},
+		2:  {"main", "Ü", "Ö", "Ä"},
+		3:  {"main", "\U0001f5ff", "Innovations", "Reminders"},
 		4:  {"main"},
-		5:  {"main", "test1", "test2", "test3", "test4", "test5"},
-		6:  {"main", "security", "lipsum"},
+		5:  {"main", "Test1", "Test2", "Test3", "Test4", "Test5"},
+		6:  {"main", "Security", "Lipsum"},
 		7:  {"main"},
 		8:  {"main"},
 		9:  {"main", "manual@chan"},
 		10: {"main"},
-		11: {"promotions"},
+		11: {"Promotions"},
 		12: {},
 		13: {},
 		14: {"main", "chan_self_subscribed", "chan_other_request", "chan_other_accepted"},
@@ -267,18 +247,18 @@ func TestListChannelsAllAny(t *testing.T) {
 	}
 
 	testdata := map[int][]string{
-		0:  {"main", "chatting chamber", "unicôdé häll \U0001f92a", "promotions", "reminders"},
+		0:  {"main", "Chatting Chamber", "Unicôdé Häll \U0001f92a", "Promotions", "Reminders"},
 		1:  {"main", "private"},
-		2:  {"main", "ü", "ö", "ä"},
-		3:  {"main", "\U0001f5ff", "innovations", "reminders"},
+		2:  {"main", "Ü", "Ö", "Ä"},
+		3:  {"main", "\U0001f5ff", "Innovations", "Reminders"},
 		4:  {"main"},
-		5:  {"main", "test1", "test2", "test3", "test4", "test5"},
-		6:  {"main", "security", "lipsum"},
+		5:  {"main", "Test1", "Test2", "Test3", "Test4", "Test5"},
+		6:  {"main", "Security", "Lipsum"},
 		7:  {"main"},
 		8:  {"main"},
 		9:  {"main", "manual@chan"},
 		10: {"main"},
-		11: {"promotions"},
+		11: {"Promotions"},
 		12: {},
 		13: {},
 		14: {"main", "chan_self_subscribed", "chan_self_unsub", "chan_other_request", "chan_other_accepted"},
@@ -302,18 +282,18 @@ func TestListChannelsSubscribed(t *testing.T) {
 	}
 
 	testdata := map[int][]string{
-		0:  {"main", "chatting chamber", "unicôdé häll \U0001f92a", "promotions", "reminders"},
+		0:  {"main", "Chatting Chamber", "Unicôdé Häll \U0001f92a", "Promotions", "Reminders"},
 		1:  {"main", "private"},
-		2:  {"main", "ü", "ö", "ä"},
-		3:  {"main", "\U0001f5ff", "innovations", "reminders"},
+		2:  {"main", "Ü", "Ö", "Ä"},
+		3:  {"main", "\U0001f5ff", "Innovations", "Reminders"},
 		4:  {"main"},
-		5:  {"main", "test1", "test2", "test3", "test4", "test5"},
-		6:  {"main", "security", "lipsum"},
+		5:  {"main", "Test1", "Test2", "Test3", "Test4", "Test5"},
+		6:  {"main", "Security", "Lipsum"},
 		7:  {"main"},
 		8:  {"main"},
 		9:  {"main", "manual@chan"},
 		10: {"main"},
-		11: {"promotions"},
+		11: {"Promotions"},
 		12: {},
 		13: {},
 		14: {"main", "chan_self_subscribed", "chan_other_accepted"},
@@ -337,18 +317,18 @@ func TestListChannelsAll(t *testing.T) {
 	}
 
 	testdata := map[int][]string{
-		0:  {"main", "chatting chamber", "unicôdé häll \U0001f92a", "promotions", "reminders"},
+		0:  {"main", "Chatting Chamber", "Unicôdé Häll \U0001f92a", "Promotions", "Reminders"},
 		1:  {"main", "private"},
-		2:  {"main", "ü", "ö", "ä"},
-		3:  {"main", "\U0001f5ff", "innovations", "reminders"},
+		2:  {"main", "Ü", "Ö", "Ä"},
+		3:  {"main", "\U0001f5ff", "Innovations", "Reminders"},
 		4:  {"main"},
-		5:  {"main", "test1", "test2", "test3", "test4", "test5"},
-		6:  {"main", "security", "lipsum"},
+		5:  {"main", "Test1", "Test2", "Test3", "Test4", "Test5"},
+		6:  {"main", "Security", "Lipsum"},
 		7:  {"main"},
 		8:  {"main"},
 		9:  {"main", "manual@chan"},
 		10: {"main"},
-		11: {"promotions"},
+		11: {"Promotions"},
 		12: {},
 		13: {},
 		14: {"main", "chan_self_subscribed", "chan_self_unsub", "chan_other_accepted"},
@@ -424,8 +404,8 @@ func TestChannelUpdate(t *testing.T) {
 	// [2] fail to update display_name
 
 	tt.RequestAuthPatchShouldFail(t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels/%s", uid, chanid), gin.H{
-		"display_name": "SERVER-ALERTS2",
-	}, 400, apierr.CHANNEL_NAME_WOULD_CHANGE)
+		"display_name": "",
+	}, 400, apierr.CHANNEL_NAME_EMPTY)
 
 	// [3] renew subscribe_key
 
@@ -534,9 +514,9 @@ func TestListChannelMessages(t *testing.T) {
 
 	clist := tt.RequestAuthGet[chanlist](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data.User[16].UID))
 
-	chan1 := langext.ArrFirstOrNil(clist.Channels, func(v chanobj) bool { return v.InternalName == "chan1" }).ChannelId
-	chan2 := langext.ArrFirstOrNil(clist.Channels, func(v chanobj) bool { return v.InternalName == "chan2" }).ChannelId
-	chan3 := langext.ArrFirstOrNil(clist.Channels, func(v chanobj) bool { return v.InternalName == "chan3" }).ChannelId
+	chan1 := langext.ArrFirstOrNil(clist.Channels, func(v chanobj) bool { return v.InternalName == "Chan1" }).ChannelId
+	chan2 := langext.ArrFirstOrNil(clist.Channels, func(v chanobj) bool { return v.InternalName == "Chan2" }).ChannelId
+	chan3 := langext.ArrFirstOrNil(clist.Channels, func(v chanobj) bool { return v.InternalName == "Chan3" }).ChannelId
 
 	{
 		msgList0 := tt.RequestAuthGet[mglist](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels/%s/messages", data.User[16].UID, chan1))
@@ -614,22 +594,22 @@ func TestListSubscribedChannelMessages(t *testing.T) {
 
 	clist := tt.RequestAuthGet[chanlist](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data.User[16].UID))
 
-	chan1 := langext.ArrFirstOrNil(clist.Channels, func(v chanobj) bool { return v.InternalName == "chan1" })
-	chan2 := langext.ArrFirstOrNil(clist.Channels, func(v chanobj) bool { return v.InternalName == "chan2" })
-	chan3 := langext.ArrFirstOrNil(clist.Channels, func(v chanobj) bool { return v.InternalName == "chan3" })
+	chan1 := langext.ArrFirstOrNil(clist.Channels, func(v chanobj) bool { return v.InternalName == "Chan1" })
+	chan2 := langext.ArrFirstOrNil(clist.Channels, func(v chanobj) bool { return v.InternalName == "Chan2" })
+	chan3 := langext.ArrFirstOrNil(clist.Channels, func(v chanobj) bool { return v.InternalName == "Chan3" })
 
 	{
 		sub1 := tt.RequestAuthPost[gin.H](t, data.User[1].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?chan_subscribe_key=%s", data.User[1].UID, chan1.SubscribeKey), gin.H{
 			"channel_owner_user_id": data.User[16].UID,
-			"channel_internal_name": "chan1",
+			"channel_internal_name": "Chan1",
 		})
 		sub2 := tt.RequestAuthPost[gin.H](t, data.User[1].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?chan_subscribe_key=%s", data.User[1].UID, chan2.SubscribeKey), gin.H{
 			"channel_owner_user_id": data.User[16].UID,
-			"channel_internal_name": "chan2",
+			"channel_internal_name": "Chan2",
 		})
 		sub3 := tt.RequestAuthPost[gin.H](t, data.User[1].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?chan_subscribe_key=%s", data.User[1].UID, chan3.SubscribeKey), gin.H{
 			"channel_owner_user_id": data.User[16].UID,
-			"channel_internal_name": "chan3",
+			"channel_internal_name": "Chan3",
 		})
 
 		tt.RequestAuthPatch[gin.H](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions/%s", data.User[16].UID, sub1["subscription_id"]), gin.H{
@@ -751,13 +731,13 @@ func TestListChannelSubscriptions(t *testing.T) {
 		0, 0, 0)
 
 	chan1 := tt.RequestAuthPost[chanobj](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data2.UserID), gin.H{
-		"name": "chan1",
+		"name": "Chan1",
 	})
 	chan2 := tt.RequestAuthPost[chanobj](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data2.UserID), gin.H{
-		"name": "chan2",
+		"name": "Chan2",
 	})
 	chan3 := tt.RequestAuthPost[chanobj](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data2.UserID), gin.H{
-		"name": "chan3",
+		"name": "Chan3",
 	})
 
 	countBoth(
@@ -768,14 +748,14 @@ func TestListChannelSubscriptions(t *testing.T) {
 
 	sub1 := tt.RequestAuthPost[gin.H](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?chan_subscribe_key=%s", data1.UserID, chan1.SubscribeKey), gin.H{
 		"channel_owner_user_id": data2.UserID,
-		"channel_internal_name": "chan1",
+		"channel_internal_name": "Chan1",
 	})
 	sub2 := tt.RequestAuthPost[gin.H](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?chan_subscribe_key=%s", data1.UserID, chan2.SubscribeKey), gin.H{
 		"channel_id": chan2.ChannelId,
 	})
 	sub3 := tt.RequestAuthPost[gin.H](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?chan_subscribe_key=%s", data1.UserID, chan3.SubscribeKey), gin.H{
 		"channel_owner_user_id": data2.UserID,
-		"channel_internal_name": "chan3",
+		"channel_internal_name": "Chan3",
 	})
 
 	countBoth(
@@ -904,7 +884,7 @@ func TestListChannelMessagesOfUnsubscribed(t *testing.T) {
 	}
 
 	chan1 := tt.RequestAuthPost[chanobj](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data2.UserID), gin.H{
-		"name": "chan1",
+		"name": "Chan1",
 	})
 
 	tt.RequestAuthGetShouldFail(t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels/%s/messages", data1.UserID, chan1.ChannelId), 401, apierr.USER_AUTH_FAILED)
@@ -964,12 +944,12 @@ func TestListChannelMessagesOfUnconfirmed1(t *testing.T) {
 	}
 
 	chan1 := tt.RequestAuthPost[chanobj](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data2.UserID), gin.H{
-		"name": "chan1",
+		"name": "Chan1",
 	})
 
 	tt.RequestAuthPost[gin.H](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?chan_subscribe_key=%s", data1.UserID, chan1.SubscribeKey), gin.H{
 		"channel_owner_user_id": data2.UserID,
-		"channel_internal_name": "chan1",
+		"channel_internal_name": "Chan1",
 	})
 
 	tt.RequestAuthGetShouldFail(t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels/%s/messages", data1.UserID, chan1.ChannelId), 401, apierr.USER_AUTH_FAILED)
@@ -1029,7 +1009,7 @@ func TestListChannelMessagesOfUnconfirmed2(t *testing.T) {
 	}
 
 	chan1 := tt.RequestAuthPost[chanobj](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data2.UserID), gin.H{
-		"name": "chan1",
+		"name": "Chan1",
 	})
 
 	tt.RequestAuthPost[gin.H](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?chan_subscribe_key=%s", data1.UserID, chan1.SubscribeKey), gin.H{
@@ -1093,7 +1073,7 @@ func TestListChannelMessagesOfRevokedConfirmation(t *testing.T) {
 	}
 
 	chan1 := tt.RequestAuthPost[chanobj](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data2.UserID), gin.H{
-		"name": "chan1",
+		"name": "Chan1",
 	})
 
 	sub1 := tt.RequestAuthPost[gin.H](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?chan_subscribe_key=%s", data1.UserID, chan1.SubscribeKey), gin.H{

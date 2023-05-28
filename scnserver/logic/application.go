@@ -328,27 +328,15 @@ func (app *Application) GetOrCreateChannel(ctx *AppContext, userid models.UserID
 }
 
 func (app *Application) NormalizeChannelDisplayName(v string) string {
-	v = strings.TrimSpace(v)
-	v = rexWhitespaceStart.RemoveAll(v)
-	v = rexWhitespaceEnd.RemoveAll(v)
-
-	return v
+	return strings.TrimSpace(v)
 }
 
 func (app *Application) NormalizeChannelInternalName(v string) string {
-	v = strings.TrimSpace(v)
-	v = strings.ToLower(v)
-	v = rexWhitespaceStart.RemoveAll(v)
-	v = rexWhitespaceEnd.RemoveAll(v)
-
-	return v
+	return strings.TrimSpace(v)
 }
 
 func (app *Application) NormalizeUsername(v string) string {
-	v = strings.TrimSpace(v)
-	v = rexNormalizeUsername.RemoveAll(v)
-
-	return v
+	return strings.TrimSpace(v)
 }
 
 func (app *Application) DeliverMessage(ctx context.Context, client models.Client, msg models.Message, compatTitleOverride *string) (*string, error) {

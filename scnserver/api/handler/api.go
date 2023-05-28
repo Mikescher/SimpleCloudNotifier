@@ -678,8 +678,14 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 	if len(channelDisplayName) > user.MaxChannelNameLength() {
 		return ginresp.APIError(g, 400, apierr.CHANNEL_TOO_LONG, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
 	}
+	if len(strings.TrimSpace(channelDisplayName)) == 0 {
+		return ginresp.APIError(g, 400, apierr.CHANNEL_NAME_EMPTY, fmt.Sprintf("Channel displayname cannot be empty"), nil)
+	}
 	if len(channelInternalName) > user.MaxChannelNameLength() {
 		return ginresp.APIError(g, 400, apierr.CHANNEL_TOO_LONG, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
+	}
+	if len(strings.TrimSpace(channelInternalName)) == 0 {
+		return ginresp.APIError(g, 400, apierr.CHANNEL_NAME_EMPTY, fmt.Sprintf("Channel internalname cannot be empty"), nil)
 	}
 
 	if channelExisting != nil {
@@ -753,7 +759,7 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	oldChannel, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID, true)
+	_, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID, true)
 	if err == sql.ErrNoRows {
 		return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
 	}
@@ -781,14 +787,13 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 	if b.DisplayName != nil {
 
 		newDisplayName := h.app.NormalizeChannelDisplayName(*b.DisplayName)
-		newInternalName := h.app.NormalizeChannelInternalName(*b.DisplayName)
-
-		if newInternalName != oldChannel.InternalName {
-			return ginresp.APIError(g, 400, apierr.CHANNEL_NAME_WOULD_CHANGE, "Cannot substantially change the channel name", err)
-		}
 
 		if len(newDisplayName) > user.MaxChannelNameLength() {
 			return ginresp.APIError(g, 400, apierr.CHANNEL_TOO_LONG, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
+		}
+
+		if len(strings.TrimSpace(newDisplayName)) == 0 {
+			return ginresp.APIError(g, 400, apierr.CHANNEL_NAME_EMPTY, fmt.Sprintf("Channel displayname cannot be empty"), nil)
 		}
 
 		err := h.database.UpdateChannelDisplayName(ctx, u.ChannelID, newDisplayName)

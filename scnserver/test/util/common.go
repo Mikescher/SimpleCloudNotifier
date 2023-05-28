@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
@@ -328,8 +329,8 @@ func AssertMappedSet[T langext.OrderedConstraint](t *testing.T, key string, expe
 	if !langext.ArrEqualsExact(actual, expected) {
 		t.Errorf("Value [%s] differs (%T <-> %T):\n", key, expected, actual)
 
-		t.Errorf("Actual    := [%v]\n", actual)
-		t.Errorf("Expected  := [%v]\n", expected)
+		t.Errorf("Actual    := [%v]\n", ljson(actual))
+		t.Errorf("Expected  := [%v]\n", ljson(expected))
 
 		t.Error(string(debug.Stack()))
 
@@ -363,4 +364,9 @@ func AssertMappedArr[T langext.OrderedConstraint](t *testing.T, key string, expe
 func IsWholeFloat[T langext.FloatConstraint](v T) bool {
 	_, frac := math.Modf(math.Abs(float64(v)))
 	return frac == 0.0
+}
+
+func ljson(v any) string {
+	b, _ := json.Marshal(v)
+	return string(b)
 }
