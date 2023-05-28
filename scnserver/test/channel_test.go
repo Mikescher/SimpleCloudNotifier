@@ -481,7 +481,83 @@ func TestChannelUpdate(t *testing.T) {
 }
 
 func TestListChannelMessages(t *testing.T) {
-	t.SkipNow() //TODO
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	type msg struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		Content             string `json:"content"`
+		MessageId           string `json:"message_id"`
+		OwnerUserId         string `json:"owner_user_id"`
+		Priority            int    `json:"priority"`
+		SenderIp            string `json:"sender_ip"`
+		SenderName          string `json:"sender_name"`
+		SenderUserId        string `json:"sender_user_id"`
+		Timestamp           string `json:"timestamp"`
+		Title               string `json:"title"`
+		Trimmed             bool   `json:"trimmed"`
+		UsrMessageId        string `json:"usr_message_id"`
+	}
+	type mglist struct {
+		Messages []msg  `json:"messages"`
+		NPT      string `json:"next_page_token"`
+		PageSize int    `json:"page_size"`
+	}
+
+	type chanobj struct {
+		ChannelId       string `json:"channel_id"`
+		DescriptionName string `json:"description_name"`
+		DisplayName     string `json:"display_name"`
+		InternalName    string `json:"internal_name"`
+		MessagesSent    int    `json:"messages_sent"`
+		OwnerUserId     string `json:"owner_user_id"`
+		SubscribeKey    string `json:"subscribe_key"`
+		Subscription    struct {
+			ChannelId           string `json:"channel_id"`
+			ChannelInternalName string `json:"channel_internal_name"`
+			ChannelOwnerUserId  string `json:"channel_owner_user_id"`
+			Confirmed           bool   `json:"confirmed"`
+			SubscriberUserId    string `json:"subscriber_user_id"`
+			SubscriptionId      string `json:"subscription_id"`
+			TimestampCreated    string `json:"timestamp_created"`
+		} `json:"subscription"`
+		TimestampCreated  string `json:"timestamp_created"`
+		TimestampLastsent string `json:"timestamp_lastsent"`
+	}
+
+	type chanlist struct {
+		Channels []chanobj `json:"channels"`
+	}
+
+	clist := tt.RequestAuthGet[chanlist](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data.User[16].UID))
+
+	chan1 := langext.ArrFirstOrNil(clist.Channels, func(v chanobj) bool { return v.InternalName == "chan1" }).ChannelId
+	chan2 := langext.ArrFirstOrNil(clist.Channels, func(v chanobj) bool { return v.InternalName == "chan2" }).ChannelId
+	chan3 := langext.ArrFirstOrNil(clist.Channels, func(v chanobj) bool { return v.InternalName == "chan3" }).ChannelId
+
+	{
+		msgList0 := tt.RequestAuthGet[mglist](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels/%s/messages", data.User[16].UID, chan1))
+		tt.AssertEqual(t, "msgList.len", 8, len(msgList0.Messages))
+		tt.AssertEqual(t, "PageSize", 16, msgList0.PageSize)
+		tt.AssertEqual(t, "msgList[0]", "Lorem Ipsum 11", msgList0.Messages[0].Title)
+	}
+
+	{
+		msgList0 := tt.RequestAuthGet[mglist](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels/%s/messages", data.User[16].UID, chan2))
+		tt.AssertEqual(t, "msgList.len", 10, len(msgList0.Messages))
+		tt.AssertEqual(t, "PageSize", 16, msgList0.PageSize)
+		tt.AssertEqual(t, "msgList[0]", "Lorem Ipsum 23", msgList0.Messages[0].Title)
+	}
+
+	{
+		msgList0 := tt.RequestAuthGet[mglist](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels/%s/messages", data.User[16].UID, chan3))
+		tt.AssertEqual(t, "msgList.len", 5, len(msgList0.Messages))
+		tt.AssertEqual(t, "PageSize", 16, msgList0.PageSize)
+		tt.AssertEqual(t, "msgList[0]", "Lorem Ipsum 20", msgList0.Messages[0].Title)
+	}
 }
 
 func TestListChannelSubscriptions(t *testing.T) {
