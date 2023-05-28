@@ -176,17 +176,28 @@ func (db *Database) ListChannelsByAccess(ctx TxContext, userid models.UserID, co
 	return data, nil
 }
 
-func (db *Database) GetChannel(ctx TxContext, userid models.UserID, channelid models.ChannelID) (models.ChannelWithSubscription, error) {
+func (db *Database) GetChannel(ctx TxContext, userid models.UserID, channelid models.ChannelID, enforceOwner bool) (models.ChannelWithSubscription, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.ChannelWithSubscription{}, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT channels.*, sub.* FROM channels LEFT JOIN subscriptions AS sub on channels.channel_id = sub.channel_id AND sub.subscriber_user_id = :subuid WHERE owner_user_id = :ouid AND channels.channel_id = :cid LIMIT 1", sq.PP{
-		"ouid":   userid,
+	params := sq.PP{
 		"cid":    channelid,
 		"subuid": userid,
-	})
+	}
+
+	selectors := "channels.*, sub.*"
+
+	join := "LEFT JOIN subscriptions AS sub on channels.channel_id = sub.channel_id AND sub.subscriber_user_id = :subuid"
+
+	cond := "channels.channel_id = :cid"
+	if enforceOwner {
+		cond = "owner_user_id = :ouid AND channels.channel_id = :cid"
+		params["ouid"] = userid
+	}
+
+	rows, err := tx.Query(ctx, "SELECT "+selectors+" FROM channels "+join+" WHERE "+cond+" LIMIT 1", params)
 	if err != nil {
 		return models.ChannelWithSubscription{}, err
 	}

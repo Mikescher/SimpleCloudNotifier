@@ -607,7 +607,7 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	channel, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID)
+	channel, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID, true)
 	if err == sql.ErrNoRows {
 		return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
 	}
@@ -753,7 +753,7 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	oldChannel, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID)
+	oldChannel, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID, true)
 	if err == sql.ErrNoRows {
 		return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
 	}
@@ -816,7 +816,7 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 
 	}
 
-	channel, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID)
+	channel, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID, true)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query (updated) channel", err)
 	}
@@ -876,7 +876,7 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 
 	pageSize := mathext.Clamp(langext.Coalesce(q.PageSize, 64), 1, maxPageSize)
 
-	channel, err := h.database.GetChannel(ctx, u.ChannelUserID, u.ChannelID)
+	channel, err := h.database.GetChannel(ctx, u.ChannelUserID, u.ChannelID, false)
 	if err == sql.ErrNoRows {
 		return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
 	}
@@ -1052,7 +1052,7 @@ func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPRespons
 		return *permResp
 	}
 
-	_, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID)
+	_, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID, true)
 	if err == sql.ErrNoRows {
 		return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
 	}

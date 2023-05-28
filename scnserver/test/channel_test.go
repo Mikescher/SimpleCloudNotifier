@@ -848,9 +848,265 @@ func TestListChannelSubscriptions(t *testing.T) {
 		0, 0, 0,
 		0, 0, 0,
 		0, 0, 0)
-
 }
 
-//TODO test list messages of unsubscribed channel
-//TODO test list messages of sub-not-confirmed channel
-//TODO test list messages of sub-deleted channel
+func TestListChannelMessagesOfUnsubscribed(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data1 := tt.InitSingleData(t, ws)
+	data2 := tt.InitSingleData(t, ws)
+
+	type msg struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		Content             string `json:"content"`
+		MessageId           string `json:"message_id"`
+		OwnerUserId         string `json:"owner_user_id"`
+		Priority            int    `json:"priority"`
+		SenderIp            string `json:"sender_ip"`
+		SenderName          string `json:"sender_name"`
+		SenderUserId        string `json:"sender_user_id"`
+		Timestamp           string `json:"timestamp"`
+		Title               string `json:"title"`
+		Trimmed             bool   `json:"trimmed"`
+		UsrMessageId        string `json:"usr_message_id"`
+	}
+	type mglist struct {
+		Messages []msg  `json:"messages"`
+		NPT      string `json:"next_page_token"`
+		PageSize int    `json:"page_size"`
+	}
+
+	type chanobj struct {
+		ChannelId       string `json:"channel_id"`
+		DescriptionName string `json:"description_name"`
+		DisplayName     string `json:"display_name"`
+		InternalName    string `json:"internal_name"`
+		MessagesSent    int    `json:"messages_sent"`
+		OwnerUserId     string `json:"owner_user_id"`
+		SubscribeKey    string `json:"subscribe_key"`
+		Subscription    struct {
+			ChannelId           string `json:"channel_id"`
+			ChannelInternalName string `json:"channel_internal_name"`
+			ChannelOwnerUserId  string `json:"channel_owner_user_id"`
+			Confirmed           bool   `json:"confirmed"`
+			SubscriberUserId    string `json:"subscriber_user_id"`
+			SubscriptionId      string `json:"subscription_id"`
+			TimestampCreated    string `json:"timestamp_created"`
+		} `json:"subscription"`
+		TimestampCreated  string `json:"timestamp_created"`
+		TimestampLastsent string `json:"timestamp_lastsent"`
+	}
+
+	type chanlist struct {
+		Channels []chanobj `json:"channels"`
+	}
+
+	chan1 := tt.RequestAuthPost[chanobj](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data2.UserID), gin.H{
+		"name": "chan1",
+	})
+
+	tt.RequestAuthGetShouldFail(t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels/%s/messages", data1.UserID, chan1.ChannelId), 401, apierr.USER_AUTH_FAILED)
+}
+
+func TestListChannelMessagesOfUnconfirmed1(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data1 := tt.InitSingleData(t, ws)
+	data2 := tt.InitSingleData(t, ws)
+
+	type msg struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		Content             string `json:"content"`
+		MessageId           string `json:"message_id"`
+		OwnerUserId         string `json:"owner_user_id"`
+		Priority            int    `json:"priority"`
+		SenderIp            string `json:"sender_ip"`
+		SenderName          string `json:"sender_name"`
+		SenderUserId        string `json:"sender_user_id"`
+		Timestamp           string `json:"timestamp"`
+		Title               string `json:"title"`
+		Trimmed             bool   `json:"trimmed"`
+		UsrMessageId        string `json:"usr_message_id"`
+	}
+	type mglist struct {
+		Messages []msg  `json:"messages"`
+		NPT      string `json:"next_page_token"`
+		PageSize int    `json:"page_size"`
+	}
+
+	type chanobj struct {
+		ChannelId       string `json:"channel_id"`
+		DescriptionName string `json:"description_name"`
+		DisplayName     string `json:"display_name"`
+		InternalName    string `json:"internal_name"`
+		MessagesSent    int    `json:"messages_sent"`
+		OwnerUserId     string `json:"owner_user_id"`
+		SubscribeKey    string `json:"subscribe_key"`
+		Subscription    struct {
+			ChannelId           string `json:"channel_id"`
+			ChannelInternalName string `json:"channel_internal_name"`
+			ChannelOwnerUserId  string `json:"channel_owner_user_id"`
+			Confirmed           bool   `json:"confirmed"`
+			SubscriberUserId    string `json:"subscriber_user_id"`
+			SubscriptionId      string `json:"subscription_id"`
+			TimestampCreated    string `json:"timestamp_created"`
+		} `json:"subscription"`
+		TimestampCreated  string `json:"timestamp_created"`
+		TimestampLastsent string `json:"timestamp_lastsent"`
+	}
+
+	type chanlist struct {
+		Channels []chanobj `json:"channels"`
+	}
+
+	chan1 := tt.RequestAuthPost[chanobj](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data2.UserID), gin.H{
+		"name": "chan1",
+	})
+
+	tt.RequestAuthPost[gin.H](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?chan_subscribe_key=%s", data1.UserID, chan1.SubscribeKey), gin.H{
+		"channel_owner_user_id": data2.UserID,
+		"channel_internal_name": "chan1",
+	})
+
+	tt.RequestAuthGetShouldFail(t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels/%s/messages", data1.UserID, chan1.ChannelId), 401, apierr.USER_AUTH_FAILED)
+}
+
+func TestListChannelMessagesOfUnconfirmed2(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data1 := tt.InitSingleData(t, ws)
+	data2 := tt.InitSingleData(t, ws)
+
+	type msg struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		Content             string `json:"content"`
+		MessageId           string `json:"message_id"`
+		OwnerUserId         string `json:"owner_user_id"`
+		Priority            int    `json:"priority"`
+		SenderIp            string `json:"sender_ip"`
+		SenderName          string `json:"sender_name"`
+		SenderUserId        string `json:"sender_user_id"`
+		Timestamp           string `json:"timestamp"`
+		Title               string `json:"title"`
+		Trimmed             bool   `json:"trimmed"`
+		UsrMessageId        string `json:"usr_message_id"`
+	}
+	type mglist struct {
+		Messages []msg  `json:"messages"`
+		NPT      string `json:"next_page_token"`
+		PageSize int    `json:"page_size"`
+	}
+
+	type chanobj struct {
+		ChannelId       string `json:"channel_id"`
+		DescriptionName string `json:"description_name"`
+		DisplayName     string `json:"display_name"`
+		InternalName    string `json:"internal_name"`
+		MessagesSent    int    `json:"messages_sent"`
+		OwnerUserId     string `json:"owner_user_id"`
+		SubscribeKey    string `json:"subscribe_key"`
+		Subscription    struct {
+			ChannelId           string `json:"channel_id"`
+			ChannelInternalName string `json:"channel_internal_name"`
+			ChannelOwnerUserId  string `json:"channel_owner_user_id"`
+			Confirmed           bool   `json:"confirmed"`
+			SubscriberUserId    string `json:"subscriber_user_id"`
+			SubscriptionId      string `json:"subscription_id"`
+			TimestampCreated    string `json:"timestamp_created"`
+		} `json:"subscription"`
+		TimestampCreated  string `json:"timestamp_created"`
+		TimestampLastsent string `json:"timestamp_lastsent"`
+	}
+
+	type chanlist struct {
+		Channels []chanobj `json:"channels"`
+	}
+
+	chan1 := tt.RequestAuthPost[chanobj](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data2.UserID), gin.H{
+		"name": "chan1",
+	})
+
+	tt.RequestAuthPost[gin.H](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?chan_subscribe_key=%s", data1.UserID, chan1.SubscribeKey), gin.H{
+		"channel_id": chan1.ChannelId,
+	})
+
+	tt.RequestAuthGetShouldFail(t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels/%s/messages", data1.UserID, chan1.ChannelId), 401, apierr.USER_AUTH_FAILED)
+}
+
+func TestListChannelMessagesOfRevokedConfirmation(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data1 := tt.InitSingleData(t, ws)
+	data2 := tt.InitSingleData(t, ws)
+
+	type msg struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		Content             string `json:"content"`
+		MessageId           string `json:"message_id"`
+		OwnerUserId         string `json:"owner_user_id"`
+		Priority            int    `json:"priority"`
+		SenderIp            string `json:"sender_ip"`
+		SenderName          string `json:"sender_name"`
+		SenderUserId        string `json:"sender_user_id"`
+		Timestamp           string `json:"timestamp"`
+		Title               string `json:"title"`
+		Trimmed             bool   `json:"trimmed"`
+		UsrMessageId        string `json:"usr_message_id"`
+	}
+	type mglist struct {
+		Messages []msg  `json:"messages"`
+		NPT      string `json:"next_page_token"`
+		PageSize int    `json:"page_size"`
+	}
+
+	type chanobj struct {
+		ChannelId       string `json:"channel_id"`
+		DescriptionName string `json:"description_name"`
+		DisplayName     string `json:"display_name"`
+		InternalName    string `json:"internal_name"`
+		MessagesSent    int    `json:"messages_sent"`
+		OwnerUserId     string `json:"owner_user_id"`
+		SubscribeKey    string `json:"subscribe_key"`
+		Subscription    struct {
+			ChannelId           string `json:"channel_id"`
+			ChannelInternalName string `json:"channel_internal_name"`
+			ChannelOwnerUserId  string `json:"channel_owner_user_id"`
+			Confirmed           bool   `json:"confirmed"`
+			SubscriberUserId    string `json:"subscriber_user_id"`
+			SubscriptionId      string `json:"subscription_id"`
+			TimestampCreated    string `json:"timestamp_created"`
+		} `json:"subscription"`
+		TimestampCreated  string `json:"timestamp_created"`
+		TimestampLastsent string `json:"timestamp_lastsent"`
+	}
+
+	type chanlist struct {
+		Channels []chanobj `json:"channels"`
+	}
+
+	chan1 := tt.RequestAuthPost[chanobj](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data2.UserID), gin.H{
+		"name": "chan1",
+	})
+
+	sub1 := tt.RequestAuthPost[gin.H](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?chan_subscribe_key=%s", data1.UserID, chan1.SubscribeKey), gin.H{
+		"channel_id": chan1.ChannelId,
+	})
+
+	tt.RequestAuthPatch[gin.H](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions/%s", data2.UserID, sub1["subscription_id"]), gin.H{
+		"confirmed": true,
+	})
+
+	tt.RequestAuthGet[tt.Void](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels/%s/messages", data1.UserID, chan1.ChannelId))
+
+	tt.RequestAuthDelete[gin.H](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions/%s", data2.UserID, sub1["subscription_id"]), gin.H{})
+
+	tt.RequestAuthGetShouldFail(t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels/%s/messages", data1.UserID, chan1.ChannelId), 401, apierr.USER_AUTH_FAILED)
+}
