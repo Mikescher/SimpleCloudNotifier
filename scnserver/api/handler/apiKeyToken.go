@@ -17,7 +17,7 @@ import (
 //	@ID				api-tokenkeys-list
 //	@Tags			API-v2
 //
-//	@Param			uid	path		int	true	"UserID"
+//	@Param			uid	path		string	true	"UserID"
 //
 //	@Success		200	{object}	handler.ListUserKeys.response
 //	@Failure		400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
@@ -25,7 +25,7 @@ import (
 //	@Failure		404	{object}	ginresp.apiError	"message not found"
 //	@Failure		500	{object}	ginresp.apiError	"internal server error"
 //
-//	@Router			/api/v2/users/:uid/keys [GET]
+//	@Router			/api/v2/users/{uid}/keys [GET]
 func (h APIHandler) ListUserKeys(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
@@ -62,8 +62,8 @@ func (h APIHandler) ListUserKeys(g *gin.Context) ginresp.HTTPResponse {
 //	@ID				api-tokenkeys-get
 //	@Tags			API-v2
 //
-//	@Param			uid	path		int	true	"UserID"
-//	@Param			kid	path		int	true	"TokenKeyID"
+//	@Param			uid	path		string	true	"UserID"
+//	@Param			kid	path		string	true	"TokenKeyID"
 //
 //	@Success		200	{object}	models.KeyTokenJSON
 //	@Failure		400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
@@ -71,7 +71,7 @@ func (h APIHandler) ListUserKeys(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure		404	{object}	ginresp.apiError	"message not found"
 //	@Failure		500	{object}	ginresp.apiError	"internal server error"
 //
-//	@Router			/api/v2/users/:uid/keys/:kid [GET]
+//	@Router			/api/v2/users/{uid}/keys/{kid} [GET]
 func (h APIHandler) GetUserKey(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID     `uri:"uid" binding:"entityid"`
@@ -117,7 +117,7 @@ func (h APIHandler) GetUserKey(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	404			{object}	ginresp.apiError	"message not found"
 //	@Failure	500			{object}	ginresp.apiError	"internal server error"
 //
-//	@Router		/api/v2/users/:uid/keys/:kid [PATCH]
+//	@Router		/api/v2/users/{uid}/keys/{kid} [PATCH]
 func (h APIHandler) UpdateUserKey(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID     `uri:"uid" binding:"entityid"`
@@ -214,7 +214,7 @@ func (h APIHandler) UpdateUserKey(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	404			{object}	ginresp.apiError	"message not found"
 //	@Failure	500			{object}	ginresp.apiError	"internal server error"
 //
-//	@Router		/api/v2/users/:uid/keys [POST]
+//	@Router		/api/v2/users/{uid}/keys [POST]
 func (h APIHandler) CreateUserKey(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
@@ -263,8 +263,8 @@ func (h APIHandler) CreateUserKey(g *gin.Context) ginresp.HTTPResponse {
 //	@ID				api-tokenkeys-delete
 //	@Tags			API-v2
 //
-//	@Param			uid	path		int	true	"UserID"
-//	@Param			kid	path		int	true	"TokenKeyID"
+//	@Param			uid	path		string	true	"UserID"
+//	@Param			kid	path		string	true	"TokenKeyID"
 //
 //	@Success		200	{object}	models.KeyTokenJSON
 //	@Failure		400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
@@ -272,7 +272,7 @@ func (h APIHandler) CreateUserKey(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure		404	{object}	ginresp.apiError	"message not found"
 //	@Failure		500	{object}	ginresp.apiError	"internal server error"
 //
-//	@Router			/api/v2/users/:uid/keys/:kid [DELETE]
+//	@Router			/api/v2/users/{uid}/keys/{kid} [DELETE]
 func (h APIHandler) DeleteUserKey(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		UserID models.UserID     `uri:"uid" binding:"entityid"`

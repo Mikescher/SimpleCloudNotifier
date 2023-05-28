@@ -1264,6 +1264,26 @@ paths:
         By default we return long messages with a trimmed body, if trimmed=false is supplied we return full messages (this reduces the max page_size)
       operationId: api-messages-list
       parameters:
+      - description: RFC3339
+        in: query
+        name: after
+        type: string
+      - description: RFC3339
+        in: query
+        name: before
+        type: string
+      - collectionFormat: csv
+        in: query
+        items:
+          type: string
+        name: channel
+        type: array
+      - collectionFormat: csv
+        in: query
+        items:
+          type: string
+        name: channel_id
+        type: array
       - in: query
         name: filter
         type: string
@@ -1273,10 +1293,27 @@ paths:
       - in: query
         name: page_size
         type: integer
-      - description: TODO more filter (sender-name, channel, timestamps, prio, )
+      - collectionFormat: csv
         in: query
+        items:
+          type: integer
+        name: priority
+        type: array
+      - collectionFormat: csv
+        in: query
+        items:
+          type: string
+        name: sender
+        type: array
+      - in: query
         name: trimmed
         type: boolean
+      - collectionFormat: csv
+        in: query
+        items:
+          type: string
+        name: used_key
+        type: array
       responses:
         "200":
           description: OK
@@ -1307,7 +1344,7 @@ paths:
         in: path
         name: mid
         required: true
-        type: integer
+        type: string
       responses:
         "200":
           description: OK
@@ -1343,7 +1380,7 @@ paths:
         in: path
         name: mid
         required: true
-        type: integer
+        type: string
       responses:
         "200":
           description: OK
@@ -1393,198 +1430,6 @@ paths:
       summary: Create a new user
       tags:
       - API-v2
-  /api/v2/users/:uid/keys:
-    get:
-      description: The request must be done with an ADMIN key, the returned keys are
-        without their token.
-      operationId: api-tokenkeys-list
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.ListUserKeys.response'
-        "400":
-          description: supplied values/parameters cannot be parsed / are invalid
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: user is not authorized / has missing permissions
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: message not found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: internal server error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: List keys of the user
-      tags:
-      - API-v2
-    post:
-      operationId: api-tokenkeys-create
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      - description: ' '
-        in: body
-        name: post_body
-        schema:
-          $ref: '#/definitions/handler.CreateUserKey.body'
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.KeyTokenJSON'
-        "400":
-          description: supplied values/parameters cannot be parsed / are invalid
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: user is not authorized / has missing permissions
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: message not found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: internal server error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: Create a new key
-      tags:
-      - API-v2
-  /api/v2/users/:uid/keys/:kid:
-    delete:
-      description: Cannot be used to delete the key used in the request itself
-      operationId: api-tokenkeys-delete
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      - description: TokenKeyID
-        in: path
-        name: kid
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.KeyTokenJSON'
-        "400":
-          description: supplied values/parameters cannot be parsed / are invalid
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: user is not authorized / has missing permissions
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: message not found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: internal server error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: Delete a key
-      tags:
-      - API-v2
-    get:
-      description: The request must be done with an ADMIN key, the returned key does
-        not include its token.
-      operationId: api-tokenkeys-get
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      - description: TokenKeyID
-        in: path
-        name: kid
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.KeyTokenJSON'
-        "400":
-          description: supplied values/parameters cannot be parsed / are invalid
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: user is not authorized / has missing permissions
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: message not found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: internal server error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: Get a single key
-      tags:
-      - API-v2
-    patch:
-      operationId: api-tokenkeys-update
-      parameters:
-      - description: UserID
-        in: path
-        name: uid
-        required: true
-        type: integer
-      - description: TokenKeyID
-        in: path
-        name: kid
-        required: true
-        type: integer
-      - description: ' '
-        in: body
-        name: post_body
-        schema:
-          $ref: '#/definitions/handler.UpdateUserKey.body'
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.KeyTokenJSON'
-        "400":
-          description: supplied values/parameters cannot be parsed / are invalid
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: user is not authorized / has missing permissions
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "404":
-          description: message not found
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: internal server error
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: Update a key
-      tags:
-      - API-v2
   /api/v2/users/{uid}:
     get:
       operationId: api-user-get
@@ -1593,7 +1438,7 @@ paths:
         in: path
         name: uid
         required: true
-        type: integer
+        type: string
       responses:
         "200":
           description: OK
@@ -1752,12 +1597,12 @@ paths:
         in: path
         name: uid
         required: true
-        type: integer
+        type: string
       - description: ChannelID
         in: path
         name: cid
         required: true
-        type: integer
+        type: string
       responses:
         "200":
           description: OK
@@ -1898,12 +1743,12 @@ paths:
         in: path
         name: uid
         required: true
-        type: integer
+        type: string
       - description: ChannelID
         in: path
         name: cid
         required: true
-        type: integer
+        type: string
       responses:
         "200":
           description: OK
@@ -1936,7 +1781,7 @@ paths:
         in: path
         name: uid
         required: true
-        type: integer
+        type: string
       responses:
         "200":
           description: OK
@@ -1998,12 +1843,12 @@ paths:
         in: path
         name: uid
         required: true
-        type: integer
+        type: string
       - description: ClientID
         in: path
         name: cid
         required: true
-        type: integer
+        type: string
       responses:
         "200":
           description: OK
@@ -2035,12 +1880,12 @@ paths:
         in: path
         name: uid
         required: true
-        type: integer
+        type: string
       - description: ClientID
         in: path
         name: cid
         required: true
-        type: integer
+        type: string
       responses:
         "200":
           description: OK
@@ -2063,6 +1908,198 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Get a single client
+      tags:
+      - API-v2
+  /api/v2/users/{uid}/keys:
+    get:
+      description: The request must be done with an ADMIN key, the returned keys are
+        without their token.
+      operationId: api-tokenkeys-list
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListUserKeys.response'
+        "400":
+          description: supplied values/parameters cannot be parsed / are invalid
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: user is not authorized / has missing permissions
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: message not found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: List keys of the user
+      tags:
+      - API-v2
+    post:
+      operationId: api-tokenkeys-create
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: ' '
+        in: body
+        name: post_body
+        schema:
+          $ref: '#/definitions/handler.CreateUserKey.body'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.KeyTokenJSON'
+        "400":
+          description: supplied values/parameters cannot be parsed / are invalid
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: user is not authorized / has missing permissions
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: message not found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Create a new key
+      tags:
+      - API-v2
+  /api/v2/users/{uid}/keys/{kid}:
+    delete:
+      description: Cannot be used to delete the key used in the request itself
+      operationId: api-tokenkeys-delete
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: string
+      - description: TokenKeyID
+        in: path
+        name: kid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.KeyTokenJSON'
+        "400":
+          description: supplied values/parameters cannot be parsed / are invalid
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: user is not authorized / has missing permissions
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: message not found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Delete a key
+      tags:
+      - API-v2
+    get:
+      description: The request must be done with an ADMIN key, the returned key does
+        not include its token.
+      operationId: api-tokenkeys-get
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: string
+      - description: TokenKeyID
+        in: path
+        name: kid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.KeyTokenJSON'
+        "400":
+          description: supplied values/parameters cannot be parsed / are invalid
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: user is not authorized / has missing permissions
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: message not found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Get a single key
+      tags:
+      - API-v2
+    patch:
+      operationId: api-tokenkeys-update
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: integer
+      - description: TokenKeyID
+        in: path
+        name: kid
+        required: true
+        type: integer
+      - description: ' '
+        in: body
+        name: post_body
+        schema:
+          $ref: '#/definitions/handler.UpdateUserKey.body'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.KeyTokenJSON'
+        "400":
+          description: supplied values/parameters cannot be parsed / are invalid
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: user is not authorized / has missing permissions
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: message not found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Update a key
       tags:
       - API-v2
   /api/v2/users/{uid}/subscriptions:
@@ -2160,12 +2197,12 @@ paths:
         in: path
         name: uid
         required: true
-        type: integer
+        type: string
       - description: SubscriptionID
         in: path
         name: sid
         required: true
-        type: integer
+        type: string
       responses:
         "200":
           description: OK
@@ -2197,12 +2234,12 @@ paths:
         in: path
         name: uid
         required: true
-        type: integer
+        type: string
       - description: SubscriptionID
         in: path
         name: sid
         required: true
-        type: integer
+        type: string
       responses:
         "200":
           description: OK

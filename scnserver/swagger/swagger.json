@@ -853,6 +853,36 @@
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "RFC3339",
+                        "name": "after",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "RFC3339",
+                        "name": "before",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "name": "channel",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "name": "channel_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "name": "filter",
                         "in": "query"
                     },
@@ -867,9 +897,35 @@
                         "in": "query"
                     },
                     {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "collectionFormat": "csv",
+                        "name": "priority",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "name": "sender",
+                        "in": "query"
+                    },
+                    {
                         "type": "boolean",
-                        "description": "TODO more filter (sender-name, channel, timestamps, prio, )",
                         "name": "trimmed",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "name": "used_key",
                         "in": "query"
                     }
                 ],
@@ -911,7 +967,7 @@
                 "operationId": "api-messages-delete",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "MessageID",
                         "name": "mid",
                         "in": "path",
@@ -960,7 +1016,7 @@
                 "operationId": "api-messages-get",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "MessageID",
                         "name": "mid",
                         "in": "path",
@@ -1040,290 +1096,6 @@
                 }
             }
         },
-        "/api/v2/users/:uid/keys": {
-            "get": {
-                "description": "The request must be done with an ADMIN key, the returned keys are without their token.",
-                "tags": [
-                    "API-v2"
-                ],
-                "summary": "List keys of the user",
-                "operationId": "api-tokenkeys-list",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "UserID",
-                        "name": "uid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.ListUserKeys.response"
-                        }
-                    },
-                    "400": {
-                        "description": "supplied values/parameters cannot be parsed / are invalid",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "401": {
-                        "description": "user is not authorized / has missing permissions",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "404": {
-                        "description": "message not found",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "500": {
-                        "description": "internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "API-v2"
-                ],
-                "summary": "Create a new key",
-                "operationId": "api-tokenkeys-create",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "UserID",
-                        "name": "uid",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": " ",
-                        "name": "post_body",
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/handler.CreateUserKey.body"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.KeyTokenJSON"
-                        }
-                    },
-                    "400": {
-                        "description": "supplied values/parameters cannot be parsed / are invalid",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "401": {
-                        "description": "user is not authorized / has missing permissions",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "404": {
-                        "description": "message not found",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "500": {
-                        "description": "internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v2/users/:uid/keys/:kid": {
-            "get": {
-                "description": "The request must be done with an ADMIN key, the returned key does not include its token.",
-                "tags": [
-                    "API-v2"
-                ],
-                "summary": "Get a single key",
-                "operationId": "api-tokenkeys-get",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "UserID",
-                        "name": "uid",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "TokenKeyID",
-                        "name": "kid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.KeyTokenJSON"
-                        }
-                    },
-                    "400": {
-                        "description": "supplied values/parameters cannot be parsed / are invalid",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "401": {
-                        "description": "user is not authorized / has missing permissions",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "404": {
-                        "description": "message not found",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "500": {
-                        "description": "internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Cannot be used to delete the key used in the request itself",
-                "tags": [
-                    "API-v2"
-                ],
-                "summary": "Delete a key",
-                "operationId": "api-tokenkeys-delete",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "UserID",
-                        "name": "uid",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "TokenKeyID",
-                        "name": "kid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.KeyTokenJSON"
-                        }
-                    },
-                    "400": {
-                        "description": "supplied values/parameters cannot be parsed / are invalid",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "401": {
-                        "description": "user is not authorized / has missing permissions",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "404": {
-                        "description": "message not found",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "500": {
-                        "description": "internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "tags": [
-                    "API-v2"
-                ],
-                "summary": "Update a key",
-                "operationId": "api-tokenkeys-update",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "UserID",
-                        "name": "uid",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "TokenKeyID",
-                        "name": "kid",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": " ",
-                        "name": "post_body",
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/handler.UpdateUserKey.body"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.KeyTokenJSON"
-                        }
-                    },
-                    "400": {
-                        "description": "supplied values/parameters cannot be parsed / are invalid",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "401": {
-                        "description": "user is not authorized / has missing permissions",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "404": {
-                        "description": "message not found",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "500": {
-                        "description": "internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v2/users/{uid}": {
             "get": {
                 "tags": [
@@ -1333,7 +1105,7 @@
                 "operationId": "api-user-get",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
@@ -1562,14 +1334,14 @@
                 "operationId": "api-channels-get",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "ChannelID",
                         "name": "cid",
                         "in": "path",
@@ -1776,14 +1548,14 @@
                 "operationId": "api-chan-subscriptions-list",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "ChannelID",
                         "name": "cid",
                         "in": "path",
@@ -1833,7 +1605,7 @@
                 "operationId": "api-clients-list",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
@@ -1927,14 +1699,14 @@
                 "operationId": "api-clients-get",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "ClientID",
                         "name": "cid",
                         "in": "path",
@@ -1982,14 +1754,14 @@
                 "operationId": "api-clients-delete",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "ClientID",
                         "name": "cid",
                         "in": "path",
@@ -2017,6 +1789,290 @@
                     },
                     "404": {
                         "description": "client not found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v2/users/{uid}/keys": {
+            "get": {
+                "description": "The request must be done with an ADMIN key, the returned keys are without their token.",
+                "tags": [
+                    "API-v2"
+                ],
+                "summary": "List keys of the user",
+                "operationId": "api-tokenkeys-list",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ListUserKeys.response"
+                        }
+                    },
+                    "400": {
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "user is not authorized / has missing permissions",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "message not found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "API-v2"
+                ],
+                "summary": "Create a new key",
+                "operationId": "api-tokenkeys-create",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": " ",
+                        "name": "post_body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/handler.CreateUserKey.body"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.KeyTokenJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "user is not authorized / has missing permissions",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "message not found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v2/users/{uid}/keys/{kid}": {
+            "get": {
+                "description": "The request must be done with an ADMIN key, the returned key does not include its token.",
+                "tags": [
+                    "API-v2"
+                ],
+                "summary": "Get a single key",
+                "operationId": "api-tokenkeys-get",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "TokenKeyID",
+                        "name": "kid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.KeyTokenJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "user is not authorized / has missing permissions",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "message not found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Cannot be used to delete the key used in the request itself",
+                "tags": [
+                    "API-v2"
+                ],
+                "summary": "Delete a key",
+                "operationId": "api-tokenkeys-delete",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "TokenKeyID",
+                        "name": "kid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.KeyTokenJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "user is not authorized / has missing permissions",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "message not found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "API-v2"
+                ],
+                "summary": "Update a key",
+                "operationId": "api-tokenkeys-update",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "TokenKeyID",
+                        "name": "kid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": " ",
+                        "name": "post_body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/handler.UpdateUserKey.body"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.KeyTokenJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "user is not authorized / has missing permissions",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "message not found",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -2155,14 +2211,14 @@
                 "operationId": "api-subscriptions-get",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "SubscriptionID",
                         "name": "sid",
                         "in": "path",
@@ -2210,14 +2266,14 @@
                 "operationId": "api-subscriptions-delete",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "SubscriptionID",
                         "name": "sid",
                         "in": "path",

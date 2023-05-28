@@ -137,7 +137,7 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 //	@ID			api-user-get
 //	@Tags		API-v2
 //
-//	@Param		uid	path		int	true	"UserID"
+//	@Param		uid	path		string	true	"UserID"
 //
 //	@Success	200	{object}	models.UserJSON
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"

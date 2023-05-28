@@ -121,8 +121,8 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 //	@ID			api-chan-subscriptions-list
 //	@Tags		API-v2
 //
-//	@Param		uid	path		int	true	"UserID"
-//	@Param		cid	path		int	true	"ChannelID"
+//	@Param		uid	path		string	true	"UserID"
+//	@Param		cid	path		string	true	"ChannelID"
 //
 //	@Success	200	{object}	handler.ListChannelSubscriptions.response
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
@@ -175,8 +175,8 @@ func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPRespons
 //	@ID			api-subscriptions-get
 //	@Tags		API-v2
 //
-//	@Param		uid	path		int	true	"UserID"
-//	@Param		sid	path		int	true	"SubscriptionID"
+//	@Param		uid	path		string	true	"UserID"
+//	@Param		sid	path		string	true	"SubscriptionID"
 //
 //	@Success	200	{object}	models.SubscriptionJSON
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
@@ -222,8 +222,8 @@ func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 //	@ID			api-subscriptions-delete
 //	@Tags		API-v2
 //
-//	@Param		uid	path		int	true	"UserID"
-//	@Param		sid	path		int	true	"SubscriptionID"
+//	@Param		uid	path		string	true	"UserID"
+//	@Param		sid	path		string	true	"SubscriptionID"
 //
 //	@Success	200	{object}	models.SubscriptionJSON
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"

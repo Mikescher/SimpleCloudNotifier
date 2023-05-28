@@ -165,7 +165,7 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 //	@ID				api-messages-get
 //	@Tags			API-v2
 //
-//	@Param			mid	path		int	true	"MessageID"
+//	@Param			mid	path		string	true	"MessageID"
 //
 //	@Success		200	{object}	models.MessageJSON
 //	@Failure		400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
@@ -233,7 +233,7 @@ func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 //	@ID				api-messages-delete
 //	@Tags			API-v2
 //
-//	@Param			mid	path		int	true	"MessageID"
+//	@Param			mid	path		string	true	"MessageID"
 //
 //	@Success		200	{object}	models.MessageJSON
 //	@Failure		400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"

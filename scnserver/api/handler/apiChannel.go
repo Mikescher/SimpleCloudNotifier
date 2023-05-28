@@ -118,8 +118,8 @@ func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 //	@ID			api-channels-get
 //	@Tags		API-v2
 //
-//	@Param		uid	path		int	true	"UserID"
-//	@Param		cid	path		int	true	"ChannelID"
+//	@Param		uid	path		string	true	"UserID"
+//	@Param		cid	path		string	true	"ChannelID"
 //
 //	@Success	200	{object}	models.ChannelWithSubscriptionJSON
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"

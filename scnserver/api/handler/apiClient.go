@@ -16,7 +16,7 @@ import (
 //	@ID			api-clients-list
 //	@Tags		API-v2
 //
-//	@Param		uid	path		int	true	"UserID"
+//	@Param		uid	path		string	true	"UserID"
 //
 //	@Success	200	{object}	handler.ListClients.response
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
@@ -59,8 +59,8 @@ func (h APIHandler) ListClients(g *gin.Context) ginresp.HTTPResponse {
 //	@ID			api-clients-get
 //	@Tags		API-v2
 //
-//	@Param		uid	path		int	true	"UserID"
-//	@Param		cid	path		int	true	"ClientID"
+//	@Param		uid	path		string	true	"UserID"
+//	@Param		cid	path		string	true	"ClientID"
 //
 //	@Success	200	{object}	models.ClientJSON
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
@@ -164,8 +164,8 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 //	@ID			api-clients-delete
 //	@Tags		API-v2
 //
-//	@Param		uid	path		int	true	"UserID"
-//	@Param		cid	path		int	true	"ClientID"
+//	@Param		uid	path		string	true	"UserID"
+//	@Param		cid	path		string	true	"ClientID"
 //
 //	@Success	200	{object}	models.ClientJSON
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
