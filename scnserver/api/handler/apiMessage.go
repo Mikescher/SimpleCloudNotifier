@@ -11,6 +11,7 @@ import (
 	"gogs.mikescher.com/BlackForestBytes/goext/mathext"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // ListMessages swaggerdoc
@@ -33,10 +34,17 @@ import (
 //	@Router			/api/v2/messages [GET]
 func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 	type query struct {
-		PageSize      *int    `json:"page_size"       form:"page_size"`
-		NextPageToken *string `json:"next_page_token" form:"next_page_token"`
-		Filter        *string `json:"filter"          form:"filter"`
-		Trimmed       *bool   `json:"trimmed"         form:"trimmed"` //TODO more filter (sender-name, channel, timestamps, prio, )
+		PageSize      *int     `json:"page_size"       form:"page_size"`
+		NextPageToken *string  `json:"next_page_token" form:"next_page_token"`
+		Filter        *string  `json:"filter"          form:"filter"`
+		Trimmed       *bool    `json:"trimmed"         form:"trimmed"`
+		Channels      []string `json:"channel"         form:"channel"`
+		ChannelIDs    []string `json:"channel_id"      form:"channel_id"`
+		Senders       []string `json:"sender"          form:"sender"`
+		TimeBefore    *string  `json:"before"          form:"before"` // RFC3339
+		TimeAfter     *string  `json:"after"           form:"after"`  // RFC3339
+		Priority      []int    `json:"priority"        form:"priority"`
+		KeyTokens     []string `json:"used_key"        form:"used_key"`
 	}
 	type response struct {
 		Messages      []models.MessageJSON `json:"messages"`
@@ -79,6 +87,58 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 
 	if q.Filter != nil && strings.TrimSpace(*q.Filter) != "" {
 		filter.SearchString = langext.Ptr([]string{strings.TrimSpace(*q.Filter)})
+	}
+
+	if len(q.Channels) != 0 {
+		filter.ChannelNameCS = langext.Ptr(q.Channels)
+	}
+
+	if len(q.ChannelIDs) != 0 {
+		cids := make([]models.ChannelID, 0, len(q.ChannelIDs))
+		for _, v := range q.ChannelIDs {
+			cid := models.ChannelID(v)
+			if err = cid.Valid(); err != nil {
+				return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid channel-id", err)
+			}
+			cids = append(cids, cid)
+		}
+		filter.ChannelID = &cids
+	}
+
+	if len(q.Senders) != 0 {
+		filter.SenderNameCS = langext.Ptr(q.Senders)
+	}
+
+	if q.TimeBefore != nil {
+		t0, err := time.Parse(time.RFC3339, *q.TimeBefore)
+		if err != nil {
+			return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid before-time", err)
+		}
+		filter.TimestampCoalesceBefore = &t0
+	}
+
+	if q.TimeAfter != nil {
+		t0, err := time.Parse(time.RFC3339, *q.TimeAfter)
+		if err != nil {
+			return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid after-time", err)
+		}
+		filter.TimestampCoalesceAfter = &t0
+	}
+
+	if len(q.Priority) != 0 {
+		filter.Priority = langext.Ptr(q.Priority)
+	}
+
+	if len(q.KeyTokens) != 0 {
+		tids := make([]models.KeyTokenID, 0, len(q.KeyTokens))
+		for _, v := range q.KeyTokens {
+			tid := models.KeyTokenID(v)
+			if err = tid.Valid(); err != nil {
+				return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid keytoken-id", err)
+			}
+			tids = append(tids, tid)
+		}
+		filter.UsedKeyID = &tids
 	}
 
 	messages, npt, err := h.database.ListMessages(ctx, filter, &pageSize, tok)
