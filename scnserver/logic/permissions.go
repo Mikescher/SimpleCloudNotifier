@@ -52,6 +52,7 @@ func (ac *AppContext) CheckPermissionChanMessagesRead(channel models.Channel) *g
 			if !sub.Confirmed {
 				return langext.Ptr(ginresp.APIError(ac.ginContext, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil))
 			}
+			return nil // subscribed channel
 		}
 	}
 
