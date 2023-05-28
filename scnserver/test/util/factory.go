@@ -546,6 +546,10 @@ func doAcceptSub(t *testing.T, baseUrl string, user Userdat, subscriber Userdat,
 
 }
 
+func LipsumWord(seed int64, wordcount int) string {
+	return loremipsum.NewWithSeed(seed).Words(wordcount)
+}
+
 func Lipsum(seed int64, paracount int) string {
 	return loremipsum.NewWithSeed(seed).Paragraphs(paracount)
 }

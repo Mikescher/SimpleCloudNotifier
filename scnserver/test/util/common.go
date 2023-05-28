@@ -177,6 +177,24 @@ func AssertTrue(t *testing.T, key string, v bool) {
 	}
 }
 
+func AssertNotDefault[T comparable](t *testing.T, key string, v T) {
+	if v == *new(T) {
+		t.Errorf("AssertNotDefault(%s) failed", key)
+		t.Error(ljson(v))
+		t.Error(string(debug.Stack()))
+		t.FailNow()
+	}
+}
+
+func AssertNotDefaultAny[T any](t *testing.T, key string, v T) {
+	if ljson(v) == ljson(*new(T)) {
+		t.Errorf("AssertNotDefault(%s) failed", key)
+		t.Error(ljson(v))
+		t.Error(string(debug.Stack()))
+		t.FailNow()
+	}
+}
+
 func AssertNotEqual(t *testing.T, key string, expected any, actual any) {
 	if expected == actual || (langext.IsNil(expected) && langext.IsNil(actual)) {
 		t.Errorf("Value [%s] does not differ (%T <-> %T):\n", key, expected, actual)

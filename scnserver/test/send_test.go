@@ -1373,8 +1373,418 @@ func TestSendParallel(t *testing.T) {
 	}
 }
 
-func TestSendToForeignChannelWithSendKey(t *testing.T) {
-	t.SkipNow() //TODO
+func TestSendWithAdminKey(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data1 := tt.InitSingleData(t, ws)
+
+	type chanobj struct {
+		ChannelId       string `json:"channel_id"`
+		DescriptionName string `json:"description_name"`
+		DisplayName     string `json:"display_name"`
+		InternalName    string `json:"internal_name"`
+		MessagesSent    int    `json:"messages_sent"`
+		OwnerUserId     string `json:"owner_user_id"`
+		SubscribeKey    string `json:"subscribe_key"`
+		Subscription    struct {
+			ChannelId           string `json:"channel_id"`
+			ChannelInternalName string `json:"channel_internal_name"`
+			ChannelOwnerUserId  string `json:"channel_owner_user_id"`
+			Confirmed           bool   `json:"confirmed"`
+			SubscriberUserId    string `json:"subscriber_user_id"`
+			SubscriptionId      string `json:"subscription_id"`
+			TimestampCreated    string `json:"timestamp_created"`
+		} `json:"subscription"`
+		TimestampCreated  string `json:"timestamp_created"`
+		TimestampLastsent string `json:"timestamp_lastsent"`
+	}
+	type subobj struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		ChannelOwnerUserId  string `json:"channel_owner_user_id"`
+		Confirmed           bool   `json:"confirmed"`
+		SubscriberUserId    string `json:"subscriber_user_id"`
+		SubscriptionId      string `json:"subscription_id"`
+		TimestampCreated    string `json:"timestamp_created"`
+	}
+	type sublist struct {
+		Subscriptions []subobj `json:"subscriptions"`
+	}
+
+	chan1 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+		"name": "Chan1",
+	})
+	chan2 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+		"name": "Chan2",
+	})
+	chan3 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+		"name": "Chan3",
+	})
+
+	tt.AssertNotDefault(t, "chan1", chan1)
+	tt.AssertNotDefault(t, "chan2", chan2)
+	tt.AssertNotDefault(t, "chan3", chan3)
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     data1.AdminKey,
+		"user_id": data1.UserID,
+		"channel": "Chan1",
+		"title":   tt.LipsumWord(1001, 1),
+	})
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     data1.AdminKey,
+		"user_id": data1.UserID,
+		"channel": "Chan2",
+		"title":   tt.LipsumWord(1001, 1),
+	})
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     data1.AdminKey,
+		"user_id": data1.UserID,
+		"channel": "Chan3",
+		"title":   tt.LipsumWord(1001, 1),
+	})
+}
+
+func TestSendWithSendKey(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data1 := tt.InitSingleData(t, ws)
+
+	type chanobj struct {
+		ChannelId       string `json:"channel_id"`
+		DescriptionName string `json:"description_name"`
+		DisplayName     string `json:"display_name"`
+		InternalName    string `json:"internal_name"`
+		MessagesSent    int    `json:"messages_sent"`
+		OwnerUserId     string `json:"owner_user_id"`
+		SubscribeKey    string `json:"subscribe_key"`
+		Subscription    struct {
+			ChannelId           string `json:"channel_id"`
+			ChannelInternalName string `json:"channel_internal_name"`
+			ChannelOwnerUserId  string `json:"channel_owner_user_id"`
+			Confirmed           bool   `json:"confirmed"`
+			SubscriberUserId    string `json:"subscriber_user_id"`
+			SubscriptionId      string `json:"subscription_id"`
+			TimestampCreated    string `json:"timestamp_created"`
+		} `json:"subscription"`
+		TimestampCreated  string `json:"timestamp_created"`
+		TimestampLastsent string `json:"timestamp_lastsent"`
+	}
+	type subobj struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		ChannelOwnerUserId  string `json:"channel_owner_user_id"`
+		Confirmed           bool   `json:"confirmed"`
+		SubscriberUserId    string `json:"subscriber_user_id"`
+		SubscriptionId      string `json:"subscription_id"`
+		TimestampCreated    string `json:"timestamp_created"`
+	}
+	type sublist struct {
+		Subscriptions []subobj `json:"subscriptions"`
+	}
+
+	chan1 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+		"name": "Chan1",
+	})
+	chan2 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+		"name": "Chan2",
+	})
+	chan3 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+		"name": "Chan3",
+	})
+
+	tt.AssertNotDefault(t, "chan1", chan1)
+	tt.AssertNotDefault(t, "chan2", chan2)
+	tt.AssertNotDefault(t, "chan3", chan3)
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     data1.SendKey,
+		"user_id": data1.UserID,
+		"channel": "Chan1",
+		"title":   tt.LipsumWord(1001, 1),
+	})
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     data1.SendKey,
+		"user_id": data1.UserID,
+		"channel": "Chan2",
+		"title":   tt.LipsumWord(1001, 1),
+	})
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     data1.SendKey,
+		"user_id": data1.UserID,
+		"channel": "Chan3",
+		"title":   tt.LipsumWord(1001, 1),
+	})
+}
+
+func TestSendWithReadKey(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data1 := tt.InitSingleData(t, ws)
+
+	type chanobj struct {
+		ChannelId       string `json:"channel_id"`
+		DescriptionName string `json:"description_name"`
+		DisplayName     string `json:"display_name"`
+		InternalName    string `json:"internal_name"`
+		MessagesSent    int    `json:"messages_sent"`
+		OwnerUserId     string `json:"owner_user_id"`
+		SubscribeKey    string `json:"subscribe_key"`
+		Subscription    struct {
+			ChannelId           string `json:"channel_id"`
+			ChannelInternalName string `json:"channel_internal_name"`
+			ChannelOwnerUserId  string `json:"channel_owner_user_id"`
+			Confirmed           bool   `json:"confirmed"`
+			SubscriberUserId    string `json:"subscriber_user_id"`
+			SubscriptionId      string `json:"subscription_id"`
+			TimestampCreated    string `json:"timestamp_created"`
+		} `json:"subscription"`
+		TimestampCreated  string `json:"timestamp_created"`
+		TimestampLastsent string `json:"timestamp_lastsent"`
+	}
+	type subobj struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		ChannelOwnerUserId  string `json:"channel_owner_user_id"`
+		Confirmed           bool   `json:"confirmed"`
+		SubscriberUserId    string `json:"subscriber_user_id"`
+		SubscriptionId      string `json:"subscription_id"`
+		TimestampCreated    string `json:"timestamp_created"`
+	}
+	type sublist struct {
+		Subscriptions []subobj `json:"subscriptions"`
+	}
+
+	chan1 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+		"name": "Chan1",
+	})
+	chan2 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+		"name": "Chan2",
+	})
+	chan3 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+		"name": "Chan3",
+	})
+
+	tt.AssertNotDefault(t, "chan1", chan1)
+	tt.AssertNotDefault(t, "chan2", chan2)
+	tt.AssertNotDefault(t, "chan3", chan3)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+		"key":     data1.ReadKey,
+		"user_id": data1.UserID,
+		"channel": "Chan1",
+		"title":   tt.LipsumWord(1001, 1),
+	}, 401, apierr.USER_AUTH_FAILED)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+		"key":     data1.ReadKey,
+		"user_id": data1.UserID,
+		"channel": "Chan2",
+		"title":   tt.LipsumWord(1002, 1),
+	}, 401, apierr.USER_AUTH_FAILED)
+
+	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+		"key":     data1.ReadKey,
+		"user_id": data1.UserID,
+		"channel": "Chan3",
+		"title":   tt.LipsumWord(1003, 1),
+	}, 401, apierr.USER_AUTH_FAILED)
+}
+
+func TestSendWithPermissionSendKey(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data1 := tt.InitSingleData(t, ws)
+
+	type chanobj struct {
+		ChannelId       string `json:"channel_id"`
+		DescriptionName string `json:"description_name"`
+		DisplayName     string `json:"display_name"`
+		InternalName    string `json:"internal_name"`
+		MessagesSent    int    `json:"messages_sent"`
+		OwnerUserId     string `json:"owner_user_id"`
+		SubscribeKey    string `json:"subscribe_key"`
+		Subscription    struct {
+			ChannelId           string `json:"channel_id"`
+			ChannelInternalName string `json:"channel_internal_name"`
+			ChannelOwnerUserId  string `json:"channel_owner_user_id"`
+			Confirmed           bool   `json:"confirmed"`
+			SubscriberUserId    string `json:"subscriber_user_id"`
+			SubscriptionId      string `json:"subscription_id"`
+			TimestampCreated    string `json:"timestamp_created"`
+		} `json:"subscription"`
+		TimestampCreated  string `json:"timestamp_created"`
+		TimestampLastsent string `json:"timestamp_lastsent"`
+	}
+	type subobj struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		ChannelOwnerUserId  string `json:"channel_owner_user_id"`
+		Confirmed           bool   `json:"confirmed"`
+		SubscriberUserId    string `json:"subscriber_user_id"`
+		SubscriptionId      string `json:"subscription_id"`
+		TimestampCreated    string `json:"timestamp_created"`
+	}
+	type sublist struct {
+		Subscriptions []subobj `json:"subscriptions"`
+	}
+	type keyobj struct {
+		AllChannels  bool     `json:"all_channels"`
+		Channels     []string `json:"channels"`
+		KeytokenId   string   `json:"keytoken_id"`
+		MessagesSent int      `json:"messages_sent"`
+		Name         string   `json:"name"`
+		OwnerUserId  string   `json:"owner_user_id"`
+		Permissions  string   `json:"permissions"`
+		Token        string   `json:"token"` // only in create
+	}
+
+	chan1 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+		"name": "Chan1",
+	})
+	chan2 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+		"name": "Chan2",
+	})
+	chan3 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+		"name": "Chan3",
+	})
+	chan4 := tt.RequestAuthPost[chanobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data1.UserID), gin.H{
+		"name": "Chan4",
+	})
+
+	tt.AssertNotDefault(t, "chan1", chan1)
+	tt.AssertNotDefault(t, "chan2", chan2)
+	tt.AssertNotDefault(t, "chan3", chan3)
+	tt.AssertNotDefault(t, "chan4", chan4)
+
+	{
+		keyOK := tt.RequestAuthPost[keyobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", data1.UserID), gin.H{
+			"all_channels": false,
+			"channels":     []string{chan1.ChannelId, chan2.ChannelId, chan3.ChannelId},
+			"name":         "K2",
+			"permissions":  "CS",
+		})
+
+		tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+			"key":     keyOK.Token,
+			"user_id": data1.UserID,
+			"channel": "Chan1",
+			"title":   tt.LipsumWord(1001, 1),
+		})
+
+		tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+			"key":     keyOK.Token,
+			"user_id": data1.UserID,
+			"channel": "Chan2",
+			"title":   tt.LipsumWord(1002, 1),
+		})
+
+		tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+			"key":     keyOK.Token,
+			"user_id": data1.UserID,
+			"channel": "Chan3",
+			"title":   tt.LipsumWord(1003, 1),
+		})
+	}
+
+	{
+		keyNOK := tt.RequestAuthPost[keyobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", data1.UserID), gin.H{
+			"all_channels": false,
+			"channels":     []string{},
+			"name":         "K3",
+			"permissions":  "CS",
+		})
+
+		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+			"key":     keyNOK.Token,
+			"user_id": data1.UserID,
+			"channel": "Chan1",
+			"title":   tt.LipsumWord(1001, 1),
+		}, 401, apierr.USER_AUTH_FAILED)
+
+		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+			"key":     keyNOK.Token,
+			"user_id": data1.UserID,
+			"channel": "Chan2",
+			"title":   tt.LipsumWord(1002, 1),
+		}, 401, apierr.USER_AUTH_FAILED)
+
+		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+			"key":     keyNOK.Token,
+			"user_id": data1.UserID,
+			"channel": "Chan3",
+			"title":   tt.LipsumWord(1003, 1),
+		}, 401, apierr.USER_AUTH_FAILED)
+	}
+
+	{
+		keyNOK := tt.RequestAuthPost[keyobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", data1.UserID), gin.H{
+			"all_channels": false,
+			"channels":     []string{chan4.ChannelId},
+			"name":         "K4",
+			"permissions":  "CS",
+		})
+
+		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+			"key":     keyNOK.Token,
+			"user_id": data1.UserID,
+			"channel": "Chan1",
+			"title":   tt.LipsumWord(1001, 1),
+		}, 401, apierr.USER_AUTH_FAILED)
+
+		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+			"key":     keyNOK.Token,
+			"user_id": data1.UserID,
+			"channel": "Chan2",
+			"title":   tt.LipsumWord(1002, 1),
+		}, 401, apierr.USER_AUTH_FAILED)
+
+		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+			"key":     keyNOK.Token,
+			"user_id": data1.UserID,
+			"channel": "Chan3",
+			"title":   tt.LipsumWord(1003, 1),
+		}, 401, apierr.USER_AUTH_FAILED)
+	}
+
+	{
+		keyNOK := tt.RequestAuthPost[keyobj](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", data1.UserID), gin.H{
+			"all_channels": false,
+			"channels":     []string{chan1.ChannelId, chan2.ChannelId, chan3.ChannelId},
+			"name":         "K4",
+			"permissions":  "CR",
+		})
+
+		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+			"key":     keyNOK.Token,
+			"user_id": data1.UserID,
+			"channel": "Chan1",
+			"title":   tt.LipsumWord(1001, 1),
+		}, 401, apierr.USER_AUTH_FAILED)
+
+		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+			"key":     keyNOK.Token,
+			"user_id": data1.UserID,
+			"channel": "Chan2",
+			"title":   tt.LipsumWord(1002, 1),
+		}, 401, apierr.USER_AUTH_FAILED)
+
+		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
+			"key":     keyNOK.Token,
+			"user_id": data1.UserID,
+			"channel": "Chan3",
+			"title":   tt.LipsumWord(1003, 1),
+		}, 401, apierr.USER_AUTH_FAILED)
+	}
+
 }
 
 func TestSendDeliveryRetry(t *testing.T) {
