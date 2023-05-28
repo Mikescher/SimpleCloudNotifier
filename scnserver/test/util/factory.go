@@ -90,6 +90,7 @@ var userExamples = []userex{
 	{13, false, "EmptyUser", "", "", "", "", ""},
 	{14, true, "ChanTester1", "StarfireXX", "1.x", "IOS", "FCM_TOK_EX_012", ""},
 	{15, true, "ChanTester2", "StarfireXX", "1.x", "IOS", "FCM_TOK_EX_013", ""},
+	{16, true, "PagTester1", "StarfireXX", "1.x", "ANDROID", "FCM_TOK_EX_016", ""},
 }
 
 var clientExamples = []clientex{
@@ -277,6 +278,30 @@ var messageExamples = []msgex{
 	{15, "chan_other_nosub", "", P0, SKEY, "Account Suspended", "Please contact us", 0},
 	{15, "chan_other_request", "", P0, SKEY, "Invitation to Beta Test", "", 0},
 	{15, "chan_other_accepted", "", P0, SKEY, "New Blog Post", "Congratulations on your promotion! We are proud", 0},
+
+	{16, "Chan1", "", P2, SKEY, "Lorem Ipsum 01", Lipsum(30001, 1), 0},
+	{16, "Chan2", "", P0, SKEY, "Lorem Ipsum 02", Lipsum(30002, 1), 0},
+	{16, "Chan1", "", P2, SKEY, "Lorem Ipsum 03", Lipsum(30003, 1), 0},
+	{16, "Chan1", "", P0, SKEY, "Lorem Ipsum 04", Lipsum(30004, 1), 0},
+	{16, "Chan1", "", P2, SKEY, "Lorem Ipsum 05", Lipsum(30005, 1), 0},
+	{16, "Chan1", "", P1, AKEY, "Lorem Ipsum 06", Lipsum(30006, 1), 0},
+	{16, "Chan2", "", P1, AKEY, "Lorem Ipsum 07", Lipsum(30007, 1), 0},
+	{16, "Chan2", "", P0, SKEY, "Lorem Ipsum 08", Lipsum(30008, 1), 0},
+	{16, "Chan1", "", PX, AKEY, "Lorem Ipsum 09", Lipsum(30009, 1), 0},
+	{16, "Chan1", "", P0, SKEY, "Lorem Ipsum 10", Lipsum(30010, 1), 0},
+	{16, "Chan1", "", P2, SKEY, "Lorem Ipsum 11", Lipsum(30011, 1), 0},
+	{16, "Chan2", "", PX, AKEY, "Lorem Ipsum 12", Lipsum(30012, 1), 0},
+	{16, "Chan2", "", P2, SKEY, "Lorem Ipsum 13", Lipsum(30013, 1), 0},
+	{16, "Chan2", "", P2, SKEY, "Lorem Ipsum 14", Lipsum(30014, 1), 0},
+	{16, "Chan2", "", P0, SKEY, "Lorem Ipsum 15", Lipsum(30015, 1), 0},
+	{16, "Chan3", "", P0, SKEY, "Lorem Ipsum 16", Lipsum(30016, 1), 0},
+	{16, "Chan3", "", P0, SKEY, "Lorem Ipsum 17", Lipsum(30017, 1), 0},
+	{16, "Chan3", "", P2, SKEY, "Lorem Ipsum 18", Lipsum(30018, 1), 0},
+	{16, "Chan3", "", PX, AKEY, "Lorem Ipsum 19", Lipsum(30019, 1), 0},
+	{16, "Chan3", "", P2, SKEY, "Lorem Ipsum 20", Lipsum(30020, 1), 0},
+	{16, "Chan2", "", P2, SKEY, "Lorem Ipsum 21", Lipsum(30021, 1), 0},
+	{16, "Chan2", "", P0, SKEY, "Lorem Ipsum 22", Lipsum(30022, 1), 0},
+	{16, "Chan2", "", P0, SKEY, "Lorem Ipsum 23", Lipsum(30023, 1), 0},
 }
 
 type DefData struct {

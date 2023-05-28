@@ -890,7 +890,7 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 
 	tok, err := ct.Decode(langext.Coalesce(q.NextPageToken, ""))
 	if err != nil {
-		return ginresp.APIError(g, 500, apierr.PAGETOKEN_ERROR, "Failed to decode next_page_token", err)
+		return ginresp.APIError(g, 400, apierr.PAGETOKEN_ERROR, "Failed to decode next_page_token", err)
 	}
 
 	filter := models.MessageFilter{
@@ -1379,7 +1379,7 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 
 	tok, err := ct.Decode(langext.Coalesce(q.NextPageToken, ""))
 	if err != nil {
-		return ginresp.APIError(g, 500, apierr.PAGETOKEN_ERROR, "Failed to decode next_page_token", err)
+		return ginresp.APIError(g, 400, apierr.PAGETOKEN_ERROR, "Failed to decode next_page_token", err)
 	}
 
 	err = h.database.UpdateUserLastRead(ctx, userid)

@@ -185,4 +185,147 @@ func TestGetMessageFull(t *testing.T) {
 	tt.AssertEqual(t, "msg.timestamp", time.Unix(ts, 0).In(timeext.TimezoneBerlin).Format(time.RFC3339Nano), msgIn["timestamp"])
 }
 
-//TODO test pagination
+func TestListMessages(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	type msg struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		Content             string `json:"content"`
+		MessageId           string `json:"message_id"`
+		OwnerUserId         string `json:"owner_user_id"`
+		Priority            int    `json:"priority"`
+		SenderIp            string `json:"sender_ip"`
+		SenderName          string `json:"sender_name"`
+		SenderUserId        string `json:"sender_user_id"`
+		Timestamp           string `json:"timestamp"`
+		Title               string `json:"title"`
+		Trimmed             bool   `json:"trimmed"`
+		UsrMessageId        string `json:"usr_message_id"`
+	}
+	type mglist struct {
+		Messages []msg `json:"messages"`
+	}
+
+	msgList := tt.RequestAuthGet[mglist](t, data.User[7].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages"))
+	tt.AssertEqual(t, "msgList.len", 6, len(msgList.Messages))
+	tt.AssertEqual(t, "msgList[0]", "Server outage status", msgList.Messages[0].Title)
+	tt.AssertEqual(t, "msgList[1]", "Server maintenance reminder", msgList.Messages[1].Title)
+	tt.AssertEqual(t, "msgList[2]", "Server security alert", msgList.Messages[2].Title)
+	tt.AssertEqual(t, "msgList[3]", "Server traffic warning", msgList.Messages[3].Title)
+	tt.AssertEqual(t, "msgList[4]", "New server release update", msgList.Messages[4].Title)
+	tt.AssertEqual(t, "msgList[5]", "Server outage resolution update", msgList.Messages[5].Title)
+}
+
+func TestListMessagesPaginated(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	type msg struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		Content             string `json:"content"`
+		MessageId           string `json:"message_id"`
+		OwnerUserId         string `json:"owner_user_id"`
+		Priority            int    `json:"priority"`
+		SenderIp            string `json:"sender_ip"`
+		SenderName          string `json:"sender_name"`
+		SenderUserId        string `json:"sender_user_id"`
+		Timestamp           string `json:"timestamp"`
+		Title               string `json:"title"`
+		Trimmed             bool   `json:"trimmed"`
+		UsrMessageId        string `json:"usr_message_id"`
+	}
+	type mglist struct {
+		Messages []msg  `json:"messages"`
+		NPT      string `json:"next_page_token"`
+		PageSize int    `json:"page_size"`
+	}
+	{
+		msgList0 := tt.RequestAuthGet[mglist](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages"))
+		tt.AssertEqual(t, "msgList.len", 16, len(msgList0.Messages))
+		tt.AssertEqual(t, "msgList.len", 16, msgList0.PageSize)
+	}
+	npt := ""
+	{
+		msgList1 := tt.RequestAuthGet[mglist](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?page_size=%d&next_page_token=%s", 10, "@start"))
+		tt.AssertEqual(t, "msgList.len", 10, len(msgList1.Messages))
+		tt.AssertEqual(t, "msgList.PageSize", 10, msgList1.PageSize)
+		tt.AssertEqual(t, "msgList[0]", "Lorem Ipsum 23", msgList1.Messages[0].Title)
+	}
+	{
+		msgList1 := tt.RequestAuthGet[mglist](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?page_size=%d&next_page_token=%s", 10, "@START"))
+		tt.AssertEqual(t, "msgList.len", 10, len(msgList1.Messages))
+		tt.AssertEqual(t, "msgList.PageSize", 10, msgList1.PageSize)
+		tt.AssertEqual(t, "msgList[0]", "Lorem Ipsum 23", msgList1.Messages[0].Title)
+	}
+	{
+		msgList1 := tt.RequestAuthGet[mglist](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?page_size=%d&next_page_token=%s", 10, ""))
+		tt.AssertEqual(t, "msgList.len", 10, len(msgList1.Messages))
+		tt.AssertEqual(t, "msgList.PageSize", 10, msgList1.PageSize)
+		tt.AssertEqual(t, "msgList[0]", "Lorem Ipsum 23", msgList1.Messages[0].Title)
+		npt = msgList1.NPT
+	}
+	{
+		msgList2 := tt.RequestAuthGet[mglist](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?page_size=%d&next_page_token=%s", 10, npt))
+		tt.AssertEqual(t, "msgList.len", 10, len(msgList2.Messages))
+		tt.AssertEqual(t, "msgList.PageSize", 10, msgList2.PageSize)
+		tt.AssertEqual(t, "msgList[0]", "Lorem Ipsum 13", msgList2.Messages[0].Title)
+		npt = msgList2.NPT
+	}
+	{
+		msgList3 := tt.RequestAuthGet[mglist](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?page_size=%d&next_page_token=%s", 10, npt))
+		tt.AssertEqual(t, "msgList.len", 3, len(msgList3.Messages))
+		tt.AssertEqual(t, "msgList.PageSize", 10, msgList3.PageSize)
+		tt.AssertEqual(t, "msgList[0]", "Lorem Ipsum 03", msgList3.Messages[0].Title)
+		tt.AssertEqual(t, "msgList[0]", "@end", msgList3.NPT)
+		npt = msgList3.NPT
+	}
+}
+
+func TestListMessagesPaginatedInvalid(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	tt.RequestAuthGetShouldFail(t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?page_size=%d&next_page_token=%s", 10, "INVALID"), 400, apierr.PAGETOKEN_ERROR)
+}
+
+func TestListMessagesZeroPagesize(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	type msg struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		Content             string `json:"content"`
+		MessageId           string `json:"message_id"`
+		OwnerUserId         string `json:"owner_user_id"`
+		Priority            int    `json:"priority"`
+		SenderIp            string `json:"sender_ip"`
+		SenderName          string `json:"sender_name"`
+		SenderUserId        string `json:"sender_user_id"`
+		Timestamp           string `json:"timestamp"`
+		Title               string `json:"title"`
+		Trimmed             bool   `json:"trimmed"`
+		UsrMessageId        string `json:"usr_message_id"`
+	}
+	type mglist struct {
+		Messages []msg  `json:"messages"`
+		NPT      string `json:"next_page_token"`
+		PageSize int    `json:"page_size"`
+	}
+
+	msgList1 := tt.RequestAuthGet[mglist](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?page_size=%d&next_page_token=%s", 0, "@start"))
+	tt.AssertEqual(t, "msgList.len", 1, len(msgList1.Messages))
+	tt.AssertEqual(t, "msgList.PageSize", 1, msgList1.PageSize)
+	tt.AssertEqual(t, "msgList[0]", "Lorem Ipsum 23", msgList1.Messages[0].Title)
+}
