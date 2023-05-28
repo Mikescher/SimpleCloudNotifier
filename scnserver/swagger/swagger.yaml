@@ -24,7 +24,7 @@ definitions:
     - 1206
     - 1207
     - 1208
-    - 1251
+    - 1209
     - 1301
     - 1302
     - 1303
@@ -36,6 +36,7 @@ definitions:
     - 1401
     - 1501
     - 1511
+    - 1512
     - 2101
     - 3001
     - 3002
@@ -68,7 +69,7 @@ definitions:
     - SENDERNAME_TOO_LONG
     - CHANNEL_TOO_LONG
     - CHANNEL_DESCRIPTION_TOO_LONG
-    - CHANNEL_NAME_WOULD_CHANGE
+    - CHANNEL_NAME_EMPTY
     - USER_NOT_FOUND
     - CLIENT_NOT_FOUND
     - CHANNEL_NOT_FOUND
@@ -80,6 +81,7 @@ definitions:
     - NO_DEVICE_LINKED
     - CHANNEL_ALREADY_EXISTS
     - CANNOT_SELFDELETE_KEY
+    - CANNOT_SELFUPDATE_KEY
     - QUOTA_REACHED
     - FAILED_VERIFY_PRO_TOKEN
     - INVALID_PRO_TOKEN
@@ -277,7 +279,7 @@ definitions:
     type: object
   handler.ListUserKeys.response:
     properties:
-      tokens:
+      keys:
         items:
           $ref: '#/definitions/models.KeyTokenJSON'
         type: array
@@ -429,6 +431,19 @@ definitions:
     properties:
       confirmed:
         type: boolean
+    type: object
+  handler.UpdateUserKey.body:
+    properties:
+      all_channels:
+        type: boolean
+      channels:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      permissions:
+        type: string
     type: object
   handler.Upgrade.response:
     properties:
@@ -584,6 +599,8 @@ definitions:
         type: string
       trimmed:
         type: boolean
+      used_key_id:
+        type: string
       usr_message_id:
         type: string
     type: object
@@ -1539,6 +1556,11 @@ paths:
         name: kid
         required: true
         type: integer
+      - description: ' '
+        in: body
+        name: post_body
+        schema:
+          $ref: '#/definitions/handler.UpdateUserKey.body'
       responses:
         "200":
           description: OK
@@ -1610,24 +1632,9 @@ paths:
         name: username
         schema:
           type: string
-      - description: Send a verification of permium purchase
+      - description: Send a verification of premium purchase
         in: body
         name: pro_token
-        schema:
-          type: string
-      - description: Send `true` to create a new read_key
-        in: body
-        name: read_key
-        schema:
-          type: string
-      - description: Send `true` to create a new send_key
-        in: body
-        name: send_key
-        schema:
-          type: string
-      - description: Send `true` to create a new admin_key
-        in: body
-        name: admin_key
         schema:
           type: string
       responses:
@@ -2075,7 +2082,7 @@ paths:
         name: uid
         required: true
         type: integer
-      - description: 'Filter subscriptions (default: owner_all)'
+      - description: 'Filter subscriptions (default: outgoing_all)'
         enum:
         - outgoing_all
         - outgoing_confirmed

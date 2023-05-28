@@ -1280,6 +1280,14 @@
                         "name": "kid",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": " ",
+                        "name": "post_body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/handler.UpdateUserKey.body"
+                        }
                     }
                 ],
                 "responses": {
@@ -1389,32 +1397,8 @@
                         }
                     },
                     {
-                        "description": "Send a verification of permium purchase",
+                        "description": "Send a verification of premium purchase",
                         "name": "pro_token",
-                        "in": "body",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Send `true` to create a new read_key",
-                        "name": "read_key",
-                        "in": "body",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Send `true` to create a new send_key",
-                        "name": "send_key",
-                        "in": "body",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Send `true` to create a new admin_key",
-                        "name": "admin_key",
                         "in": "body",
                         "schema": {
                             "type": "string"
@@ -2072,7 +2056,7 @@
                             "incoming_unconfirmed"
                         ],
                         "type": "string",
-                        "description": "Filter subscriptions (default: owner_all)",
+                        "description": "Filter subscriptions (default: outgoing_all)",
                         "name": "selector",
                         "in": "query",
                         "required": true
@@ -2647,7 +2631,7 @@
                 1206,
                 1207,
                 1208,
-                1251,
+                1209,
                 1301,
                 1302,
                 1303,
@@ -2659,6 +2643,7 @@
                 1401,
                 1501,
                 1511,
+                1512,
                 2101,
                 3001,
                 3002,
@@ -2691,7 +2676,7 @@
                 "SENDERNAME_TOO_LONG",
                 "CHANNEL_TOO_LONG",
                 "CHANNEL_DESCRIPTION_TOO_LONG",
-                "CHANNEL_NAME_WOULD_CHANGE",
+                "CHANNEL_NAME_EMPTY",
                 "USER_NOT_FOUND",
                 "CLIENT_NOT_FOUND",
                 "CHANNEL_NOT_FOUND",
@@ -2703,6 +2688,7 @@
                 "NO_DEVICE_LINKED",
                 "CHANNEL_ALREADY_EXISTS",
                 "CANNOT_SELFDELETE_KEY",
+                "CANNOT_SELFUPDATE_KEY",
                 "QUOTA_REACHED",
                 "FAILED_VERIFY_PRO_TOKEN",
                 "INVALID_PRO_TOKEN",
@@ -3002,7 +2988,7 @@
         "handler.ListUserKeys.response": {
             "type": "object",
             "properties": {
-                "tokens": {
+                "keys": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.KeyTokenJSON"
@@ -3228,6 +3214,26 @@
             "properties": {
                 "confirmed": {
                     "type": "boolean"
+                }
+            }
+        },
+        "handler.UpdateUserKey.body": {
+            "type": "object",
+            "properties": {
+                "all_channels": {
+                    "type": "boolean"
+                },
+                "channels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "permissions": {
+                    "type": "string"
                 }
             }
         },
@@ -3463,6 +3469,9 @@
                 },
                 "trimmed": {
                     "type": "boolean"
+                },
+                "used_key_id": {
+                    "type": "string"
                 },
                 "usr_message_id": {
                     "type": "string"

@@ -169,7 +169,7 @@ func DeliveryStatusValuesMeta() []EnumMetaValue {
 //
 // File:       keytoken.go
 // StringEnum: true
-// DescrEnum:  false
+// DescrEnum:  true
 //
 
 var __TokenPermValues = []TokenPerm{
@@ -177,6 +177,13 @@ var __TokenPermValues = []TokenPerm{
     PermChannelRead,
     PermChannelSend,
     PermUserRead,
+}
+
+var __TokenPermDescriptions = map[TokenPerm]string{
+    PermAdmin: "Edit userdata (+ includes all other permissions)",
+    PermChannelRead: "Read messages",
+    PermChannelSend: "Send messages",
+    PermUserRead: "Read userdata",
 }
 
 var __TokenPermVarnames = map[TokenPerm]string{
@@ -200,15 +207,22 @@ func (e TokenPerm) ValuesAny() []any {
 
 func (e TokenPerm) ValuesMeta() []EnumMetaValue {
     return []EnumMetaValue{
-        EnumMetaValue{VarName: "PermAdmin", Value: PermAdmin, Description: nil},
-        EnumMetaValue{VarName: "PermChannelRead", Value: PermChannelRead, Description: nil},
-        EnumMetaValue{VarName: "PermChannelSend", Value: PermChannelSend, Description: nil},
-        EnumMetaValue{VarName: "PermUserRead", Value: PermUserRead, Description: nil},
+        EnumMetaValue{VarName: "PermAdmin", Value: PermAdmin, Description: langext.Ptr("Edit userdata (+ includes all other permissions)")},
+        EnumMetaValue{VarName: "PermChannelRead", Value: PermChannelRead, Description: langext.Ptr("Read messages")},
+        EnumMetaValue{VarName: "PermChannelSend", Value: PermChannelSend, Description: langext.Ptr("Send messages")},
+        EnumMetaValue{VarName: "PermUserRead", Value: PermUserRead, Description: langext.Ptr("Read userdata")},
     }
 }
 
 func (e TokenPerm) String() string {
     return string(e)
+}
+
+func (e TokenPerm) Description() string {
+    if d, ok := __TokenPermDescriptions[e]; ok {
+        return d
+    }
+    return ""
 }
 
 func (e TokenPerm) VarName() string {
@@ -233,10 +247,10 @@ func TokenPermValues() []TokenPerm {
 
 func TokenPermValuesMeta() []EnumMetaValue {
     return []EnumMetaValue{
-        EnumMetaValue{VarName: "PermAdmin", Value: PermAdmin, Description: nil},
-        EnumMetaValue{VarName: "PermChannelRead", Value: PermChannelRead, Description: nil},
-        EnumMetaValue{VarName: "PermChannelSend", Value: PermChannelSend, Description: nil},
-        EnumMetaValue{VarName: "PermUserRead", Value: PermUserRead, Description: nil},
+        EnumMetaValue{VarName: "PermAdmin", Value: PermAdmin, Description: langext.Ptr("Edit userdata (+ includes all other permissions)")},
+        EnumMetaValue{VarName: "PermChannelRead", Value: PermChannelRead, Description: langext.Ptr("Read messages")},
+        EnumMetaValue{VarName: "PermChannelSend", Value: PermChannelSend, Description: langext.Ptr("Send messages")},
+        EnumMetaValue{VarName: "PermUserRead", Value: PermUserRead, Description: langext.Ptr("Read userdata")},
     }
 }
 
