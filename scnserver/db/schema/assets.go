@@ -15,7 +15,7 @@ const PrimaryHash2 = "07ed1449114416ed043084a30e0722a5f97bf172161338d2f7106a8dfd
 //go:embed primary_3.ddl
 var PrimarySchema3 string
 
-const PrimaryHash3 = "a4851e7953d3423622555cde03d2d0ea2ca367fbe28aa3e363771f1d04bed90a"
+const PrimaryHash3 = "65c2125ad0e12d02490cf2275f0067ef3c62a8522edf9a35ee8aa3f3c09b12e8"
 
 //go:embed requests_1.ddl
 var RequestsSchema1 string

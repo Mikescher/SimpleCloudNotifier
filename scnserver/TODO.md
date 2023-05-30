@@ -6,8 +6,6 @@
 
 #### BEFORE RELEASE
 
- - finish tests (!)
-
  - migration script for existing data
    apply local deletion in (my) app
    delete excessive dockerwatch messages (directly in db?)
@@ -28,7 +26,7 @@
       Register(ErrType) methods, errtypes then as structs
       log.xxx package with same interface as zerolog
       
- - jobs to clear requests-db and logs-db after to only keep X entries...
+ - jobs to clear requests-db to only keep X entries... (logs-db already exists)
 
  - /send endpoint should be compatible with the [ webhook ] notifier of uptime-kuma
    (or add another /kuma endpoint)
@@ -50,8 +48,6 @@
    Would delete all existing keys and create 3 new ones?
 
  - TODO-comments
-
- - why do some tests take 5 seconds (= duration of context timeout??)
 
 #### PERSONAL
 
@@ -85,6 +81,10 @@
      * needs sq.Converter implementation
      * needs to handle joined data
      * rfctime.Time...
+
+ - use job superclass (copy from isi/bnet/?), reduce duplicate code
+
+ - golang ci
 
  - cannot open sqlite in dbbrowsr (cannot parse schema?)
    -> https://github.com/sqlitebrowser/sqlitebrowser/issues/292 -> https://github.com/sqlitebrowser/sqlitebrowser/issues/29266
