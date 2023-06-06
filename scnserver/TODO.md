@@ -49,6 +49,8 @@
 
  - TODO-comments
 
+ - multistage build
+
 #### PERSONAL
 
  - in my script: use `srvname` for sendername

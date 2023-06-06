@@ -21,12 +21,15 @@ gow:
 	which gow || go install github.com/mitranim/gow@latest
 	gow -e "go,mod,html,css,json,yaml,js" run -tags "timetzdata sqlite_fts5 sqlite_foreign_keys" blackforestbytes.com/simplecloudnotifier/cmd/scnserver
 
-docker:
+dgi:
 	[ ! -f "DOCKER_GIT_INFO" ] || rm DOCKER_GIT_INFO
-	git rev-parse --abbrev-ref HEAD    >> DOCKER_GIT_INFO
-	git rev-parse              HEAD    >> DOCKER_GIT_INFO
-	git log -1 --format=%cd --date=iso >> DOCKER_GIT_INFO
-	git config --get remote.origin.url >> DOCKER_GIT_INFO
+	echo -n "VCSTYPE="     >> DOCKER_GIT_INFO ; echo "git"                         >> DOCKER_GIT_INFO
+	echo -n "BRANCH="      >> DOCKER_GIT_INFO ; git rev-parse --abbrev-ref HEAD    >> DOCKER_GIT_INFO
+	echo -n "HASH="        >> DOCKER_GIT_INFO ; git rev-parse              HEAD    >> DOCKER_GIT_INFO
+	echo -n "COMMITTIME="  >> DOCKER_GIT_INFO ; git log -1 --format=%cd --date=iso >> DOCKER_GIT_INFO
+	echo -n "REMOTE="      >> DOCKER_GIT_INFO ; git config --get remote.origin.url >> DOCKER_GIT_INFO
+
+build-docker: dgi
 	docker build \
             -t "$(DOCKER_NAME):$(HASH)" \
             -t "$(DOCKER_NAME):$(NAMESPACE)-latest" \
