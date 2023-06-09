@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
+	json "gogs.mikescher.com/BlackForestBytes/goext/gojson"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"runtime/debug"
 	"strings"
@@ -26,7 +27,7 @@ type jsonHTTPResponse struct {
 }
 
 func (j jsonHTTPResponse) Write(g *gin.Context) {
-	g.JSON(j.statusCode, j.data)
+	g.Render(j.statusCode, json.GoJsonRender{Data: j.data, NilSafeSlices: true, NilSafeMaps: true})
 }
 
 func (j jsonHTTPResponse) Statuscode() int {
