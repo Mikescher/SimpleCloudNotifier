@@ -103,7 +103,7 @@ func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
 //	@ID			api-clients-create
 //	@Tags		API-v2
 //
-//	@Param		uid			path		string						true	"UserID"
+//	@Param		uid			path		string					true	"UserID"
 //
 //	@Param		post_body	body		handler.AddClient.body	false	" "
 //
@@ -214,8 +214,8 @@ func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 //	@ID				api-client-update
 //	@Tags			API-v2
 //
-//	@Param			uid			path		string		true	"UserID"
-//	@Param			cid			path		string		true	"ClientID"
+//	@Param			uid			path		string	true	"UserID"
+//	@Param			cid			path		string	true	"ClientID"
 //
 //	@Param			clientname	body		string	false	"Change the clientname (send an empty string to clear it)"
 //	@Param			pro_token	body		string	false	"Send a verification of premium purchase"

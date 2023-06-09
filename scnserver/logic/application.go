@@ -242,20 +242,20 @@ func (app *Application) StartRequest(g *gin.Context, uri any, query any, body an
 	if body != nil {
 		if g.ContentType() == "application/json" {
 			if err := g.ShouldBindJSON(body); err != nil {
-				return nil, langext.Ptr(ginresp.APIError(g, apierr.BindFailJSON, "Failed to read body", err))
-			}	
+				return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Failed to read body", err))
+			}
 		} else {
-			return nil, langext.Ptr(ginresp.APIError(g, apierr.BindFailJSON, "missing JSON body", nil))
+			return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "missing JSON body", nil))
 		}
 	}
 
 	if form != nil {
-		if  g.ContentType() == "multipart/form-data" {
+		if g.ContentType() == "multipart/form-data" {
 			if err := g.ShouldBindWith(form, binding.Form); err != nil {
-				return nil, langext.Ptr(ginresp.APIError(g, apierr.BindFailFormData, "Failed to read multipart-form", err))
-			}	
+				return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Failed to read multipart-form", err))
+			}
 		} else {
-			return nil, langext.Ptr(ginresp.APIError(g, apierr.BindFailJSON, "missing form body", nil))
+			return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "missing form body", nil))
 		}
 	}
 

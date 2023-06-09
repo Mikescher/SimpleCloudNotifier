@@ -1471,7 +1471,7 @@ paths:
         in: path
         name: uid
         required: true
-        type: integer
+        type: string
       - description: Change the username (send an empty string to clear it)
         in: body
         name: username
@@ -1521,7 +1521,7 @@ paths:
         in: path
         name: uid
         required: true
-        type: integer
+        type: string
       - description: 'Filter channels (default: owned)'
         enum:
         - owned
@@ -1559,7 +1559,7 @@ paths:
         in: path
         name: uid
         required: true
-        type: integer
+        type: string
       - description: ' '
         in: body
         name: post_body
@@ -1634,12 +1634,12 @@ paths:
         in: path
         name: uid
         required: true
-        type: integer
+        type: string
       - description: ChannelID
         in: path
         name: cid
         required: true
-        type: integer
+        type: string
       - description: Send `true` to create a new subscribe_key
         in: body
         name: subscribe_key
@@ -1705,12 +1705,12 @@ paths:
         in: path
         name: uid
         required: true
-        type: integer
+        type: string
       - description: ChannelID
         in: path
         name: cid
         required: true
-        type: integer
+        type: string
       responses:
         "200":
           description: OK
@@ -1809,7 +1809,7 @@ paths:
         in: path
         name: uid
         required: true
-        type: integer
+        type: string
       - description: ' '
         in: body
         name: post_body
@@ -1910,6 +1910,54 @@ paths:
       summary: Get a single client
       tags:
       - API-v2
+    patch:
+      description: The body-values are optional, only send the ones you want to update
+      operationId: api-client-update
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: string
+      - description: ClientID
+        in: path
+        name: cid
+        required: true
+        type: string
+      - description: Change the clientname (send an empty string to clear it)
+        in: body
+        name: clientname
+        schema:
+          type: string
+      - description: Send a verification of premium purchase
+        in: body
+        name: pro_token
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ClientJSON'
+        "400":
+          description: supplied values/parameters cannot be parsed / are invalid
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: client is not authorized / has missing permissions
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: client not found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: (Partially) update a client
+      tags:
+      - API-v2
   /api/v2/users/{uid}/keys:
     get:
       description: The request must be done with an ADMIN key, the returned keys are
@@ -1952,7 +2000,7 @@ paths:
         in: path
         name: uid
         required: true
-        type: integer
+        type: string
       - description: ' '
         in: body
         name: post_body
@@ -2067,12 +2115,12 @@ paths:
         in: path
         name: uid
         required: true
-        type: integer
+        type: string
       - description: TokenKeyID
         in: path
         name: kid
         required: true
-        type: integer
+        type: string
       - description: ' '
         in: body
         name: post_body
@@ -2118,7 +2166,7 @@ paths:
         in: path
         name: uid
         required: true
-        type: integer
+        type: string
       - description: 'Filter subscriptions (default: outgoing_all)'
         enum:
         - outgoing_all
@@ -2160,7 +2208,7 @@ paths:
         in: path
         name: uid
         required: true
-        type: integer
+        type: string
       - in: query
         name: chan_subscribe_key
         type: string
@@ -2271,12 +2319,12 @@ paths:
         in: path
         name: uid
         required: true
-        type: integer
+        type: string
       - description: SubscriptionID
         in: path
         name: sid
         required: true
-        type: integer
+        type: string
       - description: ' '
         in: body
         name: post_data

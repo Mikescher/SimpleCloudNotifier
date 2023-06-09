@@ -1154,7 +1154,7 @@
                 "operationId": "api-user-update",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
@@ -1221,7 +1221,7 @@
                 "operationId": "api-channels-list",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
@@ -1276,7 +1276,7 @@
                 "operationId": "api-channels-create",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
@@ -1389,14 +1389,14 @@
                 "operationId": "api-channels-update",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "ChannelID",
                         "name": "cid",
                         "in": "path",
@@ -1491,14 +1491,14 @@
                         "in": "query"
                     },
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "ChannelID",
                         "name": "cid",
                         "in": "path",
@@ -1647,7 +1647,7 @@
                 "operationId": "api-clients-create",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
@@ -1800,6 +1800,78 @@
                         }
                     }
                 }
+            },
+            "patch": {
+                "description": "The body-values are optional, only send the ones you want to update",
+                "tags": [
+                    "API-v2"
+                ],
+                "summary": "(Partially) update a client",
+                "operationId": "api-client-update",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ClientID",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Change the clientname (send an empty string to clear it)",
+                        "name": "clientname",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Send a verification of premium purchase",
+                        "name": "pro_token",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ClientJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "client is not authorized / has missing permissions",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "client not found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
             }
         },
         "/api/v2/users/{uid}/keys": {
@@ -1860,7 +1932,7 @@
                 "operationId": "api-tokenkeys-create",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
@@ -2030,14 +2102,14 @@
                 "operationId": "api-tokenkeys-update",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "TokenKeyID",
                         "name": "kid",
                         "in": "path",
@@ -2096,7 +2168,7 @@
                 "operationId": "api-user-subscriptions-list",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
@@ -2154,7 +2226,7 @@
                 "operationId": "api-subscriptions-create",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
@@ -2321,14 +2393,14 @@
                 "operationId": "api-subscriptions-update",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "UserID",
                         "name": "uid",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "SubscriptionID",
                         "name": "sid",
                         "in": "path",
