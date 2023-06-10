@@ -1090,3 +1090,120 @@ func TestListChannelMessagesOfRevokedConfirmation(t *testing.T) {
 
 	tt.RequestAuthGetShouldFail(t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels/%s/messages", data1.UID, chan1.ChannelId), 401, apierr.USER_AUTH_FAILED)
 }
+
+func TestChannelMessageCounter(t *testing.T) { //TODO this fails!
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	uid := r0["user_id"].(string)
+	admintok := r0["admin_key"].(string)
+
+	type chanobj struct {
+		ChannelId       string `json:"channel_id"`
+		DescriptionName string `json:"description_name"`
+		DisplayName     string `json:"display_name"`
+		InternalName    string `json:"internal_name"`
+		MessagesSent    int    `json:"messages_sent"`
+		OwnerUserId     string `json:"owner_user_id"`
+		SubscribeKey    string `json:"subscribe_key"`
+		Subscription    struct {
+			ChannelId           string `json:"channel_id"`
+			ChannelInternalName string `json:"channel_internal_name"`
+			ChannelOwnerUserId  string `json:"channel_owner_user_id"`
+			Confirmed           bool   `json:"confirmed"`
+			SubscriberUserId    string `json:"subscriber_user_id"`
+			SubscriptionId      string `json:"subscription_id"`
+			TimestampCreated    string `json:"timestamp_created"`
+		} `json:"subscription"`
+		TimestampCreated  string `json:"timestamp_created"`
+		TimestampLastsent string `json:"timestamp_lastsent"`
+	}
+
+	type chanlist struct {
+		Channels []chanobj `json:"channels"`
+	}
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     admintok,
+		"user_id": uid,
+		"title":   tt.ShortLipsum(1001, 1),
+	})
+
+	chan0 := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid)).Channels[0]
+
+	chan1 := tt.RequestAuthPost[chanobj](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid), gin.H{
+		"name": "Chan1",
+	})
+
+	chan2 := tt.RequestAuthPost[chanobj](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid), gin.H{
+		"name": "Chan2",
+	})
+
+	assertCounter := func(c0 int, c1 int, c2 int) {
+		r1 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid+"/channels/"+chan0.ChannelId)
+		tt.AssertStrRepEqual(t, "c0.messages_sent", c0, r1["messages_sent"])
+
+		r2 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid+"/channels/"+chan1.ChannelId)
+		tt.AssertStrRepEqual(t, "c1.messages_sent", c1, r2["messages_sent"])
+
+		r3 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid+"/channels/"+chan2.ChannelId)
+		tt.AssertStrRepEqual(t, "c2.messages_sent", c2, r3["messages_sent"])
+	}
+
+	assertCounter(1, 0, 0)
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     admintok,
+		"user_id": uid,
+		"title":   tt.ShortLipsum(1002, 1),
+	})
+
+	assertCounter(2, 0, 0)
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     admintok,
+		"user_id": uid,
+		"channel": "Chan1",
+		"title":   tt.ShortLipsum(1003, 1),
+	})
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     admintok,
+		"user_id": uid,
+		"channel": "Chan2",
+		"title":   tt.ShortLipsum(1004, 1),
+	})
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     admintok,
+		"user_id": uid,
+		"channel": "Chan2",
+		"title":   tt.ShortLipsum(1005, 1),
+	})
+
+	assertCounter(5, 1, 2)
+	assertCounter(5, 1, 2)
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     admintok,
+		"user_id": uid,
+		"channel": "Chan2",
+		"title":   tt.ShortLipsum(1004, 1),
+	})
+
+	assertCounter(5, 1, 3)
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     admintok,
+		"user_id": uid,
+		"title":   tt.ShortLipsum(1002, 1),
+	})
+
+	assertCounter(6, 1, 3)
+
+}

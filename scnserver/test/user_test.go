@@ -370,3 +370,61 @@ func TestReuseProToken(t *testing.T) {
 	}
 
 }
+
+func TestUserMessageCounter(t *testing.T) {
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	uid := r0["user_id"].(string)
+	admintok := r0["admin_key"].(string)
+
+	assertCounter := func(c int) {
+		r1 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid)
+		tt.AssertStrRepEqual(t, "messages_sent", c, r1["messages_sent"])
+		tt.AssertStrRepEqual(t, "quota_used", c, r1["quota_used"])
+	}
+
+	assertCounter(0)
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     admintok,
+		"user_id": uid,
+		"title":   tt.ShortLipsum(1001, 1),
+	})
+
+	assertCounter(1)
+	assertCounter(1)
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     admintok,
+		"user_id": uid,
+		"title":   tt.ShortLipsum(1002, 1),
+	})
+
+	assertCounter(2)
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     admintok,
+		"user_id": uid,
+		"title":   tt.ShortLipsum(1003, 1),
+	})
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     admintok,
+		"user_id": uid,
+		"title":   tt.ShortLipsum(1004, 1),
+	})
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     admintok,
+		"user_id": uid,
+		"title":   tt.ShortLipsum(1005, 1),
+	})
+
+	assertCounter(5)
+}

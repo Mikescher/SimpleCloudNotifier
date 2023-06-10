@@ -85,7 +85,7 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 	var b combined
 	var q combined
 	var f combined
-	ctx, errResp := h.app.StartRequest(g, nil, &q, &b, &f)
+	ctx, errResp := h.app.StartRequest(g, nil, &q, &b, &f, logic.RequestOptions{IgnoreWrongContentType: true})
 	if errResp != nil {
 		return *errResp
 	}

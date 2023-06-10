@@ -110,9 +110,8 @@ func (db *Database) IncUserMessageCounter(ctx TxContext, user models.User) error
 
 	quota := user.QuotaUsedToday() + 1
 
-	_, err = tx.Exec(ctx, "UPDATE users SET timestamp_lastsent = :ts, messages_sent = :ctr, quota_used = :qu, quota_used_day = :qd WHERE user_id = :uid", sq.PP{
+	_, err = tx.Exec(ctx, "UPDATE users SET timestamp_lastsent = :ts, messages_sent = messages_sent+1, quota_used = :qu, quota_used_day = :qd WHERE user_id = :uid", sq.PP{
 		"ts":  time2DB(time.Now()),
-		"ctr": user.MessagesSent + 1,
 		"qu":  quota,
 		"qd":  scn.QuotaDayString(),
 		"uid": user.UserID,

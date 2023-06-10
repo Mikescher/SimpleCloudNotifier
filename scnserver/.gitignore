@@ -8,6 +8,10 @@ DOCKER_GIT_INFO
 scn_export.dat
 scn_export.json
 
+identifier.sqlite
+
+.idea/dataSources.xml
+
 ##############
 
 

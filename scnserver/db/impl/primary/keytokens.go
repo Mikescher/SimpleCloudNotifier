@@ -187,7 +187,7 @@ func (db *Database) IncKeyTokenMessageCounter(ctx TxContext, keyTokenid models.K
 		return err
 	}
 
-	_, err = tx.Exec(ctx, "UPDATE keytokens SET messages_sent = messages_sent + 1, timestamp_lastused = :ts WHERE keytoken_id = :tid", sq.PP{
+	_, err = tx.Exec(ctx, "UPDATE keytokens SET messages_sent = messages_sent+1, timestamp_lastused = :ts WHERE keytoken_id = :tid", sq.PP{
 		"ts":  time2DB(time.Now()),
 		"tid": keyTokenid,
 	})

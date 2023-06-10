@@ -71,7 +71,7 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 
 	var f combined
 	var q combined
-	ctx, errResp := h.app.StartRequest(g, nil, &q, nil, &f)
+	ctx, errResp := h.app.StartRequest(g, nil, &q, nil, &f, logic.RequestOptions{IgnoreWrongContentType: true})
 	if errResp != nil {
 		return *errResp
 	}
@@ -159,7 +159,7 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb, logic.RequestOptions{IgnoreWrongContentType: true})
 	if errResp != nil {
 		return *errResp
 	}
@@ -278,7 +278,7 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb, logic.RequestOptions{IgnoreWrongContentType: true})
 	if errResp != nil {
 		return *errResp
 	}
@@ -373,7 +373,7 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb, logic.RequestOptions{IgnoreWrongContentType: true})
 	if errResp != nil {
 		return *errResp
 	}
@@ -478,7 +478,7 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb, logic.RequestOptions{IgnoreWrongContentType: true})
 	if errResp != nil {
 		return *errResp
 	}
@@ -595,7 +595,7 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb, logic.RequestOptions{IgnoreWrongContentType: true})
 	if errResp != nil {
 		return *errResp
 	}
@@ -722,7 +722,7 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb, logic.RequestOptions{IgnoreWrongContentType: true})
 	if errResp != nil {
 		return *errResp
 	}
@@ -838,7 +838,7 @@ func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb)
+	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb, logic.RequestOptions{IgnoreWrongContentType: true})
 	if errResp != nil {
 		return *errResp
 	}

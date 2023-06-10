@@ -1790,7 +1790,3 @@ func TestSendWithPermissionSendKey(t *testing.T) {
 func TestSendDeliveryRetry(t *testing.T) {
 	t.SkipNow() //TODO
 }
-
-//TODO check message_counter + last_sent in channel
-
-//TODO check message_counter + last_sent in user

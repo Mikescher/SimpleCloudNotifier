@@ -225,7 +225,13 @@ func (app *Application) Migrate() error {
 	return app.Database.Migrate(ctx)
 }
 
-func (app *Application) StartRequest(g *gin.Context, uri any, query any, body any, form any) (*AppContext, *ginresp.HTTPResponse) {
+type RequestOptions struct {
+	IgnoreWrongContentType bool
+}
+
+func (app *Application) StartRequest(g *gin.Context, uri any, query any, body any, form any, opts ...RequestOptions) (*AppContext, *ginresp.HTTPResponse) {
+
+	ignoreWrongContentType := langext.ArrAny(opts, func(o RequestOptions) bool { return o.IgnoreWrongContentType })
 
 	if uri != nil {
 		if err := g.ShouldBindUri(uri); err != nil {
@@ -245,7 +251,9 @@ func (app *Application) StartRequest(g *gin.Context, uri any, query any, body an
 				return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Failed to read body", err))
 			}
 		} else {
-			return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "missing JSON body", nil))
+			if !ignoreWrongContentType {
+				return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "missing JSON body", nil))
+			}
 		}
 	}
 
@@ -255,7 +263,9 @@ func (app *Application) StartRequest(g *gin.Context, uri any, query any, body an
 				return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Failed to read multipart-form", err))
 			}
 		} else {
-			return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "missing form body", nil))
+			if !ignoreWrongContentType {
+				return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "missing form body", nil))
+			}
 		}
 	}
 

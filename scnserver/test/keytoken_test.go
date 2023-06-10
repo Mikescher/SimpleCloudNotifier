@@ -5,6 +5,7 @@ import (
 	tt "blackforestbytes.com/simplecloudnotifier/test/util"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"testing"
 )
 
@@ -489,5 +490,119 @@ func TestTokenKeysPermissions(t *testing.T) {
 		"user_id": data.UID,
 		"title":   "HelloWorld_001",
 	}, 401, apierr.USER_AUTH_FAILED) // no send perm
+
+}
+
+func TestTokenKeysMessageCounter(t *testing.T) {
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
+		"agent_model":   "DUMMY_PHONE",
+		"agent_version": "4X",
+		"client_type":   "ANDROID",
+		"fcm_token":     "DUMMY_FCM",
+	})
+
+	type keyobj struct {
+		AllChannels  bool     `json:"all_channels"`
+		Channels     []string `json:"channels"`
+		KeytokenId   string   `json:"keytoken_id"`
+		MessagesSent int      `json:"messages_sent"`
+		Name         string   `json:"name"`
+		OwnerUserId  string   `json:"owner_user_id"`
+		Permissions  string   `json:"permissions"`
+		Token        string   `json:"token"` // only in create
+	}
+	type keylist struct {
+		Keys []keyobj `json:"keys"`
+	}
+
+	uid := r0["user_id"].(string)
+	admintok := r0["admin_key"].(string)
+	sendtok := r0["send_key"].(string)
+
+	klist := tt.RequestAuthGet[keylist](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", uid))
+	tt.AssertEqual(t, "len(keys)", 3, len(klist.Keys))
+
+	admintokid := langext.ArrFirstOrNil(klist.Keys, func(v keyobj) bool { return v.Name == "AdminKey (default)" }).KeytokenId
+	sendtokid := langext.ArrFirstOrNil(klist.Keys, func(v keyobj) bool { return v.Name == "SendKey (default)" }).KeytokenId
+	readtokid := langext.ArrFirstOrNil(klist.Keys, func(v keyobj) bool { return v.Name == "ReadKey (default)" }).KeytokenId
+
+	assertCounter := func(c0 int, c1 int, c2 int) {
+		r1 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid+"/keys/"+admintokid)
+		tt.AssertStrRepEqual(t, "c0.messages_sent", c0, r1["messages_sent"])
+
+		r2 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid+"/keys/"+sendtokid)
+		tt.AssertStrRepEqual(t, "c1.messages_sent", c1, r2["messages_sent"])
+
+		r3 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid+"/keys/"+readtokid)
+		tt.AssertStrRepEqual(t, "c2.messages_sent", c2, r3["messages_sent"])
+	}
+
+	assertCounter(0, 0, 0)
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     admintok,
+		"user_id": uid,
+		"title":   tt.ShortLipsum(1001, 1),
+	})
+
+	assertCounter(1, 0, 0)
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     admintok,
+		"user_id": uid,
+		"title":   tt.ShortLipsum(1002, 1),
+	})
+
+	assertCounter(2, 0, 0)
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     sendtok,
+		"user_id": uid,
+		"title":   tt.ShortLipsum(1002, 1),
+	})
+
+	assertCounter(2, 1, 0)
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     sendtok,
+		"user_id": uid,
+		"channel": "Chan1",
+		"title":   tt.ShortLipsum(1003, 1),
+	})
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     sendtok,
+		"user_id": uid,
+		"channel": "Chan2",
+		"title":   tt.ShortLipsum(1004, 1),
+	})
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     sendtok,
+		"user_id": uid,
+		"channel": "Chan2",
+		"title":   tt.ShortLipsum(1005, 1),
+	})
+
+	assertCounter(2, 4, 0)
+	assertCounter(2, 4, 0)
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     admintok,
+		"user_id": uid,
+		"channel": "Chan2",
+		"title":   tt.ShortLipsum(1004, 1),
+	})
+
+	assertCounter(3, 4, 0)
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     admintok,
+		"user_id": uid,
+		"title":   tt.ShortLipsum(1002, 1),
+	})
+
+	assertCounter(4, 4, 0)
 
 }
