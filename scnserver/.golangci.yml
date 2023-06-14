@@ -1,0 +1,40 @@
+# https://golangci-lint.run/usage/configuration/
+
+run:
+  go: '1.20'
+
+linters:
+  enable-all: true
+  disable:
+    - golint           # deprecated
+    - exhaustivestruct # deprecated
+    - deadcode         # deprecated
+    - scopelint        # deprecated
+    - structcheck      # deprecated
+    - varcheck         # deprecated
+    - nosnakecase      # deprecated
+    - maligned         # deprecated
+    - interfacer       # deprecated
+    - ifshort          # deprecated
+    - dupl             # (i disagree)
+    - ireturn          # (i disagree)
+    - wrapcheck        # (waiting for bferr)
+    - goerr113         # (waiting for bferr)
+    - varnamelen       # (too many false-positives)
+    - gomnd            # (i disagree)
+    - depguard         # (not configured)
+    - gofumpt          # (we do not use gofumpt)
+    - gci              # (we do no use gci)
+    - lll              # (i disagree)
+    - gochecknoglobals # (i disagree)
+
+issues:
+  exclude-rules:
+    - path: api/handler/.*.go
+      linters:
+        - funlen
+
+linters-settings:
+  tagalign:
+    align: true
+    sort: false

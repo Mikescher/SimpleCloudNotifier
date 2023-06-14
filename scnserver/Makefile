@@ -5,7 +5,7 @@ PORT=9090
 NAMESPACE=$(shell git rev-parse --abbrev-ref HEAD)
 HASH=$(shell git rev-parse HEAD)
 
-.PHONY: test swagger pygmentize docker
+.PHONY: test swagger pygmentize docker migrate dgi pygmentize lint
 
 build: swagger pygmentize fmt
 	mkdir -p _build
@@ -90,4 +90,9 @@ test:
 migrate:
 	CGO_ENABLED=1 go build -v -o _build/scn_migrate -tags "timetzdata sqlite_fts5 sqlite_foreign_keys" ./cmd/migrate
 	./_build/scn_migrate
+
+lint:
+	# curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.53.2
+	golangci-lint run ./...
+
 
