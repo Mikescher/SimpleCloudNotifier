@@ -98,33 +98,18 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 	if errResp != nil {
 		return *errResp
 	} else {
-		if okResp.MessageIsOld {
-			return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
-				Success:        true,
-				ErrorID:        apierr.NO_ERROR,
-				ErrorHighlight: -1,
-				Message:        "Message already sent",
-				SuppressSend:   true,
-				MessageCount:   okResp.User.MessagesSent,
-				Quota:          okResp.User.QuotaUsedToday(),
-				IsPro:          okResp.User.IsPro,
-				QuotaMax:       okResp.User.QuotaPerDay(),
-				SCNMessageID:   okResp.Message.MessageID,
-			}))
-		} else {
-			return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
-				Success:        true,
-				ErrorID:        apierr.NO_ERROR,
-				ErrorHighlight: -1,
-				Message:        "Message sent",
-				SuppressSend:   false,
-				MessageCount:   okResp.User.MessagesSent + 1,
-				Quota:          okResp.User.QuotaUsedToday() + 1,
-				IsPro:          okResp.User.IsPro,
-				QuotaMax:       okResp.User.QuotaPerDay(),
-				SCNMessageID:   okResp.Message.MessageID,
-			}))
-		}
+		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
+			Success:        true,
+			ErrorID:        apierr.NO_ERROR,
+			ErrorHighlight: -1,
+			Message:        langext.Conditional(okResp.MessageIsOld, "Message already sent", "Message sent"),
+			SuppressSend:   okResp.MessageIsOld,
+			MessageCount:   okResp.User.MessagesSent,
+			Quota:          okResp.User.QuotaUsedToday(),
+			IsPro:          okResp.User.IsPro,
+			QuotaMax:       okResp.User.QuotaPerDay(),
+			SCNMessageID:   okResp.Message.MessageID,
+		}))
 	}
 }
 

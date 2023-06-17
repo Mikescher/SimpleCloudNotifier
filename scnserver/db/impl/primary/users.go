@@ -115,7 +115,6 @@ func (db *Database) IncUserMessageCounter(ctx TxContext, user *models.User) erro
 
 	user.QuotaUsed = quota
 	user.QuotaUsedDay = langext.Ptr(scn.QuotaDayString())
-	user.TimestampLastSent = &now
 
 	_, err = tx.Exec(ctx, "UPDATE users SET timestamp_lastsent = :ts, messages_sent = messages_sent+1, quota_used = :qu, quota_used_day = :qd WHERE user_id = :uid", sq.PP{
 		"ts":  time2DB(now),
@@ -126,6 +125,9 @@ func (db *Database) IncUserMessageCounter(ctx TxContext, user *models.User) erro
 	if err != nil {
 		return err
 	}
+
+	user.TimestampLastSent = &now
+	user.MessagesSent = user.MessagesSent + 1
 
 	return nil
 }
