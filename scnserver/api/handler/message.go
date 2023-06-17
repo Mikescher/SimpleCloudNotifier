@@ -10,6 +10,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/dataext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/mathext"
@@ -262,6 +263,8 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 	if err != nil {
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to inc token msg-counter", err))
 	}
+
+	log.Info().Msg(fmt.Sprintf("Sending new notification %s for user %s", msg.MessageID, UserID))
 
 	for _, sub := range subscriptions {
 		clients, err := h.database.ListClients(ctx, sub.SubscriberUserID)

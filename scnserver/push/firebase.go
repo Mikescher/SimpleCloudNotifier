@@ -127,5 +127,7 @@ func (fb FirebaseConnector) SendNotification(ctx context.Context, client models.
 		return "", err
 	}
 
+	log.Info().Msg(fmt.Sprintf("Sucessfully pushed notification %s", msg.MessageID))
+
 	return respBody.Name, nil
 }

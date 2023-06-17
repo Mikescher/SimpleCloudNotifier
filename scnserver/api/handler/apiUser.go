@@ -5,7 +5,9 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"net/http"
 )
@@ -112,6 +114,8 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create read-key in db", err)
 	}
+
+	log.Info().Msg(fmt.Sprintf("Sucessfully created new user %s (client: %v)", userobj.UserID, b.NoClient))
 
 	if b.NoClient {
 		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, userobj.JSONWithClients(make([]models.Client, 0), adminKey, sendKey, readKey)))
