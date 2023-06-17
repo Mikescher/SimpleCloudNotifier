@@ -306,8 +306,8 @@ func migrateUser(ctx context.Context, dbnew sq.DB, dbold sq.DB, user OldUser, ap
 
 	_, err = dbnew.Exec(ctx, "INSERT INTO subscriptions (subscription_id, subscriber_user_id, channel_owner_user_id, channel_internal_name, channel_id, timestamp_created, confirmed) VALUES (:sid, :suid, :ouid, :cnam, :cid, :ts, :conf)", sq.PP{
 		"sid":  models.NewSubscriptionID(),
-		"suid": user.UserId,
-		"ouid": user.UserId,
+		"suid": userid,
+		"ouid": userid,
 		"cnam": "main",
 		"cid":  mainChannelID,
 		"ts":   user.TimestampCreated.UnixMilli(),
