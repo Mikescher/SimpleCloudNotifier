@@ -181,19 +181,24 @@ func (db *Database) UpdateKeyTokenChannels(ctx TxContext, keyTokenid models.KeyT
 	return nil
 }
 
-func (db *Database) IncKeyTokenMessageCounter(ctx TxContext, keyTokenid models.KeyTokenID) error {
+func (db *Database) IncKeyTokenMessageCounter(ctx TxContext, keyToken *models.KeyToken) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
 	}
 
+	now := time.Now()
+
 	_, err = tx.Exec(ctx, "UPDATE keytokens SET messages_sent = messages_sent+1, timestamp_lastused = :ts WHERE keytoken_id = :tid", sq.PP{
-		"ts":  time2DB(time.Now()),
-		"tid": keyTokenid,
+		"ts":  time2DB(now),
+		"tid": keyToken.KeyTokenID,
 	})
 	if err != nil {
 		return err
 	}
+
+	keyToken.TimestampLastUsed = &now
+	keyToken.MessagesSent += 1
 
 	return nil
 }

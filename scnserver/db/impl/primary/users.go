@@ -3,6 +3,7 @@ package primary
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/models"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
@@ -102,18 +103,24 @@ func (db *Database) UpdateUserProToken(ctx TxContext, userid models.UserID, prot
 	return nil
 }
 
-func (db *Database) IncUserMessageCounter(ctx TxContext, user models.User) error {
+func (db *Database) IncUserMessageCounter(ctx TxContext, user *models.User) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
 	}
 
+	now := time.Now()
+
 	quota := user.QuotaUsedToday() + 1
 
+	user.QuotaUsed = quota
+	user.QuotaUsedDay = langext.Ptr(scn.QuotaDayString())
+	user.TimestampLastSent = &now
+
 	_, err = tx.Exec(ctx, "UPDATE users SET timestamp_lastsent = :ts, messages_sent = messages_sent+1, quota_used = :qu, quota_used_day = :qd WHERE user_id = :uid", sq.PP{
-		"ts":  time2DB(time.Now()),
-		"qu":  quota,
-		"qd":  scn.QuotaDayString(),
+		"ts":  time2DB(now),
+		"qu":  user.QuotaUsed,
+		"qd":  user.QuotaUsedDay,
 		"uid": user.UserID,
 	})
 	if err != nil {

@@ -1091,7 +1091,7 @@ func TestListChannelMessagesOfRevokedConfirmation(t *testing.T) {
 	tt.RequestAuthGetShouldFail(t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels/%s/messages", data1.UID, chan1.ChannelId), 401, apierr.USER_AUTH_FAILED)
 }
 
-func TestChannelMessageCounter(t *testing.T) { //TODO this fails!
+func TestChannelMessageCounter(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
@@ -1146,7 +1146,7 @@ func TestChannelMessageCounter(t *testing.T) { //TODO this fails!
 		"name": "Chan2",
 	})
 
-	assertCounter := func(c0 int, c1 int, c2 int) {
+	assertCounter := func(c0 float64, c1 float64, c2 float64) {
 		r1 := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid+"/channels/"+chan0.ChannelId)
 		tt.AssertStrRepEqual(t, "c0.messages_sent", c0, r1["messages_sent"])
 
@@ -1186,8 +1186,24 @@ func TestChannelMessageCounter(t *testing.T) { //TODO this fails!
 		"title":   tt.ShortLipsum(1005, 1),
 	})
 
-	assertCounter(5, 1, 2)
-	assertCounter(5, 1, 2)
+	assertCounter(2, 1, 2)
+	assertCounter(2, 1, 2)
+
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     admintok,
+		"user_id": uid,
+		"title":   tt.ShortLipsum(2001, 1),
+	})
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     admintok,
+		"user_id": uid,
+		"title":   tt.ShortLipsum(2002, 1),
+	})
+	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+		"key":     admintok,
+		"user_id": uid,
+		"title":   tt.ShortLipsum(2003, 1),
+	})
 
 	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
 		"key":     admintok,
@@ -1201,7 +1217,7 @@ func TestChannelMessageCounter(t *testing.T) { //TODO this fails!
 	tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
 		"key":     admintok,
 		"user_id": uid,
-		"title":   tt.ShortLipsum(1002, 1),
+		"title":   tt.ShortLipsum(4001, 1),
 	})
 
 	assertCounter(6, 1, 3)

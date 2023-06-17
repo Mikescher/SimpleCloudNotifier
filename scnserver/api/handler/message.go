@@ -263,17 +263,17 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query subscriptions", err))
 	}
 
-	err = h.database.IncUserMessageCounter(ctx, user)
+	err = h.database.IncUserMessageCounter(ctx, &user)
 	if err != nil {
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to inc user msg-counter", err))
 	}
 
-	err = h.database.IncChannelMessageCounter(ctx, channel)
+	err = h.database.IncChannelMessageCounter(ctx, &channel)
 	if err != nil {
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to inc channel msg-counter", err))
 	}
 
-	err = h.database.IncKeyTokenMessageCounter(ctx, keytok.KeyTokenID)
+	err = h.database.IncKeyTokenMessageCounter(ctx, keytok)
 	if err != nil {
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to inc token msg-counter", err))
 	}

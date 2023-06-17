@@ -200,19 +200,24 @@ func (db *Database) GetChannel(ctx TxContext, userid models.UserID, channelid mo
 	return channel, nil
 }
 
-func (db *Database) IncChannelMessageCounter(ctx TxContext, channel models.Channel) error {
+func (db *Database) IncChannelMessageCounter(ctx TxContext, channel *models.Channel) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
 	}
 
+	now := time.Now()
+
 	_, err = tx.Exec(ctx, "UPDATE channels SET messages_sent = messages_sent+1, timestamp_lastsent = :ts WHERE channel_id = :cid", sq.PP{
-		"cid": time2DB(time.Now()),
-		"ts":  channel.ChannelID,
+		"ts":  time2DB(now),
+		"cid": channel.ChannelID,
 	})
 	if err != nil {
 		return err
 	}
+
+	channel.MessagesSent += 1
+	channel.TimestampLastSent = &now
 
 	return nil
 }
