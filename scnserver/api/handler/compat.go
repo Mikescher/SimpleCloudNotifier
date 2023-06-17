@@ -9,7 +9,6 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/dataext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
@@ -524,7 +523,7 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 		}
 
 		compMsgs = append(compMsgs, models.CompatMessage{
-			Title:         compatizeMessageTitle(ctx, h.app, v),
+			Title:         h.app.CompatizeMessageTitle(ctx, v),
 			Body:          v.Content,
 			Priority:      v.Priority,
 			Timestamp:     v.Timestamp().Unix(),
@@ -772,7 +771,7 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 		Success: true,
 		Message: "ok",
 		Data: models.CompatMessage{
-			Title:         compatizeMessageTitle(ctx, h.app, msg),
+			Title:         h.app.CompatizeMessageTitle(ctx, msg),
 			Body:          msg.Content,
 			Trimmed:       langext.Ptr(false),
 			Priority:      msg.Priority,
@@ -918,17 +917,4 @@ func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 		QuotaMax:  user.QuotaPerDay(),
 		IsPro:     user.IsPro,
 	}))
-}
-
-func compatizeMessageTitle(ctx *logic.AppContext, app *logic.Application, msg models.Message) string {
-	if msg.ChannelInternalName == "main" {
-		return msg.Title
-	}
-
-	channel, err := app.Database.Primary.GetChannelByID(ctx, msg.ChannelID)
-	if err != nil {
-		return fmt.Sprintf("[%s] %s", "%SCN-ERR%", msg.Title)
-	}
-
-	return fmt.Sprintf("[%s] %s", channel.DisplayName, msg.Title)
 }

@@ -6,5 +6,5 @@ import (
 )
 
 type NotificationClient interface {
-	SendNotification(ctx context.Context, client models.Client, msg models.Message, compatTitleOverride *string) (string, error)
+	SendNotification(ctx context.Context, client models.Client, msg models.Message, compatTitleOverride *string, compatMsgIDOverride *string) (string, error)
 }

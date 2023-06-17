@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/rs/zerolog/log"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/syncext"
 	"time"
 )
@@ -156,7 +157,29 @@ func (j *DeliveryRetryJob) redeliver(ctx *logic.SimpleContext, delivery models.D
 		}
 	} else {
 
-		fcmDelivID, err := j.app.DeliverMessage(ctx, client, msg, nil)
+		isCompatClient, err := j.app.Database.Primary.IsCompatClient(ctx, client.ClientID)
+		if err != nil {
+			log.Err(err).Str("MessageID", delivery.MessageID.String()).Str("ClientID", client.ClientID.String()).Msg("Failed to get <IsCompatClient>")
+			ctx.RollbackTransaction()
+			return
+		}
+
+		var titleOverride *string = nil
+		var msgidOverride *string = nil
+		if isCompatClient {
+
+			messageIdComp, err := j.app.Database.Primary.ConvertToCompatIDOrCreate(ctx, msg.MessageID.String(), "messageid")
+			if err != nil {
+				log.Err(err).Str("MessageID", delivery.MessageID.String()).Str("ClientID", client.ClientID.String()).Msg("Failed to query/create messageid")
+				ctx.RollbackTransaction()
+				return
+			}
+
+			titleOverride = langext.Ptr(j.app.CompatizeMessageTitle(ctx, msg))
+			msgidOverride = langext.Ptr(fmt.Sprintf("%d", messageIdComp))
+		}
+
+		fcmDelivID, err := j.app.DeliverMessage(ctx, client, msg, titleOverride, msgidOverride)
 		if err == nil {
 			err = j.app.Database.Primary.SetDeliverySuccess(ctx, delivery, fcmDelivID)
 			if err != nil {

@@ -53,13 +53,13 @@ type Notification struct {
 	Priority int
 }
 
-func (fb FirebaseConnector) SendNotification(ctx context.Context, client models.Client, msg models.Message, compatTitleOverride *string) (string, error) {
+func (fb FirebaseConnector) SendNotification(ctx context.Context, client models.Client, msg models.Message, compatTitleOverride *string, compatMsgIDOverride *string) (string, error) {
 
 	uri := "https://fcm.googleapis.com/v1/projects/" + fb.fbProject + "/messages:send"
 
 	jsonBody := gin.H{
 		"data": gin.H{
-			"scn_msg_id": msg.MessageID.String(),
+			"scn_msg_id": langext.Coalesce(compatMsgIDOverride, msg.MessageID.String()),
 			"usr_msg_id": langext.Coalesce(msg.UserMessageID, ""),
 			"client_id":  client.ClientID.String(),
 			"timestamp":  strconv.FormatInt(msg.Timestamp().Unix(), 10),

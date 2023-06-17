@@ -68,7 +68,7 @@ func Wrap(rlacc RequestLogAcceptor, fn WHandlerFunc) gin.HandlerFunc {
 				if scn.Conf.ReqLogEnabled {
 					rlacc.InsertRequestLog(createRequestLog(g, t0, ctr, wrap, nil))
 				}
-				
+
 				statuscode := wrap.Statuscode()
 				if statuscode/100 != 2 {
 					log.Warn().Str("url", g.Request.Method+"::"+g.Request.URL.String()).Msg(fmt.Sprintf("Request failed with statuscode %d", statuscode))

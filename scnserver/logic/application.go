@@ -9,6 +9,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/push"
 	"context"
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/rs/zerolog/log"
@@ -357,8 +358,8 @@ func (app *Application) NormalizeUsername(v string) string {
 	return strings.TrimSpace(v)
 }
 
-func (app *Application) DeliverMessage(ctx context.Context, client models.Client, msg models.Message, compatTitleOverride *string) (string, error) {
-	fcmDelivID, err := app.Pusher.SendNotification(ctx, client, msg, compatTitleOverride)
+func (app *Application) DeliverMessage(ctx context.Context, client models.Client, msg models.Message, compatTitleOverride *string, compatMsgIDOverride *string) (string, error) {
+	fcmDelivID, err := app.Pusher.SendNotification(ctx, client, msg, compatTitleOverride, compatMsgIDOverride)
 	if err != nil {
 		log.Warn().Str("MessageID", msg.MessageID.String()).Str("ClientID", client.ClientID.String()).Err(err).Msg("FCM Delivery failed")
 		return "", err
@@ -371,4 +372,17 @@ func (app *Application) InsertRequestLog(data models.RequestLog) {
 	if !ok {
 		log.Error().Msg("failed to insert request-log (queue full)")
 	}
+}
+
+func (app *Application) CompatizeMessageTitle(ctx TxContext, msg models.Message) string {
+	if msg.ChannelInternalName == "main" {
+		return msg.Title
+	}
+
+	channel, err := app.Database.Primary.GetChannelByID(ctx, msg.ChannelID)
+	if err != nil {
+		return fmt.Sprintf("[%s] %s", "%SCN-ERR%", msg.Title)
+	}
+
+	return fmt.Sprintf("[%s] %s", channel.DisplayName, msg.Title)
 }

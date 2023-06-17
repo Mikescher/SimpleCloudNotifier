@@ -239,7 +239,7 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to create message in db", err))
 	}
 
-	cid, err := h.database.CreateCompatID(ctx, "messageid", msg.MessageID.String())
+	compatMsgID, err := h.database.CreateCompatID(ctx, "messageid", msg.MessageID.String())
 	if err != nil {
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to create compat-id", err))
 	}
@@ -284,11 +284,13 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 			}
 
 			var titleOverride *string = nil
+			var msgidOverride *string = nil
 			if isCompatClient {
-				titleOverride = langext.Ptr(compatizeMessageTitle(ctx, h.app, msg))
+				titleOverride = langext.Ptr(h.app.CompatizeMessageTitle(ctx, msg))
+				msgidOverride = langext.Ptr(fmt.Sprintf("%d", compatMsgID))
 			}
 
-			fcmDelivID, err := h.app.DeliverMessage(ctx, client, msg, titleOverride)
+			fcmDelivID, err := h.app.DeliverMessage(ctx, client, msg, titleOverride, msgidOverride)
 			if err != nil {
 				_, err = h.database.CreateRetryDelivery(ctx, client, msg)
 				if err != nil {
@@ -308,6 +310,6 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 		User:            user,
 		Message:         msg,
 		MessageIsOld:    false,
-		CompatMessageID: cid,
+		CompatMessageID: compatMsgID,
 	}, nil
 }
