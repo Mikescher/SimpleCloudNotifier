@@ -5,7 +5,7 @@ PORT=9090
 NAMESPACE=$(shell git rev-parse --abbrev-ref HEAD)
 HASH=$(shell git rev-parse HEAD)
 
-.PHONY: test swagger pygmentize docker migrate dgi pygmentize lint
+.PHONY: test swagger pygmentize docker migrate dgi pygmentize lint docker
 
 build: swagger pygmentize fmt
 	mkdir -p _build
@@ -29,7 +29,7 @@ dgi:
 	echo -n "COMMITTIME="  >> DOCKER_GIT_INFO ; git log -1 --format=%cd --date=iso >> DOCKER_GIT_INFO
 	echo -n "REMOTE="      >> DOCKER_GIT_INFO ; git config --get remote.origin.url >> DOCKER_GIT_INFO
 
-build-docker: dgi
+docker: dgi
 	docker build \
             -t "$(DOCKER_NAME):$(HASH)" \
             -t "$(DOCKER_NAME):$(NAMESPACE)-latest" \

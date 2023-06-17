@@ -398,17 +398,17 @@ var configProd = func() Config {
 		ReturnRawErrors:          false,
 		DummyFirebase:            false,
 		FirebaseTokenURI:         "https://oauth2.googleapis.com/token",
-		FirebaseProjectID:        confEnv("SCN_SCN_FB_PROJECTID"),
-		FirebasePrivKeyID:        confEnv("SCN_SCN_FB_PRIVATEKEYID"),
-		FirebaseClientMail:       confEnv("SCN_SCN_FB_CLIENTEMAIL"),
-		FirebasePrivateKey:       confEnv("SCN_SCN_FB_PRIVATEKEY"),
+		FirebaseProjectID:        confEnv("SCN_FB_PROJECTID"),
+		FirebasePrivKeyID:        confEnv("SCN_FB_PRIVATEKEYID"),
+		FirebaseClientMail:       confEnv("SCN_FB_CLIENTEMAIL"),
+		FirebasePrivateKey:       confEnv("SCN_FB_PRIVATEKEY"),
 		DummyGoogleAPI:           false,
 		GoogleAPITokenURI:        "https://oauth2.googleapis.com/token",
-		GoogleAPIPrivKeyID:       confEnv("SCN_SCN_GOOG_PRIVATEKEYID"),
-		GoogleAPIClientMail:      confEnv("SCN_SCN_GOOG_CLIENTEMAIL"),
-		GoogleAPIPrivateKey:      confEnv("SCN_SCN_GOOG_PRIVATEKEY"),
-		GooglePackageName:        confEnv("SCN_SCN_GOOG_PACKAGENAME"),
-		GoogleProProductID:       confEnv("SCN_SCN_GOOG_PROPRODUCTID"),
+		GoogleAPIPrivKeyID:       confEnv("SCN_GOOG_PRIVATEKEYID"),
+		GoogleAPIClientMail:      confEnv("SCN_GOOG_CLIENTEMAIL"),
+		GoogleAPIPrivateKey:      confEnv("SCN_GOOG_PRIVATEKEY"),
+		GooglePackageName:        confEnv("SCN_GOOG_PACKAGENAME"),
+		GoogleProProductID:       confEnv("SCN_GOOG_PROPRODUCTID"),
 		Cors:                     true,
 		ReqLogMaxBodySize:        2048,
 		ReqLogHistoryMaxCount:    1638,
@@ -449,7 +449,7 @@ func confEnv(key string) string {
 }
 
 func init() {
-	ns := os.Getenv("SCN_NAMESPACE")
+	ns := os.Getenv("CONF_NS")
 
 	cfg, ok := GetConfig(ns)
 	if !ok {
