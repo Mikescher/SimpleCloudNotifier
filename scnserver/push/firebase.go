@@ -15,6 +15,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -29,7 +30,9 @@ type FirebaseConnector struct {
 
 func NewFirebaseConn(conf scn.Config) (NotificationClient, error) {
 
-	fbauth, err := NewAuth(conf.FirebaseTokenURI, conf.FirebaseProjectID, conf.FirebaseClientMail, conf.FirebasePrivateKey)
+	pkey := strings.ReplaceAll(conf.FirebasePrivateKey, "\\n", "\n")
+
+	fbauth, err := NewAuth(conf.FirebaseTokenURI, conf.FirebaseProjectID, conf.FirebaseClientMail, pkey)
 	if err != nil {
 		return nil, err
 	}

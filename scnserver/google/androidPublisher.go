@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -23,7 +24,9 @@ type AndroidPublisher struct {
 
 func NewAndroidPublisherAPI(conf scn.Config) (AndroidPublisherClient, error) {
 
-	googauth, err := NewAuth(conf.GoogleAPITokenURI, conf.GoogleAPIPrivKeyID, conf.GoogleAPIClientMail, conf.GoogleAPIPrivateKey)
+	pkey := strings.ReplaceAll(conf.GoogleAPIPrivateKey, "\\n", "\n")
+
+	googauth, err := NewAuth(conf.GoogleAPITokenURI, conf.GoogleAPIPrivKeyID, conf.GoogleAPIClientMail, pkey)
 	if err != nil {
 		return nil, err
 	}
