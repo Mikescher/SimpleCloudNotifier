@@ -17,7 +17,6 @@ function send()
 
 	uid.classList.remove('input-invalid');
 	key.classList.remove('input-invalid');
-	msg.classList.remove('input-invalid');
 	cnt.classList.remove('input-invalid');
 	pio.classList.remove('input-invalid');
 
@@ -30,7 +29,7 @@ function send()
 	if (cha.value !== '') data.append('channel', cha.value);
 
 	let xhr = new XMLHttpRequest();
-	xhr.open('POST', '/send.php', true);
+	xhr.open('POST', '/', true);
 	xhr.onreadystatechange = function ()
 	{
 		if (xhr.readyState !== 4) return;
