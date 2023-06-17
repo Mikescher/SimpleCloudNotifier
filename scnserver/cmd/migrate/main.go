@@ -13,6 +13,7 @@ import (
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/rext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
+	"gogs.mikescher.com/BlackForestBytes/goext/termext"
 	"os"
 	"regexp"
 	"strings"
@@ -89,9 +90,10 @@ func main() {
 		panic(err)
 	}
 
+	scanner := bufio.NewScanner(os.Stdin)
+
 	connstr := os.Getenv("SQL_CONN_STR")
 	if connstr == "" {
-		scanner := bufio.NewScanner(os.Stdin)
 
 		fmt.Print("Enter DB URL [127.0.0.1:3306]: ")
 		scanner.Scan()
@@ -103,21 +105,33 @@ func main() {
 		fmt.Print("Enter DB Username [root]: ")
 		scanner.Scan()
 		username := scanner.Text()
-		if host == "" {
-			host = "root"
+		if username == "" {
+			username = "root"
 		}
 
 		fmt.Print("Enter DB Password []: ")
 		scanner.Scan()
 		pass := scanner.Text()
-		if host == "" {
-			host = ""
+		if pass == "" {
+			pass = ""
 		}
 
 		connstr = fmt.Sprintf("%s:%s@tcp(%s)", username, pass, host)
 	}
 
-	_dbold, err := sqlx.Open("mysql", connstr+"/simple_cloud_notifier?parseTime=true")
+	olddbname := os.Getenv("SQL_CONN_DBNAME")
+	if olddbname == "" {
+
+		fmt.Print("Enter DB Name: ")
+		scanner.Scan()
+		olddbname = scanner.Text()
+		if olddbname == "" {
+			olddbname = "scn_final"
+		}
+
+	}
+
+	_dbold, err := sqlx.Open("mysql", connstr+"/"+olddbname+"?parseTime=true")
 	if err != nil {
 		panic(err)
 	}
@@ -340,7 +354,7 @@ func migrateUser(ctx context.Context, dbnew sq.DB, dbold sq.DB, user OldUser, ap
 				dispName := dummyApp.NormalizeChannelDisplayName(chanNameTitle)
 				intName := dummyApp.NormalizeChannelInternalName(chanNameTitle)
 
-				if v, ok := channelMap[intName]; ok {
+				if v, ok := channelMap[strings.ToLower(intName)]; ok {
 					channelID = v
 					channelInternalName = intName
 				} else {
@@ -374,7 +388,7 @@ func migrateUser(ctx context.Context, dbnew sq.DB, dbold sq.DB, user OldUser, ap
 						panic(err)
 					}
 
-					channelMap[intName] = channelID
+					channelMap[strings.ToLower(intName)] = channelID
 
 					fmt.Printf("Auto Created Channel [%s]: %s\n", dispName, channelID)
 
@@ -383,6 +397,9 @@ func migrateUser(ctx context.Context, dbnew sq.DB, dbold sq.DB, user OldUser, ap
 		}
 
 		sendername := determineSenderName(user, oldmessage, title, oldmessage.Content, channelInternalName)
+		if sendername != nil && *sendername == "" {
+			panic("sendername")
+		}
 
 		if lastTitle == title && channelID == lastChannel &&
 			langext.PtrEquals(lastContent, oldmessage.Content) &&
@@ -394,7 +411,7 @@ func migrateUser(ctx context.Context, dbnew sq.DB, dbold sq.DB, user OldUser, ap
 			lastSendername = sendername
 			lastTimestamp = oldmessage.TimestampReal
 
-			fmt.Printf("Skip message [%d] \"%s\" (fast-duplicate)\n", oldmessage.ScnMessageId, oldmessage.Title)
+			//fmt.Printf("Skip message [%d] \"%s\" (fast-duplicate)\n", oldmessage.ScnMessageId, oldmessage.Title)
 
 			continue
 		}
@@ -413,7 +430,7 @@ func migrateUser(ctx context.Context, dbnew sq.DB, dbold sq.DB, user OldUser, ap
 				lastSendername = sendername
 				lastTimestamp = oldmessage.TimestampReal
 
-				fmt.Printf("Skip message [%d] \"%s\" (locally deleted in app)\n", oldmessage.ScnMessageId, oldmessage.Title)
+				//fmt.Printf("Skip message [%d] \"%s\" (locally deleted in app)\n", oldmessage.ScnMessageId, oldmessage.Title)
 				continue
 			}
 		}
@@ -509,12 +526,100 @@ func migrateUser(ctx context.Context, dbnew sq.DB, dbold sq.DB, user OldUser, ap
 		lastTimestamp = oldmessage.TimestampReal
 	}
 
+	{
+		c, err := dbnew.Query(ctx, "SELECT COUNT (*) FROM messages WHERE sender_user_id = :uid", sq.PP{
+			"uid": userid,
+		})
+		if err != nil {
+			panic(err)
+		}
+
+		if !c.Next() {
+			panic(false)
+		}
+
+		count := 0
+		err = c.Scan(&count)
+		if err != nil {
+			panic(err)
+		}
+
+		err = c.Close()
+		if err != nil {
+			panic(err)
+		}
+
+		if count > 0 {
+			_, err = dbnew.Exec(ctx, "UPDATE users SET messages_sent = :c, timestamp_lastread = :ts0, timestamp_lastsent = :ts1 WHERE user_id = :uid", sq.PP{
+				"uid": userid,
+				"c":   count,
+				"ts0": lastTimestamp.UnixMilli(),
+				"ts1": lastTimestamp.UnixMilli(),
+			})
+			if err != nil {
+				panic(err)
+			}
+		} else {
+			_, err = dbnew.Exec(ctx, "UPDATE users SET messages_sent = :c, timestamp_lastread = :ts0 WHERE user_id = :uid", sq.PP{
+				"uid": userid,
+				"c":   count,
+				"ts0": user.TimestampCreated.UnixMilli(),
+			})
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		_, err = dbnew.Exec(ctx, "UPDATE keytokens SET messages_sent = :c WHERE owner_user_id = :uid", sq.PP{
+			"uid": userid,
+			"c":   count,
+		})
+		if err != nil {
+			panic(err)
+		}
+
+	}
+	for _, cid := range channelMap {
+		c, err := dbnew.Query(ctx, "SELECT COUNT (*) FROM messages WHERE sender_user_id = :uid AND channel_id = :cid", sq.PP{
+			"cid": cid,
+			"uid": userid,
+		})
+		if err != nil {
+			panic(err)
+		}
+
+		if !c.Next() {
+			panic(false)
+		}
+
+		count := 0
+		err = c.Scan(&count)
+		if err != nil {
+			panic(err)
+		}
+
+		err = c.Close()
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = dbnew.Exec(ctx, "UPDATE channels SET messages_sent = :c WHERE channel_id = :cid", sq.PP{
+			"cid": cid,
+			"c":   count,
+		})
+		if err != nil {
+			panic(err)
+		}
+	}
+
 }
 
 func determineSenderName(user OldUser, oldmessage OldMessage, title string, content *string, channame string) *string {
 	if user.UserId != 56 {
 		return nil
 	}
+
+	channame = strings.ToLower(channame)
 
 	if channame == "t-ctrl" {
 		return langext.Ptr("sbox")
@@ -541,6 +646,42 @@ func determineSenderName(user OldUser, oldmessage OldMessage, title string, cont
 		}
 		if strings.Contains(title, "error on niflheim-3") {
 			return langext.Ptr("niflheim-3")
+		}
+		if strings.Contains(title, "error on statussrv") {
+			return langext.Ptr("statussrv")
+		}
+		if strings.Contains(title, "error on plan-web-prod") {
+			return langext.Ptr("plan-web-prod")
+		}
+		if strings.Contains(title, "error on inoshop") {
+			return langext.Ptr("inoshop")
+		}
+		if strings.Contains(title, "error on firestopcloud") {
+			return langext.Ptr("firestopcloud")
+		}
+		if strings.Contains(title, "error on plantafelstaging") {
+			return langext.Ptr("plantafelstaging")
+		}
+		if strings.Contains(title, "error on plantafeldev") {
+			return langext.Ptr("plantafeldev")
+		}
+		if strings.Contains(title, "error on balu-prod") {
+			return langext.Ptr("lbxprod")
+		}
+		if strings.Contains(title, "error on dyno-prod") {
+			return langext.Ptr("dyno-prod")
+		}
+		if strings.Contains(title, "error on dyno-dev") {
+			return langext.Ptr("dyno-dev")
+		}
+		if strings.Contains(title, "error on wkk") {
+			return langext.Ptr("wkk")
+		}
+		if strings.Contains(title, "error on lbxdev") {
+			return langext.Ptr("lbxdev")
+		}
+		if strings.Contains(title, "error on lbxprod") {
+			return langext.Ptr("lbxprod")
 		}
 
 		if strings.Contains(*content, "on mscom") {
@@ -664,7 +805,7 @@ func determineSenderName(user OldUser, oldmessage OldMessage, title string, cont
 			return langext.Ptr("bfb")
 		}
 		if strings.Contains(title, "balu-db") {
-			return langext.Ptr("lbprod")
+			return langext.Ptr("lbxprod")
 		}
 	}
 
@@ -762,6 +903,31 @@ func determineSenderName(user OldUser, oldmessage OldMessage, title string, cont
 		if strings.Contains(*content, "plantafelstaging.de") {
 			return langext.Ptr("plantafeldev")
 		}
+
+		if strings.Contains(title, "Update cert_mscom") {
+			return langext.Ptr("mscom")
+		}
+		if strings.Contains(title, "Update cert_bfb") {
+			return langext.Ptr("bfb")
+		}
+		if strings.Contains(title, "Update staging.app.reuse.me") {
+			return langext.Ptr("wkk")
+		}
+		if strings.Contains(title, "Update develop.app.reuse.me") {
+			return langext.Ptr("wkk")
+		}
+		if strings.Contains(title, "Update inoshop_staging_bfb") {
+			return langext.Ptr("inoshop")
+		}
+		if strings.Contains(title, "Update cert_portfoliomanager_main") {
+			return langext.Ptr("bfb-testserver")
+		}
+		if strings.Contains(title, "Update cert_pfm2") {
+			return langext.Ptr("bfb-testserver")
+		}
+		if strings.Contains(title, "Update cert_kaz_main") {
+			return langext.Ptr("bfb-testserver")
+		}
 	}
 
 	if channame == "space-warning" {
@@ -775,6 +941,9 @@ func determineSenderName(user OldUser, oldmessage OldMessage, title string, cont
 			return langext.Ptr("plan-web-prod")
 		}
 		if title == "statussrv" {
+			return langext.Ptr("statussrv")
+		}
+		if title == "virmach01" {
 			return langext.Ptr("statussrv")
 		}
 	}
@@ -856,6 +1025,28 @@ func determineSenderName(user OldUser, oldmessage OldMessage, title string, cont
 		if strings.Contains(title, "Reboot lbxprod") {
 			return langext.Ptr("lbxprod")
 		}
+		if strings.Contains(title, "Reboot plantafeldev") {
+			return langext.Ptr("plantafeldev")
+		}
+		if strings.Contains(title, "Reboot plantafelstaging") {
+			return langext.Ptr("plantafelstaging")
+		}
+		if strings.Contains(title, "Reboot statussrv") {
+			return langext.Ptr("statussrv")
+		}
+		if strings.Contains(title, "Reboot heydyno-prod-01") {
+			return langext.Ptr("dyno-prod")
+		}
+		if strings.Contains(title, "Reboot heydyno-dev-01") {
+			return langext.Ptr("dyno-dev")
+		}
+		if strings.Contains(title, "Reboot lbxdev") {
+			return langext.Ptr("lbxdev")
+		}
+
+		if strings.Contains(langext.Coalesce(content, ""), "Server: 'firestopcloud'") {
+			return langext.Ptr("firestopcloud")
+		}
 	}
 
 	if channame == "yt-tvc" {
@@ -870,6 +1061,124 @@ func determineSenderName(user OldUser, oldmessage OldMessage, title string, cont
 		return langext.Ptr("mscom")
 	}
 
+	if channame == "backup-rr" {
+		if strings.Contains(title, "bfb/server-plantafelstaging") {
+			return langext.Ptr("plantafelstaging")
+		}
+		if strings.Contains(title, "bfb/server-plantafeldev") {
+			return langext.Ptr("plantafeldev")
+		}
+		if strings.Contains(title, "bfb/server-wkk") {
+			return langext.Ptr("wkk")
+		}
+		if strings.Contains(title, "bfb/holz100") {
+			return langext.Ptr("bfb")
+		}
+		if strings.Contains(title, "bfb/clockify") {
+			return langext.Ptr("bfb")
+		}
+		if strings.Contains(title, "bfb/gdapi") {
+			return langext.Ptr("bfb")
+		}
+		if strings.Contains(title, "mike/databases-mscom") {
+			return langext.Ptr("mscom")
+		}
+		if strings.Contains(title, "bfb/databases-bfb") {
+			return langext.Ptr("bfb")
+		}
+		if strings.Contains(title, "bfb/server-dynoprod") {
+			return langext.Ptr("dyno-prod")
+		}
+		if strings.Contains(title, "bfb/server-dynodev") {
+			return langext.Ptr("dyno-dev")
+		}
+		if strings.Contains(title, "bfb/server-baluprod") {
+			return langext.Ptr("lbxprod")
+		}
+		if strings.Contains(title, "bfb/server-baludev") {
+			return langext.Ptr("lbxdev")
+		}
+		if strings.Contains(title, "bfb/plantafeldigital") {
+			return langext.Ptr("plan-web-prod")
+		}
+		if strings.Contains(title, "mike/server-statussrv") {
+			return langext.Ptr("statussrv")
+		}
+		if strings.Contains(title, "mike/thunderbird") {
+			return langext.Ptr("niflheim-3")
+		}
+		if strings.Contains(title, "mike/seedbox") {
+			return langext.Ptr("sbox")
+		}
+		if strings.Contains(title, "bfb/balu") {
+			return langext.Ptr("lbxprod")
+		}
+		if strings.Contains(title, "mike/ext-git-graph") {
+			return langext.Ptr("mscom")
+		}
+		if strings.Contains(title, "bfb/server-bfbtest") {
+			return langext.Ptr("bfb-testserver")
+		}
+		if strings.Contains(title, "mike/server-mscom") {
+			return langext.Ptr("mscom")
+		}
+		if strings.Contains(title, "mike/database-statussrv") {
+			return langext.Ptr("statussrv")
+		}
+		if strings.Contains(title, "mike/server-mscom") {
+			return langext.Ptr("mscom")
+		}
+		if strings.Contains(title, "mike/server-inoshop") {
+			return langext.Ptr("inoshop")
+		}
+		if strings.Contains(title, "mike/server-bfb") {
+			return langext.Ptr("bfb")
+		}
+		if strings.Contains(title, "bfb/discord") {
+			return langext.Ptr("nifleim-3")
+		}
+		if strings.Contains(title, "bfb/server-bfbtest") {
+			return langext.Ptr("bfb-testserver")
+		}
+		if strings.Contains(title, "mike/ext-git-graph") {
+			return langext.Ptr("mscom")
+		}
+		if strings.Contains(title, "bfb/server-inoshop") {
+			return langext.Ptr("inoshop")
+		}
+		if strings.Contains(title, "bfb/server-bfb") {
+			return langext.Ptr("bfb")
+		}
+		if strings.Contains(title, "bfb/server-plantafelprod") {
+			return langext.Ptr("plan-web-prod")
+		}
+		if strings.Contains(title, "bfb/server-inoshop") {
+			return langext.Ptr("inoshop")
+		}
+		if strings.Contains(title, "mike/niflheim-3") {
+			return langext.Ptr("niflheim-3")
+		}
+		if strings.Contains(title, "mike/pihole") {
+			return langext.Ptr("pihole")
+		}
+		if strings.Contains(title, "bfb/server-firestopcloud") {
+			return langext.Ptr("firestopcloud")
+		}
+		if strings.Contains(title, "bfb/server-agentzero") {
+			return langext.Ptr("agentzero")
+		}
+	}
+
+	if channame == "backup" {
+		if strings.Contains(title, "mike/ext-git-graph") {
+			return langext.Ptr("mscom")
+		}
+	}
+
+	if channame == "spezi-alert" {
+		return langext.Ptr("mscom")
+	}
+
 	if title == "NCC Upload failed" || title == "NCC Upload successful" {
 		return langext.Ptr("mscom")
 	}
@@ -878,7 +1187,15 @@ func determineSenderName(user OldUser, oldmessage OldMessage, title string, cont
 		return langext.Ptr("mscom")
 	}
 
+	if strings.Contains(title, "BFBackup VC migrate") {
+		return langext.Ptr("bfbackup")
+	}
+
 	if strings.Contains(title, "bfbackup job") {
+		return langext.Ptr("bfbackup")
+	}
+
+	if strings.Contains(title, "bfbackup finished") {
 		return langext.Ptr("bfbackup")
 	}
 
@@ -886,8 +1203,13 @@ func determineSenderName(user OldUser, oldmessage OldMessage, title string, cont
 		return langext.Ptr("bfbackup")
 	}
 
+	if channame == "docker-watch" {
+		return nil // okay
+	}
+
 	//fmt.Printf("Failed to determine sender of [%d] '%s' '%s'\n", oldmessage.ScnMessageId, oldmessage.Title, langext.Coalesce(oldmessage.Content, "<NULL>"))
-	fmt.Printf("Failed to determine sender of [%d] '%s'\n", oldmessage.ScnMessageId, oldmessage.Title)
+
+	fmt.Printf("%s", termext.Red(fmt.Sprintf("Failed to determine sender of [%d] '%s' -- '%s' -- '%s'\n", oldmessage.ScnMessageId, channame, title, langext.Coalesce(oldmessage.Content, "<NULL>"))))
 
 	return nil
 }

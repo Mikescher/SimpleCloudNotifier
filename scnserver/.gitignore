@@ -8,6 +8,12 @@ DOCKER_GIT_INFO
 scn_export.dat
 scn_export.json
 
+scn_export_*.dat
+scn_export_*.json
+
+simple_cloud_notifier-202306172202.sql
+simple_cloud_notifier-*.sql
+
 identifier.sqlite
 
 .idea/dataSources.xml

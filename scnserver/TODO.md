@@ -16,6 +16,8 @@
 
  - deploy
 
+ - backups (no longer container in my db_backup, perhaps extend it to sqlite?)
+
  - ios purchase verification
 
 #### UNSURE
