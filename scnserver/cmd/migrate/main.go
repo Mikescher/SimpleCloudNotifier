@@ -377,8 +377,8 @@ func migrateUser(ctx context.Context, dbnew sq.DB, dbold sq.DB, user OldUser, ap
 
 					_, err = dbnew.Exec(ctx, "INSERT INTO subscriptions (subscription_id, subscriber_user_id, channel_owner_user_id, channel_internal_name, channel_id, timestamp_created, confirmed) VALUES (:sid, :suid, :ouid, :cnam, :cid, :ts, :conf)", sq.PP{
 						"sid":  models.NewSubscriptionID(),
-						"suid": user.UserId,
-						"ouid": user.UserId,
+						"suid": userid,
+						"ouid": userid,
 						"cnam": intName,
 						"cid":  channelID,
 						"ts":   oldmessage.TimestampReal.UnixMilli(),
@@ -473,7 +473,7 @@ func migrateUser(ctx context.Context, dbnew sq.DB, dbold sq.DB, user OldUser, ap
 				_, err = dbnew.Exec(ctx, "INSERT INTO deliveries (delivery_id, message_id, receiver_user_id, receiver_client_id, timestamp_created, timestamp_finalized, status, fcm_message_id, next_delivery) VALUES (:did, :mid, :ruid, :rcid, :tsc, :tsf, :stat, :fcm, :next)", sq.PP{
 					"did":  models.NewDeliveryID(),
 					"mid":  messageid,
-					"ruid": user.UserId,
+					"ruid": userid,
 					"rcid": *clientid,
 					"tsc":  oldmessage.TimestampReal.UnixMilli(),
 					"tsf":  oldmessage.TimestampReal.UnixMilli(),
@@ -500,7 +500,7 @@ func migrateUser(ctx context.Context, dbnew sq.DB, dbold sq.DB, user OldUser, ap
 				_, err = dbnew.Exec(ctx, "INSERT INTO deliveries (delivery_id, message_id, receiver_user_id, receiver_client_id, timestamp_created, timestamp_finalized, status, fcm_message_id, next_delivery) VALUES (:did, :mid, :ruid, :rcid, :tsc, :tsf, :stat, :fcm, :next)", sq.PP{
 					"did":  models.NewDeliveryID(),
 					"mid":  messageid,
-					"ruid": user.UserId,
+					"ruid": userid,
 					"rcid": *clientid,
 					"tsc":  oldmessage.TimestampReal.UnixMilli(),
 					"tsf":  oldmessage.TimestampReal.UnixMilli(),
