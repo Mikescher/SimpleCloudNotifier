@@ -4,6 +4,7 @@ import (
 	ct "blackforestbytes.com/simplecloudnotifier/db/cursortoken"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
+	"errors"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
@@ -148,4 +149,32 @@ func (db *Database) ListMessages(ctx TxContext, filter models.MessageFilter, pag
 		outToken := ct.Normal(data[*pageSize-1].Timestamp(), data[*pageSize-1].MessageID.String(), "DESC", filter.Hash())
 		return data[0:*pageSize], outToken, nil
 	}
+}
+
+func (db *Database) CountMessages(ctx TxContext, filter models.MessageFilter) (int64, error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return 0, err
+	}
+
+	filterCond, filterJoin, prepParams, err := filter.SQL()
+
+	sqlQuery := "SELECT " + "COUNT(*)" + " FROM messages " + filterJoin + " WHERE  ( " + filterCond + " ) "
+
+	rows, err := tx.Query(ctx, sqlQuery, prepParams)
+	if err != nil {
+		return 0, err
+	}
+
+	if !rows.Next() {
+		return 0, errors.New("COUNT query returned no results")
+	}
+
+	var countRes int64
+	err = rows.Scan(&countRes)
+	if err != nil {
+		return 0, err
+	}
+
+	return countRes, nil
 }

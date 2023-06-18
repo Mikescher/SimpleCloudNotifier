@@ -732,3 +732,90 @@ func TestCompatTitlePatch(t *testing.T) {
 	tt.AssertStrRepEqual(t, "msg.ovrTitle", "[TestChan] HelloWorld_001", pusher.Last().CompatTitleOverride)
 
 }
+
+func TestCompatAckCount(t *testing.T) {
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/register.php?fcm_token=%s&pro=%s&pro_token=%s", "DUMMY_FCM", "0", ""))
+	tt.AssertEqual(t, "success", true, r0["success"])
+
+	userid := int64(r0["user_id"].(float64))
+	userkey := r0["user_key"].(string)
+
+	{
+		ri1 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/info.php?user_id=%d&user_key=%s", userid, userkey))
+		tt.AssertEqual(t, "unack_count", 0, ri1["unack_count"])
+	}
+
+	r1 := tt.RequestPost[gin.H](t, baseUrl, "/send.php", tt.FormData{
+		"user_id":  fmt.Sprintf("%d", userid),
+		"user_key": userkey,
+		"title":    "my title 11 & x",
+	})
+	tt.AssertEqual(t, "success", true, r1["success"])
+	r1scnid := int64(r1["scn_msg_id"].(float64))
+
+	{
+		ri1 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/info.php?user_id=%d&user_key=%s", userid, userkey))
+		tt.AssertEqual(t, "unack_count", 1, ri1["unack_count"])
+	}
+
+	r2 := tt.RequestPost[gin.H](t, baseUrl, "/send.php", tt.FormData{
+		"user_id":  fmt.Sprintf("%d", userid),
+		"user_key": userkey,
+		"title":    "my title 11 & x",
+	})
+	tt.AssertEqual(t, "success", true, r2["success"])
+	r2scnid := int64(r2["scn_msg_id"].(float64))
+
+	{
+		ri1 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/info.php?user_id=%d&user_key=%s", userid, userkey))
+		tt.AssertEqual(t, "unack_count", 2, ri1["unack_count"])
+	}
+
+	{
+		ack := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/ack.php?user_id=%d&user_key=%s&scn_msg_id=%d", userid, userkey, r1scnid))
+		tt.AssertEqual(t, "success", true, ack["success"])
+		tt.AssertEqual(t, "prev_ack", 0, ack["prev_ack"])
+		tt.AssertEqual(t, "new_ack", 1, ack["new_ack"])
+		tt.AssertEqual(t, "message", "ok", ack["message"])
+	}
+
+	{
+		ri1 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/info.php?user_id=%d&user_key=%s", userid, userkey))
+		tt.AssertEqual(t, "unack_count", 1, ri1["unack_count"])
+	}
+
+	{
+		ack := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/ack.php?user_id=%d&user_key=%s&scn_msg_id=%d", userid, userkey, r1scnid))
+		tt.AssertEqual(t, "success", true, ack["success"])
+		tt.AssertEqual(t, "prev_ack", 1, ack["prev_ack"])
+		tt.AssertEqual(t, "new_ack", 1, ack["new_ack"])
+		tt.AssertEqual(t, "message", "ok", ack["message"])
+	}
+
+	{
+		ri1 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/info.php?user_id=%d&user_key=%s", userid, userkey))
+		tt.AssertEqual(t, "unack_count", 1, ri1["unack_count"])
+	}
+
+	{
+		ri1 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/info.php?user_id=%d&user_key=%s", userid, userkey))
+		tt.AssertEqual(t, "unack_count", 1, ri1["unack_count"])
+	}
+
+	{
+		ack := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/ack.php?user_id=%d&user_key=%s&scn_msg_id=%d", userid, userkey, r2scnid))
+		tt.AssertEqual(t, "success", true, ack["success"])
+		tt.AssertEqual(t, "prev_ack", 0, ack["prev_ack"])
+		tt.AssertEqual(t, "new_ack", 1, ack["new_ack"])
+		tt.AssertEqual(t, "message", "ok", ack["message"])
+	}
+
+	{
+		ri1 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/info.php?user_id=%d&user_key=%s", userid, userkey))
+		tt.AssertEqual(t, "unack_count", 0, ri1["unack_count"])
+	}
+
+}

@@ -257,7 +257,7 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 		QuotaMax   int    `json:"quota_max"`
 		IsPro      int    `json:"is_pro"`
 		FCMSet     bool   `json:"fcm_token_set"`
-		UnackCount int    `json:"unack_count"`
+		UnackCount int64  `json:"unack_count"`
 	}
 
 	var datq query
@@ -309,6 +309,16 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(0, "Failed to query clients")
 	}
 
+	filter := models.MessageFilter{
+		Owner:              langext.Ptr([]models.UserID{user.UserID}),
+		CompatAcknowledged: langext.Ptr(false),
+	}
+
+	unackCount, err := h.database.CountMessages(ctx, filter)
+	if err != nil {
+		return ginresp.CompatAPIError(0, "Failed to query user")
+	}
+
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
 		Success:    true,
 		Message:    "ok",
@@ -318,7 +328,7 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 		QuotaMax:   user.QuotaPerDay(),
 		IsPro:      langext.Conditional(user.IsPro, 1, 0),
 		FCMSet:     len(clients) > 0,
-		UnackCount: 0,
+		UnackCount: unackCount,
 	}))
 }
 
