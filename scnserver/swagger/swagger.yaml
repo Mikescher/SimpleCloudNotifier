@@ -681,7 +681,7 @@ definitions:
       username:
         type: string
     type: object
-host: scn.blackforestbytes.com
+host: simplecloudnotifier.de
 info:
   contact: {}
   description: API for SCN

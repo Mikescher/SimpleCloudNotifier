@@ -1,8 +1,8 @@
 <div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env bash</span>
 
 <span class="c1">#</span>
-<span class="c1"># Wrapper around SCN ( https://scn.blackforestbytes.com/ )</span>
-<span class="c1"># ========================================================</span>
+<span class="c1"># Wrapper around SCN ( https://simplecloudnotifier.de/ )</span>
+<span class="c1"># ======================================================</span>
 <span class="c1">#</span>
 <span class="c1"># ./scn_send [@channel] title [content] [priority]</span>
 <span class="c1">#</span>
@@ -51,9 +51,9 @@ usage<span class="o">()</span><span class="w"> </span><span class="o">{</span>
 <span class="k">fi</span>
 
 <span class="k">if</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">args</span><span class="p">[0]</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">=</span>~<span class="w"> </span>^@.*<span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
-<span class="w">	</span><span class="nv">channel</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">args</span><span class="p">[0]</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="w">    </span><span class="nv">channel</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">args</span><span class="p">[0]</span><span class="si">}</span><span class="s2">&quot;</span>
 <span class="w">    </span><span class="nb">unset</span><span class="w"> </span><span class="s2">&quot;args[0]&quot;</span>
-<span class="w">	</span><span class="nv">channel</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">channel</span><span class="p">:</span><span class="nv">1</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="w">    </span><span class="nv">channel</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">channel</span><span class="p">:</span><span class="nv">1</span><span class="si">}</span><span class="s2">&quot;</span>
 <span class="k">fi</span>
 
 <span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="si">${#</span><span class="nv">args</span><span class="p">[@]</span><span class="si">}</span><span class="w"> </span>-lt<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
@@ -98,7 +98,7 @@ usage<span class="o">()</span><span class="w"> </span><span class="o">{</span>
 <span class="w">                    </span>--data<span class="w"> </span><span class="s2">&quot;msg_id=</span><span class="nv">$usr_msg_id</span><span class="s2">&quot;</span><span class="w">          </span><span class="se">\</span>
 <span class="w">                    </span>--data<span class="w"> </span><span class="s2">&quot;channel=</span><span class="nv">$channel</span><span class="s2">&quot;</span><span class="w">            </span><span class="se">\</span>
 <span class="w">                    </span>--data<span class="w"> </span><span class="s2">&quot;sender_name=</span><span class="nv">$sender</span><span class="s2">&quot;</span><span class="w">         </span><span class="se">\</span>
-<span class="w">                    </span><span class="s2">&quot;https://scn.blackforestbytes.com/&quot;</span><span class="w">  </span><span class="k">)</span>
+<span class="w">                    </span><span class="s2">&quot;https://simplecloudnotifier.de/&quot;</span><span class="w">    </span><span class="k">)</span>
 
 <span class="w">    </span><span class="nv">curlout</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>cat<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$outf</span><span class="s2">&quot;</span><span class="k">)</span><span class="s2">&quot;</span>
 <span class="w">    </span>rm<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$outf</span><span class="s2">&quot;</span>

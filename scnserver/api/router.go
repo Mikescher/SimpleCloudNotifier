@@ -40,7 +40,7 @@ func NewRouter(app *logic.Application) *Router {
 //	@title			SimpleCloudNotifier API
 //	@version		2.0
 //	@description	API for SCN
-//	@host			scn.blackforestbytes.com
+//	@host			simplecloudnotifier.de
 //
 //	@tag.name		External
 //	@tag.name		API-v1

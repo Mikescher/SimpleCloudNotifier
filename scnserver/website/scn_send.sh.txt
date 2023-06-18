@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 #
-# Wrapper around SCN ( https://scn.blackforestbytes.com/ )
-# ========================================================
+# Wrapper around SCN ( https://simplecloudnotifier.de/ )
+# ======================================================
 #
 # ./scn_send [@channel] title [content] [priority]
 #
@@ -51,9 +51,9 @@ if [ ${#args[@]} -lt 1 ]; then
 fi
 
 if [[ "${args[0]}" =~ ^@.* ]]; then
-	channel="${args[0]}"
+    channel="${args[0]}"
     unset "args[0]"
-	channel="${channel:1}"
+    channel="${channel:1}"
 fi
 
 if [ ${#args[@]} -lt 1 ]; then
@@ -98,7 +98,7 @@ while true ; do
                     --data "msg_id=$usr_msg_id"          \
                     --data "channel=$channel"            \
                     --data "sender_name=$sender"         \
-                    "https://scn.blackforestbytes.com/"  )
+                    "https://simplecloudnotifier.de/"    )
 
     curlout="$(cat "$outf")"
     rm "$outf"
