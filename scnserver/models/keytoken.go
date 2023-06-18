@@ -129,6 +129,12 @@ type KeyTokenDB struct {
 }
 
 func (k KeyTokenDB) Model() KeyToken {
+
+	channels := make([]ChannelID, 0)
+	if strings.TrimSpace(k.Channels) != "" {
+		channels = langext.ArrMap(strings.Split(k.Channels, ";"), func(v string) ChannelID { return ChannelID(v) })
+	}
+
 	return KeyToken{
 		KeyTokenID:        k.KeyTokenID,
 		Name:              k.Name,
@@ -136,7 +142,7 @@ func (k KeyTokenDB) Model() KeyToken {
 		TimestampLastUsed: timeOptFromMilli(k.TimestampLastUsed),
 		OwnerUserID:       k.OwnerUserID,
 		AllChannels:       k.AllChannels,
-		Channels:          langext.ArrMap(strings.Split(k.Channels, ";"), func(v string) ChannelID { return ChannelID(v) }),
+		Channels:          channels,
 		Token:             k.Token,
 		Permissions:       ParseTokenPermissionList(k.Permissions),
 		MessagesSent:      k.MessagesSent,

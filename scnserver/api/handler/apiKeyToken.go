@@ -45,12 +45,12 @@ func (h APIHandler) ListUserKeys(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	clients, err := h.database.ListKeyTokens(ctx, u.UserID)
+	toks, err := h.database.ListKeyTokens(ctx, u.UserID)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query keys", err)
 	}
 
-	res := langext.ArrMap(clients, func(v models.KeyToken) models.KeyTokenJSON { return v.JSON() })
+	res := langext.ArrMap(toks, func(v models.KeyToken) models.KeyTokenJSON { return v.JSON() })
 
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{Keys: res}))
 }
