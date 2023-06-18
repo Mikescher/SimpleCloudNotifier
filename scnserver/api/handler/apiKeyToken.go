@@ -221,9 +221,9 @@ func (h APIHandler) CreateUserKey(g *gin.Context) ginresp.HTTPResponse {
 	}
 	type body struct {
 		Name        string              `json:"name"         binding:"required"`
-		AllChannels *bool               `json:"all_channels" binding:"required"`
-		Channels    *[]models.ChannelID `json:"channels"     binding:"required"`
-		Permissions *string             `json:"permissions"  binding:"required"`
+		Permissions string              `json:"permissions"  binding:"required"`
+		AllChannels *bool               `json:"all_channels"`
+		Channels    *[]models.ChannelID `json:"channels"`
 	}
 
 	var u uri
@@ -234,7 +234,18 @@ func (h APIHandler) CreateUserKey(g *gin.Context) ginresp.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
-	for _, c := range *b.Channels {
+	channels := langext.Coalesce(b.Channels, make([]models.ChannelID, 0))
+
+	var allChan bool
+	if b.AllChannels == nil && b.Channels != nil {
+		allChan = false
+	} else if b.AllChannels == nil && b.Channels == nil {
+		allChan = true
+	} else {
+		allChan = *b.AllChannels
+	}
+
+	for _, c := range channels {
 		if err := c.Valid(); err != nil {
 			return ginresp.APIError(g, 400, apierr.INVALID_BODY_PARAM, "Invalid ChannelID", err)
 		}
@@ -246,9 +257,9 @@ func (h APIHandler) CreateUserKey(g *gin.Context) ginresp.HTTPResponse {
 
 	token := h.app.GenerateRandomAuthKey()
 
-	perms := models.ParseTokenPermissionList(*b.Permissions)
+	perms := models.ParseTokenPermissionList(b.Permissions)
 
-	keytok, err := h.database.CreateKeyToken(ctx, b.Name, *ctx.GetPermissionUserID(), *b.AllChannels, *b.Channels, perms, token)
+	keytok, err := h.database.CreateKeyToken(ctx, b.Name, *ctx.GetPermissionUserID(), allChan, channels, perms, token)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create keytoken in db", err)
 	}
