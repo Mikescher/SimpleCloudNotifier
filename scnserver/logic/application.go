@@ -263,6 +263,10 @@ func (app *Application) StartRequest(g *gin.Context, uri any, query any, body an
 			if err := g.ShouldBindWith(form, binding.Form); err != nil {
 				return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Failed to read multipart-form", err))
 			}
+		} else if g.ContentType() == "application/x-www-form-urlencoded" {
+			if err := g.ShouldBindWith(form, binding.Form); err != nil {
+				return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Failed to read urlencoded-form", err))
+			}
 		} else {
 			if !ignoreWrongContentType {
 				return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "missing form body", nil))

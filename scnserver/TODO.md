@@ -15,6 +15,7 @@
  - app-store link in HTML
 
  - deploy
+ - deploy apache conf directly
 
  - backups (no longer container in my db_backup, perhaps extend it to sqlite?)
 
