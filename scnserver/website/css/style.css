@@ -300,7 +300,7 @@ pre, pre span
 }
 
 .display_none {
-    display: none;
+    display: none !important;
 }
 
 #theme-switch {
