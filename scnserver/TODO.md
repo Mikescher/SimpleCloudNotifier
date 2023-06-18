@@ -6,16 +6,7 @@
 
 #### BEFORE RELEASE
 
- - migrate old data
-
- - in my script: use `srvname` for sendername
- 
- - switch send script everywhere (we can use the new server, but we need to send correct channels)
-
  - app-store link in HTML
-
- - deploy
- - deploy apache conf directly
 
  - backups (no longer container in my db_backup, perhaps extend it to sqlite?)
 
@@ -32,6 +23,8 @@
  - (?) desktop client for notifications
 
  - (?) add querylog (similar to requestlog/errorlog) - only for main-db
+
+ - (?) specify 'type' of message (debug, info, warn, error, fatal)  ->  distinct from priority 
 
 #### LATER
 
