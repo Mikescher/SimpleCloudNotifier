@@ -364,7 +364,7 @@ func TestCompatInfo(t *testing.T) {
 	tt.AssertEqual(t, "message", "ok", r2["message"])
 	tt.AssertEqual(t, "quota", 1, r2["quota"])
 	tt.AssertEqual(t, "quota_max", 50, r2["quota_max"])
-	tt.AssertEqual(t, "unack_count", 0, r2["unack_count"])
+	tt.AssertEqual(t, "unack_count", 1, r2["unack_count"])
 	tt.AssertEqual(t, "user_id", userid, r2["user_id"])
 	tt.AssertEqual(t, "user_key", userkey, r2["user_key"])
 
@@ -491,7 +491,7 @@ func TestCompatUpdateUserKey(t *testing.T) {
 	tt.AssertEqual(t, "message", "ok", r1["message"])
 	tt.AssertEqual(t, "quota", 1, r1["quota"])
 	tt.AssertEqual(t, "quota_max", 50, r1["quota_max"])
-	tt.AssertEqual(t, "unack_count", 0, r1["unack_count"])
+	tt.AssertEqual(t, "unack_count", 1, r1["unack_count"])
 	tt.AssertEqual(t, "user_id", userid, r1["user_id"])
 	tt.AssertEqual(t, "user_key", newkey, r1["user_key"])
 
@@ -528,7 +528,7 @@ func TestCompatUpdateFCM(t *testing.T) {
 	tt.AssertEqual(t, "message", "ok", r1["message"])
 	tt.AssertEqual(t, "quota", 1, r1["quota"])
 	tt.AssertEqual(t, "quota_max", 50, r1["quota_max"])
-	tt.AssertEqual(t, "unack_count", 0, r1["unack_count"])
+	tt.AssertEqual(t, "unack_count", 1, r1["unack_count"])
 	tt.AssertEqual(t, "user_id", userid, r1["user_id"])
 	tt.AssertEqual(t, "user_key", newkey, r1["user_key"])
 
