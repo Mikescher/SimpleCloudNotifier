@@ -29,6 +29,7 @@ import (
 var rexWhitespaceStart = rext.W(regexp.MustCompile("^\\s+"))
 var rexWhitespaceEnd = rext.W(regexp.MustCompile("\\s+$"))
 var rexNormalizeUsername = rext.W(regexp.MustCompile("[^[:alnum:]\\-_ ]"))
+var rexCompatTitleChannel = rext.W(regexp.MustCompile("^\\[(?P<channel>[A-Za-z\\-0-9_ ]+)] (?P<title>(.|\\r|\\n)+)$"))
 
 type Application struct {
 	Config           scn.Config
@@ -380,6 +381,10 @@ func (app *Application) InsertRequestLog(data models.RequestLog) {
 
 func (app *Application) CompatizeMessageTitle(ctx TxContext, msg models.Message) string {
 	if msg.ChannelInternalName == "main" {
+		if rexCompatTitleChannel.IsMatch(msg.Title) {
+			return "!" + msg.Title // channel in title ?!
+		}
+
 		return msg.Title
 	}
 
