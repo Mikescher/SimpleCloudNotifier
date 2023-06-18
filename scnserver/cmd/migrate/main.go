@@ -438,7 +438,7 @@ func migrateUser(ctx context.Context, dbnew sq.DB, dbold sq.DB, user OldUser, ap
 		pp := sq.PP{
 			"mid":  messageid,
 			"suid": userid,
-			"ouid": user.UserId,
+			"ouid": userid,
 			"cnam": channelInternalName,
 			"cid":  channelID,
 			"tsr":  oldmessage.TimestampReal.UnixMilli(),
