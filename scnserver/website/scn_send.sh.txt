@@ -36,7 +36,7 @@ function green()  { if cfgcol; then     echo -e "\x1B[32m$1\x1B[0m"; else     ec
 
 args=( "$@" )
 
-title=$1
+title=""
 content=""
 channel=""
 priority=1
@@ -52,7 +52,7 @@ fi
 
 if [[ "${args[0]}" =~ ^@.* ]]; then
     channel="${args[0]}"
-    unset "args[0]"
+    args=("${args[@]:1}")
     channel="${channel:1}"
 fi
 
@@ -63,24 +63,49 @@ if [ ${#args[@]} -lt 1 ]; then
 fi
 
 title="${args[0]}"
+args=("${args[@]:1}")
+
 content=""
 
-if [ ${#args[@]} -gt 1 ]; then
+if [ ${#args[@]} -gt 0 ]; then
     content="${args[0]}"
-    unset "args[0]"
+    args=("${args[@]:1}")
 fi
 
-if [ ${#args[@]} -gt 1 ]; then
+if [ ${#args[@]} -gt 0 ]; then
     priority="${args[0]}"
-    unset "args[0]"
+    args=("${args[@]:1}")
 fi
 
-if [ ${#args[@]} -gt 1 ]; then
-        rederr "Too many arguments to scn_send"
-        usage
-        exit 1
+if [ ${#args[@]} -gt 0 ]; then
+    rederr "Too many arguments to scn_send"
+    usage
+    exit 1
 fi
 
+curlparams=()
+
+curlparams+=( "--data" "user_id=${SCN_UID}"  )
+curlparams+=( "--data" "key=${SCN_KEY}"      )
+curlparams+=( "--data" "title=$title"        )
+curlparams+=( "--data" "timestamp=$sendtime" )
+curlparams+=( "--data" "msg_id=$usr_msg_id"  )
+
+if [[ -n "$content" ]]; then
+    curlparams+=("--data" "content=$content")
+fi
+
+if [[ -n "$priority" ]]; then
+    curlparams+=("--data" "priority=$priority")
+fi
+
+if [[ -n "$channel" ]]; then
+    curlparams+=("--data" "channel=$channel")
+fi
+
+if [[ -n "$sender" ]]; then
+    curlparams+=("--data" "sender_name=$sender")
+fi
 
 while true ; do
 
@@ -89,15 +114,7 @@ while true ; do
     curlresp=$(curl --silent                             \
                     --output "${outf}"                   \
                     --write-out "%{http_code}"           \
-                    --data "user_id=$user_id"            \
-                    --data "key=$user_key"               \
-                    --data "title=$title"                \
-                    --data "timestamp=$sendtime"         \
-                    --data "content=$content"            \
-                    --data "priority=$priority"          \
-                    --data "msg_id=$usr_msg_id"          \
-                    --data "channel=$channel"            \
-                    --data "sender_name=$sender"         \
+                    "${curlparams[@]}"                   \
                     "https://simplecloudnotifier.de/"    )
 
     curlout="$(cat "$outf")"
