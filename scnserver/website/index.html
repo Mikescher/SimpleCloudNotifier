@@ -23,12 +23,12 @@
 
 		<div class="row responsive-label">
 			<div class="col-sm-12 col-md-3"><label for="uid" class="doc">UserID</label></div>
-			<div class="col-sm-12 col-md"><input placeholder="UserID" id="uid" class="doc" type="number"></div>
+			<div class="col-sm-12 col-md"><input placeholder="UserID" id="uid" class="doc" type="text" pattern="USR[A-Za-z0-9]{21}"></div>
 		</div>
 
 		<div class="row responsive-label">
 			<div class="col-sm-12 col-md-3"><label for="ukey" class="doc">Authentification Key</label></div>
-			<div class="col-sm-12 col-md"><input placeholder="Key" id="ukey" class="doc" type="text" maxlength="64"></div>
+			<div class="col-sm-12 col-md"><input placeholder="Key" id="ukey" class="doc" type="text" pattern="[A-Za-z0-9]{64}"></div>
 		</div>
 
 		<div class="row responsive-label">
