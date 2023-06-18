@@ -9,6 +9,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/dataext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
@@ -390,7 +391,7 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
 	}
 	if useridCompNew == nil {
-		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
+		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, fmt.Sprintf("User %d not found (compat)", *data.UserID), nil)
 	}
 
 	user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
@@ -416,8 +417,8 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 	if err != nil {
 		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query messageid<old>", err)
 	}
-	if useridCompNew == nil {
-		return ginresp.SendAPIError(g, 400, apierr.MESSAGE_NOT_FOUND, hl.USER_ID, "Message not found (compat)", nil)
+	if messageIdComp == nil {
+		return ginresp.SendAPIError(g, 400, apierr.MESSAGE_NOT_FOUND, hl.NONE, fmt.Sprintf("Message %d not found (compat)", *data.MessageID), nil)
 	}
 
 	ackBefore, err := h.database.GetAck(ctx, models.MessageID(*messageIdComp))
