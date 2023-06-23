@@ -528,7 +528,7 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 	compMsgs := make([]models.CompatMessage, 0, len(msgs))
 	for _, v := range msgs {
 
-		messageIdComp, err := h.database.ConvertToCompatIDOrCreate(ctx, v.MessageID.String(), "messageid")
+		messageIdComp, err := h.database.ConvertToCompatIDOrCreate(ctx, "messageid", v.MessageID.String())
 		if err != nil {
 			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query/create messageid<old>", err)
 		}

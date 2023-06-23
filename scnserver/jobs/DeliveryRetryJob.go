@@ -168,7 +168,7 @@ func (j *DeliveryRetryJob) redeliver(ctx *logic.SimpleContext, delivery models.D
 		var msgidOverride *string = nil
 		if isCompatClient {
 
-			messageIdComp, err := j.app.Database.Primary.ConvertToCompatIDOrCreate(ctx, msg.MessageID.String(), "messageid")
+			messageIdComp, err := j.app.Database.Primary.ConvertToCompatIDOrCreate(ctx, "messageid", msg.MessageID.String())
 			if err != nil {
 				log.Err(err).Str("MessageID", delivery.MessageID.String()).Str("ClientID", client.ClientID.String()).Msg("Failed to query/create messageid")
 				ctx.RollbackTransaction()
