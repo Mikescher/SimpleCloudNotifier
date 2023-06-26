@@ -85,26 +85,26 @@ fi
 
 curlparams=()
 
-curlparams+=( "--data" "user_id=${SCN_UID}"  )
-curlparams+=( "--data" "key=${SCN_KEY}"      )
-curlparams+=( "--data" "title=$title"        )
-curlparams+=( "--data" "timestamp=$sendtime" )
-curlparams+=( "--data" "msg_id=$usr_msg_id"  )
+curlparams+=( "--data-urlencode" "user_id=${SCN_UID}"  )
+curlparams+=( "--data-urlencode" "key=${SCN_KEY}"      )
+curlparams+=( "--data-urlencode" "title=$title"        )
+curlparams+=( "--data-urlencode" "timestamp=$sendtime" )
+curlparams+=( "--data-urlencode" "msg_id=$usr_msg_id"  )
 
 if [[ -n "$content" ]]; then
-    curlparams+=("--data" "content=$content")
+    curlparams+=("--data-urlencode" "content=$content")
 fi
 
 if [[ -n "$priority" ]]; then
-    curlparams+=("--data" "priority=$priority")
+    curlparams+=("--data-urlencode" "priority=$priority")
 fi
 
 if [[ -n "$channel" ]]; then
-    curlparams+=("--data" "channel=$channel")
+    curlparams+=("--data-urlencode" "channel=$channel")
 fi
 
 if [[ -n "$sender" ]]; then
-    curlparams+=("--data" "sender_name=$sender")
+    curlparams+=("--data-urlencode" "sender_name=$sender")
 fi
 
 while true ; do
