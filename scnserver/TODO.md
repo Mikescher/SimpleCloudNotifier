@@ -4,11 +4,9 @@
 ========
 
 
-#### BEFORE RELEASE
+#### DO DO DO
 
  - app-store link in HTML
-
- - backups (no longer container in my db_backup, perhaps extend it to sqlite?)
 
  - ios purchase verification
 
@@ -63,6 +61,10 @@
      * rfctime.Time...
 
  - use job superclass (copy from isi/bnet/?), reduce duplicate code
+
+ - admin panel (especially errors and requests)
+
+ - cli app (?)
 
 #### FUTURE
 
