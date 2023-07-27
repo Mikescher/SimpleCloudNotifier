@@ -97,6 +97,15 @@ func (ac *AppContext) CheckPermissionMessageRead(msg models.Message) bool {
 	return false
 }
 
+func (ac *AppContext) CheckPermissionMessageDelete(msg models.Message) bool {
+	p := ac.permissions
+	if p.Token != nil && p.Token.IsAdmin(msg.OwnerUserID) {
+		return true
+	}
+
+	return false
+}
+
 func (ac *AppContext) CheckPermissionAny() *ginresp.HTTPResponse {
 	p := ac.permissions
 	if p.Token == nil {

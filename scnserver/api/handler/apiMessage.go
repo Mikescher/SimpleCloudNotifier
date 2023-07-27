@@ -266,7 +266,7 @@ func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query message", err)
 	}
 
-	if !ctx.CheckPermissionMessageRead(msg) {
+	if !ctx.CheckPermissionMessageDelete(msg) {
 		return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
 	}
 

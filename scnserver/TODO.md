@@ -10,6 +10,9 @@
 
  - ios purchase verification
 
+ - increase max body size (smth like 2MB?)
+   (also increase cronexec char limit)
+
 #### UNSURE
 
  - (?) default-priority for channels
