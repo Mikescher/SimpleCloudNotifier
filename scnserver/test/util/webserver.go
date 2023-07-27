@@ -75,32 +75,9 @@ func StartSimpleWebserver(t *testing.T) (*logic.Application, string, func()) {
 	TPrintln("DatabaseFile<requests>:  " + dbfile2)
 	TPrintln("DatabaseFile<logs>:      " + dbfile3)
 
-	conf, ok := scn.GetConfig("local-host")
-	if !ok {
-		TestFail(t, "conf not found")
-	}
+	scn.Conf = CreateTestConfig(t, dbfile1, dbfile2, dbfile3)
 
-	conf.ServerPort = "0" // simply choose a free port
-	conf.DBMain.File = dbfile1
-	conf.DBLogs.File = dbfile2
-	conf.DBRequests.File = dbfile3
-	conf.DBMain.Timeout = 500 * time.Millisecond
-	conf.DBLogs.Timeout = 500 * time.Millisecond
-	conf.DBRequests.Timeout = 500 * time.Millisecond
-	conf.DBMain.ConnMaxLifetime = 1 * time.Second
-	conf.DBLogs.ConnMaxLifetime = 1 * time.Second
-	conf.DBRequests.ConnMaxLifetime = 1 * time.Second
-	conf.DBMain.ConnMaxIdleTime = 1 * time.Second
-	conf.DBLogs.ConnMaxIdleTime = 1 * time.Second
-	conf.DBRequests.ConnMaxIdleTime = 1 * time.Second
-	conf.RequestMaxRetry = 32
-	conf.RequestRetrySleep = 100 * time.Millisecond
-	conf.ReturnRawErrors = true
-	conf.DummyFirebase = true
-
-	scn.Conf = conf
-
-	sqlite, err := logic.NewDBPool(conf)
+	sqlite, err := logic.NewDBPool(scn.Conf)
 	if err != nil {
 		TestFailErr(t, err)
 	}
@@ -111,7 +88,7 @@ func StartSimpleWebserver(t *testing.T) (*logic.Application, string, func()) {
 		TestFailErr(t, err)
 	}
 
-	ginengine := ginext.NewEngine(conf)
+	ginengine := ginext.NewEngine(scn.Conf)
 
 	router := api.NewRouter(app)
 
@@ -119,7 +96,7 @@ func StartSimpleWebserver(t *testing.T) (*logic.Application, string, func()) {
 
 	apc := google.NewDummy()
 
-	app.Init(conf, ginengine, nc, apc, []logic.Job{
+	app.Init(scn.Conf, ginengine, nc, apc, []logic.Job{
 		jobs.NewDeliveryRetryJob(app),
 		jobs.NewRequestLogCollectorJob(app),
 	})
@@ -147,4 +124,100 @@ func StartSimpleWebserver(t *testing.T) (*logic.Application, string, func()) {
 	}
 
 	return app, "http://127.0.0.1:" + app.Port, stop
+}
+
+func StartSimpleTestspace(t *testing.T) (string, string, string, scn.Config, func()) {
+	InitTests()
+
+	uuid1, _ := langext.NewHexUUID()
+	uuid2, _ := langext.NewHexUUID()
+	uuid3, _ := langext.NewHexUUID()
+
+	dbdir := t.TempDir()
+	dbfile1 := filepath.Join(dbdir, uuid1+".sqlite3")
+	dbfile2 := filepath.Join(dbdir, uuid2+".sqlite3")
+	dbfile3 := filepath.Join(dbdir, uuid3+".sqlite3")
+
+	err := os.MkdirAll(dbdir, os.ModePerm)
+	if err != nil {
+		TestFailErr(t, err)
+	}
+
+	f1, err := os.Create(dbfile1)
+	if err != nil {
+		TestFailErr(t, err)
+	}
+	err = f1.Close()
+	if err != nil {
+		TestFailErr(t, err)
+	}
+	err = os.Chmod(dbfile1, 0777)
+	if err != nil {
+		TestFailErr(t, err)
+	}
+	f2, err := os.Create(dbfile2)
+	if err != nil {
+		TestFailErr(t, err)
+	}
+	err = f2.Close()
+	if err != nil {
+		TestFailErr(t, err)
+	}
+	err = os.Chmod(dbfile2, 0777)
+	if err != nil {
+		TestFailErr(t, err)
+	}
+	f3, err := os.Create(dbfile3)
+	if err != nil {
+		TestFailErr(t, err)
+	}
+	err = f3.Close()
+	if err != nil {
+		TestFailErr(t, err)
+	}
+	err = os.Chmod(dbfile3, 0777)
+	if err != nil {
+		TestFailErr(t, err)
+	}
+
+	TPrintln("DatabaseFile<main>:      " + dbfile1)
+	TPrintln("DatabaseFile<requests>:  " + dbfile2)
+	TPrintln("DatabaseFile<logs>:      " + dbfile3)
+
+	scn.Conf = CreateTestConfig(t, dbfile1, dbfile2, dbfile3)
+
+	stop := func() {
+		_ = os.Remove(dbfile1)
+		_ = os.Remove(dbfile2)
+		_ = os.Remove(dbfile3)
+	}
+
+	return dbfile1, dbfile2, dbfile3, scn.Conf, stop
+}
+
+func CreateTestConfig(t *testing.T, dbfile1 string, dbfile2 string, dbfile3 string) scn.Config {
+	conf, ok := scn.GetConfig("local-host")
+	if !ok {
+		TestFail(t, "conf not found")
+	}
+
+	conf.ServerPort = "0" // simply choose a free port
+	conf.DBMain.File = dbfile1
+	conf.DBLogs.File = dbfile2
+	conf.DBRequests.File = dbfile3
+	conf.DBMain.Timeout = 500 * time.Millisecond
+	conf.DBLogs.Timeout = 500 * time.Millisecond
+	conf.DBRequests.Timeout = 500 * time.Millisecond
+	conf.DBMain.ConnMaxLifetime = 1 * time.Second
+	conf.DBLogs.ConnMaxLifetime = 1 * time.Second
+	conf.DBRequests.ConnMaxLifetime = 1 * time.Second
+	conf.DBMain.ConnMaxIdleTime = 1 * time.Second
+	conf.DBLogs.ConnMaxIdleTime = 1 * time.Second
+	conf.DBRequests.ConnMaxIdleTime = 1 * time.Second
+	conf.RequestMaxRetry = 32
+	conf.RequestRetrySleep = 100 * time.Millisecond
+	conf.ReturnRawErrors = true
+	conf.DummyFirebase = true
+
+	return conf
 }

@@ -4,6 +4,7 @@ import (
 	server "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/db/dbtools"
 	"blackforestbytes.com/simplecloudnotifier/db/schema"
+	"blackforestbytes.com/simplecloudnotifier/db/simplectx"
 	"context"
 	"database/sql"
 	"errors"
@@ -63,81 +64,147 @@ func (db *Database) DB() sq.DB {
 	return db.db
 }
 
-func (db *Database) Migrate(ctx context.Context) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 24*time.Second)
-	defer cancel()
+func (db *Database) Migrate(outerctx context.Context) error {
+	innerctx, cancel := context.WithTimeout(outerctx, 24*time.Second)
+	tctx := simplectx.CreateSimpleContext(innerctx, cancel)
 
-	currschema, err := db.ReadSchema(ctx)
+	tx, err := tctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if tx.Status() == sq.TxStatusInitial || tx.Status() == sq.TxStatusActive {
+			err = tx.Rollback()
+			if err != nil {
+				log.Err(err).Msg("failed to rollback transaction")
+			}
+		}
+	}()
+
+	ppReInit := false
+
+	currschema, err := db.ReadSchema(tctx)
 	if err != nil {
 		return err
 	}
 
 	if currschema == 0 {
+		schemastr := schema.PrimarySchema[schema.PrimarySchemaVersion].SQL
+		schemahash := schema.PrimarySchema[schema.PrimarySchemaVersion].Hash
 
-		schemastr := schema.PrimarySchema3
-
-		schemahash, err := sq.HashSqliteSchema(ctx, schemastr)
+		_, err = tx.Exec(tctx, schemastr, sq.PP{})
 		if err != nil {
 			return err
 		}
 
-		_, err = db.db.Exec(ctx, schemastr, sq.PP{})
+		err = db.WriteMetaInt(tctx, "schema", int64(schema.PrimarySchemaVersion))
 		if err != nil {
 			return err
 		}
 
-		err = db.WriteMetaInt(ctx, "schema", 3)
+		err = db.WriteMetaString(tctx, "schema_hash", schemahash)
 		if err != nil {
 			return err
 		}
 
-		err = db.WriteMetaString(ctx, "schema_hash", schemahash)
-		if err != nil {
-			return err
-		}
+		ppReInit = true
 
-		err = db.pp.Init(ctx) // Re-Init
-		if err != nil {
-			return err
-		}
+		currschema = schema.PrimarySchemaVersion
+	}
 
-		return nil
-
-	} else if currschema == 1 {
+	if currschema == 1 {
 		return errors.New("cannot autom. upgrade schema 1")
-	} else if currschema == 2 {
+	}
+
+	if currschema == 2 {
 		return errors.New("cannot autom. upgrade schema 2")
-	} else if currschema == 3 {
+	}
 
-		schemHashDB, err := sq.HashSqliteDatabase(ctx, db.db)
+	if currschema == 3 {
+
+		schemaHashMeta, err := db.ReadMetaString(tctx, "schema_hash")
 		if err != nil {
 			return err
 		}
 
-		schemaHashMeta, err := db.ReadMetaString(ctx, "schema_hash")
+		schemHashDB, err := sq.HashSqliteDatabase(tctx, tx)
 		if err != nil {
 			return err
 		}
 
-		schemHashAsset := schema.PrimaryHash3
-		if err != nil {
-			return err
-		}
-
-		if schemHashDB != langext.Coalesce(schemaHashMeta, "") || langext.Coalesce(schemaHashMeta, "") != schemHashAsset {
+		if schemHashDB != langext.Coalesce(schemaHashMeta, "") || langext.Coalesce(schemaHashMeta, "") != schema.PrimarySchema[currschema].Hash {
 			log.Debug().Str("schemHashDB", schemHashDB).Msg("Schema (primary db)")
 			log.Debug().Str("schemaHashMeta", langext.Coalesce(schemaHashMeta, "")).Msg("Schema (primary db)")
-			log.Debug().Str("schemHashAsset", schemHashAsset).Msg("Schema (primary db)")
+			log.Debug().Str("schemaHashAsset", schema.PrimarySchema[currschema].Hash).Msg("Schema (primary db)")
 			return errors.New("database schema does not match (primary db)")
 		} else {
 			log.Debug().Str("schemHash", schemHashDB).Msg("Verified Schema consistency (primary db)")
 		}
 
-		return nil // current
-	} else {
+		log.Info().Int("currschema", currschema).Msg("Upgrade schema from 3 -> 4")
+
+		_, err = tx.Exec(tctx, schema.PrimaryMigration_3_4, sq.PP{})
+		if err != nil {
+			return err
+		}
+
+		currschema = 4
+
+		err = db.WriteMetaInt(tctx, "schema", int64(currschema))
+		if err != nil {
+			return err
+		}
+
+		err = db.WriteMetaString(tctx, "schema_hash", schema.PrimarySchema[currschema].Hash)
+		if err != nil {
+			return err
+		}
+
+		log.Info().Int("currschema", currschema).Msg("Upgrade schema from 3 -> 4 succesfuly")
+
+		ppReInit = true
+	}
+
+	if currschema == 4 {
+
+		schemaHashMeta, err := db.ReadMetaString(tctx, "schema_hash")
+		if err != nil {
+			return err
+		}
+
+		schemHashDB, err := sq.HashSqliteDatabase(tctx, tx)
+		if err != nil {
+			return err
+		}
+
+		if schemHashDB != langext.Coalesce(schemaHashMeta, "") || langext.Coalesce(schemaHashMeta, "") != schema.PrimarySchema[currschema].Hash {
+			log.Debug().Str("schemHashDB", schemHashDB).Msg("Schema (primary db)")
+			log.Debug().Str("schemaHashMeta", langext.Coalesce(schemaHashMeta, "")).Msg("Schema (primary db)")
+			log.Debug().Str("schemaHashAsset", schema.PrimarySchema[currschema].Hash).Msg("Schema (primary db)")
+			return errors.New("database schema does not match (primary db)")
+		} else {
+			log.Debug().Str("schemHash", schemHashDB).Msg("Verified Schema consistency (primary db)")
+		}
+	}
+
+	if currschema != schema.PrimarySchemaVersion {
 		return errors.New(fmt.Sprintf("Unknown DB schema: %d", currschema))
 	}
 
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	if ppReInit {
+		log.Debug().Msg("Re-Init preprocessor")
+		err = db.pp.Init(outerctx) // Re-Init
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (db *Database) Ping(ctx context.Context) error {

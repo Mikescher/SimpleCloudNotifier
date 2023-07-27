@@ -3,6 +3,7 @@ package handler
 import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
+	"blackforestbytes.com/simplecloudnotifier/db/simplectx"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"bytes"
 	"context"
@@ -127,7 +128,9 @@ func (h CommonHandler) Health(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.InternalError(errors.New("sqlite version too low"))
 	}
 
-	err := h.app.Database.Ping(ctx)
+	tctx := simplectx.CreateSimpleContext(ctx, nil)
+
+	err := h.app.Database.Ping(tctx)
 	if err != nil {
 		return ginresp.InternalError(err)
 	}
@@ -137,12 +140,12 @@ func (h CommonHandler) Health(g *gin.Context) ginresp.HTTPResponse {
 		uuidKey, _ := langext.NewHexUUID()
 		uuidWrite, _ := langext.NewHexUUID()
 
-		err = subdb.WriteMetaString(ctx, uuidKey, uuidWrite)
+		err = subdb.WriteMetaString(tctx, uuidKey, uuidWrite)
 		if err != nil {
 			return ginresp.InternalError(err)
 		}
 
-		uuidRead, err := subdb.ReadMetaString(ctx, uuidKey)
+		uuidRead, err := subdb.ReadMetaString(tctx, uuidKey)
 		if err != nil {
 			return ginresp.InternalError(err)
 		}
@@ -151,7 +154,7 @@ func (h CommonHandler) Health(g *gin.Context) ginresp.HTTPResponse {
 			return ginresp.InternalError(errors.New("writing into DB was not consistent"))
 		}
 
-		err = subdb.DeleteMeta(ctx, uuidKey)
+		err = subdb.DeleteMeta(tctx, uuidKey)
 		if err != nil {
 			return ginresp.InternalError(err)
 		}

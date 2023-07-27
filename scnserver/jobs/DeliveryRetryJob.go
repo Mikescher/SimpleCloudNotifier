@@ -1,6 +1,7 @@
 package jobs
 
 import (
+	"blackforestbytes.com/simplecloudnotifier/db/simplectx"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"errors"
@@ -132,7 +133,7 @@ func (j *DeliveryRetryJob) execute() (fastrr bool, err error) {
 	return len(deliveries) == 32, nil
 }
 
-func (j *DeliveryRetryJob) redeliver(ctx *logic.SimpleContext, delivery models.Delivery) {
+func (j *DeliveryRetryJob) redeliver(ctx *simplectx.SimpleContext, delivery models.Delivery) {
 
 	client, err := j.app.Database.Primary.GetClient(ctx, delivery.ReceiverUserID, delivery.ReceiverClientID)
 	if err != nil {

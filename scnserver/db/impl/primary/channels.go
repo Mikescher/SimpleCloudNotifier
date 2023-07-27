@@ -1,13 +1,14 @@
 package primary
 
 import (
+	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
 
-func (db *Database) GetChannelByName(ctx TxContext, userid models.UserID, chanName string) (*models.Channel, error) {
+func (db *Database) GetChannelByName(ctx db.TxContext, userid models.UserID, chanName string) (*models.Channel, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
@@ -32,7 +33,7 @@ func (db *Database) GetChannelByName(ctx TxContext, userid models.UserID, chanNa
 	return &channel, nil
 }
 
-func (db *Database) GetChannelByID(ctx TxContext, chanid models.ChannelID) (*models.Channel, error) {
+func (db *Database) GetChannelByID(ctx db.TxContext, chanid models.ChannelID) (*models.Channel, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
@@ -56,7 +57,7 @@ func (db *Database) GetChannelByID(ctx TxContext, chanid models.ChannelID) (*mod
 	return &channel, nil
 }
 
-func (db *Database) CreateChannel(ctx TxContext, userid models.UserID, dispName string, intName string, subscribeKey string) (models.Channel, error) {
+func (db *Database) CreateChannel(ctx db.TxContext, userid models.UserID, dispName string, intName string, subscribeKey string) (models.Channel, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Channel{}, err
@@ -81,7 +82,7 @@ func (db *Database) CreateChannel(ctx TxContext, userid models.UserID, dispName 
 	return entity.Model(), nil
 }
 
-func (db *Database) ListChannelsByOwner(ctx TxContext, userid models.UserID, subUserID models.UserID) ([]models.ChannelWithSubscription, error) {
+func (db *Database) ListChannelsByOwner(ctx db.TxContext, userid models.UserID, subUserID models.UserID) ([]models.ChannelWithSubscription, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
@@ -105,7 +106,7 @@ func (db *Database) ListChannelsByOwner(ctx TxContext, userid models.UserID, sub
 	return data, nil
 }
 
-func (db *Database) ListChannelsBySubscriber(ctx TxContext, userid models.UserID, confirmed *bool) ([]models.ChannelWithSubscription, error) {
+func (db *Database) ListChannelsBySubscriber(ctx db.TxContext, userid models.UserID, confirmed *bool) ([]models.ChannelWithSubscription, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
@@ -135,7 +136,7 @@ func (db *Database) ListChannelsBySubscriber(ctx TxContext, userid models.UserID
 	return data, nil
 }
 
-func (db *Database) ListChannelsByAccess(ctx TxContext, userid models.UserID, confirmed *bool) ([]models.ChannelWithSubscription, error) {
+func (db *Database) ListChannelsByAccess(ctx db.TxContext, userid models.UserID, confirmed *bool) ([]models.ChannelWithSubscription, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
@@ -166,7 +167,7 @@ func (db *Database) ListChannelsByAccess(ctx TxContext, userid models.UserID, co
 	return data, nil
 }
 
-func (db *Database) GetChannel(ctx TxContext, userid models.UserID, channelid models.ChannelID, enforceOwner bool) (models.ChannelWithSubscription, error) {
+func (db *Database) GetChannel(ctx db.TxContext, userid models.UserID, channelid models.ChannelID, enforceOwner bool) (models.ChannelWithSubscription, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.ChannelWithSubscription{}, err
@@ -200,7 +201,7 @@ func (db *Database) GetChannel(ctx TxContext, userid models.UserID, channelid mo
 	return channel, nil
 }
 
-func (db *Database) IncChannelMessageCounter(ctx TxContext, channel *models.Channel) error {
+func (db *Database) IncChannelMessageCounter(ctx db.TxContext, channel *models.Channel) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -222,7 +223,7 @@ func (db *Database) IncChannelMessageCounter(ctx TxContext, channel *models.Chan
 	return nil
 }
 
-func (db *Database) UpdateChannelSubscribeKey(ctx TxContext, channelid models.ChannelID, newkey string) error {
+func (db *Database) UpdateChannelSubscribeKey(ctx db.TxContext, channelid models.ChannelID, newkey string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -239,7 +240,7 @@ func (db *Database) UpdateChannelSubscribeKey(ctx TxContext, channelid models.Ch
 	return nil
 }
 
-func (db *Database) UpdateChannelDisplayName(ctx TxContext, channelid models.ChannelID, dispname string) error {
+func (db *Database) UpdateChannelDisplayName(ctx db.TxContext, channelid models.ChannelID, dispname string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -256,7 +257,7 @@ func (db *Database) UpdateChannelDisplayName(ctx TxContext, channelid models.Cha
 	return nil
 }
 
-func (db *Database) UpdateChannelDescriptionName(ctx TxContext, channelid models.ChannelID, descname *string) error {
+func (db *Database) UpdateChannelDescriptionName(ctx db.TxContext, channelid models.ChannelID, descname *string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err

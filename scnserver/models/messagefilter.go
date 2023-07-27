@@ -17,7 +17,6 @@ type MessageFilter struct {
 	ConfirmedSubscriptionBy *UserID
 	SearchString            *[]string
 	Sender                  *[]UserID
-	Owner                   *[]UserID
 	ChannelNameCS           *[]string // case-sensitive
 	ChannelNameCI           *[]string // case-insensitive
 	ChannelID               *[]ChannelID
@@ -75,15 +74,6 @@ func (f MessageFilter) SQL() (string, string, sq.PP, error) {
 		for i, v := range *f.Sender {
 			filter = append(filter, fmt.Sprintf("(sender_user_id = :sender_%d)", i))
 			params[fmt.Sprintf("sender_%d", i)] = v
-		}
-		sqlClauses = append(sqlClauses, "("+strings.Join(filter, " OR ")+")")
-	}
-
-	if f.Owner != nil {
-		filter := make([]string, 0)
-		for i, v := range *f.Owner {
-			filter = append(filter, fmt.Sprintf("(owner_user_id = :owner_%d)", i))
-			params[fmt.Sprintf("owner_%d", i)] = v
 		}
 		sqlClauses = append(sqlClauses, "("+strings.Join(filter, " OR ")+")")
 	}

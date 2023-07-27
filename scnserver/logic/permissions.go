@@ -99,7 +99,7 @@ func (ac *AppContext) CheckPermissionMessageRead(msg models.Message) bool {
 
 func (ac *AppContext) CheckPermissionMessageDelete(msg models.Message) bool {
 	p := ac.permissions
-	if p.Token != nil && p.Token.IsAdmin(msg.OwnerUserID) {
+	if p.Token != nil && p.Token.IsAdmin(msg.SenderUserID) {
 		return true
 	}
 

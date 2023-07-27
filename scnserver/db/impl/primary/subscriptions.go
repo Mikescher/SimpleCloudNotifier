@@ -1,13 +1,14 @@
 package primary
 
 import (
+	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
 
-func (db *Database) CreateSubscription(ctx TxContext, subscriberUID models.UserID, channel models.Channel, confirmed bool) (models.Subscription, error) {
+func (db *Database) CreateSubscription(ctx db.TxContext, subscriberUID models.UserID, channel models.Channel, confirmed bool) (models.Subscription, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Subscription{}, err
@@ -31,7 +32,7 @@ func (db *Database) CreateSubscription(ctx TxContext, subscriberUID models.UserI
 	return entity.Model(), nil
 }
 
-func (db *Database) ListSubscriptionsByChannel(ctx TxContext, channelID models.ChannelID) ([]models.Subscription, error) {
+func (db *Database) ListSubscriptionsByChannel(ctx db.TxContext, channelID models.ChannelID) ([]models.Subscription, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
@@ -52,7 +53,7 @@ func (db *Database) ListSubscriptionsByChannel(ctx TxContext, channelID models.C
 	return data, nil
 }
 
-func (db *Database) ListSubscriptionsByChannelOwner(ctx TxContext, ownerUserID models.UserID, confirmed *bool) ([]models.Subscription, error) {
+func (db *Database) ListSubscriptionsByChannelOwner(ctx db.TxContext, ownerUserID models.UserID, confirmed *bool) ([]models.Subscription, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
@@ -80,7 +81,7 @@ func (db *Database) ListSubscriptionsByChannelOwner(ctx TxContext, ownerUserID m
 	return data, nil
 }
 
-func (db *Database) ListSubscriptionsBySubscriber(ctx TxContext, subscriberUserID models.UserID, confirmed *bool) ([]models.Subscription, error) {
+func (db *Database) ListSubscriptionsBySubscriber(ctx db.TxContext, subscriberUserID models.UserID, confirmed *bool) ([]models.Subscription, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
@@ -108,7 +109,7 @@ func (db *Database) ListSubscriptionsBySubscriber(ctx TxContext, subscriberUserI
 	return data, nil
 }
 
-func (db *Database) GetSubscription(ctx TxContext, subid models.SubscriptionID) (models.Subscription, error) {
+func (db *Database) GetSubscription(ctx db.TxContext, subid models.SubscriptionID) (models.Subscription, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Subscription{}, err
@@ -127,7 +128,7 @@ func (db *Database) GetSubscription(ctx TxContext, subid models.SubscriptionID) 
 	return sub, nil
 }
 
-func (db *Database) GetSubscriptionBySubscriber(ctx TxContext, subscriberId models.UserID, channelId models.ChannelID) (*models.Subscription, error) {
+func (db *Database) GetSubscriptionBySubscriber(ctx db.TxContext, subscriberId models.UserID, channelId models.ChannelID) (*models.Subscription, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
@@ -152,7 +153,7 @@ func (db *Database) GetSubscriptionBySubscriber(ctx TxContext, subscriberId mode
 	return &user, nil
 }
 
-func (db *Database) DeleteSubscription(ctx TxContext, subid models.SubscriptionID) error {
+func (db *Database) DeleteSubscription(ctx db.TxContext, subid models.SubscriptionID) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -166,7 +167,7 @@ func (db *Database) DeleteSubscription(ctx TxContext, subid models.SubscriptionI
 	return nil
 }
 
-func (db *Database) UpdateSubscriptionConfirmed(ctx TxContext, subscriptionID models.SubscriptionID, confirmed bool) error {
+func (db *Database) UpdateSubscriptionConfirmed(ctx db.TxContext, subscriptionID models.SubscriptionID, confirmed bool) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err

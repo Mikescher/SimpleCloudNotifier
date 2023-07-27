@@ -2,13 +2,14 @@ package primary
 
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
+	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
 
-func (db *Database) CreateUser(ctx TxContext, protoken *string, username *string) (models.User, error) {
+func (db *Database) CreateUser(ctx db.TxContext, protoken *string, username *string) (models.User, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.User{}, err
@@ -35,7 +36,7 @@ func (db *Database) CreateUser(ctx TxContext, protoken *string, username *string
 	return entity.Model(), nil
 }
 
-func (db *Database) ClearProTokens(ctx TxContext, protoken string) error {
+func (db *Database) ClearProTokens(ctx db.TxContext, protoken string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -49,7 +50,7 @@ func (db *Database) ClearProTokens(ctx TxContext, protoken string) error {
 	return nil
 }
 
-func (db *Database) GetUser(ctx TxContext, userid models.UserID) (models.User, error) {
+func (db *Database) GetUser(ctx db.TxContext, userid models.UserID) (models.User, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.User{}, err
@@ -68,7 +69,7 @@ func (db *Database) GetUser(ctx TxContext, userid models.UserID) (models.User, e
 	return user, nil
 }
 
-func (db *Database) UpdateUserUsername(ctx TxContext, userid models.UserID, username *string) error {
+func (db *Database) UpdateUserUsername(ctx db.TxContext, userid models.UserID, username *string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -85,7 +86,7 @@ func (db *Database) UpdateUserUsername(ctx TxContext, userid models.UserID, user
 	return nil
 }
 
-func (db *Database) UpdateUserProToken(ctx TxContext, userid models.UserID, protoken *string) error {
+func (db *Database) UpdateUserProToken(ctx db.TxContext, userid models.UserID, protoken *string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -103,7 +104,7 @@ func (db *Database) UpdateUserProToken(ctx TxContext, userid models.UserID, prot
 	return nil
 }
 
-func (db *Database) IncUserMessageCounter(ctx TxContext, user *models.User) error {
+func (db *Database) IncUserMessageCounter(ctx db.TxContext, user *models.User) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -132,7 +133,7 @@ func (db *Database) IncUserMessageCounter(ctx TxContext, user *models.User) erro
 	return nil
 }
 
-func (db *Database) UpdateUserLastRead(ctx TxContext, userid models.UserID) error {
+func (db *Database) UpdateUserLastRead(ctx db.TxContext, userid models.UserID) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err

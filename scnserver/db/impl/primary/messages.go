@@ -1,6 +1,7 @@
 package primary
 
 import (
+	"blackforestbytes.com/simplecloudnotifier/db"
 	ct "blackforestbytes.com/simplecloudnotifier/db/cursortoken"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
@@ -9,7 +10,7 @@ import (
 	"time"
 )
 
-func (db *Database) GetMessageByUserMessageID(ctx TxContext, usrMsgId string) (*models.Message, error) {
+func (db *Database) GetMessageByUserMessageID(ctx db.TxContext, usrMsgId string) (*models.Message, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
@@ -31,7 +32,7 @@ func (db *Database) GetMessageByUserMessageID(ctx TxContext, usrMsgId string) (*
 	return &msg, nil
 }
 
-func (db *Database) GetMessage(ctx TxContext, scnMessageID models.MessageID, allowDeleted bool) (models.Message, error) {
+func (db *Database) GetMessage(ctx db.TxContext, scnMessageID models.MessageID, allowDeleted bool) (models.Message, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Message{}, err
@@ -57,7 +58,7 @@ func (db *Database) GetMessage(ctx TxContext, scnMessageID models.MessageID, all
 	return msg, nil
 }
 
-func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, channel models.Channel, timestampSend *time.Time, title string, content *string, priority int, userMsgId *string, senderIP string, senderName *string, usedKeyID models.KeyTokenID) (models.Message, error) {
+func (db *Database) CreateMessage(ctx db.TxContext, senderUserID models.UserID, channel models.Channel, timestampSend *time.Time, title string, content *string, priority int, userMsgId *string, senderIP string, senderName *string, usedKeyID models.KeyTokenID) (models.Message, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Message{}, err
@@ -66,7 +67,6 @@ func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, cha
 	entity := models.MessageDB{
 		MessageID:           models.NewMessageID(),
 		SenderUserID:        senderUserID,
-		OwnerUserID:         channel.OwnerUserID,
 		ChannelInternalName: channel.InternalName,
 		ChannelID:           channel.ChannelID,
 		SenderIP:            senderIP,
@@ -89,7 +89,7 @@ func (db *Database) CreateMessage(ctx TxContext, senderUserID models.UserID, cha
 	return entity.Model(), nil
 }
 
-func (db *Database) DeleteMessage(ctx TxContext, messageID models.MessageID) error {
+func (db *Database) DeleteMessage(ctx db.TxContext, messageID models.MessageID) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -103,7 +103,7 @@ func (db *Database) DeleteMessage(ctx TxContext, messageID models.MessageID) err
 	return nil
 }
 
-func (db *Database) ListMessages(ctx TxContext, filter models.MessageFilter, pageSize *int, inTok ct.CursorToken) ([]models.Message, ct.CursorToken, error) {
+func (db *Database) ListMessages(ctx db.TxContext, filter models.MessageFilter, pageSize *int, inTok ct.CursorToken) ([]models.Message, ct.CursorToken, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, ct.CursorToken{}, err
@@ -151,7 +151,7 @@ func (db *Database) ListMessages(ctx TxContext, filter models.MessageFilter, pag
 	}
 }
 
-func (db *Database) CountMessages(ctx TxContext, filter models.MessageFilter) (int64, error) {
+func (db *Database) CountMessages(ctx db.TxContext, filter models.MessageFilter) (int64, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return 0, err

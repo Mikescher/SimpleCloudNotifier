@@ -37,6 +37,13 @@ func main() {
 		fmt.Printf("PrimarySchema3  := %s\n", h0)
 	}
 	{
+		h0, err := sq.HashSqliteSchema(ctx, schema.PrimarySchema4)
+		if err != nil {
+			h0 = "ERR"
+		}
+		fmt.Printf("PrimarySchema4  := %s\n", h0)
+	}
+	{
 		h0, err := sq.HashSqliteSchema(ctx, schema.RequestsSchema1)
 		if err != nil {
 			h0 = "ERR"

@@ -302,6 +302,10 @@ func AssertArrAny[T any](t *testing.T, key string, arr []T, fn func(T) bool) {
 	}
 }
 
+func AssertAny(v any) {
+	// used to prevent golang "unused variable error"
+}
+
 func unpointer(v any) any {
 	if v == nil {
 		return v

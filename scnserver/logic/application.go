@@ -4,6 +4,7 @@ import (
 	scn "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
+	"blackforestbytes.com/simplecloudnotifier/db/simplectx"
 	"blackforestbytes.com/simplecloudnotifier/google"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"blackforestbytes.com/simplecloudnotifier/push"
@@ -292,9 +293,9 @@ func (app *Application) StartRequest(g *gin.Context, uri any, query any, body an
 	return actx, nil
 }
 
-func (app *Application) NewSimpleTransactionContext(timeout time.Duration) *SimpleContext {
+func (app *Application) NewSimpleTransactionContext(timeout time.Duration) *simplectx.SimpleContext {
 	ictx, cancel := context.WithTimeout(context.Background(), timeout)
-	return CreateSimpleContext(ictx, cancel)
+	return simplectx.CreateSimpleContext(ictx, cancel)
 }
 
 func (app *Application) getPermissions(ctx *AppContext, hdr string) (models.PermissionSet, error) {

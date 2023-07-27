@@ -13,17 +13,17 @@ type DatabaseImpl interface {
 	BeginTx(ctx context.Context) (sq.Tx, error)
 	Stop(ctx context.Context) error
 
-	ReadSchema(ctx context.Context) (int, error)
+	ReadSchema(ctx TxContext) (int, error)
 
-	WriteMetaString(ctx context.Context, key string, value string) error
-	WriteMetaInt(ctx context.Context, key string, value int64) error
-	WriteMetaReal(ctx context.Context, key string, value float64) error
-	WriteMetaBlob(ctx context.Context, key string, value []byte) error
+	WriteMetaString(ctx TxContext, key string, value string) error
+	WriteMetaInt(ctx TxContext, key string, value int64) error
+	WriteMetaReal(ctx TxContext, key string, value float64) error
+	WriteMetaBlob(ctx TxContext, key string, value []byte) error
 
-	ReadMetaString(ctx context.Context, key string) (*string, error)
-	ReadMetaInt(ctx context.Context, key string) (*int64, error)
-	ReadMetaReal(ctx context.Context, key string) (*float64, error)
-	ReadMetaBlob(ctx context.Context, key string) (*[]byte, error)
+	ReadMetaString(ctx TxContext, key string) (*string, error)
+	ReadMetaInt(ctx TxContext, key string) (*int64, error)
+	ReadMetaReal(ctx TxContext, key string) (*float64, error)
+	ReadMetaBlob(ctx TxContext, key string) (*[]byte, error)
 
-	DeleteMeta(ctx context.Context, key string) error
+	DeleteMeta(ctx TxContext, key string) error
 }

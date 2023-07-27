@@ -1,4 +1,4 @@
-package logic
+package simplectx
 
 import (
 	"blackforestbytes.com/simplecloudnotifier/db"
@@ -51,7 +51,9 @@ func (sc *SimpleContext) Cancel() {
 		}
 		sc.transaction = nil
 	}
-	sc.cancelFunc()
+	if sc.cancelFunc != nil {
+		sc.cancelFunc()
+	}
 }
 
 func (sc *SimpleContext) GetOrCreateTransaction(db db.DatabaseImpl) (sq.Tx, error) {

@@ -183,8 +183,6 @@ definitions:
       permissions:
         type: string
     required:
-    - all_channels
-    - channels
     - name
     - permissions
     type: object
@@ -582,8 +580,6 @@ definitions:
       content:
         type: string
       message_id:
-        type: string
-      owner_user_id:
         type: string
       priority:
         type: integer

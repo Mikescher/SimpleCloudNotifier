@@ -2,13 +2,14 @@ package primary
 
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
+	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
 
-func (db *Database) CreateRetryDelivery(ctx TxContext, client models.Client, msg models.Message) (models.Delivery, error) {
+func (db *Database) CreateRetryDelivery(ctx db.TxContext, client models.Client, msg models.Message) (models.Delivery, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Delivery{}, err
@@ -38,7 +39,7 @@ func (db *Database) CreateRetryDelivery(ctx TxContext, client models.Client, msg
 	return entity.Model(), nil
 }
 
-func (db *Database) CreateSuccessDelivery(ctx TxContext, client models.Client, msg models.Message, fcmDelivID string) (models.Delivery, error) {
+func (db *Database) CreateSuccessDelivery(ctx db.TxContext, client models.Client, msg models.Message, fcmDelivID string) (models.Delivery, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Delivery{}, err
@@ -67,7 +68,7 @@ func (db *Database) CreateSuccessDelivery(ctx TxContext, client models.Client, m
 	return entity.Model(), nil
 }
 
-func (db *Database) ListRetrieableDeliveries(ctx TxContext, pageSize int) ([]models.Delivery, error) {
+func (db *Database) ListRetrieableDeliveries(ctx db.TxContext, pageSize int) ([]models.Delivery, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
@@ -89,7 +90,7 @@ func (db *Database) ListRetrieableDeliveries(ctx TxContext, pageSize int) ([]mod
 	return data, nil
 }
 
-func (db *Database) SetDeliverySuccess(ctx TxContext, delivery models.Delivery, fcmDelivID string) error {
+func (db *Database) SetDeliverySuccess(ctx db.TxContext, delivery models.Delivery, fcmDelivID string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -108,7 +109,7 @@ func (db *Database) SetDeliverySuccess(ctx TxContext, delivery models.Delivery, 
 	return nil
 }
 
-func (db *Database) SetDeliveryFailed(ctx TxContext, delivery models.Delivery) error {
+func (db *Database) SetDeliveryFailed(ctx db.TxContext, delivery models.Delivery) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -127,7 +128,7 @@ func (db *Database) SetDeliveryFailed(ctx TxContext, delivery models.Delivery) e
 	return nil
 }
 
-func (db *Database) SetDeliveryRetry(ctx TxContext, delivery models.Delivery) error {
+func (db *Database) SetDeliveryRetry(ctx db.TxContext, delivery models.Delivery) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -145,7 +146,7 @@ func (db *Database) SetDeliveryRetry(ctx TxContext, delivery models.Delivery) er
 	return nil
 }
 
-func (db *Database) CancelPendingDeliveries(ctx TxContext, messageID models.MessageID) error {
+func (db *Database) CancelPendingDeliveries(ctx db.TxContext, messageID models.MessageID) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err

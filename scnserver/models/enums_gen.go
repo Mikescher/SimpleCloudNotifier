@@ -4,7 +4,7 @@ package models
 
 import "gogs.mikescher.com/BlackForestBytes/goext/langext"
 
-const ChecksumGenerator = "4bfd61daa179e1452035a34c25c6f8170a08500bc0a7aa0e3981f95ad4b0d7d2"
+const ChecksumGenerator = "a1a684aa30d77d9a9936ccbb667b498c370a1f816273e9cd93948f4195155e90"
 
 type Enum interface {
 	Valid() bool
@@ -59,10 +59,7 @@ func (e ClientType) ValuesAny() []any {
 }
 
 func (e ClientType) ValuesMeta() []EnumMetaValue {
-	return []EnumMetaValue{
-		EnumMetaValue{VarName: "ClientTypeAndroid", Value: ClientTypeAndroid, Description: nil},
-		EnumMetaValue{VarName: "ClientTypeIOS", Value: ClientTypeIOS, Description: nil},
-	}
+	return ClientTypeValuesMeta()
 }
 
 func (e ClientType) String() string {
@@ -74,6 +71,10 @@ func (e ClientType) VarName() string {
 		return d
 	}
 	return ""
+}
+
+func (e ClientType) Meta() EnumMetaValue {
+	return EnumMetaValue{VarName: e.VarName(), Value: e, Description: nil}
 }
 
 func ParseClientType(vv string) (ClientType, bool) {
@@ -91,8 +92,8 @@ func ClientTypeValues() []ClientType {
 
 func ClientTypeValuesMeta() []EnumMetaValue {
 	return []EnumMetaValue{
-		EnumMetaValue{VarName: "ClientTypeAndroid", Value: ClientTypeAndroid, Description: nil},
-		EnumMetaValue{VarName: "ClientTypeIOS", Value: ClientTypeIOS, Description: nil},
+		ClientTypeAndroid.Meta(),
+		ClientTypeIOS.Meta(),
 	}
 }
 
@@ -128,11 +129,7 @@ func (e DeliveryStatus) ValuesAny() []any {
 }
 
 func (e DeliveryStatus) ValuesMeta() []EnumMetaValue {
-	return []EnumMetaValue{
-		EnumMetaValue{VarName: "DeliveryStatusRetry", Value: DeliveryStatusRetry, Description: nil},
-		EnumMetaValue{VarName: "DeliveryStatusSuccess", Value: DeliveryStatusSuccess, Description: nil},
-		EnumMetaValue{VarName: "DeliveryStatusFailed", Value: DeliveryStatusFailed, Description: nil},
-	}
+	return DeliveryStatusValuesMeta()
 }
 
 func (e DeliveryStatus) String() string {
@@ -144,6 +141,10 @@ func (e DeliveryStatus) VarName() string {
 		return d
 	}
 	return ""
+}
+
+func (e DeliveryStatus) Meta() EnumMetaValue {
+	return EnumMetaValue{VarName: e.VarName(), Value: e, Description: nil}
 }
 
 func ParseDeliveryStatus(vv string) (DeliveryStatus, bool) {
@@ -161,9 +162,9 @@ func DeliveryStatusValues() []DeliveryStatus {
 
 func DeliveryStatusValuesMeta() []EnumMetaValue {
 	return []EnumMetaValue{
-		EnumMetaValue{VarName: "DeliveryStatusRetry", Value: DeliveryStatusRetry, Description: nil},
-		EnumMetaValue{VarName: "DeliveryStatusSuccess", Value: DeliveryStatusSuccess, Description: nil},
-		EnumMetaValue{VarName: "DeliveryStatusFailed", Value: DeliveryStatusFailed, Description: nil},
+		DeliveryStatusRetry.Meta(),
+		DeliveryStatusSuccess.Meta(),
+		DeliveryStatusFailed.Meta(),
 	}
 }
 
@@ -208,12 +209,7 @@ func (e TokenPerm) ValuesAny() []any {
 }
 
 func (e TokenPerm) ValuesMeta() []EnumMetaValue {
-	return []EnumMetaValue{
-		EnumMetaValue{VarName: "PermAdmin", Value: PermAdmin, Description: langext.Ptr("Edit userdata (+ includes all other permissions)")},
-		EnumMetaValue{VarName: "PermChannelRead", Value: PermChannelRead, Description: langext.Ptr("Read messages")},
-		EnumMetaValue{VarName: "PermChannelSend", Value: PermChannelSend, Description: langext.Ptr("Send messages")},
-		EnumMetaValue{VarName: "PermUserRead", Value: PermUserRead, Description: langext.Ptr("Read userdata")},
-	}
+	return TokenPermValuesMeta()
 }
 
 func (e TokenPerm) String() string {
@@ -234,6 +230,10 @@ func (e TokenPerm) VarName() string {
 	return ""
 }
 
+func (e TokenPerm) Meta() EnumMetaValue {
+	return EnumMetaValue{VarName: e.VarName(), Value: e, Description: langext.Ptr(e.Description())}
+}
+
 func ParseTokenPerm(vv string) (TokenPerm, bool) {
 	for _, ev := range __TokenPermValues {
 		if string(ev) == vv {
@@ -249,9 +249,9 @@ func TokenPermValues() []TokenPerm {
 
 func TokenPermValuesMeta() []EnumMetaValue {
 	return []EnumMetaValue{
-		EnumMetaValue{VarName: "PermAdmin", Value: PermAdmin, Description: langext.Ptr("Edit userdata (+ includes all other permissions)")},
-		EnumMetaValue{VarName: "PermChannelRead", Value: PermChannelRead, Description: langext.Ptr("Read messages")},
-		EnumMetaValue{VarName: "PermChannelSend", Value: PermChannelSend, Description: langext.Ptr("Send messages")},
-		EnumMetaValue{VarName: "PermUserRead", Value: PermUserRead, Description: langext.Ptr("Read userdata")},
+		PermAdmin.Meta(),
+		PermChannelRead.Meta(),
+		PermChannelSend.Meta(),
+		PermUserRead.Meta(),
 	}
 }

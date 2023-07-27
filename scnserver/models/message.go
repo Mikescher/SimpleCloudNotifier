@@ -14,8 +14,7 @@ const (
 
 type Message struct {
 	MessageID           MessageID
-	SenderUserID        UserID // user that sent the message
-	OwnerUserID         UserID // oner of the message (= owner of the channel that contains it)
+	SenderUserID        UserID // user that sent the message (this is also the owner of the channel that contains it)
 	ChannelInternalName string
 	ChannelID           ChannelID
 	SenderName          *string
@@ -34,7 +33,6 @@ func (m Message) FullJSON() MessageJSON {
 	return MessageJSON{
 		MessageID:           m.MessageID,
 		SenderUserID:        m.SenderUserID,
-		OwnerUserID:         m.OwnerUserID,
 		ChannelInternalName: m.ChannelInternalName,
 		ChannelID:           m.ChannelID,
 		SenderName:          m.SenderName,
@@ -53,7 +51,6 @@ func (m Message) TrimmedJSON() MessageJSON {
 	return MessageJSON{
 		MessageID:           m.MessageID,
 		SenderUserID:        m.SenderUserID,
-		OwnerUserID:         m.OwnerUserID,
 		ChannelInternalName: m.ChannelInternalName,
 		ChannelID:           m.ChannelID,
 		SenderName:          m.SenderName,
@@ -99,7 +96,6 @@ func (m Message) ShortContent() string {
 type MessageJSON struct {
 	MessageID           MessageID  `json:"message_id"`
 	SenderUserID        UserID     `json:"sender_user_id"`
-	OwnerUserID         UserID     `json:"owner_user_id"`
 	ChannelInternalName string     `json:"channel_internal_name"`
 	ChannelID           ChannelID  `json:"channel_id"`
 	SenderName          *string    `json:"sender_name"`
@@ -116,7 +112,6 @@ type MessageJSON struct {
 type MessageDB struct {
 	MessageID           MessageID  `db:"message_id"`
 	SenderUserID        UserID     `db:"sender_user_id"`
-	OwnerUserID         UserID     `db:"owner_user_id"`
 	ChannelInternalName string     `db:"channel_internal_name"`
 	ChannelID           ChannelID  `db:"channel_id"`
 	SenderName          *string    `db:"sender_name"`
@@ -135,7 +130,6 @@ func (m MessageDB) Model() Message {
 	return Message{
 		MessageID:           m.MessageID,
 		SenderUserID:        m.SenderUserID,
-		OwnerUserID:         m.OwnerUserID,
 		ChannelInternalName: m.ChannelInternalName,
 		ChannelID:           m.ChannelID,
 		SenderName:          m.SenderName,

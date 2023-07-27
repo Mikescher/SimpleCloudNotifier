@@ -1,13 +1,14 @@
 package primary
 
 import (
+	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"errors"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 )
 
-func (db *Database) CreateCompatID(ctx TxContext, idtype string, newid string) (int64, error) {
+func (db *Database) CreateCompatID(ctx db.TxContext, idtype string, newid string) (int64, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return 0, err
@@ -42,7 +43,7 @@ func (db *Database) CreateCompatID(ctx TxContext, idtype string, newid string) (
 	return oldid, nil
 }
 
-func (db *Database) ConvertCompatID(ctx TxContext, oldid int64, idtype string) (*string, error) {
+func (db *Database) ConvertCompatID(ctx db.TxContext, oldid int64, idtype string) (*string, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
@@ -72,7 +73,7 @@ func (db *Database) ConvertCompatID(ctx TxContext, oldid int64, idtype string) (
 	return &newid, nil
 }
 
-func (db *Database) ConvertToCompatID(ctx TxContext, newid string) (*int64, *string, error) {
+func (db *Database) ConvertToCompatID(ctx db.TxContext, newid string) (*int64, *string, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, nil, err
@@ -100,7 +101,7 @@ func (db *Database) ConvertToCompatID(ctx TxContext, newid string) (*int64, *str
 	return &oldid, &idtype, nil
 }
 
-func (db *Database) ConvertToCompatIDOrCreate(ctx TxContext, idtype string, newid string) (int64, error) {
+func (db *Database) ConvertToCompatIDOrCreate(ctx db.TxContext, idtype string, newid string) (int64, error) {
 	id1, _, err := db.ConvertToCompatID(ctx, newid)
 	if err != nil {
 		return 0, err
@@ -116,7 +117,7 @@ func (db *Database) ConvertToCompatIDOrCreate(ctx TxContext, idtype string, newi
 	return id2, nil
 }
 
-func (db *Database) GetAck(ctx TxContext, msgid models.MessageID) (bool, error) {
+func (db *Database) GetAck(ctx db.TxContext, msgid models.MessageID) (bool, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return false, err
@@ -139,7 +140,7 @@ func (db *Database) GetAck(ctx TxContext, msgid models.MessageID) (bool, error) 
 	return res, nil
 }
 
-func (db *Database) SetAck(ctx TxContext, userid models.UserID, msgid models.MessageID) error {
+func (db *Database) SetAck(ctx db.TxContext, userid models.UserID, msgid models.MessageID) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -156,7 +157,7 @@ func (db *Database) SetAck(ctx TxContext, userid models.UserID, msgid models.Mes
 	return nil
 }
 
-func (db *Database) IsCompatClient(ctx TxContext, clientid models.ClientID) (bool, error) {
+func (db *Database) IsCompatClient(ctx db.TxContext, clientid models.ClientID) (bool, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return false, err

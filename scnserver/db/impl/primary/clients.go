@@ -1,12 +1,13 @@
 package primary
 
 import (
+	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
 
-func (db *Database) CreateClient(ctx TxContext, userid models.UserID, ctype models.ClientType, fcmToken string, agentModel string, agentVersion string) (models.Client, error) {
+func (db *Database) CreateClient(ctx db.TxContext, userid models.UserID, ctype models.ClientType, fcmToken string, agentModel string, agentVersion string) (models.Client, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Client{}, err
@@ -30,7 +31,7 @@ func (db *Database) CreateClient(ctx TxContext, userid models.UserID, ctype mode
 	return entity.Model(), nil
 }
 
-func (db *Database) ClearFCMTokens(ctx TxContext, fcmtoken string) error {
+func (db *Database) ClearFCMTokens(ctx db.TxContext, fcmtoken string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -44,7 +45,7 @@ func (db *Database) ClearFCMTokens(ctx TxContext, fcmtoken string) error {
 	return nil
 }
 
-func (db *Database) ListClients(ctx TxContext, userid models.UserID) ([]models.Client, error) {
+func (db *Database) ListClients(ctx db.TxContext, userid models.UserID) ([]models.Client, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
@@ -63,7 +64,7 @@ func (db *Database) ListClients(ctx TxContext, userid models.UserID) ([]models.C
 	return data, nil
 }
 
-func (db *Database) GetClient(ctx TxContext, userid models.UserID, clientid models.ClientID) (models.Client, error) {
+func (db *Database) GetClient(ctx db.TxContext, userid models.UserID, clientid models.ClientID) (models.Client, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Client{}, err
@@ -85,7 +86,7 @@ func (db *Database) GetClient(ctx TxContext, userid models.UserID, clientid mode
 	return client, nil
 }
 
-func (db *Database) DeleteClient(ctx TxContext, clientid models.ClientID) error {
+func (db *Database) DeleteClient(ctx db.TxContext, clientid models.ClientID) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -99,7 +100,7 @@ func (db *Database) DeleteClient(ctx TxContext, clientid models.ClientID) error 
 	return nil
 }
 
-func (db *Database) DeleteClientsByFCM(ctx TxContext, fcmtoken string) error {
+func (db *Database) DeleteClientsByFCM(ctx db.TxContext, fcmtoken string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -113,7 +114,7 @@ func (db *Database) DeleteClientsByFCM(ctx TxContext, fcmtoken string) error {
 	return nil
 }
 
-func (db *Database) UpdateClientFCMToken(ctx TxContext, clientid models.ClientID, fcmtoken string) error {
+func (db *Database) UpdateClientFCMToken(ctx db.TxContext, clientid models.ClientID, fcmtoken string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -130,7 +131,7 @@ func (db *Database) UpdateClientFCMToken(ctx TxContext, clientid models.ClientID
 	return nil
 }
 
-func (db *Database) UpdateClientAgentModel(ctx TxContext, clientid models.ClientID, agentModel string) error {
+func (db *Database) UpdateClientAgentModel(ctx db.TxContext, clientid models.ClientID, agentModel string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -147,7 +148,7 @@ func (db *Database) UpdateClientAgentModel(ctx TxContext, clientid models.Client
 	return nil
 }
 
-func (db *Database) UpdateClientAgentVersion(ctx TxContext, clientid models.ClientID, agentVersion string) error {
+func (db *Database) UpdateClientAgentVersion(ctx db.TxContext, clientid models.ClientID, agentVersion string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err

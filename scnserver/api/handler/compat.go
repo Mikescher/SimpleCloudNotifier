@@ -311,7 +311,7 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	filter := models.MessageFilter{
-		Owner:              langext.Ptr([]models.UserID{user.UserID}),
+		Sender:             langext.Ptr([]models.UserID{user.UserID}),
 		CompatAcknowledged: langext.Ptr(false),
 	}
 
@@ -516,7 +516,7 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	filter := models.MessageFilter{
-		Owner:              langext.Ptr([]models.UserID{user.UserID}),
+		Sender:             langext.Ptr([]models.UserID{user.UserID}),
 		CompatAcknowledged: langext.Ptr(false),
 	}
 

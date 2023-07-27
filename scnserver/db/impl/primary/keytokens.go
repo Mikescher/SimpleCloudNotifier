@@ -1,6 +1,7 @@
 package primary
 
 import (
+	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
@@ -9,7 +10,7 @@ import (
 	"time"
 )
 
-func (db *Database) CreateKeyToken(ctx TxContext, name string, owner models.UserID, allChannels bool, channels []models.ChannelID, permissions models.TokenPermissionList, token string) (models.KeyToken, error) {
+func (db *Database) CreateKeyToken(ctx db.TxContext, name string, owner models.UserID, allChannels bool, channels []models.ChannelID, permissions models.TokenPermissionList, token string) (models.KeyToken, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.KeyToken{}, err
@@ -36,7 +37,7 @@ func (db *Database) CreateKeyToken(ctx TxContext, name string, owner models.User
 	return entity.Model(), nil
 }
 
-func (db *Database) ListKeyTokens(ctx TxContext, ownerID models.UserID) ([]models.KeyToken, error) {
+func (db *Database) ListKeyTokens(ctx db.TxContext, ownerID models.UserID) ([]models.KeyToken, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
@@ -55,7 +56,7 @@ func (db *Database) ListKeyTokens(ctx TxContext, ownerID models.UserID) ([]model
 	return data, nil
 }
 
-func (db *Database) GetKeyToken(ctx TxContext, userid models.UserID, keyTokenid models.KeyTokenID) (models.KeyToken, error) {
+func (db *Database) GetKeyToken(ctx db.TxContext, userid models.UserID, keyTokenid models.KeyTokenID) (models.KeyToken, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.KeyToken{}, err
@@ -77,7 +78,7 @@ func (db *Database) GetKeyToken(ctx TxContext, userid models.UserID, keyTokenid 
 	return keyToken, nil
 }
 
-func (db *Database) GetKeyTokenByToken(ctx TxContext, key string) (*models.KeyToken, error) {
+func (db *Database) GetKeyTokenByToken(ctx db.TxContext, key string) (*models.KeyToken, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
@@ -99,7 +100,7 @@ func (db *Database) GetKeyTokenByToken(ctx TxContext, key string) (*models.KeyTo
 	return &user, nil
 }
 
-func (db *Database) DeleteKeyToken(ctx TxContext, keyTokenid models.KeyTokenID) error {
+func (db *Database) DeleteKeyToken(ctx db.TxContext, keyTokenid models.KeyTokenID) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -113,7 +114,7 @@ func (db *Database) DeleteKeyToken(ctx TxContext, keyTokenid models.KeyTokenID) 
 	return nil
 }
 
-func (db *Database) UpdateKeyTokenName(ctx TxContext, keyTokenid models.KeyTokenID, name string) error {
+func (db *Database) UpdateKeyTokenName(ctx db.TxContext, keyTokenid models.KeyTokenID, name string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -130,7 +131,7 @@ func (db *Database) UpdateKeyTokenName(ctx TxContext, keyTokenid models.KeyToken
 	return nil
 }
 
-func (db *Database) UpdateKeyTokenPermissions(ctx TxContext, keyTokenid models.KeyTokenID, perm models.TokenPermissionList) error {
+func (db *Database) UpdateKeyTokenPermissions(ctx db.TxContext, keyTokenid models.KeyTokenID, perm models.TokenPermissionList) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -147,7 +148,7 @@ func (db *Database) UpdateKeyTokenPermissions(ctx TxContext, keyTokenid models.K
 	return nil
 }
 
-func (db *Database) UpdateKeyTokenAllChannels(ctx TxContext, keyTokenid models.KeyTokenID, allChannels bool) error {
+func (db *Database) UpdateKeyTokenAllChannels(ctx db.TxContext, keyTokenid models.KeyTokenID, allChannels bool) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -164,7 +165,7 @@ func (db *Database) UpdateKeyTokenAllChannels(ctx TxContext, keyTokenid models.K
 	return nil
 }
 
-func (db *Database) UpdateKeyTokenChannels(ctx TxContext, keyTokenid models.KeyTokenID, channels []models.ChannelID) error {
+func (db *Database) UpdateKeyTokenChannels(ctx db.TxContext, keyTokenid models.KeyTokenID, channels []models.ChannelID) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -181,7 +182,7 @@ func (db *Database) UpdateKeyTokenChannels(ctx TxContext, keyTokenid models.KeyT
 	return nil
 }
 
-func (db *Database) IncKeyTokenMessageCounter(ctx TxContext, keyToken *models.KeyToken) error {
+func (db *Database) IncKeyTokenMessageCounter(ctx db.TxContext, keyToken *models.KeyToken) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err
@@ -203,7 +204,7 @@ func (db *Database) IncKeyTokenMessageCounter(ctx TxContext, keyToken *models.Ke
 	return nil
 }
 
-func (db *Database) UpdateKeyTokenLastUsed(ctx TxContext, keyTokenid models.KeyTokenID) error {
+func (db *Database) UpdateKeyTokenLastUsed(ctx db.TxContext, keyTokenid models.KeyTokenID) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return err

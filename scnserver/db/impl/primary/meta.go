@@ -1,15 +1,19 @@
 package primary
 
 import (
-	"context"
+	"blackforestbytes.com/simplecloudnotifier/db"
 	"errors"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 )
 
-func (db *Database) ReadSchema(ctx context.Context) (retval int, reterr error) {
+func (db *Database) ReadSchema(ctx db.TxContext) (retval int, reterr error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return 0, err
+	}
 
-	r1, err := db.db.Query(ctx, "SELECT name FROM sqlite_master WHERE type = :typ AND name = :name", sq.PP{"typ": "table", "name": "meta"})
+	r1, err := tx.Query(ctx, "SELECT name FROM sqlite_master WHERE type = :typ AND name = :name", sq.PP{"typ": "table", "name": "meta"})
 	if err != nil {
 		return 0, err
 	}
@@ -31,7 +35,7 @@ func (db *Database) ReadSchema(ctx context.Context) (retval int, reterr error) {
 		return 0, err
 	}
 
-	r2, err := db.db.Query(ctx, "SELECT value_int FROM meta WHERE meta_key = :key", sq.PP{"key": "schema"})
+	r2, err := tx.Query(ctx, "SELECT value_int FROM meta WHERE meta_key = :key", sq.PP{"key": "schema"})
 	if err != nil {
 		return 0, err
 	}
@@ -62,8 +66,13 @@ func (db *Database) ReadSchema(ctx context.Context) (retval int, reterr error) {
 	return dbschema, nil
 }
 
-func (db *Database) WriteMetaString(ctx context.Context, key string, value string) error {
-	_, err := db.db.Exec(ctx, "INSERT INTO meta (meta_key, value_txt) VALUES (:key, :val) ON CONFLICT(meta_key) DO UPDATE SET value_txt = :val", sq.PP{
+func (db *Database) WriteMetaString(ctx db.TxContext, key string, value string) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, "INSERT INTO meta (meta_key, value_txt) VALUES (:key, :val) ON CONFLICT(meta_key) DO UPDATE SET value_txt = :val", sq.PP{
 		"key": key,
 		"val": value,
 	})
@@ -73,8 +82,13 @@ func (db *Database) WriteMetaString(ctx context.Context, key string, value strin
 	return nil
 }
 
-func (db *Database) WriteMetaInt(ctx context.Context, key string, value int64) error {
-	_, err := db.db.Exec(ctx, "INSERT INTO meta (meta_key, value_int) VALUES (:key, :val) ON CONFLICT(meta_key) DO UPDATE SET value_int = :val", sq.PP{
+func (db *Database) WriteMetaInt(ctx db.TxContext, key string, value int64) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, "INSERT INTO meta (meta_key, value_int) VALUES (:key, :val) ON CONFLICT(meta_key) DO UPDATE SET value_int = :val", sq.PP{
 		"key": key,
 		"val": value,
 	})
@@ -84,8 +98,13 @@ func (db *Database) WriteMetaInt(ctx context.Context, key string, value int64) e
 	return nil
 }
 
-func (db *Database) WriteMetaReal(ctx context.Context, key string, value float64) error {
-	_, err := db.db.Exec(ctx, "INSERT INTO meta (meta_key, value_real) VALUES (:key, :val) ON CONFLICT(meta_key) DO UPDATE SET value_real = :val", sq.PP{
+func (db *Database) WriteMetaReal(ctx db.TxContext, key string, value float64) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, "INSERT INTO meta (meta_key, value_real) VALUES (:key, :val) ON CONFLICT(meta_key) DO UPDATE SET value_real = :val", sq.PP{
 		"key": key,
 		"val": value,
 	})
@@ -95,8 +114,13 @@ func (db *Database) WriteMetaReal(ctx context.Context, key string, value float64
 	return nil
 }
 
-func (db *Database) WriteMetaBlob(ctx context.Context, key string, value []byte) error {
-	_, err := db.db.Exec(ctx, "INSERT INTO meta (meta_key, value_blob) VALUES (:key, :val) ON CONFLICT(meta_key) DO UPDATE SET value_blob = :val", sq.PP{
+func (db *Database) WriteMetaBlob(ctx db.TxContext, key string, value []byte) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, "INSERT INTO meta (meta_key, value_blob) VALUES (:key, :val) ON CONFLICT(meta_key) DO UPDATE SET value_blob = :val", sq.PP{
 		"key": key,
 		"val": value,
 	})
@@ -106,8 +130,13 @@ func (db *Database) WriteMetaBlob(ctx context.Context, key string, value []byte)
 	return nil
 }
 
-func (db *Database) ReadMetaString(ctx context.Context, key string) (retval *string, reterr error) {
-	r2, err := db.db.Query(ctx, "SELECT value_txt FROM meta WHERE meta_key = :key", sq.PP{"key": key})
+func (db *Database) ReadMetaString(ctx db.TxContext, key string) (retval *string, reterr error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return nil, err
+	}
+
+	r2, err := tx.Query(ctx, "SELECT value_txt FROM meta WHERE meta_key = :key", sq.PP{"key": key})
 	if err != nil {
 		return nil, err
 	}
@@ -137,8 +166,13 @@ func (db *Database) ReadMetaString(ctx context.Context, key string) (retval *str
 	return langext.Ptr(value), nil
 }
 
-func (db *Database) ReadMetaInt(ctx context.Context, key string) (retval *int64, reterr error) {
-	r2, err := db.db.Query(ctx, "SELECT value_int FROM meta WHERE meta_key = :key", sq.PP{"key": key})
+func (db *Database) ReadMetaInt(ctx db.TxContext, key string) (retval *int64, reterr error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return nil, err
+	}
+
+	r2, err := tx.Query(ctx, "SELECT value_int FROM meta WHERE meta_key = :key", sq.PP{"key": key})
 	if err != nil {
 		return nil, err
 	}
@@ -169,8 +203,13 @@ func (db *Database) ReadMetaInt(ctx context.Context, key string) (retval *int64,
 	return langext.Ptr(value), nil
 }
 
-func (db *Database) ReadMetaReal(ctx context.Context, key string) (retval *float64, reterr error) {
-	r2, err := db.db.Query(ctx, "SELECT value_real FROM meta WHERE meta_key = :key", sq.PP{"key": key})
+func (db *Database) ReadMetaReal(ctx db.TxContext, key string) (retval *float64, reterr error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return nil, err
+	}
+
+	r2, err := tx.Query(ctx, "SELECT value_real FROM meta WHERE meta_key = :key", sq.PP{"key": key})
 	if err != nil {
 		return nil, err
 	}
@@ -201,8 +240,13 @@ func (db *Database) ReadMetaReal(ctx context.Context, key string) (retval *float
 	return langext.Ptr(value), nil
 }
 
-func (db *Database) ReadMetaBlob(ctx context.Context, key string) (retval *[]byte, reterr error) {
-	r2, err := db.db.Query(ctx, "SELECT value_blob FROM meta WHERE meta_key = :key", sq.PP{"key": key})
+func (db *Database) ReadMetaBlob(ctx db.TxContext, key string) (retval *[]byte, reterr error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return nil, err
+	}
+
+	r2, err := tx.Query(ctx, "SELECT value_blob FROM meta WHERE meta_key = :key", sq.PP{"key": key})
 	if err != nil {
 		return nil, err
 	}
@@ -233,8 +277,13 @@ func (db *Database) ReadMetaBlob(ctx context.Context, key string) (retval *[]byt
 	return langext.Ptr(value), nil
 }
 
-func (db *Database) DeleteMeta(ctx context.Context, key string) error {
-	_, err := db.db.Exec(ctx, "DELETE FROM meta WHERE meta_key = :key", sq.PP{"key": key})
+func (db *Database) DeleteMeta(ctx db.TxContext, key string) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, "DELETE FROM meta WHERE meta_key = :key", sq.PP{"key": key})
 	if err != nil {
 		return err
 	}
