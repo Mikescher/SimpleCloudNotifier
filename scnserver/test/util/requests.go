@@ -150,7 +150,11 @@ func RequestAny[TResult any](t *testing.T, akey string, method string, baseURL s
 
 	TPrintln("")
 	TPrintf("----------------  RESPONSE (%d) ----------------\n", resp.StatusCode)
-	TPrintln(langext.TryPrettyPrintJson(string(respBodyBin)))
+	if len(respBodyBin) > 100_000 {
+		TPrintln("[[RESPONSE TOO LONG]]")
+	} else {
+		TPrintln(langext.TryPrettyPrintJson(string(respBodyBin)))
+	}
 	TryPrintTraceObj("----------------  --------  ----------------", respBodyBin, "")
 	TPrintln("----------------  --------  ----------------")
 	TPrintln("")

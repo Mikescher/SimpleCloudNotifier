@@ -165,14 +165,6 @@ func (app *Application) GenerateRandomAuthKey() string {
 	return scn.RandomAuthKey()
 }
 
-func (app *Application) QuotaMax(ispro bool) int {
-	if ispro {
-		return 1000
-	} else {
-		return 50
-	}
-}
-
 func (app *Application) VerifyProToken(ctx *AppContext, token string) (bool, error) {
 
 	if strings.HasPrefix(token, "ANDROID|v1|") {

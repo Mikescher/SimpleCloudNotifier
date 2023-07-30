@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/url"
+	"strings"
 	"testing"
 	"time"
 )
@@ -438,10 +439,13 @@ func TestSendLongContentPro(t *testing.T) {
 	uid := r0["user_id"].(string)
 	sendtok := r0["send_key"].(string)
 
+	str1k := strings.Repeat(".", 1000)
+	str100k := strings.Repeat(":", 100_000)
+
 	{
 		longContent := ""
 		for i := 0; i < 400; i++ {
-			longContent += "123456789\n" // 10 * 400 = 4_000 (max = 16_384)
+			longContent += "123456789\n" // 10 * 400 = 4_000 (max = 2_097_152)
 		}
 
 		tt.RequestPost[tt.Void](t, baseUrl, "/", gin.H{
@@ -455,7 +459,7 @@ func TestSendLongContentPro(t *testing.T) {
 	{
 		longContent := ""
 		for i := 0; i < 800; i++ {
-			longContent += "123456789\n" // 10 * 800 = 8_000 (max = 16_384)
+			longContent += "123456789\n" // 10 * 800 = 8_000 (max = 2_097_152)
 		}
 
 		tt.RequestPost[tt.Void](t, baseUrl, "/", gin.H{
@@ -469,8 +473,8 @@ func TestSendLongContentPro(t *testing.T) {
 
 	{
 		longContent := ""
-		for i := 0; i < 1600; i++ {
-			longContent += "123456789\n" // 10 * 1600 = 16_000 (max = 16_384)
+		for i := 0; i < 16; i++ {
+			longContent += str1k // 16 * 1000 = 16_000 (max = 2_097_152)
 		}
 
 		tt.RequestPost[tt.Void](t, baseUrl, "/", gin.H{
@@ -483,22 +487,8 @@ func TestSendLongContentPro(t *testing.T) {
 
 	{
 		longContent := ""
-		for i := 0; i < 1630; i++ {
-			longContent += "123456789\n" // 10 * 1630 = 163_000 (max = 16_384)
-		}
-
-		tt.RequestPost[tt.Void](t, baseUrl, "/", gin.H{
-			"key":     sendtok,
-			"user_id": uid,
-			"title":   "HelloWorld_042",
-			"content": longContent,
-		})
-	}
-
-	{
-		longContent := ""
-		for i := 0; i < 1640; i++ {
-			longContent += "123456789\n" // 10 * 1640 = 164_000 (max = 16_384)
+		for i := 0; i < 21; i++ {
+			longContent += str100k // 21 * 200_000 = 2_100_000 (max = 2_097_152)
 		}
 
 		tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
@@ -1276,8 +1266,8 @@ func TestQuotaExceededPro(t *testing.T) {
 	sendtok := r0["send_key"].(string)
 
 	tt.AssertStrRepEqual(t, "quota.0", 0, r0["quota_used"])
-	tt.AssertStrRepEqual(t, "quota.0", 1000, r0["quota_max"])
-	tt.AssertStrRepEqual(t, "quota.0", 1000, r0["quota_remaining"])
+	tt.AssertStrRepEqual(t, "quota.0", 5000, r0["quota_max"])
+	tt.AssertStrRepEqual(t, "quota.0", 5000, r0["quota_remaining"])
 
 	{
 		msg1 := tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
@@ -1286,18 +1276,18 @@ func TestQuotaExceededPro(t *testing.T) {
 			"title":   tt.ShortLipsum0(2),
 		})
 		tt.AssertStrRepEqual(t, "quota.msg.1", 1, msg1["quota"])
-		tt.AssertStrRepEqual(t, "quota.msg.1", 1000, msg1["quota_max"])
+		tt.AssertStrRepEqual(t, "quota.msg.1", 5000, msg1["quota_max"])
 	}
 
 	{
 		usr := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s", uid))
 
 		tt.AssertStrRepEqual(t, "quota.1", 1, usr["quota_used"])
-		tt.AssertStrRepEqual(t, "quota.1", 1000, usr["quota_max"])
-		tt.AssertStrRepEqual(t, "quota.1", 999, usr["quota_remaining"])
+		tt.AssertStrRepEqual(t, "quota.1", 5000, usr["quota_max"])
+		tt.AssertStrRepEqual(t, "quota.1", 4999, usr["quota_remaining"])
 	}
 
-	for i := 0; i < 998; i++ {
+	for i := 0; i < 4998; i++ {
 
 		tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
 			"key":     sendtok,
@@ -1309,8 +1299,8 @@ func TestQuotaExceededPro(t *testing.T) {
 	{
 		usr := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s", uid))
 
-		tt.AssertStrRepEqual(t, "quota.999", 999, usr["quota_used"])
-		tt.AssertStrRepEqual(t, "quota.999", 1000, usr["quota_max"])
+		tt.AssertStrRepEqual(t, "quota.999", 4999, usr["quota_used"])
+		tt.AssertStrRepEqual(t, "quota.999", 5000, usr["quota_max"])
 		tt.AssertStrRepEqual(t, "quota.999", 1, usr["quota_remaining"])
 	}
 
@@ -1319,15 +1309,15 @@ func TestQuotaExceededPro(t *testing.T) {
 		"user_id": uid,
 		"title":   tt.ShortLipsum0(2),
 	})
-	tt.AssertStrRepEqual(t, "quota.msg.1000", 1000, msg50["quota"])
-	tt.AssertStrRepEqual(t, "quota.msg.1000", 1000, msg50["quota_max"])
+	tt.AssertStrRepEqual(t, "quota.msg.5000", 5000, msg50["quota"])
+	tt.AssertStrRepEqual(t, "quota.msg.5000", 5000, msg50["quota_max"])
 
 	{
 		usr := tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s", uid))
 
-		tt.AssertStrRepEqual(t, "quota.1000", 1000, usr["quota_used"])
-		tt.AssertStrRepEqual(t, "quota.1000", 1000, usr["quota_max"])
-		tt.AssertStrRepEqual(t, "quota.1000", 0, usr["quota_remaining"])
+		tt.AssertStrRepEqual(t, "quota.5000", 5000, usr["quota_used"])
+		tt.AssertStrRepEqual(t, "quota.5000", 5000, usr["quota_max"])
+		tt.AssertStrRepEqual(t, "quota.5000", 0, usr["quota_remaining"])
 	}
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{

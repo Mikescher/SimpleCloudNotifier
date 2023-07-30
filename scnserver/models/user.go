@@ -49,9 +49,9 @@ func (u User) JSONWithClients(clients []Client, ak string, sk string, rk string)
 
 func (u User) MaxContentLength() int {
 	if u.IsPro {
-		return 16384
+		return 2 * 1024 * 1024 // 2 MB
 	} else {
-		return 2048
+		return 2 * 1024 // 2 KB
 	}
 }
 
@@ -61,7 +61,7 @@ func (u User) MaxTitleLength() int {
 
 func (u User) QuotaPerDay() int {
 	if u.IsPro {
-		return 1000
+		return 5000
 	} else {
 		return 50
 	}

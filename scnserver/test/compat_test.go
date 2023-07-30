@@ -321,7 +321,7 @@ func TestCompatRegisterPro(t *testing.T) {
 	tt.AssertEqual(t, "success", true, r0["success"])
 	tt.AssertEqual(t, "message", "New user registered", r0["message"])
 	tt.AssertEqual(t, "quota", 0, r0["quota"])
-	tt.AssertEqual(t, "quota_max", 1000, r0["quota_max"])
+	tt.AssertEqual(t, "quota_max", 5000, r0["quota_max"])
 	tt.AssertEqual(t, "is_pro", true, r0["is_pro"])
 
 	r1 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/register.php?fcm_token=%s&pro=%s&pro_token=%s", "DUMMY_FCM", "true", url.QueryEscape("INVALID")))
@@ -555,7 +555,7 @@ func TestCompatUpgrade(t *testing.T) {
 	tt.AssertEqual(t, "success", true, r1["success"])
 	tt.AssertEqual(t, "message", "user updated", r1["message"])
 	tt.AssertEqual(t, "quota", 0, r1["quota"])
-	tt.AssertEqual(t, "quota_max", 1000, r1["quota_max"])
+	tt.AssertEqual(t, "quota_max", 5000, r1["quota_max"])
 	tt.AssertEqual(t, "is_pro", true, r1["is_pro"])
 }
 
