@@ -428,3 +428,70 @@ func TestUserMessageCounter(t *testing.T) {
 
 	assertCounter(5)
 }
+
+func TestGetUserNoPro(t *testing.T) {
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
+		"no_client": true,
+	})
+
+	uid := fmt.Sprintf("%v", r0["user_id"])
+	readtok := r0["read_key"].(string)
+
+	r1 := tt.RequestAuthGet[gin.H](t, readtok, baseUrl, "/api/v2/users/"+uid)
+
+	tt.AssertEqual(t, "user_id", uid, fmt.Sprintf("%v", r1["user_id"]))
+	tt.AssertEqual(t, "username", nil, r1["username"])
+	tt.AssertNotEqual(t, "timestamp_created", nil, r1["timestamp_created"])
+	tt.AssertEqual(t, "timestamp_lastread", nil, r1["timestamp_lastread"])
+	tt.AssertEqual(t, "timestamp_lastsent", nil, r1["timestamp_lastsent"])
+	tt.AssertEqual(t, "messages_sent", "0", fmt.Sprintf("%v", r1["messages_sent"]))
+	tt.AssertEqual(t, "quota_used", "0", fmt.Sprintf("%v", r1["quota_used"]))
+	tt.AssertEqual(t, "quota_remaining", "50", fmt.Sprintf("%v", r1["quota_remaining"]))
+	tt.AssertEqual(t, "quota_max", "50", fmt.Sprintf("%v", r1["quota_max"]))
+	tt.AssertEqual(t, "is_pro", "false", fmt.Sprintf("%v", r1["is_pro"]))
+	tt.AssertEqual(t, "default_channel", "main", fmt.Sprintf("%v", r1["default_channel"]))
+	tt.AssertEqual(t, "max_body_size", "2048", fmt.Sprintf("%v", r1["max_body_size"]))
+	tt.AssertEqual(t, "max_title_length", "120", fmt.Sprintf("%v", r1["max_title_length"]))
+	tt.AssertEqual(t, "default_priority", "1", fmt.Sprintf("%v", r1["default_priority"]))
+	tt.AssertEqual(t, "max_channel_name_length", "120", fmt.Sprintf("%v", r1["max_channel_name_length"]))
+	tt.AssertEqual(t, "max_channel_description_length", "300", fmt.Sprintf("%v", r1["max_channel_description_length"]))
+	tt.AssertEqual(t, "max_sender_name_length", "120", fmt.Sprintf("%v", r1["max_sender_name_length"]))
+	tt.AssertEqual(t, "max_user_message_id_length", "64", fmt.Sprintf("%v", r1["max_user_message_id_length"]))
+}
+
+func TestGetUserPro(t *testing.T) {
+	_, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
+		"no_client": true,
+		"pro_token": "ANDROID|v2|PURCHASED:DUMMY_TOK_XX",
+	})
+
+	uid := fmt.Sprintf("%v", r0["user_id"])
+	readtok := r0["read_key"].(string)
+
+	r1 := tt.RequestAuthGet[gin.H](t, readtok, baseUrl, "/api/v2/users/"+uid)
+
+	tt.AssertEqual(t, "user_id", uid, fmt.Sprintf("%v", r1["user_id"]))
+	tt.AssertEqual(t, "username", nil, r1["username"])
+	tt.AssertNotEqual(t, "timestamp_created", nil, r1["timestamp_created"])
+	tt.AssertEqual(t, "timestamp_lastread", nil, r1["timestamp_lastread"])
+	tt.AssertEqual(t, "timestamp_lastsent", nil, r1["timestamp_lastsent"])
+	tt.AssertEqual(t, "messages_sent", "0", fmt.Sprintf("%v", r1["messages_sent"]))
+	tt.AssertEqual(t, "quota_used", "0", fmt.Sprintf("%v", r1["quota_used"]))
+	tt.AssertEqual(t, "quota_remaining", "5000", fmt.Sprintf("%v", r1["quota_remaining"]))
+	tt.AssertEqual(t, "quota_max", "5000", fmt.Sprintf("%v", r1["quota_max"]))
+	tt.AssertEqual(t, "is_pro", "true", fmt.Sprintf("%v", r1["is_pro"]))
+	tt.AssertEqual(t, "default_channel", "main", fmt.Sprintf("%v", r1["default_channel"]))
+	tt.AssertEqual(t, "max_body_size", "2097152", fmt.Sprintf("%d", (int64)(r1["max_body_size"].(float64))))
+	tt.AssertEqual(t, "max_title_length", "120", fmt.Sprintf("%v", r1["max_title_length"]))
+	tt.AssertEqual(t, "default_priority", "1", fmt.Sprintf("%v", r1["default_priority"]))
+	tt.AssertEqual(t, "max_channel_name_length", "120", fmt.Sprintf("%v", r1["max_channel_name_length"]))
+	tt.AssertEqual(t, "max_channel_description_length", "300", fmt.Sprintf("%v", r1["max_channel_description_length"]))
+	tt.AssertEqual(t, "max_sender_name_length", "120", fmt.Sprintf("%v", r1["max_sender_name_length"]))
+	tt.AssertEqual(t, "max_user_message_id_length", "64", fmt.Sprintf("%v", r1["max_user_message_id_length"]))
+}

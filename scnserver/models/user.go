@@ -23,17 +23,24 @@ type User struct {
 
 func (u User) JSON() UserJSON {
 	return UserJSON{
-		UserID:            u.UserID,
-		Username:          u.Username,
-		TimestampCreated:  u.TimestampCreated.Format(time.RFC3339Nano),
-		TimestampLastRead: timeOptFmt(u.TimestampLastRead, time.RFC3339Nano),
-		TimestampLastSent: timeOptFmt(u.TimestampLastSent, time.RFC3339Nano),
-		MessagesSent:      u.MessagesSent,
-		QuotaUsed:         u.QuotaUsedToday(),
-		QuotaPerDay:       u.QuotaPerDay(),
-		QuotaRemaining:    u.QuotaRemainingToday(),
-		IsPro:             u.IsPro,
-		DefaultChannel:    u.DefaultChannel(),
+		UserID:                      u.UserID,
+		Username:                    u.Username,
+		TimestampCreated:            u.TimestampCreated.Format(time.RFC3339Nano),
+		TimestampLastRead:           timeOptFmt(u.TimestampLastRead, time.RFC3339Nano),
+		TimestampLastSent:           timeOptFmt(u.TimestampLastSent, time.RFC3339Nano),
+		MessagesSent:                u.MessagesSent,
+		QuotaUsed:                   u.QuotaUsedToday(),
+		QuotaPerDay:                 u.QuotaPerDay(),
+		QuotaRemaining:              u.QuotaRemainingToday(),
+		IsPro:                       u.IsPro,
+		DefaultChannel:              u.DefaultChannel(),
+		MaxBodySize:                 u.MaxContentLength(),
+		MaxTitleLength:              u.MaxTitleLength(),
+		DefaultPriority:             u.DefaultPriority(),
+		MaxChannelNameLength:        u.MaxChannelNameLength(),
+		MaxChannelDescriptionLength: u.MaxChannelDescriptionLength(),
+		MaxSenderNameLength:         u.MaxSenderNameLength(),
+		MaxUserMessageIDLength:      u.MaxUserMessageIDLength(),
 	}
 }
 
@@ -92,15 +99,15 @@ func (u User) MaxChannelNameLength() int {
 	return 120
 }
 
-func (u User) MaxChannelDescriptionNameLength() int {
+func (u User) MaxChannelDescriptionLength() int {
 	return 300
 }
 
-func (u User) MaxSenderName() int {
+func (u User) MaxSenderNameLength() int {
 	return 120
 }
 
-func (u User) MaxUserMessageID() int {
+func (u User) MaxUserMessageIDLength() int {
 	return 64
 }
 
@@ -109,17 +116,24 @@ func (u User) MaxTimestampDiffHours() int {
 }
 
 type UserJSON struct {
-	UserID            UserID  `json:"user_id"`
-	Username          *string `json:"username"`
-	TimestampCreated  string  `json:"timestamp_created"`
-	TimestampLastRead *string `json:"timestamp_lastread"`
-	TimestampLastSent *string `json:"timestamp_lastsent"`
-	MessagesSent      int     `json:"messages_sent"`
-	QuotaUsed         int     `json:"quota_used"`
-	QuotaRemaining    int     `json:"quota_remaining"`
-	QuotaPerDay       int     `json:"quota_max"`
-	IsPro             bool    `json:"is_pro"`
-	DefaultChannel    string  `json:"default_channel"`
+	UserID                      UserID  `json:"user_id"`
+	Username                    *string `json:"username"`
+	TimestampCreated            string  `json:"timestamp_created"`
+	TimestampLastRead           *string `json:"timestamp_lastread"`
+	TimestampLastSent           *string `json:"timestamp_lastsent"`
+	MessagesSent                int     `json:"messages_sent"`
+	QuotaUsed                   int     `json:"quota_used"`
+	QuotaRemaining              int     `json:"quota_remaining"`
+	QuotaPerDay                 int     `json:"quota_max"`
+	IsPro                       bool    `json:"is_pro"`
+	DefaultChannel              string  `json:"default_channel"`
+	MaxBodySize                 int     `json:"max_body_size"`
+	MaxTitleLength              int     `json:"max_title_length"`
+	DefaultPriority             int     `json:"default_priority"`
+	MaxChannelNameLength        int     `json:"max_channel_name_length"`
+	MaxChannelDescriptionLength int     `json:"max_channel_description_length"`
+	MaxSenderNameLength         int     `json:"max_sender_name_length"`
+	MaxUserMessageIDLength      int     `json:"max_user_message_id_length"`
 }
 
 type UserJSONWithClientsAndKeys struct {

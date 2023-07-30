@@ -172,11 +172,11 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 	if len(strings.TrimSpace(channelInternalName)) == 0 {
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 400, apierr.CHANNEL_NAME_EMPTY, hl.CHANNEL, fmt.Sprintf("Channel internalname cannot be empty"), nil))
 	}
-	if SenderName != nil && len(*SenderName) > user.MaxSenderName() {
-		return nil, langext.Ptr(ginresp.SendAPIError(g, 400, apierr.SENDERNAME_TOO_LONG, hl.SENDER_NAME, fmt.Sprintf("SenderName too long (max %d characters)", user.MaxSenderName()), nil))
+	if SenderName != nil && len(*SenderName) > user.MaxSenderNameLength() {
+		return nil, langext.Ptr(ginresp.SendAPIError(g, 400, apierr.SENDERNAME_TOO_LONG, hl.SENDER_NAME, fmt.Sprintf("SenderName too long (max %d characters)", user.MaxSenderNameLength()), nil))
 	}
-	if UserMessageID != nil && len(*UserMessageID) > user.MaxUserMessageID() {
-		return nil, langext.Ptr(ginresp.SendAPIError(g, 400, apierr.USR_MSG_ID_TOO_LONG, hl.USER_MESSAGE_ID, fmt.Sprintf("MessageID too long (max %d characters)", user.MaxUserMessageID()), nil))
+	if UserMessageID != nil && len(*UserMessageID) > user.MaxUserMessageIDLength() {
+		return nil, langext.Ptr(ginresp.SendAPIError(g, 400, apierr.USR_MSG_ID_TOO_LONG, hl.USER_MESSAGE_ID, fmt.Sprintf("MessageID too long (max %d characters)", user.MaxUserMessageIDLength()), nil))
 	}
 	if SendTimestamp != nil && mathext.Abs(*SendTimestamp-float64(time.Now().Unix())) > timeext.FromHours(user.MaxTimestampDiffHours()).Seconds() {
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 400, apierr.TIMESTAMP_OUT_OF_RANGE, hl.NONE, fmt.Sprintf("The timestamp mus be within %d hours of now()", user.MaxTimestampDiffHours()), nil))

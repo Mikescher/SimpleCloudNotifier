@@ -349,8 +349,8 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 			descName = langext.Ptr(strings.TrimSpace(*b.DescriptionName))
 		}
 
-		if descName != nil && len(*descName) > user.MaxChannelDescriptionNameLength() {
-			return ginresp.APIError(g, 400, apierr.CHANNEL_DESCRIPTION_TOO_LONG, fmt.Sprintf("Channel-Description too long (max %d characters)", user.MaxChannelNameLength()), nil)
+		if descName != nil && len(*descName) > user.MaxChannelDescriptionLength() {
+			return ginresp.APIError(g, 400, apierr.CHANNEL_DESCRIPTION_TOO_LONG, fmt.Sprintf("Channel-Description too long (max %d characters)", user.MaxChannelDescriptionLength()), nil)
 		}
 
 		err := h.database.UpdateChannelDescriptionName(ctx, u.ChannelID, descName)
