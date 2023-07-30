@@ -13,6 +13,10 @@
  - increase max body size (smth like 2MB?)
    (also increase cronexec char limit)
 
+ - use goext.ginWrapper
+  
+ - use goext.exerr
+
 #### UNSURE
 
  - (?) default-priority for channels

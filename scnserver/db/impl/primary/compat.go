@@ -63,7 +63,7 @@ func (db *Database) ConvertCompatID(ctx db.TxContext, oldid int64, idtype string
 
 	var newid string
 	err = rows.Scan(&newid)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
 	if err != nil {
@@ -91,7 +91,7 @@ func (db *Database) ConvertToCompatID(ctx db.TxContext, newid string) (*int64, *
 	var oldid int64
 	var idtype string
 	err = rows.Scan(&oldid, &idtype)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil, nil
 	}
 	if err != nil {

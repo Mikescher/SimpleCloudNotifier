@@ -5,6 +5,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"net/http"
@@ -87,7 +88,7 @@ func (h APIHandler) GetClient(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	client, err := h.database.GetClient(ctx, u.UserID, u.ClientID)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 404, apierr.CLIENT_NOT_FOUND, "Client not found", err)
 	}
 	if err != nil {
@@ -192,7 +193,7 @@ func (h APIHandler) DeleteClient(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	client, err := h.database.GetClient(ctx, u.UserID, u.ClientID)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 404, apierr.CLIENT_NOT_FOUND, "Client not found", err)
 	}
 	if err != nil {
@@ -251,7 +252,7 @@ func (h APIHandler) UpdateClient(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	client, err := h.database.GetClient(ctx, u.UserID, u.ClientID)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 404, apierr.CLIENT_NOT_FOUND, "Client not found", err)
 	}
 	if err != nil {

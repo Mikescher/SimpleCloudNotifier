@@ -4,6 +4,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
+	"errors"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
@@ -23,7 +24,7 @@ func (db *Database) GetChannelByName(ctx db.TxContext, userid models.UserID, cha
 	}
 
 	channel, err := models.DecodeChannel(rows)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
 	if err != nil {
@@ -47,7 +48,7 @@ func (db *Database) GetChannelByID(ctx db.TxContext, chanid models.ChannelID) (*
 	}
 
 	channel, err := models.DecodeChannel(rows)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
 	if err != nil {

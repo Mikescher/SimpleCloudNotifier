@@ -510,7 +510,7 @@ func doUnsubscribe(t *testing.T, baseUrl string, user Userdat, chanOwner Userdat
 		Subscriptions []gin.H `json:"subscriptions"`
 	}
 
-	slist := RequestAuthGet[chanlist](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=outgoing_confirmed", user.UID))
+	slist := RequestAuthGet[chanlist](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=outgoing&confirmation=confirmed", user.UID))
 
 	var subdat gin.H
 	for _, v := range slist.Subscriptions {
@@ -530,7 +530,7 @@ func doAcceptSub(t *testing.T, baseUrl string, user Userdat, subscriber Userdat,
 		Subscriptions []gin.H `json:"subscriptions"`
 	}
 
-	slist := RequestAuthGet[chanlist](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=incoming_unconfirmed", user.UID))
+	slist := RequestAuthGet[chanlist](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=incoming&confirmation=unconfirmed", user.UID))
 
 	var subdat gin.H
 	for _, v := range slist.Subscriptions {

@@ -6,6 +6,7 @@ import (
 	ct "blackforestbytes.com/simplecloudnotifier/db/cursortoken"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/mathext"
@@ -191,7 +192,7 @@ func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	msg, err := h.database.GetMessage(ctx, u.MessageID, false)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 404, apierr.MESSAGE_NOT_FOUND, "message not found", err)
 	}
 	if err != nil {
@@ -259,7 +260,7 @@ func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	msg, err := h.database.GetMessage(ctx, u.MessageID, false)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 404, apierr.MESSAGE_NOT_FOUND, "message not found", err)
 	}
 	if err != nil {

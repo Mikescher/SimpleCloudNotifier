@@ -5,6 +5,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"net/http"
@@ -90,7 +91,7 @@ func (h APIHandler) GetUserKey(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	keytoken, err := h.database.GetKeyToken(ctx, u.UserID, u.KeyID)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
 	}
 	if err != nil {
@@ -143,7 +144,7 @@ func (h APIHandler) UpdateUserKey(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	keytoken, err := h.database.GetKeyToken(ctx, u.UserID, u.KeyID)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
 	}
 	if err != nil {
@@ -302,7 +303,7 @@ func (h APIHandler) DeleteUserKey(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	client, err := h.database.GetKeyToken(ctx, u.UserID, u.KeyID)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
 	}
 	if err != nil {

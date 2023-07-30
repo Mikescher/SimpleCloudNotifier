@@ -22,7 +22,7 @@ func (db *Database) GetMessageByUserMessageID(ctx db.TxContext, usrMsgId string)
 	}
 
 	msg, err := models.DecodeMessage(rows)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
 	if err != nil {

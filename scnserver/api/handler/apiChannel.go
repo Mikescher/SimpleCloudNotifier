@@ -6,6 +6,7 @@ import (
 	ct "blackforestbytes.com/simplecloudnotifier/db/cursortoken"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
@@ -146,7 +147,7 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	channel, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID, true)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
 	}
 	if err != nil {
@@ -206,7 +207,7 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	user, err := h.database.GetUser(ctx, u.UserID)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 400, apierr.USER_NOT_FOUND, "User not found", nil)
 	}
 	if err != nil {
@@ -298,7 +299,7 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	_, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID, true)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
 	}
 	if err != nil {
@@ -306,7 +307,7 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	user, err := h.database.GetUser(ctx, u.UserID)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 400, apierr.USER_NOT_FOUND, "User not found", nil)
 	}
 	if err != nil {
@@ -420,7 +421,7 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 	pageSize := mathext.Clamp(langext.Coalesce(q.PageSize, 64), 1, maxPageSize)
 
 	channel, err := h.database.GetChannel(ctx, u.ChannelUserID, u.ChannelID, false)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
 	}
 	if err != nil {

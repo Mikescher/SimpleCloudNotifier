@@ -2149,13 +2149,24 @@ paths:
   /api/v2/users/{uid}/subscriptions:
     get:
       description: |-
-        The possible values for 'selector' are:
-        - "outgoing_all"         All subscriptions (confirmed/unconfirmed) with the user as subscriber (= subscriptions he can use to read channels)
-        - "outgoing_confirmed"   Confirmed subscriptions with the user as subscriber
-        - "outgoing_unconfirmed" Unconfirmed (Pending) subscriptions with the user as subscriber
-        - "incoming_all"         All subscriptions (confirmed/unconfirmed) from other users to channels of this user (= incoming subscriptions and subscription requests)
-        - "incoming_confirmed"   Confirmed subscriptions from other users to channels of this user
-        - "incoming_unconfirmed" Unconfirmed subscriptions from other users to channels of this user (= requests)
+        The possible values for 'direction' are:
+        - "outgoing"       Subscriptions with the user as subscriber (= subscriptions he can use to read channels)
+        - "incoming"       Subscriptions to channels of this user (= incoming subscriptions and subscription requests)
+        - "both"           Combines "outgoing" and "incoming" (default)
+
+        The possible values for 'confirmation' are:
+        - "confirmed"      Confirmed (active) subscriptions
+        - "unconfirmed"    Unconfirmed (pending) subscriptions
+        - "all"            Combines "confirmed" and "unconfirmed" (default)
+
+        The possible values for 'external' are:
+        - "true"           Subscriptions with subscriber_user_id != channel_owner_user_id  (subscriptions from other users)
+        - "false"          Subscriptions with subscriber_user_id == channel_owner_user_id  (subscriptions from this user to his own channels)
+        - "all"            Combines "external" and "internal" (default)
+
+        The `subscriber_user_id` parameter can be used to additionally filter the subscriber_user_id (return subscribtions from a specific user)
+
+        The `channel_owner_user_id` parameter can be used to additionally filter the channel_owner_user_id (return subscribtions to a specific user)
       operationId: api-user-subscriptions-list
       parameters:
       - description: UserID

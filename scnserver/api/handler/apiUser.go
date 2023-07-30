@@ -5,6 +5,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -167,7 +168,7 @@ func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	user, err := h.database.GetUser(ctx, u.UserID)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 404, apierr.USER_NOT_FOUND, "User not found", err)
 	}
 	if err != nil {

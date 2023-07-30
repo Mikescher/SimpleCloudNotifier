@@ -9,6 +9,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/dataext"
@@ -287,7 +288,7 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.CompatAPIError(201, "User not found")
 	}
 	if err != nil {
@@ -295,7 +296,7 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 	if err != nil {
@@ -395,7 +396,7 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.CompatAPIError(201, "User not found")
 	}
 	if err != nil {
@@ -403,7 +404,7 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 	if err != nil {
@@ -497,7 +498,7 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.CompatAPIError(201, "User not found")
 	}
 	if err != nil {
@@ -505,7 +506,7 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 	if err != nil {
@@ -614,7 +615,7 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.CompatAPIError(201, "User not found")
 	}
 	if err != nil {
@@ -622,7 +623,7 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 	if err != nil {
@@ -744,7 +745,7 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.CompatAPIError(201, "User not found")
 	}
 	if err != nil {
@@ -752,7 +753,7 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 	if err != nil {
@@ -771,7 +772,7 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	msg, err := h.database.GetMessage(ctx, models.MessageID(*messageCompNew), false)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.CompatAPIError(301, "Message not found")
 	}
 	if err != nil {
@@ -863,7 +864,7 @@ func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.CompatAPIError(201, "User not found")
 	}
 	if err != nil {
@@ -871,7 +872,7 @@ func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 	if err != nil {

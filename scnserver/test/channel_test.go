@@ -687,40 +687,40 @@ func TestListChannelSubscriptions(t *testing.T) {
 	}
 
 	countBoth := func(oa1, oc1, ou1, ia1, ic1, iu1, oa2, oc2, ou2, ia2, ic2, iu2 int) {
-		sublist1oa := tt.RequestAuthGet[sublist](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data1.UID, "outgoing_all"))
+		sublist1oa := tt.RequestAuthGet[sublist](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=%s&confirmation=%s", data1.UID, "outgoing", "all"))
 		tt.AssertEqual(t, "1:outgoing_all", oa1, len(sublist1oa.Subscriptions))
 
-		sublist1oc := tt.RequestAuthGet[sublist](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data1.UID, "outgoing_confirmed"))
+		sublist1oc := tt.RequestAuthGet[sublist](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=%s&confirmation=%s", data1.UID, "outgoing", "confirmed"))
 		tt.AssertEqual(t, "1:outgoing_confirmed", oc1, len(sublist1oc.Subscriptions))
 
-		sublist1ou := tt.RequestAuthGet[sublist](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data1.UID, "outgoing_unconfirmed"))
+		sublist1ou := tt.RequestAuthGet[sublist](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=%s&confirmation=%s", data1.UID, "outgoing", "unconfirmed"))
 		tt.AssertEqual(t, "1:outgoing_unconfirmed", ou1, len(sublist1ou.Subscriptions))
 
-		sublist1ia := tt.RequestAuthGet[sublist](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data1.UID, "incoming_all"))
+		sublist1ia := tt.RequestAuthGet[sublist](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=%s&confirmation=%s", data1.UID, "incoming", "all"))
 		tt.AssertEqual(t, "1:incoming_all", ia1, len(sublist1ia.Subscriptions))
 
-		sublist1ic := tt.RequestAuthGet[sublist](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data1.UID, "incoming_confirmed"))
+		sublist1ic := tt.RequestAuthGet[sublist](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=%s&confirmation=%s", data1.UID, "incoming", "confirmed"))
 		tt.AssertEqual(t, "1:incoming_confirmed", ic1, len(sublist1ic.Subscriptions))
 
-		sublist1iu := tt.RequestAuthGet[sublist](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data1.UID, "incoming_unconfirmed"))
+		sublist1iu := tt.RequestAuthGet[sublist](t, data1.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=%s&confirmation=%s", data1.UID, "incoming", "unconfirmed"))
 		tt.AssertEqual(t, "1:incoming_unconfirmed", iu1, len(sublist1iu.Subscriptions))
 
-		sublist2oa := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data2.UID, "outgoing_all"))
+		sublist2oa := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=%s&confirmation=%s", data2.UID, "outgoing", "all"))
 		tt.AssertEqual(t, "2:outgoing_all", oa2, len(sublist2oa.Subscriptions))
 
-		sublist2oc := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data2.UID, "outgoing_confirmed"))
+		sublist2oc := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=%s&confirmation=%s", data2.UID, "outgoing", "confirmed"))
 		tt.AssertEqual(t, "2:outgoing_confirmed", oc2, len(sublist2oc.Subscriptions))
 
-		sublist2ou := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data2.UID, "outgoing_unconfirmed"))
+		sublist2ou := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=%s&confirmation=%s", data2.UID, "outgoing", "unconfirmed"))
 		tt.AssertEqual(t, "2:outgoing_unconfirmed", ou2, len(sublist2ou.Subscriptions))
 
-		sublist2ia := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data2.UID, "incoming_all"))
+		sublist2ia := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=%s&confirmation=%s", data2.UID, "incoming", "all"))
 		tt.AssertEqual(t, "2:incoming_all", ia2, len(sublist2ia.Subscriptions))
 
-		sublist2ic := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data2.UID, "incoming_confirmed"))
+		sublist2ic := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=%s&confirmation=%s", data2.UID, "incoming", "confirmed"))
 		tt.AssertEqual(t, "2:incoming_confirmed", ic2, len(sublist2ic.Subscriptions))
 
-		sublist2iu := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data2.UID, "incoming_unconfirmed"))
+		sublist2iu := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=%s&confirmation=%s", data2.UID, "incoming", "unconfirmed"))
 		tt.AssertEqual(t, "2:incoming_unconfirmed", iu2, len(sublist2iu.Subscriptions))
 	}
 
@@ -818,7 +818,7 @@ func TestListChannelSubscriptions(t *testing.T) {
 		3, 3, 0,
 		3, 3, 0)
 
-	sublistRem := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", data2.UID, "incoming_confirmed"))
+	sublistRem := tt.RequestAuthGet[sublist](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=%s&confirmation=%s", data2.UID, "incoming", "confirmed"))
 	for _, v := range sublistRem.Subscriptions {
 		tt.RequestAuthDelete[gin.H](t, data2.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions/%s", data2.UID, v.SubscriptionId), gin.H{})
 	}

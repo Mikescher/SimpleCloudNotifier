@@ -4,7 +4,7 @@ package models
 
 import "gogs.mikescher.com/BlackForestBytes/goext/langext"
 
-const ChecksumGenerator = "a1a684aa30d77d9a9936ccbb667b498c370a1f816273e9cd93948f4195155e90"
+const ChecksumGenerator = "a41b8d265c326a65d7be07c74aa2318064c6307256bd92b684c5adb4a8f82d97"
 
 type Enum interface {
 	Valid() bool

@@ -4,6 +4,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
+	"errors"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"strings"
@@ -90,7 +91,7 @@ func (db *Database) GetKeyTokenByToken(ctx db.TxContext, key string) (*models.Ke
 	}
 
 	user, err := models.DecodeKeyToken(rows)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"net/http"
@@ -14,13 +15,25 @@ import (
 // ListUserSubscriptions swaggerdoc
 //
 //	@Summary		List all subscriptions of a user (incoming/owned)
-//	@Description	The possible values for 'selector' are:
-//	@Description	- "outgoing_all"         All subscriptions (confirmed/unconfirmed) with the user as subscriber (= subscriptions he can use to read channels)
-//	@Description	- "outgoing_confirmed"   Confirmed subscriptions with the user as subscriber
-//	@Description	- "outgoing_unconfirmed" Unconfirmed (Pending) subscriptions with the user as subscriber
-//	@Description	- "incoming_all"         All subscriptions (confirmed/unconfirmed) from other users to channels of this user (= incoming subscriptions and subscription requests)
-//	@Description	- "incoming_confirmed"   Confirmed subscriptions from other users to channels of this user
-//	@Description	- "incoming_unconfirmed" Unconfirmed subscriptions from other users to channels of this user (= requests)
+//
+//	@Description	The possible values for 'direction' are:
+//	@Description	- "outgoing"       Subscriptions with the user as subscriber (= subscriptions he can use to read channels)
+//	@Description	- "incoming"       Subscriptions to channels of this user (= incoming subscriptions and subscription requests)
+//	@Description	- "both"           Combines "outgoing" and "incoming" (default)
+//	@Description
+//	@Description	The possible values for 'confirmation' are:
+//	@Description	- "confirmed"      Confirmed (active) subscriptions
+//	@Description	- "unconfirmed"    Unconfirmed (pending) subscriptions
+//	@Description	- "all"            Combines "confirmed" and "unconfirmed" (default)
+//	@Description
+//	@Description	The possible values for 'external' are:
+//	@Description	- "true"           Subscriptions with subscriber_user_id != channel_owner_user_id  (subscriptions from other users)
+//	@Description	- "false"          Subscriptions with subscriber_user_id == channel_owner_user_id  (subscriptions from this user to his own channels)
+//	@Description	- "all"            Combines "external" and "internal" (default)
+//	@Description
+//	@Description	The `subscriber_user_id` parameter can be used to additionally filter the subscriber_user_id (return subscribtions from a specific user)
+//	@Description
+//	@Description	The `channel_owner_user_id` parameter can be used to additionally filter the channel_owner_user_id (return subscribtions to a specific user)
 //
 //	@ID				api-user-subscriptions-list
 //	@Tags			API-v2
@@ -39,7 +52,11 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 	type query struct {
-		Selector *string `json:"selector" form:"selector"  enums:"outgoing_all,outgoing_confirmed,outgoing_unconfirmed,incoming_all,incoming_confirmed,incoming_unconfirmed"`
+		Direction          *string        `json:"direction"             form:"direction"                enums:"incoming,outgoing,both"`
+		Confirmation       *string        `json:"confirmation"          form:"confirmation"             enums:"confirmed,unconfirmed,all"`
+		External           *string        `json:"external"              form:"external"                 enums:"true,false,all"`
+		SubscriberUserID   *models.UserID `json:"subscriber_user_id"    form:"subscriber_user_id"`
+		ChannelOwnerUserID *models.UserID `json:"channel_owner_user_id" form:"channel_owner_user_id"`
 	}
 	type response struct {
 		Subscriptions []models.SubscriptionJSON `json:"subscriptions"`
@@ -57,57 +74,56 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	sel := strings.ToLower(langext.Coalesce(q.Selector, "outgoing_all"))
+	filter := models.SubscriptionFilter{}
+	filter.AnyUserID = langext.Ptr(u.UserID)
 
-	var res []models.Subscription
-	var err error
-
-	if sel == "outgoing_all" {
-
-		res, err = h.database.ListSubscriptionsBySubscriber(ctx, u.UserID, nil)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
+	if q.Direction != nil {
+		if strings.EqualFold(*q.Direction, "incoming") {
+			filter.ChannelOwnerUserID = langext.Ptr([]models.UserID{u.UserID})
+		} else if strings.EqualFold(*q.Direction, "outgoing") {
+			filter.SubscriberUserID = langext.Ptr([]models.UserID{u.UserID})
+		} else if strings.EqualFold(*q.Direction, "both") {
+			// both
+		} else {
+			return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid value for param 'direction'", nil)
 		}
+	}
 
-	} else if sel == "outgoing_confirmed" {
-
-		res, err = h.database.ListSubscriptionsBySubscriber(ctx, u.UserID, langext.Ptr(true))
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
+	if q.Confirmation != nil {
+		if strings.EqualFold(*q.Confirmation, "confirmed") {
+			filter.Confirmed = langext.PTrue
+		} else if strings.EqualFold(*q.Confirmation, "unconfirmed") {
+			filter.Confirmed = langext.PFalse
+		} else if strings.EqualFold(*q.Confirmation, "all") {
+			// both
+		} else {
+			return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid value for param 'confirmation'", nil)
 		}
+	}
 
-	} else if sel == "outgoing_unconfirmed" {
-
-		res, err = h.database.ListSubscriptionsBySubscriber(ctx, u.UserID, langext.Ptr(false))
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
+	if q.External != nil {
+		if strings.EqualFold(*q.External, "true") {
+			filter.SubscriberIsChannelOwner = langext.PFalse
+		} else if strings.EqualFold(*q.External, "false") {
+			filter.SubscriberIsChannelOwner = langext.PTrue
+		} else if strings.EqualFold(*q.External, "all") {
+			// both
+		} else {
+			return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid value for param 'external'", nil)
 		}
+	}
 
-	} else if sel == "incoming_all" {
+	if q.SubscriberUserID != nil {
+		filter.SubscriberUserID2 = langext.Ptr([]models.UserID{*q.SubscriberUserID})
+	}
 
-		res, err = h.database.ListSubscriptionsByChannelOwner(ctx, u.UserID, nil)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
-		}
+	if q.ChannelOwnerUserID != nil {
+		filter.ChannelOwnerUserID2 = langext.Ptr([]models.UserID{*q.ChannelOwnerUserID})
+	}
 
-	} else if sel == "incoming_confirmed" {
-
-		res, err = h.database.ListSubscriptionsByChannelOwner(ctx, u.UserID, langext.Ptr(true))
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
-		}
-
-	} else if sel == "incoming_unconfirmed" {
-
-		res, err = h.database.ListSubscriptionsByChannelOwner(ctx, u.UserID, langext.Ptr(false))
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
-		}
-
-	} else {
-
-		return ginresp.APIError(g, 400, apierr.INVALID_ENUM_VALUE, "Invalid value for the [selector] parameter", nil)
-
+	res, err := h.database.ListSubscriptions(ctx, filter)
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
 	}
 
 	jsonres := langext.ArrMap(res, func(v models.Subscription) models.SubscriptionJSON { return v.JSON() })
@@ -152,14 +168,14 @@ func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPRespons
 	}
 
 	_, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID, true)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
 	}
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
 	}
 
-	clients, err := h.database.ListSubscriptionsByChannel(ctx, u.ChannelID)
+	clients, err := h.database.ListSubscriptions(ctx, models.SubscriptionFilter{AnyUserID: langext.Ptr(u.UserID), ChannelID: langext.Ptr([]models.ChannelID{u.ChannelID})})
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
 	}
@@ -203,7 +219,7 @@ func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	subscription, err := h.database.GetSubscription(ctx, u.SubscriptionID)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_NOT_FOUND, "Subscription not found", err)
 	}
 	if err != nil {
@@ -250,7 +266,7 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	subscription, err := h.database.GetSubscription(ctx, u.SubscriptionID)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_NOT_FOUND, "Subscription not found", err)
 	}
 	if err != nil {
@@ -414,7 +430,7 @@ func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 	userid := *ctx.GetPermissionUserID()
 
 	subscription, err := h.database.GetSubscription(ctx, u.SubscriptionID)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_NOT_FOUND, "Subscription not found", err)
 	}
 	if err != nil {

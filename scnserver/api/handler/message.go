@@ -8,6 +8,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -139,7 +140,7 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 	}
 
 	user, err := h.database.GetUser(ctx, *UserID)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found", err))
 	}
 	if err != nil {
@@ -244,7 +245,8 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to create compat-id", err))
 	}
 
-	subscriptions, err := h.database.ListSubscriptionsByChannel(ctx, channel.ChannelID)
+	subFilter := models.SubscriptionFilter{ChannelID: langext.Ptr([]models.ChannelID{channel.ChannelID}), Confirmed: langext.PTrue}
+	activeSubscriptions, err := h.database.ListSubscriptions(ctx, subFilter)
 	if err != nil {
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query subscriptions", err))
 	}
@@ -266,14 +268,10 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 
 	log.Info().Msg(fmt.Sprintf("Sending new notification %s for user %s", msg.MessageID, UserID))
 
-	for _, sub := range subscriptions {
+	for _, sub := range activeSubscriptions {
 		clients, err := h.database.ListClients(ctx, sub.SubscriberUserID)
 		if err != nil {
 			return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query clients", err))
-		}
-
-		if !sub.Confirmed {
-			continue
 		}
 
 		for _, client := range clients {

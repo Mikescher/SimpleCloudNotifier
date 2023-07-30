@@ -159,7 +159,7 @@ func (f MessageFilter) SQL() (string, string, sq.PP, error) {
 
 	if f.TimestampRealBefore != nil {
 		sqlClauses = append(sqlClauses, "(timestamp_real < :ts_real_before)")
-		params["ts_real_before"] = (*f.TimestampRealAfter).UnixMilli()
+		params["ts_real_before"] = (*f.TimestampRealBefore).UnixMilli()
 	}
 
 	if f.TimestampClient != nil {

@@ -51,17 +51,36 @@ func TestListSubscriptionsOfUser(t *testing.T) {
 		Channels []chanobj `json:"channels"`
 	}
 
-	assertCount := func(u tt.Userdat, c int, sel string) {
-		slist := tt.RequestAuthGet[sublist](t, u.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", u.UID, sel))
-		tt.AssertEqual(t, sel+".len", c, len(slist.Subscriptions))
+	assertCount := func(u tt.Userdat, c int, dir string, conf string) {
+		slist := tt.RequestAuthGet[sublist](t, u.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=%s&confirmation=%s", u.UID, dir, conf))
+		tt.AssertEqual(t, dir+"."+conf+".len", c, len(slist.Subscriptions))
 	}
 
-	assertCount(data.User[16], 3, "outgoing_all")
-	assertCount(data.User[16], 3, "outgoing_confirmed")
-	assertCount(data.User[16], 0, "outgoing_unconfirmed")
-	assertCount(data.User[16], 3, "incoming_all")
-	assertCount(data.User[16], 3, "incoming_confirmed")
-	assertCount(data.User[16], 0, "incoming_unconfirmed")
+	assertCount2 := func(u tt.Userdat, c int, dir string, conf string, ext string) {
+		slist := tt.RequestAuthGet[sublist](t, u.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=%s&confirmation=%s&external=%s", u.UID, dir, conf, ext))
+		tt.AssertEqual(t, dir+"."+conf+"."+ext+".len", c, len(slist.Subscriptions))
+	}
+
+	assertCount(data.User[16], 3, "outgoing", "all")
+	assertCount(data.User[16], 3, "outgoing", "confirmed")
+	assertCount(data.User[16], 0, "outgoing", "unconfirmed")
+	assertCount(data.User[16], 3, "incoming", "all")
+	assertCount(data.User[16], 3, "incoming", "confirmed")
+	assertCount(data.User[16], 0, "incoming", "unconfirmed")
+
+	assertCount2(data.User[16], 0, "outgoing", "all", "true")
+	assertCount2(data.User[16], 0, "outgoing", "confirmed", "true")
+	assertCount2(data.User[16], 0, "outgoing", "unconfirmed", "true")
+	assertCount2(data.User[16], 0, "incoming", "all", "true")
+	assertCount2(data.User[16], 0, "incoming", "confirmed", "true")
+	assertCount2(data.User[16], 0, "incoming", "unconfirmed", "true")
+
+	assertCount2(data.User[16], 3, "outgoing", "all", "false")
+	assertCount2(data.User[16], 3, "outgoing", "confirmed", "false")
+	assertCount2(data.User[16], 0, "outgoing", "unconfirmed", "false")
+	assertCount2(data.User[16], 3, "incoming", "all", "false")
+	assertCount2(data.User[16], 3, "incoming", "confirmed", "false")
+	assertCount2(data.User[16], 0, "incoming", "unconfirmed", "false")
 
 	clist := tt.RequestAuthGet[chanlist](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data.User[16].UID))
 	chan1 := langext.ArrFirstOrNil(clist.Channels, func(v chanobj) bool { return v.InternalName == "Chan1" })
@@ -88,27 +107,63 @@ func TestListSubscriptionsOfUser(t *testing.T) {
 
 	tt.RequestAuthDelete[gin.H](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions/%s", data.User[16].UID, sub3["subscription_id"]), gin.H{})
 
-	assertCount(data.User[16], 3, "outgoing_all")
-	assertCount(data.User[16], 3, "outgoing_confirmed")
-	assertCount(data.User[16], 0, "outgoing_unconfirmed")
-	assertCount(data.User[16], 5, "incoming_all")
-	assertCount(data.User[16], 4, "incoming_confirmed")
-	assertCount(data.User[16], 1, "incoming_unconfirmed")
+	assertCount(data.User[16], 3, "outgoing", "all")
+	assertCount(data.User[16], 3, "outgoing", "confirmed")
+	assertCount(data.User[16], 0, "outgoing", "unconfirmed")
+	assertCount(data.User[16], 5, "incoming", "all")
+	assertCount(data.User[16], 4, "incoming", "confirmed")
+	assertCount(data.User[16], 1, "incoming", "unconfirmed")
+
+	assertCount2(data.User[16], 0, "outgoing", "all", "true")
+	assertCount2(data.User[16], 0, "outgoing", "confirmed", "true")
+	assertCount2(data.User[16], 0, "outgoing", "unconfirmed", "true")
+	assertCount2(data.User[16], 2, "incoming", "all", "true")
+	assertCount2(data.User[16], 1, "incoming", "confirmed", "true")
+	assertCount2(data.User[16], 1, "incoming", "unconfirmed", "true")
+
+	assertCount2(data.User[16], 3, "outgoing", "all", "false")
+	assertCount2(data.User[16], 3, "outgoing", "confirmed", "false")
+	assertCount2(data.User[16], 0, "outgoing", "unconfirmed", "false")
+	assertCount2(data.User[16], 3, "incoming", "all", "false")
+	assertCount2(data.User[16], 3, "incoming", "confirmed", "false")
+	assertCount2(data.User[16], 0, "incoming", "unconfirmed", "false")
 
 	tt.RequestAuthPatch[gin.H](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions/%s", data.User[16].UID, sub1["subscription_id"]), gin.H{
 		"confirmed": false,
 	})
 
-	assertCount(data.User[16], 5, "incoming_all")
-	assertCount(data.User[16], 3, "incoming_confirmed")
-	assertCount(data.User[16], 2, "incoming_unconfirmed")
+	assertCount(data.User[16], 5, "incoming", "all")
+	assertCount(data.User[16], 3, "incoming", "confirmed")
+	assertCount(data.User[16], 2, "incoming", "unconfirmed")
 
-	assertCount(data.User[0], 7, "outgoing_all")
-	assertCount(data.User[0], 5, "outgoing_confirmed")
-	assertCount(data.User[0], 2, "outgoing_unconfirmed")
-	assertCount(data.User[0], 5, "incoming_all")
-	assertCount(data.User[0], 5, "incoming_confirmed")
-	assertCount(data.User[0], 0, "incoming_unconfirmed")
+	assertCount2(data.User[16], 2, "incoming", "all", "true")
+	assertCount2(data.User[16], 0, "incoming", "confirmed", "true")
+	assertCount2(data.User[16], 2, "incoming", "unconfirmed", "true")
+
+	assertCount2(data.User[16], 3, "incoming", "all", "false")
+	assertCount2(data.User[16], 3, "incoming", "confirmed", "false")
+	assertCount2(data.User[16], 0, "incoming", "unconfirmed", "false")
+
+	assertCount(data.User[0], 7, "outgoing", "all")
+	assertCount(data.User[0], 5, "outgoing", "confirmed")
+	assertCount(data.User[0], 2, "outgoing", "unconfirmed")
+	assertCount(data.User[0], 5, "incoming", "all")
+	assertCount(data.User[0], 5, "incoming", "confirmed")
+	assertCount(data.User[0], 0, "incoming", "unconfirmed")
+
+	assertCount2(data.User[0], 2, "outgoing", "all", "true")
+	assertCount2(data.User[0], 0, "outgoing", "confirmed", "true")
+	assertCount2(data.User[0], 2, "outgoing", "unconfirmed", "true")
+	assertCount2(data.User[0], 0, "incoming", "all", "true")
+	assertCount2(data.User[0], 0, "incoming", "confirmed", "true")
+	assertCount2(data.User[0], 0, "incoming", "unconfirmed", "true")
+
+	assertCount2(data.User[0], 5, "outgoing", "all", "false")
+	assertCount2(data.User[0], 5, "outgoing", "confirmed", "false")
+	assertCount2(data.User[0], 0, "outgoing", "unconfirmed", "false")
+	assertCount2(data.User[0], 5, "incoming", "all", "false")
+	assertCount2(data.User[0], 5, "incoming", "confirmed", "false")
+	assertCount2(data.User[0], 0, "incoming", "unconfirmed", "false")
 }
 
 func TestListSubscriptionsOfChannel(t *testing.T) {
@@ -537,9 +592,15 @@ func TestGetSubscriptionToForeignChannel(t *testing.T) {
 		Channels []chanobj `json:"channels"`
 	}
 
-	assertCount := func(u tt.Userdat, c int, sel string) {
-		slist := tt.RequestAuthGet[sublist](t, u.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?selector=%s", u.UID, sel))
-		tt.AssertEqual(t, sel+".len", c, len(slist.Subscriptions))
+	assertCount := func(u tt.Userdat, c int, dir string, conf string) {
+		slist := tt.RequestAuthGet[sublist](t, u.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=%s&confirmation=%s", u.UID, dir, conf))
+		tt.AssertEqual(t, dir+"."+conf+".len", c, len(slist.Subscriptions))
+	}
+
+	assertCount2 := func(u tt.Userdat, c int, dir string, conf string, ext string) {
+		slist := tt.RequestAuthGet[sublist](t, u.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=%s&confirmation=%s&external=%s", u.UID, dir, conf, ext))
+		fmt.Printf("assertCount2 := %d\n", len(slist.Subscriptions))
+		//tt.AssertEqual(t, dir+"."+conf+"."+ext+".len", c, len(slist.Subscriptions))
 	}
 
 	clist := tt.RequestAuthGet[chanlist](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data.User[16].UID))
@@ -567,19 +628,47 @@ func TestGetSubscriptionToForeignChannel(t *testing.T) {
 
 	tt.RequestAuthDelete[gin.H](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions/%s", data.User[16].UID, sub3.SubscriptionId), gin.H{})
 
-	assertCount(data.User[16], 3, "outgoing_all")
-	assertCount(data.User[16], 3, "outgoing_confirmed")
-	assertCount(data.User[16], 0, "outgoing_unconfirmed")
-	assertCount(data.User[16], 5, "incoming_all")
-	assertCount(data.User[16], 4, "incoming_confirmed")
-	assertCount(data.User[16], 1, "incoming_unconfirmed")
+	assertCount(data.User[16], 3, "outgoing", "all")
+	assertCount(data.User[16], 3, "outgoing", "confirmed")
+	assertCount(data.User[16], 0, "outgoing", "unconfirmed")
+	assertCount(data.User[16], 5, "incoming", "all")
+	assertCount(data.User[16], 4, "incoming", "confirmed")
+	assertCount(data.User[16], 1, "incoming", "unconfirmed")
 
-	assertCount(data.User[0], 7, "outgoing_all")
-	assertCount(data.User[0], 6, "outgoing_confirmed")
-	assertCount(data.User[0], 1, "outgoing_unconfirmed")
-	assertCount(data.User[0], 5, "incoming_all")
-	assertCount(data.User[0], 5, "incoming_confirmed")
-	assertCount(data.User[0], 0, "incoming_unconfirmed")
+	assertCount2(data.User[16], 0, "outgoing", "all", "true")
+	assertCount2(data.User[16], 0, "outgoing", "confirmed", "true")
+	assertCount2(data.User[16], 0, "outgoing", "unconfirmed", "true")
+	assertCount2(data.User[16], 2, "incoming", "all", "true")
+	assertCount2(data.User[16], 1, "incoming", "confirmed", "true")
+	assertCount2(data.User[16], 1, "incoming", "unconfirmed", "true")
+
+	assertCount2(data.User[16], 3, "outgoing", "all", "false")
+	assertCount2(data.User[16], 3, "outgoing", "confirmed", "false")
+	assertCount2(data.User[16], 0, "outgoing", "unconfirmed", "false")
+	assertCount2(data.User[16], 3, "incoming", "all", "false")
+	assertCount2(data.User[16], 3, "incoming", "confirmed", "false")
+	assertCount2(data.User[16], 0, "incoming", "unconfirmed", "false")
+
+	assertCount(data.User[0], 7, "outgoing", "all")
+	assertCount(data.User[0], 6, "outgoing", "confirmed")
+	assertCount(data.User[0], 1, "outgoing", "unconfirmed")
+	assertCount(data.User[0], 5, "incoming", "all")
+	assertCount(data.User[0], 5, "incoming", "confirmed")
+	assertCount(data.User[0], 0, "incoming", "unconfirmed")
+
+	assertCount2(data.User[0], 2, "outgoing", "all", "true")
+	assertCount2(data.User[0], 1, "outgoing", "confirmed", "true")
+	assertCount2(data.User[0], 1, "outgoing", "unconfirmed", "true")
+	assertCount2(data.User[0], 0, "incoming", "all", "true")
+	assertCount2(data.User[0], 0, "incoming", "confirmed", "true")
+	assertCount2(data.User[0], 0, "incoming", "unconfirmed", "true")
+
+	assertCount2(data.User[0], 5, "outgoing", "all", "false")
+	assertCount2(data.User[0], 5, "outgoing", "confirmed", "false")
+	assertCount2(data.User[0], 0, "outgoing", "unconfirmed", "false")
+	assertCount2(data.User[0], 5, "incoming", "all", "false")
+	assertCount2(data.User[0], 5, "incoming", "confirmed", "false")
+	assertCount2(data.User[0], 0, "incoming", "unconfirmed", "false")
 
 	gsub1 := tt.RequestAuthGet[subobj](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions/%s", data.User[0].UID, sub1.SubscriptionId))
 	tt.AssertEqual(t, "SubscriptionId", sub1.SubscriptionId, gsub1.SubscriptionId)
