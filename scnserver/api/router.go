@@ -122,7 +122,6 @@ func (r *Router) Init(e *gin.Engine) error {
 
 	apiv2 := e.Group("/api/v2/")
 	{
-
 		apiv2.POST("/users", r.Wrap(r.apiHandler.CreateUser))
 		apiv2.GET("/users/:uid", r.Wrap(r.apiHandler.GetUser))
 		apiv2.PATCH("/users/:uid", r.Wrap(r.apiHandler.UpdateUser))
@@ -164,6 +163,9 @@ func (r *Router) Init(e *gin.Engine) error {
 		sendAPI.POST("/", r.Wrap(r.messageHandler.SendMessage))
 		sendAPI.POST("/send", r.Wrap(r.messageHandler.SendMessage))
 		sendAPI.POST("/send.php", r.Wrap(r.messageHandler.SendMessageCompat))
+
+		sendAPI.POST("/webhook/uptime-kuma", r.Wrap(r.messageHandler.UptimeKumaWebHook))
+
 	}
 
 	// ================

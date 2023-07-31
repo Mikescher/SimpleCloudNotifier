@@ -311,3 +311,87 @@ func (h MessageHandler) sendMessageInternal(g *gin.Context, ctx *logic.AppContex
 		CompatMessageID: compatMsgID,
 	}, nil
 }
+
+// UptimeKumaWebHook swaggerdoc
+//
+//	@Summary		Send a new message
+//	@Description	All parameter can be set via query-parameter or the json body. Only UserID, UserKey and Title are required
+//	@Tags			External
+//
+//	@Param			query_data	query		handler.UptimeKumaWebHook.query					false	" "
+//	@Param			post_body	body		handler.UptimeKumaWebHook.uptimeKumaWebhookBody	false	" "
+//
+//	@Success		200			{object}	any
+//	@Failure		400			{object}	ginresp.apiError
+//	@Failure		401			{object}	ginresp.apiError	"The user_id was not found or the user_key is wrong"
+//	@Failure		403			{object}	ginresp.apiError	"The user has exceeded its daily quota - wait 24 hours or upgrade your account"
+//	@Failure		500			{object}	ginresp.apiError	"An internal server error occurred - try again later"
+//
+//	@Router			/webhook/uptime-kuma [POST]
+func (h MessageHandler) UptimeKumaWebHook(g *gin.Context) ginresp.HTTPResponse {
+	type query struct {
+		UserID   *models.UserID `form:"user_id"     example:"7725"`
+		KeyToken *string        `form:"key"         example:"P3TNH8mvv14fm"`
+	}
+
+	type uptimeKumaWebhookBody struct {
+		Heartbeat *struct {
+			Time           string `json:"time"`
+			Status         int    `json:"status"`
+			Msg            string `json:"msg"`
+			Timezone       string `json:"timezone"`
+			TimezoneOffset string `json:"timezoneOffset"`
+			LocalDateTime  string `json:"localDateTime"`
+		} `json:"heartbeat"`
+		Monitor *struct {
+			Name string  `json:"name"`
+			Url  *string `json:"url"`
+		} `json:"monitor"`
+		Msg string `json:"msg"`
+	}
+
+	var b uptimeKumaWebhookBody
+	var q query
+
+	ctx, httpErr := h.app.StartRequest(g, nil, &q, &b, nil)
+	if httpErr != nil {
+		return *httpErr
+	}
+	defer ctx.Cancel()
+
+	var title = ""
+
+	var content = ""
+	content += fmt.Sprintf("%v\n", b.Msg)
+	if b.Monitor != nil {
+		content += fmt.Sprintf("%v\n", b.Monitor.Name)
+		if b.Monitor.Url != nil {
+			content += fmt.Sprintf("url: %v\n", *b.Monitor.Url)
+		}
+
+		if b.Heartbeat != nil {
+			statusString := "down"
+
+			if b.Heartbeat.Status == 1 {
+				statusString = "up"
+			}
+			title = fmt.Sprintf("%v %v!", b.Monitor.Name, statusString)
+		}
+
+	}
+
+	if b.Heartbeat != nil {
+		content += "\n===== Heartbeat ======\n"
+		content += fmt.Sprintf("msg: %v\n", b.Heartbeat.Msg)
+		content += fmt.Sprintf("timestamp: %v\n", b.Heartbeat.Time)
+		content += fmt.Sprintf("timezone: %v\n", b.Heartbeat.Timezone)
+		content += fmt.Sprintf("timezone offset: %v\n", b.Heartbeat.TimezoneOffset)
+		content += fmt.Sprintf("local date time: %v\n", b.Heartbeat.TimezoneOffset)
+	}
+	okResp, errResp := h.sendMessageInternal(g, ctx, q.UserID, q.KeyToken, nil, &title, &content, langext.Ptr(1), nil, nil, nil)
+
+	if errResp != nil {
+		return *errResp
+	}
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, okResp))
+}

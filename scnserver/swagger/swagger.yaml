@@ -458,6 +458,31 @@ definitions:
       user_id:
         type: integer
     type: object
+  handler.UptimeKumaWebHook.uptimeKumaWebhookBody:
+    properties:
+      heartbeat:
+        properties:
+          localDateTime:
+            type: string
+          msg:
+            type: string
+          time:
+            type: string
+          timezone:
+            type: string
+          timezoneOffset:
+            type: string
+        type: object
+      monitor:
+        properties:
+          name:
+            type: string
+          url:
+            type: string
+        type: object
+      msg:
+        type: string
+    type: object
   handler.pingResponse:
     properties:
       info:
@@ -621,8 +646,22 @@ definitions:
     properties:
       default_channel:
         type: string
+      default_priority:
+        type: integer
       is_pro:
         type: boolean
+      max_body_size:
+        type: integer
+      max_channel_description_length:
+        type: integer
+      max_channel_name_length:
+        type: integer
+      max_sender_name_length:
+        type: integer
+      max_title_length:
+        type: integer
+      max_user_message_id_length:
+        type: integer
       messages_sent:
         type: integer
       quota_max:
@@ -652,8 +691,22 @@ definitions:
         type: array
       default_channel:
         type: string
+      default_priority:
+        type: integer
       is_pro:
         type: boolean
+      max_body_size:
+        type: integer
+      max_channel_description_length:
+        type: integer
+      max_channel_name_length:
+        type: integer
+      max_sender_name_length:
+        type: integer
+      max_title_length:
+        type: integer
+      max_user_message_id_length:
+        type: integer
       messages_sent:
         type: integer
       quota_max:
@@ -2546,6 +2599,49 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Send a new message (compatibility)
+      tags:
+      - External
+  /webhook/uptime-kuma:
+    post:
+      description: All parameter can be set via query-parameter or the json body.
+        Only UserID, UserKey and Title are required
+      parameters:
+      - example: P3TNH8mvv14fm
+        in: query
+        name: key
+        type: string
+      - example: "7725"
+        in: query
+        name: user_id
+        type: string
+      - description: ' '
+        in: body
+        name: post_body
+        schema:
+          $ref: '#/definitions/handler.UptimeKumaWebHook.uptimeKumaWebhookBody'
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: The user_id was not found or the user_key is wrong
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "403":
+          description: The user has exceeded its daily quota - wait 24 hours or upgrade
+            your account
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: An internal server error occurred - try again later
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Send a new message
       tags:
       - External
 swagger: "2.0"
