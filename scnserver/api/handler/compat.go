@@ -29,7 +29,7 @@ func NewCompatHandler(app *logic.Application) CompatHandler {
 	}
 }
 
-// SendMessageCompat swaggerdoc
+// SendMessage swaggerdoc
 //
 //	@Deprecated
 //
@@ -37,17 +37,17 @@ func NewCompatHandler(app *logic.Application) CompatHandler {
 //	@Description	All parameter can be set via query-parameter or form-data body. Only UserID, UserKey and Title are required
 //	@Tags			External
 //
-//	@Param			query_data	query		handler.SendMessageCompat.combined	false	" "
-//	@Param			form_data	formData	handler.SendMessageCompat.combined	false	" "
+//	@Param			query_data	query		handler.SendMessage.combined	false	" "
+//	@Param			form_data	formData	handler.SendMessage.combined	false	" "
 //
-//	@Success		200			{object}	handler.SendMessageCompat.response
+//	@Success		200			{object}	handler.SendMessage.response
 //	@Failure		400			{object}	ginresp.apiError
 //	@Failure		401			{object}	ginresp.apiError
 //	@Failure		403			{object}	ginresp.apiError
 //	@Failure		500			{object}	ginresp.apiError
 //
 //	@Router			/send.php [POST]
-func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
+func (h CompatHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 	type combined struct {
 		UserID        *int64   `json:"user_id"   form:"user_id"`
 		UserKey       *string  `json:"user_key"  form:"user_key"`
@@ -88,7 +88,7 @@ func (h MessageHandler) SendMessageCompat(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
 	}
 
-	okResp, errResp := h.sendMessageInternal(g, ctx, langext.Ptr(models.UserID(*newid)), data.UserKey, nil, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp, nil)
+	okResp, errResp := h.app.SendMessage(g, ctx, langext.Ptr(models.UserID(*newid)), data.UserKey, nil, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp, nil)
 	if errResp != nil {
 		return *errResp
 	} else {

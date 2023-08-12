@@ -16,22 +16,24 @@ import (
 type Router struct {
 	app *logic.Application
 
-	commonHandler  handler.CommonHandler
-	compatHandler  handler.CompatHandler
-	websiteHandler handler.WebsiteHandler
-	apiHandler     handler.APIHandler
-	messageHandler handler.MessageHandler
+	commonHandler   handler.CommonHandler
+	compatHandler   handler.CompatHandler
+	websiteHandler  handler.WebsiteHandler
+	apiHandler      handler.APIHandler
+	messageHandler  handler.MessageHandler
+	externalHandler handler.ExternalHandler
 }
 
 func NewRouter(app *logic.Application) *Router {
 	return &Router{
 		app: app,
 
-		commonHandler:  handler.NewCommonHandler(app),
-		compatHandler:  handler.NewCompatHandler(app),
-		websiteHandler: handler.NewWebsiteHandler(app),
-		apiHandler:     handler.NewAPIHandler(app),
-		messageHandler: handler.NewMessageHandler(app),
+		commonHandler:   handler.NewCommonHandler(app),
+		compatHandler:   handler.NewCompatHandler(app),
+		websiteHandler:  handler.NewWebsiteHandler(app),
+		apiHandler:      handler.NewAPIHandler(app),
+		messageHandler:  handler.NewMessageHandler(app),
+		externalHandler: handler.NewExternalHandler(app),
 	}
 }
 
@@ -162,9 +164,9 @@ func (r *Router) Init(e *gin.Engine) error {
 	{
 		sendAPI.POST("/", r.Wrap(r.messageHandler.SendMessage))
 		sendAPI.POST("/send", r.Wrap(r.messageHandler.SendMessage))
-		sendAPI.POST("/send.php", r.Wrap(r.messageHandler.SendMessageCompat))
+		sendAPI.POST("/send.php", r.Wrap(r.compatHandler.SendMessage))
 
-		sendAPI.POST("/webhook/uptime-kuma", r.Wrap(r.messageHandler.UptimeKumaWebHook))
+		sendAPI.POST("/external/v1/uptime-kuma", r.Wrap(r.externalHandler.UptimeKuma))
 
 	}
 

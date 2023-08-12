@@ -114,6 +114,9 @@ func RequestAny[TResult any](t *testing.T, akey string, method string, baseURL s
 			}
 			bytesbody = bodybuffer.Bytes()
 			contentType = writer.FormDataContentType()
+		case RawJSON:
+			bytesbody = []byte(body.(RawJSON).Body)
+			contentType = "application/json"
 		default:
 			bjson, err := json.Marshal(body)
 			if err != nil {
