@@ -67,7 +67,7 @@ inspect-docker: docker
 	           $(DOCKER_NAME):latest \
 	           bash
 
-push-docker: docker
+push-docker:
 	docker image push "$(DOCKER_REPO)/$(DOCKER_NAME):$(HASH)"
 	docker image push "$(DOCKER_REPO)/$(DOCKER_NAME):$(NAMESPACE)-latest"
 	docker image push "$(DOCKER_REPO)/$(DOCKER_NAME):latest"
@@ -76,8 +76,8 @@ clean:
 	rm -rf _build/*
 	rm -rf .run-data/*
 	git clean -fdx
-	go clean
-	go clean -testcache
+	which go && go clean            || true
+	which go && go clean -testcache || true
 
 fmt:
 	go fmt ./...

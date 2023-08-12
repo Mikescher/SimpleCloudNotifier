@@ -1,0 +1,43 @@
+
+# https://docs.gitea.com/next/usage/actions/quickstart
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
+# https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
+
+name: Build Docker and Deploy
+run-name: Build & Deploy ${{ gitea.ref }} on ${{ gitea.actor }}
+
+on: 
+  push:
+    branches: ['master']    
+
+
+
+jobs:
+  build_job:
+    name: Build Docker Container
+    runs-on: bfb-cicd-latest
+    steps:
+      - run: echo -n "${{ secrets.DOCKER_REG_PASS }}" | docker login registry.blackforestbytes.com -u docker --password-stdin
+      - name: Check out code
+        uses: actions/checkout@v3
+      - run: cd "${{ gitea.workspace }}/scnserver" && make clean
+      - run: cd "${{ gitea.workspace }}/scnserver" && make docker
+      - run: cd "${{ gitea.workspace }}/scnserver" && make push-docker
+    
+  deploy_job:
+    name: Deploy to Server
+    needs: [build_job]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute deploy on remote (via ssh)
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host:     simplecloudnotifier.de
+          username: bfb-deploy-bot
+          port:     4477
+          key:      "${{ secrets.SSH_KEY_BFBDEPLOYBOT }}"
+          script:   cd /var/docker/deploy-scripts/simplecloudnotifier && ./deploy.sh master "${{ gitea.sha }}" || exit 1
+
+
+
+
