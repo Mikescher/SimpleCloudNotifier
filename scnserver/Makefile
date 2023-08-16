@@ -76,8 +76,8 @@ clean:
 	rm -rf _build/*
 	rm -rf .run-data/*
 	git clean -fdx
-	which go && go clean            || true
-	which go && go clean -testcache || true
+	! which go 2>&1 >> /dev/null || go clean
+	! which go 2>&1 >> /dev/null || go clean -testcache
 
 fmt:
 	go fmt ./...
