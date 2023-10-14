@@ -14,13 +14,10 @@
 #        or   scn_send "@${channel} "${title}" ${content}"
 #        or   scn_send "@${channel} "${title}" ${content}" "${priority:0|1|2}"
 #
+# content can be of format "--scnsend-read-body-from-file={path}" to read body from file
+# (this circumvents max commandline length)
 #
 
-################################################################################
-# INSERT YOUR DATA HERE                                                        #
-################################################################################
-user_id="999"    # your user_id
-user_key="??"    # use userkey with SEND permissions on the used channel
 ################################################################################
 
 usage() {
@@ -34,15 +31,39 @@ function cfgcol { [ -t 1 ] && [ -n "$(tput colors)" ] && [ "$(tput colors)" -ge 
 function rederr() { if cfgcol; then >&2 echo -e "\x1B[31m$1\x1B[0m"; else >&2 echo "$1"; fi; }
 function green()  { if cfgcol; then     echo -e "\x1B[32m$1\x1B[0m"; else     echo "$1"; fi; }
 
+################################################################################
+
+#
+# Get env 'SCN_UID' and 'SCN_KEY' from conf file
+# 
+# shellcheck source=/dev/null
+. "/etc/scn.conf"
+SCN_UID=${SCN_UID:-}
+SCN_KEY=${SCN_KEY:-}
+
+[ -z "${SCN_UID}" ] && { rederr "Missing config value 'SCN_UID' in /etc/scn.conf"; exit 1; }
+[ -z "${SCN_KEY}" ] && { rederr "Missing config value 'SCN_KEY' in /etc/scn.conf"; exit 1; }
+
+################################################################################
+
 args=( "$@" )
 
 title=""
 content=""
 channel=""
-priority=1
+priority=""
 usr_msg_id="$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 32)"
 sendtime="$(date +%s)"
 sender="$(hostname)"
+
+if command -v srvname &> /dev/null; then
+  sender="$( srvname )"
+fi
+
+if [[ "${args[0]}" = "--" ]]; then
+    # only positional args form here on (currently not handled)
+    args=("${args[@]:1}")
+fi
 
 if [ ${#args[@]} -lt 1 ]; then
     rederr "[ERROR]: no title supplied via parameter"
@@ -81,6 +102,11 @@ if [ ${#args[@]} -gt 0 ]; then
     rederr "Too many arguments to scn_send"
     usage
     exit 1
+fi
+
+if [[ "$content" == --scnsend-read-body-from-file=* ]]; then
+  path="$( awk '{ print substr($0, 31) }' <<< "$content" )"
+  content="$( cat "$path" )"
 fi
 
 curlparams=()

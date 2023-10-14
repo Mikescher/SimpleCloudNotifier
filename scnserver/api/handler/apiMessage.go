@@ -1,18 +1,19 @@
 package handler
 
 import (
+	"database/sql"
+	"errors"
+	"net/http"
+	"strings"
+	"time"
+
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	ct "blackforestbytes.com/simplecloudnotifier/db/cursortoken"
 	"blackforestbytes.com/simplecloudnotifier/models"
-	"database/sql"
-	"errors"
 	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/mathext"
-	"net/http"
-	"strings"
-	"time"
 )
 
 // ListMessages swaggerdoc
@@ -174,7 +175,7 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure		404	{object}	ginresp.apiError	"message not found"
 //	@Failure		500	{object}	ginresp.apiError	"internal server error"
 //
-//	@Router			/api/v2/messages/{mid} [PATCH]
+//	@Router			/api/v2/messages/{mid} [GET]
 func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
 		MessageID models.MessageID `uri:"mid" binding:"entityid"`

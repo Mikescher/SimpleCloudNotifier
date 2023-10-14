@@ -10,9 +10,11 @@
 
  - ios purchase verification
 
- - use goext.ginWrapper
+ - (!) use goext.ginWrapper
   
- - use goext.exerr
+ - (!) use goext.exerr
+
+ - use bfcodegen (enums+id)
 
 #### UNSURE
 

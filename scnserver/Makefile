@@ -45,10 +45,10 @@ swagger:
 
 pygmentize: website/scn_send.html
 
-website/scn_send.html: website/scn_send.sh.txt
-	_pygments/pygmentizew -l bash    -f html "$(shell pwd)/website/scn_send.sh.txt" > "$(shell pwd)/website/scn_send.html"
-	_pygments/pygmentizew -S monokai -f html                                        > "$(shell pwd)/website/css/pygmnetize-dark.css"
-	_pygments/pygmentizew -S borland -f html                                        > "$(shell pwd)/website/css/pygmnetize-light.css"
+website/scn_send.html: ../scn_send.sh
+	_pygments/pygmentizew -l bash    -f html "$(shell pwd)/../scn_send.sh" > "$(shell pwd)/website/scn_send.html"
+	_pygments/pygmentizew -S monokai -f html                               > "$(shell pwd)/website/css/pygmnetize-dark.css"
+	_pygments/pygmentizew -S borland -f html                               > "$(shell pwd)/website/css/pygmnetize-light.css"
 
 run-docker-local: docker
 	mkdir -p .run-data
