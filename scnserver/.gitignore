@@ -18,6 +18,10 @@ identifier.sqlite
 
 .idea/dataSources.xml
 
+.swaggobin
+
+scn_send.sh
+
 ##############
 
 

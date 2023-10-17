@@ -4,11 +4,13 @@ FROM golang:1-bullseye AS builder
 
 RUN apt-get update && \
     apt-get install -y ca-certificates openssl make git tar coreutils && \
+    apt-get install -y python3 python3-pip && \
+    pip install virtualenv && \
     rm -rf /var/lib/apt/lists/*
 
 COPY . /buildsrc
 
-RUN cd /buildsrc && make build
+RUN cd /buildsrc && cp "scn_send.sh" "../scn_send.sh" && make build
 
 
 

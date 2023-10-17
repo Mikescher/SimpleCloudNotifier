@@ -7,6 +7,9 @@ HASH=$(shell git rev-parse HEAD)
 
 .PHONY: test swagger pygmentize docker migrate dgi pygmentize lint docker
 
+SWAGGO_VERSION=v1.8.12
+SWAGGO=github.com/swaggo/swag/cmd/swag@$(SWAGGO_VERSION)
+
 build: swagger pygmentize fmt
 	mkdir -p _build
 	rm -f ./_build/scn_backend
@@ -30,6 +33,7 @@ dgi:
 	echo -n "REMOTE="      >> DOCKER_GIT_INFO ; git config --get remote.origin.url >> DOCKER_GIT_INFO
 
 docker: dgi
+	cp ../scn_send.sh .
 	docker build \
             -t "$(DOCKER_NAME):$(HASH)" \
             -t "$(DOCKER_NAME):$(NAMESPACE)-latest" \
@@ -38,10 +42,14 @@ docker: dgi
             -t "$(DOCKER_REPO)/$(DOCKER_NAME):$(NAMESPACE)-latest" \
             -t "$(DOCKER_REPO)/$(DOCKER_NAME):latest" \
             .
+	[ -f "scn_send.sh" ] && rm scn_send.sh
 
-swagger:
-	which swag || go install github.com/swaggo/swag/cmd/swag@v1.8.12
-	swag init -generalInfo api/router.go --propertyStrategy snakecase --output ./swagger/ --outputTypes "json,yaml"
+swagger-setup:
+	mkdir -p ".swaggobin"
+	[ -f ".swaggobin/swag_$(SWAGGO_VERSION)" ] || { GOBIN=/tmp/_swaggo go install $(SWAGGO); cp "/tmp/_swaggo/swag" ".swaggobin/swag_$(SWAGGO_VERSION)"; rm -rf "/tmp/_swaggo"; }
+
+swagger: swagger-setup
+	".swaggobin/swag_$(SWAGGO_VERSION)" init -generalInfo ./api/router.go --propertyStrategy camelcase --output ./swagger/ --outputTypes "json,yaml"
 
 pygmentize: website/scn_send.html
 
@@ -75,13 +83,14 @@ push-docker:
 clean:
 	rm -rf _build/*
 	rm -rf .run-data/*
+	rm -rf _pygments/env
 	git clean -fdx
 	! which go 2>&1 >> /dev/null || go clean
 	! which go 2>&1 >> /dev/null || go clean -testcache
 
-fmt:
+fmt: swagger-setup
 	go fmt ./...
-	swag fmt
+	".swaggobin/swag_$(SWAGGO_VERSION)" fmt
 
 test:
 	which gotestsum || go install gotest.tools/gotestsum@latest
