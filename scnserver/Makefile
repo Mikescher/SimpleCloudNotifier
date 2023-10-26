@@ -10,11 +10,16 @@ HASH=$(shell git rev-parse HEAD)
 SWAGGO_VERSION=v1.8.12
 SWAGGO=github.com/swaggo/swag/cmd/swag@$(SWAGGO_VERSION)
 
-build: swagger pygmentize fmt
+build: ids enums swagger pygmentize fmt
 	mkdir -p _build
 	rm -f ./_build/scn_backend
-	go generate ./...
 	CGO_ENABLED=1 go build -v -o _build/scn_backend -tags "timetzdata sqlite_fts5 sqlite_foreign_keys" ./cmd/scnserver
+
+enums:
+	go generate models/enums.go
+
+ids:
+	go generate models/ids.go
 
 run: build
 	mkdir -p .run-data

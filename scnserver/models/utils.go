@@ -5,8 +5,6 @@ import (
 	"time"
 )
 
-//go:generate go run ../_gen/enum-generate.go -- enums_gen.go
-
 func timeOptFmt(t *time.Time, fmt string) *string {
 	if t == nil {
 		return nil

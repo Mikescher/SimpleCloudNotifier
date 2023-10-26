@@ -3,31 +3,9 @@
 package models
 
 import "gogs.mikescher.com/BlackForestBytes/goext/langext"
+import "gogs.mikescher.com/BlackForestBytes/goext/enums"
 
-const ChecksumGenerator = "38908fc9adc16eb3a1266e4bca06e50ebc8613c5d3c9a4fea39314115f66544e"
-
-type Enum interface {
-	Valid() bool
-	ValuesAny() []any
-	ValuesMeta() []EnumMetaValue
-	VarName() string
-}
-
-type StringEnum interface {
-	Enum
-	String() string
-}
-
-type DescriptionEnum interface {
-	Enum
-	Description() string
-}
-
-type EnumMetaValue struct {
-	VarName     string  `json:"varName"`
-	Value       any     `json:"value"`
-	Description *string `json:"description"`
-}
+const ChecksumEnumGenerator = "8926e4a9845e67086109bef7ca447371ab5c0a94fcfd988f14fd4ee98da9e932" // GoExtVersion: 0.0.291
 
 // ================================ ClientType ================================
 //
@@ -58,7 +36,7 @@ func (e ClientType) ValuesAny() []any {
 	return langext.ArrCastToAny(__ClientTypeValues)
 }
 
-func (e ClientType) ValuesMeta() []EnumMetaValue {
+func (e ClientType) ValuesMeta() []enums.EnumMetaValue {
 	return ClientTypeValuesMeta()
 }
 
@@ -73,8 +51,8 @@ func (e ClientType) VarName() string {
 	return ""
 }
 
-func (e ClientType) Meta() EnumMetaValue {
-	return EnumMetaValue{VarName: e.VarName(), Value: e, Description: nil}
+func (e ClientType) Meta() enums.EnumMetaValue {
+	return enums.EnumMetaValue{VarName: e.VarName(), Value: e, Description: nil}
 }
 
 func ParseClientType(vv string) (ClientType, bool) {
@@ -90,8 +68,8 @@ func ClientTypeValues() []ClientType {
 	return __ClientTypeValues
 }
 
-func ClientTypeValuesMeta() []EnumMetaValue {
-	return []EnumMetaValue{
+func ClientTypeValuesMeta() []enums.EnumMetaValue {
+	return []enums.EnumMetaValue{
 		ClientTypeAndroid.Meta(),
 		ClientTypeIOS.Meta(),
 	}
@@ -128,7 +106,7 @@ func (e DeliveryStatus) ValuesAny() []any {
 	return langext.ArrCastToAny(__DeliveryStatusValues)
 }
 
-func (e DeliveryStatus) ValuesMeta() []EnumMetaValue {
+func (e DeliveryStatus) ValuesMeta() []enums.EnumMetaValue {
 	return DeliveryStatusValuesMeta()
 }
 
@@ -143,8 +121,8 @@ func (e DeliveryStatus) VarName() string {
 	return ""
 }
 
-func (e DeliveryStatus) Meta() EnumMetaValue {
-	return EnumMetaValue{VarName: e.VarName(), Value: e, Description: nil}
+func (e DeliveryStatus) Meta() enums.EnumMetaValue {
+	return enums.EnumMetaValue{VarName: e.VarName(), Value: e, Description: nil}
 }
 
 func ParseDeliveryStatus(vv string) (DeliveryStatus, bool) {
@@ -160,8 +138,8 @@ func DeliveryStatusValues() []DeliveryStatus {
 	return __DeliveryStatusValues
 }
 
-func DeliveryStatusValuesMeta() []EnumMetaValue {
-	return []EnumMetaValue{
+func DeliveryStatusValuesMeta() []enums.EnumMetaValue {
+	return []enums.EnumMetaValue{
 		DeliveryStatusRetry.Meta(),
 		DeliveryStatusSuccess.Meta(),
 		DeliveryStatusFailed.Meta(),
@@ -208,7 +186,7 @@ func (e TokenPerm) ValuesAny() []any {
 	return langext.ArrCastToAny(__TokenPermValues)
 }
 
-func (e TokenPerm) ValuesMeta() []EnumMetaValue {
+func (e TokenPerm) ValuesMeta() []enums.EnumMetaValue {
 	return TokenPermValuesMeta()
 }
 
@@ -230,8 +208,8 @@ func (e TokenPerm) VarName() string {
 	return ""
 }
 
-func (e TokenPerm) Meta() EnumMetaValue {
-	return EnumMetaValue{VarName: e.VarName(), Value: e, Description: langext.Ptr(e.Description())}
+func (e TokenPerm) Meta() enums.EnumMetaValue {
+	return enums.EnumMetaValue{VarName: e.VarName(), Value: e, Description: langext.Ptr(e.Description())}
 }
 
 func ParseTokenPerm(vv string) (TokenPerm, bool) {
@@ -247,8 +225,8 @@ func TokenPermValues() []TokenPerm {
 	return __TokenPermValues
 }
 
-func TokenPermValuesMeta() []EnumMetaValue {
-	return []EnumMetaValue{
+func TokenPermValuesMeta() []enums.EnumMetaValue {
+	return []enums.EnumMetaValue{
 		PermAdmin.Meta(),
 		PermChannelRead.Meta(),
 		PermChannelSend.Meta(),

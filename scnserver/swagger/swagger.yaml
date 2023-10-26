@@ -376,29 +376,6 @@ definitions:
       suppress_send:
         type: boolean
     type: object
-  handler.SendMessageCompat.response:
-    properties:
-      errhighlight:
-        type: integer
-      error:
-        $ref: '#/definitions/apierr.APIError'
-      is_pro:
-        type: boolean
-      message:
-        type: string
-      messagecount:
-        type: integer
-      quota:
-        type: integer
-      quota_max:
-        type: integer
-      scn_msg_id:
-        type: integer
-      success:
-        type: boolean
-      suppress_send:
-        type: boolean
-    type: object
   handler.Sleep.response:
     properties:
       duration:
@@ -458,7 +435,7 @@ definitions:
       user_id:
         type: integer
     type: object
-  handler.UptimeKumaWebHook.uptimeKumaWebhookBody:
+  handler.UptimeKuma.body:
     properties:
       heartbeat:
         properties:
@@ -466,6 +443,8 @@ definitions:
             type: string
           msg:
             type: string
+          status:
+            type: integer
           time:
             type: string
           timezone:
@@ -481,6 +460,11 @@ definitions:
             type: string
         type: object
       msg:
+        type: string
+    type: object
+  handler.UptimeKuma.response:
+    properties:
+      message_id:
         type: string
     type: object
   handler.pingResponse:
@@ -1418,7 +1402,7 @@ paths:
       summary: Delete a single message
       tags:
       - API-v2
-    patch:
+    get:
       description: |-
         The user must either own the message and request the resource with the READ or ADMIN Key
         Or the user must subscribe to the corresponding channel (and be confirmed) and request the resource with the READ or ADMIN Key
@@ -2414,6 +2398,70 @@ paths:
       summary: Update a subscription (e.g. confirm)
       tags:
       - API-v2
+  /external/v1/uptime-kuma:
+    post:
+      description: All parameter can be set via query-parameter or the json body.
+        Only UserID, UserKey and Title are required
+      parameters:
+      - in: query
+        name: channel
+        type: string
+      - in: query
+        name: channel_down
+        type: string
+      - in: query
+        name: channel_up
+        type: string
+      - example: P3TNH8mvv14fm
+        in: query
+        name: key
+        type: string
+      - in: query
+        name: priority
+        type: integer
+      - in: query
+        name: priority_down
+        type: integer
+      - in: query
+        name: priority_up
+        type: integer
+      - in: query
+        name: senderName
+        type: string
+      - example: "7725"
+        in: query
+        name: user_id
+        type: string
+      - description: ' '
+        in: body
+        name: post_body
+        schema:
+          $ref: '#/definitions/handler.UptimeKuma.body'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.UptimeKuma.response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: The user_id was not found or the user_key is wrong
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "403":
+          description: The user has exceeded its daily quota - wait 24 hours or upgrade
+            your account
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: An internal server error occurred - try again later
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Send a new message
+      tags:
+      - External
   /send:
     post:
       description: All parameter can be set via query-parameter or the json body.
@@ -2535,53 +2583,91 @@ paths:
       description: All parameter can be set via query-parameter or form-data body.
         Only UserID, UserKey and Title are required
       parameters:
-      - in: query
+      - example: test
+        in: query
+        name: channel
+        type: string
+      - example: This is a message
+        in: query
         name: content
         type: string
-      - in: query
+      - example: P3TNH8mvv14fm
+        in: query
+        name: key
+        type: string
+      - example: db8b0e6a-a08c-4646
+        in: query
         name: msg_id
         type: string
-      - in: query
+      - enum:
+        - 0
+        - 1
+        - 2
+        example: 1
+        in: query
         name: priority
         type: integer
-      - in: query
+      - example: example-server
+        in: query
+        name: sender_name
+        type: string
+      - example: 1669824037
+        in: query
         name: timestamp
         type: number
-      - in: query
+      - example: Hello World
+        in: query
         name: title
         type: string
-      - in: query
+      - example: "7725"
+        in: query
         name: user_id
-        type: integer
-      - in: query
-        name: user_key
         type: string
-      - in: formData
+      - example: test
+        in: formData
+        name: channel
+        type: string
+      - example: This is a message
+        in: formData
         name: content
         type: string
-      - in: formData
+      - example: P3TNH8mvv14fm
+        in: formData
+        name: key
+        type: string
+      - example: db8b0e6a-a08c-4646
+        in: formData
         name: msg_id
         type: string
-      - in: formData
+      - enum:
+        - 0
+        - 1
+        - 2
+        example: 1
+        in: formData
         name: priority
         type: integer
-      - in: formData
+      - example: example-server
+        in: formData
+        name: sender_name
+        type: string
+      - example: 1669824037
+        in: formData
         name: timestamp
         type: number
-      - in: formData
+      - example: Hello World
+        in: formData
         name: title
         type: string
-      - in: formData
+      - example: "7725"
+        in: formData
         name: user_id
-        type: integer
-      - in: formData
-        name: user_key
         type: string
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.SendMessageCompat.response'
+            $ref: '#/definitions/handler.SendMessage.response'
         "400":
           description: Bad Request
           schema:
@@ -2599,49 +2685,6 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Send a new message (compatibility)
-      tags:
-      - External
-  /webhook/uptime-kuma:
-    post:
-      description: All parameter can be set via query-parameter or the json body.
-        Only UserID, UserKey and Title are required
-      parameters:
-      - example: P3TNH8mvv14fm
-        in: query
-        name: key
-        type: string
-      - example: "7725"
-        in: query
-        name: user_id
-        type: string
-      - description: ' '
-        in: body
-        name: post_body
-        schema:
-          $ref: '#/definitions/handler.UptimeKumaWebHook.uptimeKumaWebhookBody'
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "401":
-          description: The user_id was not found or the user_key is wrong
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "403":
-          description: The user has exceeded its daily quota - wait 24 hours or upgrade
-            your account
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-        "500":
-          description: An internal server error occurred - try again later
-          schema:
-            $ref: '#/definitions/ginresp.apiError'
-      summary: Send a new message
       tags:
       - External
 swagger: "2.0"
