@@ -535,6 +535,15 @@ func TestCompatUpdateFCM(t *testing.T) {
 	s1 := tt.RequestPost[gin.H](t, baseUrl, fmt.Sprintf("/send.php?user_id=%d&user_key=%s&title=%s", userid, newkey, url.QueryEscape("msg_2")), nil)
 	tt.AssertEqual(t, "success", true, s1["success"])
 	tt.AssertEqual(t, "fcm", "NEW_FCM", pusher.Last().Client.FCMToken)
+
+	upd2 := tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/update.php?user_id=%d&user_key=%s&fcm_token=%s", userid, newkey, "NEW_FCM_2"))
+	tt.AssertEqual(t, "success", true, upd2["success"])
+
+	newkey = upd2["user_key"].(string)
+
+	r1 = tt.RequestGet[gin.H](t, baseUrl, fmt.Sprintf("/api/info.php?user_id=%d&user_key=%s", userid, newkey))
+	tt.AssertEqual(t, "success", true, r1["success"])
+	tt.AssertEqual(t, "fcm_token_set", true, r1["fcm_token_set"])
 }
 
 func TestCompatUpgrade(t *testing.T) {
