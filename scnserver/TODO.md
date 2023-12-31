@@ -68,6 +68,8 @@
 
  - cli app (?)
 
+ - Use "github.com/glebarez/go-sqlite" instead of mattn3 (see ai-sig alarmserver)
+
 #### FUTURE
 
  - Remove compat, especially do not create compat id for every new message...
