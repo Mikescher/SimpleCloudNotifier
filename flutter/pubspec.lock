@@ -75,6 +75,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  font_awesome_flutter:
+    dependency: "direct main"
+    description:
+      path: "deps/font_awesome_flutter"
+      relative: true
+    source: path
+    version: "10.7.0"
   lints:
     dependency: transitive
     description:
