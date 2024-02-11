@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
+import 'package:simplecloudnotifier/models/key_token_auth.dart';
+import 'package:simplecloudnotifier/state/user_account.dart';
 
 class AccountLoginPage extends StatefulWidget {
-  const AccountLoginPage({super.key});
+  final void Function()? onLogin;
+
+  const AccountLoginPage({super.key, this.onLogin});
 
   @override
   State<AccountLoginPage> createState() => _AccountLoginPageState();
@@ -66,20 +71,31 @@ class _AccountLoginPageState extends State<AccountLoginPage> {
 
   void _login() async {
     final msgr = ScaffoldMessenger.of(context);
+    final prov = Provider.of<UserAccount>(context, listen: false);
 
-    final verified = await APIClient.verifyToken(_ctrlUserID.text, _ctrlToken.text);
-    if (verified) {
-      msgr.showSnackBar(
-        const SnackBar(
-          content: Text('Data ok'),
-        ),
-      );
-    } else {
-      msgr.showSnackBar(
-        const SnackBar(
-          content: Text('Failed to verify token'),
-        ),
-      );
+    try {
+      final uid = _ctrlUserID.text;
+      final tok = _ctrlToken.text;
+
+      final verified = await APIClient.verifyToken(uid, tok);
+      if (verified) {
+        msgr.showSnackBar(
+          const SnackBar(
+            content: Text('Data ok'), //TODO toast
+          ),
+        );
+        prov.setToken(KeyTokenAuth(userId: uid, token: tok));
+        await prov.save();
+        widget.onLogin?.call();
+      } else {
+        msgr.showSnackBar(
+          const SnackBar(
+            content: Text('Failed to verify token'), //TODO toast
+          ),
+        );
+      }
+    } catch (e) {
+      //TODO
     }
   }
 }

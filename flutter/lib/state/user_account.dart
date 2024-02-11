@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/key_token_auth.dart';
 import '../models/user.dart';
@@ -10,9 +11,19 @@ class UserAccount extends ChangeNotifier {
   KeyTokenAuth? _auth;
   KeyTokenAuth? get auth => _auth;
 
+  UserAccount() {
+    load();
+  }
+
   void setToken(KeyTokenAuth auth) {
     _auth = auth;
-    _user = user;
+    _user = null;
+    notifyListeners();
+  }
+
+  void clearToken() {
+    _auth = null;
+    _user = null;
     notifyListeners();
   }
 
@@ -24,5 +35,29 @@ class UserAccount extends ChangeNotifier {
   void clearUser() {
     _user = null;
     notifyListeners();
+  }
+
+  load() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final uid = prefs.getString('auth.userid');
+    final tok = prefs.getString('auth.token');
+
+    if (uid != null && tok != null) {
+      setToken(KeyTokenAuth(userId: uid, token: tok));
+    } else {
+      clearToken();
+    }
+  }
+
+  save() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_auth == null) {
+      await prefs.remove('auth.userid');
+      await prefs.remove('auth.token');
+    } else {
+      await prefs.setString('auth.userid', _auth!.userId);
+      await prefs.setString('auth.token', _auth!.token);
+    }
   }
 }

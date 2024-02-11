@@ -16,21 +16,22 @@ enum _SubPage { chooseAuth, login, main }
 
 class _AccountRootPageState extends State<AccountRootPage> {
   late _SubPage _page;
+  late UserAccount userAcc;
 
   @override
   void initState() {
     super.initState();
 
-    var prov = Provider.of<UserAccount>(context, listen: false);
+    userAcc = Provider.of<UserAccount>(context, listen: false);
 
-    _page = (prov.auth != null) ? _SubPage.main : _SubPage.chooseAuth;
+    _page = (userAcc.auth != null) ? _SubPage.main : _SubPage.chooseAuth;
 
-    prov.addListener(_onAuthStateChanged);
+    userAcc.addListener(_onAuthStateChanged);
   }
 
   @override
   void dispose() {
-    Provider.of<UserAccount>(context, listen: false).removeListener(_onAuthStateChanged);
+    userAcc.removeListener(_onAuthStateChanged);
     super.dispose();
   }
 
@@ -48,10 +49,10 @@ class _AccountRootPageState extends State<AccountRootPage> {
       builder: (context, acc, child) {
         switch (_page) {
           case _SubPage.main:
-            return const Center(
+            return Center(
               child: Text(
-                'Logged In',
-                style: TextStyle(fontSize: 24),
+                'Logged In: ${acc.auth?.userId}',
+                style: const TextStyle(fontSize: 24),
               ),
             );
           case _SubPage.chooseAuth:
@@ -64,7 +65,11 @@ class _AccountRootPageState extends State<AccountRootPage> {
               }),
             );
           case _SubPage.login:
-            return const AccountLoginPage();
+            return AccountLoginPage(
+              onLogin: () => setState(() {
+                _page = _SubPage.main;
+              }),
+            );
         }
       },
     );
