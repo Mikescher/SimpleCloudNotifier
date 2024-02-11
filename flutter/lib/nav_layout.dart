@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 
 import 'bottom_fab/fab_bottom_app_bar.dart';
+import 'pages/account/root.dart';
 import 'pages/message_list/message_list.dart';
+import 'state/app_theme.dart';
 
 class SCNNavLayout extends StatefulWidget {
   const SCNNavLayout({super.key});
@@ -14,13 +17,11 @@ class SCNNavLayout extends StatefulWidget {
 class _SCNNavLayoutState extends State<SCNNavLayout> {
   int _selectedIndex = 0;
 
-  static const TextStyle optionStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
-
   static const List<Widget> _subPages = <Widget>[
-    MessageListPage(title: 'Messages 1'),
-    MessageListPage(title: 'Messages 2'),
-    MessageListPage(title: 'Messages 3'),
-    MessageListPage(title: 'Messages 4'),
+    MessageListPage(title: 'Messages'),
+    MessageListPage(title: 'Page 2'),
+    AccountRootPage(),
+    MessageListPage(title: 'Page 4'),
   ];
 
   void _onItemTapped(int index) {
@@ -39,9 +40,7 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(context),
-      body: Center(
-        child: _subPages.elementAt(_selectedIndex),
-      ),
+      body: _subPages.elementAt(_selectedIndex),
       bottomNavigationBar: _buildNavBar(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: _buildFAB(context),
@@ -61,8 +60,8 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
   Widget _buildNavBar(BuildContext context) {
     return FABBottomAppBar(
       onTabSelected: _onItemTapped,
-      color: Colors.grey,
-      selectedColor: Colors.black,
+      color: Theme.of(context).disabledColor,
+      selectedColor: Theme.of(context).primaryColorDark,
       notchedShape: const AutomaticNotchedShape(
         RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
@@ -83,10 +82,19 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
     );
   }
 
-  AppBar _buildAppBar(BuildContext context) {
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
       title: const Text('Simple Cloud Notifier 2.0'),
       actions: <Widget>[
+        Consumer<AppTheme>(
+          builder: (context, appTheme, child) => IconButton(
+            icon: Icon(appTheme.darkMode ? FontAwesomeIcons.solidSun : FontAwesomeIcons.solidMoon),
+            tooltip: 'Debug',
+            onPressed: () {
+              appTheme.switchDarkMode();
+            },
+          ),
+        ),
         IconButton(
           icon: const Icon(FontAwesomeIcons.solidSpiderBlackWidow),
           tooltip: 'Debug',
