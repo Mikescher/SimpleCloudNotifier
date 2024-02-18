@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:simplecloudnotifier/pages/send/root.dart';
 
 import 'bottom_fab/fab_bottom_app_bar.dart';
 import 'pages/account/root.dart';
@@ -15,13 +16,14 @@ class SCNNavLayout extends StatefulWidget {
 }
 
 class _SCNNavLayoutState extends State<SCNNavLayout> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 0; // 4 == FAB
 
   static const List<Widget> _subPages = <Widget>[
     MessageListPage(title: 'Messages'),
     MessageListPage(title: 'Page 2'),
     AccountRootPage(),
     MessageListPage(title: 'Page 4'),
+    SendRootPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -30,9 +32,9 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
     });
   }
 
-  void _onFABTapped(int index) {
+  void _onFABTapped() {
     setState(() {
-      //TODO
+      _selectedIndex = 4;
     });
   }
 
@@ -49,7 +51,7 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
 
   Widget _buildFAB(BuildContext context) {
     return FloatingActionButton(
-      onPressed: () {},
+      onPressed: _onFABTapped,
       tooltip: 'Increment',
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(17))),
       elevation: 2.0,
@@ -59,6 +61,7 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
 
   Widget _buildNavBar(BuildContext context) {
     return FABBottomAppBar(
+      selectedIndex: _selectedIndex,
       onTabSelected: _onItemTapped,
       color: Theme.of(context).disabledColor,
       selectedColor: Theme.of(context).primaryColorDark,
@@ -103,11 +106,6 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
         IconButton(
           icon: const Icon(FontAwesomeIcons.solidMagnifyingGlass),
           tooltip: 'Search',
-          onPressed: () {},
-        ),
-        IconButton(
-          icon: const Icon(FontAwesomeIcons.solidQrcode),
-          tooltip: 'Show Account QR Code',
           onPressed: () {},
         ),
       ],

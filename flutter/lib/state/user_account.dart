@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:simplecloudnotifier/api/api_client.dart';
 
 import '../models/key_token_auth.dart';
 import '../models/user.dart';
@@ -59,5 +60,23 @@ class UserAccount extends ChangeNotifier {
       await prefs.setString('auth.userid', _auth!.userId);
       await prefs.setString('auth.token', _auth!.token);
     }
+  }
+
+  loadUser(bool force) async {
+    if (!force && _user != null) {
+      return _user;
+    }
+
+    if (_auth == null) {
+      throw Exception('Not authenticated');
+    }
+
+    final user = await APIClient.getUser(_auth!.userId, _auth!.token);
+
+    setUser(user);
+
+    await save();
+
+    return user;
   }
 }

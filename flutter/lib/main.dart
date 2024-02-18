@@ -22,6 +22,8 @@ class SCNApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Provider.of<UserAccount>(context); // ensure UserAccount is loaded
+
     return Consumer<AppTheme>(
       builder: (context, appTheme, child) => MaterialApp(
         title: 'SimpleCloudNotifier',

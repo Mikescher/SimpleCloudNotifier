@@ -81,7 +81,7 @@ class _AccountLoginPageState extends State<AccountLoginPage> {
       if (verified) {
         msgr.showSnackBar(
           const SnackBar(
-            content: Text('Data ok'), //TODO toast
+            content: Text('Data ok'),
           ),
         );
         prov.setToken(KeyTokenAuth(userId: uid, token: tok));
@@ -90,7 +90,7 @@ class _AccountLoginPageState extends State<AccountLoginPage> {
       } else {
         msgr.showSnackBar(
           const SnackBar(
-            content: Text('Failed to verify token'), //TODO toast
+            content: Text('Failed to verify token'),
           ),
         );
       }
