@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 class FabWithIcons extends StatefulWidget {
   FabWithIcons({super.key, required this.icons, required this.onIconTapped});
   final List<IconData> icons;
-  ValueChanged<int> onIconTapped;
+  final ValueChanged<int> onIconTapped;
+
   @override
   State createState() => FabWithIconsState();
 }

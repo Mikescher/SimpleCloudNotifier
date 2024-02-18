@@ -33,12 +33,13 @@ class _AccountLoginPageState extends State<AccountLoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(
-            width: 250,
+          FractionallySizedBox(
+            widthFactor: 1.0,
             child: TextField(
               controller: _ctrlUserID,
               decoration: const InputDecoration(
@@ -48,8 +49,8 @@ class _AccountLoginPageState extends State<AccountLoginPage> {
             ),
           ),
           const SizedBox(height: 16),
-          SizedBox(
-            width: 250,
+          FractionallySizedBox(
+            widthFactor: 1.0,
             child: TextField(
               controller: _ctrlToken,
               decoration: const InputDecoration(

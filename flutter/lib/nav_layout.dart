@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:simplecloudnotifier/pages/channel_list/root.dart';
 import 'package:simplecloudnotifier/pages/send/root.dart';
 
 import 'bottom_fab/fab_bottom_app_bar.dart';
 import 'pages/account/root.dart';
 import 'pages/message_list/message_list.dart';
+import 'pages/settings/root.dart';
 import 'state/app_theme.dart';
 
 class SCNNavLayout extends StatefulWidget {
@@ -19,10 +21,10 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
   int _selectedIndex = 0; // 4 == FAB
 
   static const List<Widget> _subPages = <Widget>[
-    MessageListPage(title: 'Messages'),
-    MessageListPage(title: 'Page 2'),
+    MessageListPage(),
+    ChannelRootPage(),
     AccountRootPage(),
-    MessageListPage(title: 'Page 4'),
+    SettingsRootPage(),
     SendRootPage(),
   ];
 
