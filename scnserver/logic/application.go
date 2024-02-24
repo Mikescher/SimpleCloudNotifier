@@ -4,6 +4,7 @@ import (
 	scn "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
+	"blackforestbytes.com/simplecloudnotifier/db/impl/primary"
 	"blackforestbytes.com/simplecloudnotifier/db/simplectx"
 	"blackforestbytes.com/simplecloudnotifier/google"
 	"blackforestbytes.com/simplecloudnotifier/models"
@@ -331,7 +332,13 @@ func (app *Application) GetOrCreateChannel(ctx *AppContext, userid models.UserID
 
 	subscribeKey := app.GenerateRandomAuthKey()
 
-	newChan, err := app.Database.Primary.CreateChannel(ctx, userid, displayChanName, intChanName, subscribeKey)
+	channel := primary.CreateChanel{
+		UserId:       userid,
+		IntName:      intChanName,
+		SubscribeKey: subscribeKey,
+		DisplayName:  displayChanName,
+	}
+	newChan, err := app.Database.Primary.CreateChannel(ctx, channel)
 	if err != nil {
 		return models.Channel{}, err
 	}

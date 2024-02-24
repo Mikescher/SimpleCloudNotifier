@@ -4,6 +4,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	ct "blackforestbytes.com/simplecloudnotifier/db/cursortoken"
+	"blackforestbytes.com/simplecloudnotifier/db/impl/primary"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"errors"
@@ -180,6 +181,8 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 	type body struct {
 		Name      string `json:"name"`
 		Subscribe *bool  `json:"subscribe"`
+
+		Description *string `json:"description"`
 	}
 
 	var u uri
@@ -233,7 +236,15 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 
 	subscribeKey := h.app.GenerateRandomAuthKey()
 
-	channel, err := h.database.CreateChannel(ctx, u.UserID, channelDisplayName, channelInternalName, subscribeKey)
+	cChannel := primary.CreateChanel{
+		UserId:       u.UserID,
+		IntName:      channelInternalName,
+		SubscribeKey: subscribeKey,
+		DisplayName:  channelDisplayName,
+		Description:  b.Description,
+	}
+
+	channel, err := h.database.CreateChannel(ctx, cChannel)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create channel", err)
 	}
