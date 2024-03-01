@@ -14,15 +14,8 @@ class AccountLoginPage extends StatefulWidget {
 }
 
 class _AccountLoginPageState extends State<AccountLoginPage> {
-  late TextEditingController _ctrlUserID;
-  late TextEditingController _ctrlToken;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrlUserID = TextEditingController();
-    _ctrlToken = TextEditingController();
-  }
+  final TextEditingController _ctrlUserID = TextEditingController();
+  final TextEditingController _ctrlToken = TextEditingController();
 
   @override
   void dispose() {
@@ -78,7 +71,7 @@ class _AccountLoginPageState extends State<AccountLoginPage> {
       final uid = _ctrlUserID.text;
       final tok = _ctrlToken.text;
 
-      final verified = await APIClient.verifyToken(uid, tok);
+      final verified = await APIClient.verifyToken(uid, tok); //TODO verify that this is an perm=ADMIN key
       if (verified) {
         msgr.showSnackBar(
           const SnackBar(
