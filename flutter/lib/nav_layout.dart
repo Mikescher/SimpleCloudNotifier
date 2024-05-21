@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:provider/provider.dart';
+import 'package:simplecloudnotifier/components/layout/app_bar.dart';
 import 'package:simplecloudnotifier/pages/channel_list/root.dart';
 import 'package:simplecloudnotifier/pages/send/root.dart';
 
-import 'bottom_fab/fab_bottom_app_bar.dart';
+import 'components/bottom_fab/fab_bottom_app_bar.dart';
 import 'pages/account/root.dart';
 import 'pages/message_list/message_list.dart';
 import 'pages/settings/root.dart';
-import 'state/app_theme.dart';
 
 class SCNNavLayout extends StatefulWidget {
   const SCNNavLayout({super.key});
@@ -43,7 +42,7 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(context),
+      appBar: SCNAppBar(),
       body: _subPages.elementAt(_selectedIndex),
       bottomNavigationBar: _buildNavBar(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -84,34 +83,6 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
         FABBottomAppBarItem(iconData: FontAwesomeIcons.solidFileUser, text: 'Account'),
         FABBottomAppBarItem(iconData: FontAwesomeIcons.solidGear, text: 'Settings'),
       ],
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
-      title: const Text('Simple Cloud Notifier 2.0'),
-      actions: <Widget>[
-        Consumer<AppTheme>(
-          builder: (context, appTheme, child) => IconButton(
-            icon: Icon(appTheme.darkMode ? FontAwesomeIcons.solidSun : FontAwesomeIcons.solidMoon),
-            tooltip: 'Debug',
-            onPressed: () {
-              appTheme.switchDarkMode();
-            },
-          ),
-        ),
-        IconButton(
-          icon: const Icon(FontAwesomeIcons.solidSpiderBlackWidow),
-          tooltip: 'Debug',
-          onPressed: () {},
-        ),
-        IconButton(
-          icon: const Icon(FontAwesomeIcons.solidMagnifyingGlass),
-          tooltip: 'Search',
-          onPressed: () {},
-        ),
-      ],
-      backgroundColor: Theme.of(context).secondaryHeaderColor,
     );
   }
 }

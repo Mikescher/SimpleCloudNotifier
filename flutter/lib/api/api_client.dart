@@ -39,7 +39,7 @@ class APIClient {
     return User.fromJson(jsonDecode(response.body));
   }
 
-  static getChannelList(KeyTokenAuth auth, ChannelSelector sel) async {
+  static Future<List<ChannelWithSubscription>> getChannelList(KeyTokenAuth auth, ChannelSelector sel) async {
     var url = '$_base/users/${auth.userId}/channels?selector=${sel.apiKey}';
     final uri = Uri.parse(url);
 
@@ -51,10 +51,10 @@ class APIClient {
 
     final data = jsonDecode(response.body);
 
-    return data['channels'].map<ChannelWithSubscription>((e) => ChannelWithSubscription.fromJson(e)).toList();
+    return data['channels'].map<ChannelWithSubscription>((e) => ChannelWithSubscription.fromJson(e)).toList() as List<ChannelWithSubscription>;
   }
 
-  static getMessageList(KeyTokenAuth auth, String pageToken, int? pageSize) async {
+  static Future<(String, List<Message>)> getMessageList(KeyTokenAuth auth, String pageToken, int? pageSize) async {
     var url = '$_base/messages?next_page_token=$pageToken';
     if (pageSize != null) {
       url += '&page_size=$pageSize';
@@ -71,8 +71,19 @@ class APIClient {
 
     final npt = data['next_page_token'] as String;
 
-    final messages = data['messages'].map<Message>((e) => Message.fromJson(e)).toList();
+    final messages = data['messages'].map<Message>((e) => Message.fromJson(e)).toList() as List<Message>;
 
-    return [npt, messages];
+    return (npt, messages);
+  }
+
+  static Future<Message> getMessage(KeyTokenAuth auth, String msgid) async {
+    final uri = Uri.parse('$_base/messages/$msgid');
+    final response = await http.get(uri, headers: {'Authorization': 'SCN ${auth.token}'});
+
+    if (response.statusCode != 200) {
+      throw Exception('API request failed');
+    }
+
+    return Message.fromJson(jsonDecode(response.body));
   }
 }

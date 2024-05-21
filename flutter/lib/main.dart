@@ -9,8 +9,14 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => UserAccount()),
-        ChangeNotifierProvider(create: (context) => AppTheme()),
+        ChangeNotifierProvider(
+          create: (context) => UserAccount(),
+          lazy: false,
+        ),
+        ChangeNotifierProvider(
+          create: (context) => AppTheme(),
+          lazy: false,
+        ),
       ],
       child: const SCNApp(),
     ),
