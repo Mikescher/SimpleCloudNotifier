@@ -76,10 +76,7 @@ class _MessageListPageState extends State<MessageListPage> {
             message: item,
             allChannels: _channels ?? {},
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => MessageViewPage(messageID: item.messageID)),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (context) => MessageViewPage(message: item)));
             },
           ),
         ),

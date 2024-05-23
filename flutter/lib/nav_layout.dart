@@ -42,7 +42,12 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: SCNAppBar(),
+      appBar: SCNAppBar(
+        title: null,
+        showDebug: true,
+        showSearch: _selectedIndex == 0 || _selectedIndex == 1,
+        showThemeSwitch: true,
+      ),
       body: _subPages.elementAt(_selectedIndex),
       bottomNavigationBar: _buildNavBar(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

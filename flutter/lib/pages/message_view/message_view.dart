@@ -6,9 +6,9 @@ import 'package:simplecloudnotifier/models/message.dart';
 import 'package:simplecloudnotifier/state/user_account.dart';
 
 class MessageViewPage extends StatefulWidget {
-  const MessageViewPage({super.key, required this.messageID});
+  const MessageViewPage({super.key, required this.message});
 
-  final String messageID;
+  final Message message; // Potentially trimmed
 
   @override
   State<MessageViewPage> createState() => _MessageViewPageState();
@@ -26,7 +26,7 @@ class _MessageViewPageState extends State<MessageViewPage> {
   Future<Message> fetchMessage() async {
     final acc = Provider.of<UserAccount>(context, listen: false);
 
-    return await APIClient.getMessage(acc.auth!, widget.messageID);
+    return await APIClient.getMessage(acc.auth!, widget.message.messageID);
   }
 
   @override
@@ -38,17 +38,31 @@ class _MessageViewPageState extends State<MessageViewPage> {
   Widget build(BuildContext context) {
     return SCNScaffold(
       title: 'Message',
+      showSearch: false,
       child: FutureBuilder<Message>(
         future: futureMessage,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return Center(child: Text(snapshot.data!.title));
+            return buildMessageView(snapshot.data!, false);
           } else if (snapshot.hasError) {
             return Center(child: Text('${snapshot.error}')); //TODO nice error page
+          } else if (!widget.message.trimmed) {
+            return buildMessageView(widget.message, true);
+          } else {
+            return const Center(child: CircularProgressIndicator());
           }
-
-          return const Center(child: CircularProgressIndicator());
         },
+      ),
+    );
+  }
+
+  Widget buildMessageView(Message message, bool loading) {
+    return Center(
+      child: Column(
+        children: [
+          Text(message.title),
+          Text(message.content ?? ''),
+        ],
       ),
     );
   }

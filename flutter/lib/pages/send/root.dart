@@ -101,6 +101,14 @@ class _SendRootPageState extends State<SendRootPage> {
                 data: url,
                 version: QrVersions.auto,
                 size: 400.0,
+                eyeStyle: QrEyeStyle(
+                  eyeShape: QrEyeShape.square,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
+                dataModuleStyle: QrDataModuleStyle(
+                  dataModuleShape: QrDataModuleShape.square,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
               ),
             );
           }
@@ -123,6 +131,14 @@ class _SendRootPageState extends State<SendRootPage> {
         data: url,
         version: QrVersions.auto,
         size: 400.0,
+        eyeStyle: QrEyeStyle(
+          eyeShape: QrEyeShape.square,
+          color: Theme.of(context).textTheme.bodyLarge?.color,
+        ),
+        dataModuleStyle: QrDataModuleStyle(
+          dataModuleShape: QrDataModuleShape.square,
+          color: Theme.of(context).textTheme.bodyLarge?.color,
+        ),
       ),
     );
   }
