@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:simplecloudnotifier/state/database.dart';
 
-import 'nav_layout.dart';
-import 'state/app_theme.dart';
-import 'state/user_account.dart';
+import 'package:simplecloudnotifier/nav_layout.dart';
+import 'package:simplecloudnotifier/state/app_theme.dart';
+import 'package:simplecloudnotifier/state/user_account.dart';
 
-void main() {
+void main() async {
+  await SCNDatabase.create();
+
   runApp(
     MultiProvider(
       providers: [

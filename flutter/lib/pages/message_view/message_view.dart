@@ -57,6 +57,7 @@ class _MessageViewPageState extends State<MessageViewPage> {
   }
 
   Widget buildMessageView(Message message, bool loading) {
+    //TODO loading true/false indicator
     return Center(
       child: Column(
         children: [
