@@ -17,29 +17,31 @@ void main() async {
 
   Hive.registerAdapter(SCNRequestAdapter());
   Hive.registerAdapter(SCNLogAdapter());
+  Hive.registerAdapter(SCNLogLevelAdapter());
 
   try {
     await Hive.openBox<SCNRequest>('scn-requests');
-    await Hive.openBox<SCNLog>('scn-logs');
-  } catch (e) {
-    print(e);
+  } catch (exc, trace) {
     Hive.deleteBoxFromDisk('scn-requests');
-    Hive.deleteBoxFromDisk('scn-logs');
     await Hive.openBox<SCNRequest>('scn-requests');
-    await Hive.openBox<SCNLog>('scn-logs');
+    ApplicationLog.error('Failed to open Hive-Box: scn-requests: ' + exc.toString(), trace: trace);
   }
+
+  try {
+    await Hive.openBox<SCNLog>('scn-logs');
+  } catch (exc, trace) {
+    Hive.deleteBoxFromDisk('scn-logs');
+    await Hive.openBox<SCNLog>('scn-logs');
+    ApplicationLog.error('Failed to open Hive-Box: scn-logs: ' + exc.toString(), trace: trace);
+  }
+
+  ApplicationLog.debug('Application started');
 
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (context) => UserAccount(),
-          lazy: false,
-        ),
-        ChangeNotifierProvider(
-          create: (context) => AppTheme(),
-          lazy: false,
-        ),
+        ChangeNotifierProvider(create: (context) => UserAccount(), lazy: false),
+        ChangeNotifierProvider(create: (context) => AppTheme(), lazy: false),
       ],
       child: const SCNApp(),
     ),

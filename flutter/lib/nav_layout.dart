@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:simplecloudnotifier/components/layout/app_bar.dart';
-import 'package:simplecloudnotifier/pages/channel_list/root.dart';
+import 'package:simplecloudnotifier/pages/channel_list/channel_list.dart';
 import 'package:simplecloudnotifier/pages/send/root.dart';
 import 'package:simplecloudnotifier/components/bottom_fab/fab_bottom_app_bar.dart';
 import 'package:simplecloudnotifier/pages/account/root.dart';

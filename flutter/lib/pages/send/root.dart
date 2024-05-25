@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:simplecloudnotifier/state/user_account.dart';
 
@@ -151,8 +152,8 @@ class _SendRootPageState extends State<SendRootPage> {
       } else {
         // TODO ("Cannot open URL");
       }
-    } catch (e) {
-      // TODO ('Cannot open URL');
+    } catch (exc, trace) {
+      ApplicationLog.error('Failed to open URL: ' + exc.toString(), additional: 'URL: ${url}', trace: trace);
     }
   }
 }

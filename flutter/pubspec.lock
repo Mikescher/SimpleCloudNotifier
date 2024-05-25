@@ -280,7 +280,7 @@ packages:
     source: hosted
     version: "2.3.1"
   hive:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: hive
       sha256: "8dcf6db979d7933da8217edcec84e9df1bdb4e4edc7fc77dbd5aa74356d6d941"
@@ -884,6 +884,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
+  xid:
+    dependency: "direct main"
+    description:
+      name: xid
+      sha256: "58b61c7c1234810afa500cde7556d7c407ce72154e0d5a8a5618690f03848dbd"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.1"
   yaml:
     dependency: transitive
     description:

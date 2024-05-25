@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:simplecloudnotifier/models/api_error.dart';
 import 'package:simplecloudnotifier/models/key_token_auth.dart';
 import 'package:simplecloudnotifier/models/user.dart';
+import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/globals.dart';
 import 'package:simplecloudnotifier/state/request_log.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
@@ -67,7 +68,8 @@ class APIClient {
       responseHeaders = response.headers;
     } catch (exc, trace) {
       RequestLog.addRequestException(name, t0, method, uri, req.body, req.headers, exc, trace);
-      showPlatformToast(child: Text('Request "${name}" is fehlgeschlagen'), context: ToastProvider.context);
+      showPlatformToast(child: Text('Request "${name}" failed'), context: ToastProvider.context);
+      ApplicationLog.error('Request "${name}" failed: ' + exc.toString(), trace: trace);
       rethrow;
     }
 
@@ -78,7 +80,9 @@ class APIClient {
         RequestLog.addRequestAPIError(name, t0, method, uri, req.body, req.headers, responseStatusCode, responseBody, responseHeaders, apierr);
         showPlatformToast(child: Text('Request "${name}" is fehlgeschlagen'), context: ToastProvider.context);
         throw Exception(apierr.message);
-      } catch (_) {}
+      } catch (exc, trace) {
+        ApplicationLog.warn('Failed to decode api response as error-object', additional: exc.toString() + "\nBody:\n" + responseBody, trace: trace);
+      }
 
       RequestLog.addRequestErrorStatuscode(name, t0, method, uri, req.body, req.headers, responseStatusCode, responseBody, responseHeaders);
       showPlatformToast(child: Text('Request "${name}" is fehlgeschlagen'), context: ToastProvider.context);
@@ -99,6 +103,7 @@ class APIClient {
     } catch (exc, trace) {
       RequestLog.addRequestDecodeError(name, t0, method, uri, req.body, req.headers, responseStatusCode, responseBody, responseHeaders, exc, trace);
       showPlatformToast(child: Text('Request "${name}" is fehlgeschlagen'), context: ToastProvider.context);
+      ApplicationLog.error('Failed to decode response: ' + exc.toString(), additional: "\nBody:\n" + responseBody, trace: trace);
       rethrow;
     }
   }

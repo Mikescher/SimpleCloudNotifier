@@ -1,11 +1,14 @@
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:simplecloudnotifier/models/api_error.dart';
+import 'package:simplecloudnotifier/state/interfaces.dart';
+import 'package:xid/xid.dart';
 
 part 'request_log.g.dart';
 
 class RequestLog {
   static void addRequestException(String name, DateTime tStart, String method, Uri uri, String reqbody, Map<String, String> reqheaders, dynamic e, StackTrace trace) {
     Hive.box<SCNRequest>('scn-requests').add(SCNRequest(
+      id: Xid().toString(),
       timestampStart: tStart,
       timestampEnd: DateTime.now(),
       name: name,
@@ -24,6 +27,7 @@ class RequestLog {
 
   static void addRequestAPIError(String name, DateTime t0, String method, Uri uri, String reqbody, Map<String, String> reqheaders, int responseStatusCode, String responseBody, Map<String, String> responseHeaders, APIError apierr) {
     Hive.box<SCNRequest>('scn-requests').add(SCNRequest(
+      id: Xid().toString(),
       timestampStart: t0,
       timestampEnd: DateTime.now(),
       name: name,
@@ -42,6 +46,7 @@ class RequestLog {
 
   static void addRequestErrorStatuscode(String name, DateTime t0, String method, Uri uri, String reqbody, Map<String, String> reqheaders, int responseStatusCode, String responseBody, Map<String, String> responseHeaders) {
     Hive.box<SCNRequest>('scn-requests').add(SCNRequest(
+      id: Xid().toString(),
       timestampStart: t0,
       timestampEnd: DateTime.now(),
       name: name,
@@ -60,6 +65,7 @@ class RequestLog {
 
   static void addRequestSuccess(String name, DateTime t0, String method, Uri uri, String reqbody, Map<String, String> reqheaders, int responseStatusCode, String responseBody, Map<String, String> responseHeaders) {
     Hive.box<SCNRequest>('scn-requests').add(SCNRequest(
+      id: Xid().toString(),
       timestampStart: t0,
       timestampEnd: DateTime.now(),
       name: name,
@@ -78,6 +84,7 @@ class RequestLog {
 
   static void addRequestDecodeError(String name, DateTime t0, String method, Uri uri, String reqbody, Map<String, String> reqheaders, int responseStatusCode, String responseBody, Map<String, String> responseHeaders, Object exc, StackTrace trace) {
     Hive.box<SCNRequest>('scn-requests').add(SCNRequest(
+      id: Xid().toString(),
       timestampStart: t0,
       timestampEnd: DateTime.now(),
       name: name,
@@ -96,37 +103,41 @@ class RequestLog {
 }
 
 @HiveType(typeId: 100)
-class SCNRequest extends HiveObject {
+class SCNRequest extends HiveObject implements FieldDebuggable {
   @HiveField(0)
+  final String id;
+
+  @HiveField(10)
   final DateTime timestampStart;
-  @HiveField(1)
+  @HiveField(11)
   final DateTime timestampEnd;
-  @HiveField(2)
+  @HiveField(12)
   final String name;
-  @HiveField(3)
-  final String type;
-  @HiveField(4)
+  @HiveField(13)
+  final String type; // SUCCESS | EXCEPTION | API_ERROR | ERROR_STATUSCODE | DECODE_ERROR
+  @HiveField(14)
   final String error;
-  @HiveField(5)
+  @HiveField(15)
   final String stackTrace;
 
-  @HiveField(6)
+  @HiveField(21)
   final String method;
-  @HiveField(7)
+  @HiveField(22)
   final String url;
-  @HiveField(8)
+  @HiveField(23)
   final Map<String, String> requestHeaders;
-  @HiveField(12)
+  @HiveField(24)
   final String requestBody;
 
-  @HiveField(9)
+  @HiveField(31)
   final int responseStatusCode;
-  @HiveField(10)
+  @HiveField(32)
   final Map<String, String> responseHeaders;
-  @HiveField(11)
+  @HiveField(33)
   final String responseBody;
 
   SCNRequest({
+    required this.id,
     required this.timestampStart,
     required this.timestampEnd,
     required this.name,
@@ -141,4 +152,28 @@ class SCNRequest extends HiveObject {
     required this.error,
     required this.stackTrace,
   });
+
+  @override
+  String toString() {
+    return 'SCNRequest[${this.id}]';
+  }
+
+  List<(String, String)> debugFieldList() {
+    return [
+      ('id', this.id),
+      ('timestampStart', this.timestampStart.toIso8601String()),
+      ('timestampEnd', this.timestampEnd.toIso8601String()),
+      ('name', this.name),
+      ('method', this.method),
+      ('url', this.url),
+      for (var (idx, item) in this.requestHeaders.entries.indexed) ('requestHeaders[$idx]', '${item.key}=${item.value}'),
+      ('requestBody', this.requestBody),
+      ('responseStatusCode', this.responseStatusCode.toString()),
+      for (var (idx, item) in this.responseHeaders.entries.indexed) ('responseHeaders[$idx]', '${item.key}=${item.value}'),
+      ('responseBody', this.responseBody),
+      ('type', this.type),
+      ('error', this.error),
+      ('stackTrace', this.stackTrace),
+    ];
+  }
 }

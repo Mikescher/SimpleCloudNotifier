@@ -17,51 +17,54 @@ class SCNRequestAdapter extends TypeAdapter<SCNRequest> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return SCNRequest(
-      timestampStart: fields[0] as DateTime,
-      timestampEnd: fields[1] as DateTime,
-      name: fields[2] as String,
-      method: fields[6] as String,
-      url: fields[7] as String,
-      requestHeaders: (fields[8] as Map).cast<String, String>(),
-      requestBody: fields[12] as String,
-      responseStatusCode: fields[9] as int,
-      responseHeaders: (fields[10] as Map).cast<String, String>(),
-      responseBody: fields[11] as String,
-      type: fields[3] as String,
-      error: fields[4] as String,
-      stackTrace: fields[5] as String,
+      id: fields[0] as String,
+      timestampStart: fields[10] as DateTime,
+      timestampEnd: fields[11] as DateTime,
+      name: fields[12] as String,
+      method: fields[21] as String,
+      url: fields[22] as String,
+      requestHeaders: (fields[23] as Map).cast<String, String>(),
+      requestBody: fields[24] as String,
+      responseStatusCode: fields[31] as int,
+      responseHeaders: (fields[32] as Map).cast<String, String>(),
+      responseBody: fields[33] as String,
+      type: fields[13] as String,
+      error: fields[14] as String,
+      stackTrace: fields[15] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, SCNRequest obj) {
     writer
-      ..writeByte(13)
+      ..writeByte(14)
       ..writeByte(0)
-      ..write(obj.timestampStart)
-      ..writeByte(1)
-      ..write(obj.timestampEnd)
-      ..writeByte(2)
-      ..write(obj.name)
-      ..writeByte(3)
-      ..write(obj.type)
-      ..writeByte(4)
-      ..write(obj.error)
-      ..writeByte(5)
-      ..write(obj.stackTrace)
-      ..writeByte(6)
-      ..write(obj.method)
-      ..writeByte(7)
-      ..write(obj.url)
-      ..writeByte(8)
-      ..write(obj.requestHeaders)
-      ..writeByte(12)
-      ..write(obj.requestBody)
-      ..writeByte(9)
-      ..write(obj.responseStatusCode)
+      ..write(obj.id)
       ..writeByte(10)
-      ..write(obj.responseHeaders)
+      ..write(obj.timestampStart)
       ..writeByte(11)
+      ..write(obj.timestampEnd)
+      ..writeByte(12)
+      ..write(obj.name)
+      ..writeByte(13)
+      ..write(obj.type)
+      ..writeByte(14)
+      ..write(obj.error)
+      ..writeByte(15)
+      ..write(obj.stackTrace)
+      ..writeByte(21)
+      ..write(obj.method)
+      ..writeByte(22)
+      ..write(obj.url)
+      ..writeByte(23)
+      ..write(obj.requestHeaders)
+      ..writeByte(24)
+      ..write(obj.requestBody)
+      ..writeByte(31)
+      ..write(obj.responseStatusCode)
+      ..writeByte(32)
+      ..write(obj.responseHeaders)
+      ..writeByte(33)
       ..write(obj.responseBody);
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/models/key_token_auth.dart';
+import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/user_account.dart';
 
 class AccountLoginPage extends StatefulWidget {
@@ -75,7 +76,7 @@ class _AccountLoginPageState extends State<AccountLoginPage> {
       if (verified) {
         msgr.showSnackBar(
           const SnackBar(
-            content: Text('Data ok'),
+            content: Text('Data ok'), //TODO use toast?
           ),
         );
         prov.setToken(KeyTokenAuth(userId: uid, token: tok));
@@ -84,12 +85,12 @@ class _AccountLoginPageState extends State<AccountLoginPage> {
       } else {
         msgr.showSnackBar(
           const SnackBar(
-            content: Text('Failed to verify token'),
+            content: Text('Failed to verify token'), //TODO use toast?
           ),
         );
       }
-    } catch (e) {
-      //TODO
+    } catch (exc, trace) {
+      ApplicationLog.error('Failed to verify token: ' + exc.toString(), trace: trace);
     }
   }
 }

@@ -5,6 +5,7 @@ import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
 import 'package:simplecloudnotifier/models/message.dart';
 import 'package:simplecloudnotifier/pages/message_view/message_view.dart';
+import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/user_account.dart';
 import 'package:simplecloudnotifier/pages/message_list/message_list_item.dart';
 
@@ -57,10 +58,9 @@ class _MessageListPageState extends State<MessageListPage> {
       } else {
         _pagingController.appendPage(newItems, npt);
       }
-    } catch (error) {
-      print("API-Error: "); //TODO remove me, proper error handling
-      print(error); //TODO remove me, proper error handling
-      _pagingController.error = error;
+    } catch (exc, trace) {
+      _pagingController.error = exc.toString();
+      ApplicationLog.error('Failed to list messages: ' + exc.toString(), trace: trace);
     }
   }
 

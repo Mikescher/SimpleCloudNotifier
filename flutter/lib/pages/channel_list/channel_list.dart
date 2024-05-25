@@ -3,6 +3,7 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
+import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/user_account.dart';
 import 'package:simplecloudnotifier/pages/channel_list/channel_list_item.dart';
 
@@ -44,8 +45,9 @@ class _ChannelRootPageState extends State<ChannelRootPage> {
       final items = await APIClient.getChannelList(acc.auth!, ChannelSelector.all);
 
       _pagingController.appendLastPage(items);
-    } catch (error) {
-      _pagingController.error = error;
+    } catch (exc, trace) {
+      _pagingController.error = exc.toString();
+      ApplicationLog.error('Failed to list channels: ' + exc.toString(), trace: trace);
     }
   }
 
