@@ -3,9 +3,8 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
-
-import '../../state/user_account.dart';
-import 'channel_list_item.dart';
+import 'package:simplecloudnotifier/state/user_account.dart';
+import 'package:simplecloudnotifier/pages/channel_list/channel_list_item.dart';
 
 class ChannelRootPage extends StatefulWidget {
   const ChannelRootPage({super.key});

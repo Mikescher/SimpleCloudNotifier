@@ -8,9 +8,8 @@ import 'package:simplecloudnotifier/models/key_token_auth.dart';
 import 'package:simplecloudnotifier/models/user.dart';
 import 'package:simplecloudnotifier/state/globals.dart';
 import 'package:simplecloudnotifier/state/request_log.dart';
-
-import '../models/channel.dart';
-import '../models/message.dart';
+import 'package:simplecloudnotifier/models/channel.dart';
+import 'package:simplecloudnotifier/models/message.dart';
 
 enum ChannelSelector {
   owned(apiKey: 'owned'), // Return all channels of the user

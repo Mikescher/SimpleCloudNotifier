@@ -3,11 +3,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:simplecloudnotifier/components/layout/app_bar.dart';
 import 'package:simplecloudnotifier/pages/channel_list/root.dart';
 import 'package:simplecloudnotifier/pages/send/root.dart';
-
-import 'components/bottom_fab/fab_bottom_app_bar.dart';
-import 'pages/account/root.dart';
-import 'pages/message_list/message_list.dart';
-import 'pages/settings/root.dart';
+import 'package:simplecloudnotifier/components/bottom_fab/fab_bottom_app_bar.dart';
+import 'package:simplecloudnotifier/pages/account/root.dart';
+import 'package:simplecloudnotifier/pages/message_list/message_list.dart';
+import 'package:simplecloudnotifier/pages/settings/root.dart';
 
 class SCNNavLayout extends StatefulWidget {
   const SCNNavLayout({super.key});

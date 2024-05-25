@@ -1,9 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
-
-import '../models/key_token_auth.dart';
-import '../models/user.dart';
+import 'package:simplecloudnotifier/models/key_token_auth.dart';
+import 'package:simplecloudnotifier/models/user.dart';
 
 class UserAccount extends ChangeNotifier {
   User? _user;

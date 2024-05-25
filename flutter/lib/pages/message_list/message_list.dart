@@ -6,8 +6,7 @@ import 'package:simplecloudnotifier/models/channel.dart';
 import 'package:simplecloudnotifier/models/message.dart';
 import 'package:simplecloudnotifier/pages/message_view/message_view.dart';
 import 'package:simplecloudnotifier/state/user_account.dart';
-
-import 'message_list_item.dart';
+import 'package:simplecloudnotifier/pages/message_list/message_list_item.dart';
 
 class MessageListPage extends StatefulWidget {
   const MessageListPage({super.key});

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/pages/account/login.dart';
-
-import '../../state/user_account.dart';
-import 'choose_auth.dart';
+import 'package:simplecloudnotifier/state/user_account.dart';
+import 'package:simplecloudnotifier/pages/account/choose_auth.dart';
 
 class AccountRootPage extends StatefulWidget {
   const AccountRootPage({super.key});

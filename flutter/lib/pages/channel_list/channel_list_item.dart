@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../../models/channel.dart';
+import 'package:simplecloudnotifier/models/channel.dart';
 
 class ChannelListItem extends StatelessWidget {
   const ChannelListItem({

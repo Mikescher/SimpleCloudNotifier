@@ -2,7 +2,6 @@ import 'package:fl_toast/fl_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-
 import 'package:simplecloudnotifier/nav_layout.dart';
 import 'package:simplecloudnotifier/state/app_theme.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
