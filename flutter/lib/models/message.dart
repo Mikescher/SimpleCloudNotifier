@@ -31,26 +31,26 @@ class Message {
 
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
-      messageID: json['message_id'],
-      senderUserID: json['sender_user_id'],
-      channelInternalName: json['channel_internal_name'],
-      channelID: json['channel_id'],
-      senderName: json['sender_name'],
-      senderIP: json['sender_ip'],
-      timestamp: json['timestamp'],
-      title: json['title'],
-      content: json['content'],
-      priority: json['priority'],
-      userMessageID: json['usr_message_id'],
-      usedKeyID: json['used_key_id'],
-      trimmed: json['trimmed'],
+      messageID: json['message_id'] as String,
+      senderUserID: json['sender_user_id'] as String,
+      channelInternalName: json['channel_internal_name'] as String,
+      channelID: json['channel_id'] as String,
+      senderName: json['sender_name'] as String,
+      senderIP: json['sender_ip'] as String,
+      timestamp: json['timestamp'] as String,
+      title: json['title'] as String,
+      content: json['content'] as String,
+      priority: json['priority'] as int,
+      userMessageID: json['usr_message_id'] as String,
+      usedKeyID: json['used_key_id'] as String,
+      trimmed: json['trimmed'] as bool,
     );
   }
 
-  static fromPaginatedJsonArray(Map<String, dynamic> data, String keyMessages, String keyToken) {
+  static (String, List<Message>) fromPaginatedJsonArray(Map<String, dynamic> data, String keyMessages, String keyToken) {
     final npt = data[keyToken] as String;
 
-    final messages = (data[keyMessages] as List<dynamic>).map<Message>((e) => Message.fromJson(e)).toList();
+    final messages = (data[keyMessages] as List<dynamic>).map<Message>((e) => Message.fromJson(e as Map<String, dynamic>)).toList();
 
     return (npt, messages);
   }

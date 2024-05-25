@@ -25,15 +25,15 @@ class Channel {
 
   factory Channel.fromJson(Map<String, dynamic> json) {
     return Channel(
-      channelID: json['channel_id'],
-      ownerUserID: json['owner_user_id'],
-      internalName: json['internal_name'],
-      displayName: json['display_name'],
-      descriptionName: json['description_name'],
-      subscribeKey: json['subscribe_key'],
-      timestampCreated: json['timestamp_created'],
-      timestampLastSent: json['timestamp_lastsent'],
-      messagesSent: json['messages_sent'],
+      channelID: json['channel_id'] as String,
+      ownerUserID: json['owner_user_id'] as String,
+      internalName: json['internal_name'] as String,
+      displayName: json['display_name'] as String,
+      descriptionName: json['description_name'] as String?,
+      subscribeKey: json['subscribe_key'] as String?,
+      timestampCreated: json['timestamp_created'] as String,
+      timestampLastSent: json['timestamp_lastsent'] as String?,
+      messagesSent: json['messages_sent'] as int,
     );
   }
 }
@@ -56,20 +56,20 @@ class ChannelWithSubscription extends Channel {
 
   factory ChannelWithSubscription.fromJson(Map<String, dynamic> json) {
     return ChannelWithSubscription(
-      channelID: json['channel_id'],
-      ownerUserID: json['owner_user_id'],
-      internalName: json['internal_name'],
-      displayName: json['display_name'],
-      descriptionName: json['description_name'],
-      subscribeKey: json['subscribe_key'],
-      timestampCreated: json['timestamp_created'],
-      timestampLastSent: json['timestamp_lastsent'],
-      messagesSent: json['messages_sent'],
-      subscription: Subscription.fromJson(json['subscription']),
+      channelID: json['channel_id'] as String,
+      ownerUserID: json['owner_user_id'] as String,
+      internalName: json['internal_name'] as String,
+      displayName: json['display_name'] as String,
+      descriptionName: json['description_name'] as String?,
+      subscribeKey: json['subscribe_key'] as String?,
+      timestampCreated: json['timestamp_created'] as String,
+      timestampLastSent: json['timestamp_lastsent'] as String?,
+      messagesSent: json['messages_sent'] as int,
+      subscription: Subscription.fromJson(json['subscription'] as Map<String, dynamic>),
     );
   }
 
   static List<ChannelWithSubscription> fromJsonArray(List<dynamic> jsonArr) {
-    return jsonArr.map<ChannelWithSubscription>((e) => ChannelWithSubscription.fromJson(e)).toList();
+    return jsonArr.map<ChannelWithSubscription>((e) => ChannelWithSubscription.fromJson(e as Map<String, dynamic>)).toList();
   }
 }

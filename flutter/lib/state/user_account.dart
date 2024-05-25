@@ -38,7 +38,7 @@ class UserAccount extends ChangeNotifier {
     notifyListeners();
   }
 
-  load() async {
+  void load() async {
     final prefs = await SharedPreferences.getInstance();
 
     final uid = prefs.getString('auth.userid');
@@ -51,7 +51,7 @@ class UserAccount extends ChangeNotifier {
     }
   }
 
-  save() async {
+  Future<void> save() async {
     final prefs = await SharedPreferences.getInstance();
     if (_auth == null) {
       await prefs.remove('auth.userid');
@@ -62,9 +62,9 @@ class UserAccount extends ChangeNotifier {
     }
   }
 
-  loadUser(bool force) async {
+  Future<User> loadUser(bool force) async {
     if (!force && _user != null) {
-      return _user;
+      return _user!;
     }
 
     if (_auth == null) {

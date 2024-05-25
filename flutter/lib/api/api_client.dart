@@ -74,7 +74,7 @@ class APIClient {
 
     if (responseStatusCode != 200) {
       try {
-        final apierr = APIError.fromJson(jsonDecode(responseBody));
+        final apierr = APIError.fromJson(jsonDecode(responseBody) as Map<String, dynamic>);
 
         RequestLog.addRequestAPIError(name, t0, method, uri, req.body, req.headers, responseStatusCode, responseBody, responseHeaders, apierr);
         showPlatformToast(child: Text('Request "${name}" is fehlgeschlagen'), context: ToastProvider.context);
@@ -90,7 +90,7 @@ class APIClient {
       final data = jsonDecode(responseBody);
 
       if (fn != null) {
-        final result = fn(data);
+        final result = fn(data as Map<String, dynamic>);
         RequestLog.addRequestSuccess(name, t0, method, uri, req.body, req.headers, responseStatusCode, responseBody, responseHeaders);
         return result;
       } else {
@@ -137,7 +137,7 @@ class APIClient {
       method: 'GET',
       relURL: 'users/${auth.userId}/channels',
       query: {'selector': sel.apiKey},
-      fn: (json) => ChannelWithSubscription.fromJsonArray(json['channels']),
+      fn: (json) => ChannelWithSubscription.fromJsonArray(json['channels'] as List<dynamic>),
       auth: auth,
     );
   }

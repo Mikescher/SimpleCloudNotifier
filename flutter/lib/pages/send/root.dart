@@ -79,7 +79,7 @@ class _SendRootPageState extends State<SendRootPage> {
     //...
   }
 
-  _buildQRCode(BuildContext context, UserAccount acc) {
+  Widget _buildQRCode(BuildContext context, UserAccount acc) {
     if (acc.auth == null) {
       return const Placeholder();
     }

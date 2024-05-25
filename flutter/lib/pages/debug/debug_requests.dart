@@ -25,66 +25,74 @@ class _DebugRequestsPageState extends State<DebugRequestsPage> {
             itemBuilder: (context, listIndex) {
               final req = requestsBox.getAt(requestsBox.length - listIndex - 1)!;
               if (req.type == 'SUCCESS') {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 2.0),
-                  child: GestureDetector(
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => DebugRequestViewPage(request: req))),
-                    child: ListTile(
-                      title: Row(
-                        children: [
-                          SizedBox(
-                            width: 120,
-                            child: Text(_dateFormat.format(req.timestampStart), style: TextStyle(fontSize: 12)),
-                          ),
-                          Expanded(
-                            child: Text(req.name, style: TextStyle(fontWeight: FontWeight.bold)),
-                          ),
-                          SizedBox(width: 2),
-                          Text('${req.timestampEnd.difference(req.timestampStart).inMilliseconds}ms', style: TextStyle(fontSize: 12)),
-                        ],
-                      ),
-                      subtitle: Text(req.type),
-                    ),
-                  ),
-                );
+                return buildItemSuccess(context, req);
               } else {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 2.0),
-                  child: GestureDetector(
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => DebugRequestViewPage(request: req))),
-                    child: ListTile(
-                        tileColor: Theme.of(context).colorScheme.errorContainer,
-                        textColor: Theme.of(context).colorScheme.onErrorContainer,
-                        title: Row(
-                          children: [
-                            SizedBox(
-                              width: 120,
-                              child: Text(_dateFormat.format(req.timestampStart), style: TextStyle(fontSize: 12)),
-                            ),
-                            Expanded(
-                              child: Text(req.name, style: TextStyle(fontWeight: FontWeight.bold)),
-                            ),
-                            SizedBox(width: 2),
-                            Text('${req.timestampEnd.difference(req.timestampStart).inMilliseconds}ms', style: TextStyle(fontSize: 12)),
-                          ],
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(req.type),
-                            Text(
-                              req.error,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        )),
-                  ),
-                );
+                return buildItemError(context, req);
               }
             },
           );
         },
+      ),
+    );
+  }
+
+  Padding buildItemError(BuildContext context, SCNRequest req) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 2.0),
+      child: GestureDetector(
+        onTap: () => Navigator.push(context, MaterialPageRoute<DebugRequestViewPage>(builder: (context) => DebugRequestViewPage(request: req))),
+        child: ListTile(
+            tileColor: Theme.of(context).colorScheme.errorContainer,
+            textColor: Theme.of(context).colorScheme.onErrorContainer,
+            title: Row(
+              children: [
+                SizedBox(
+                  width: 120,
+                  child: Text(_dateFormat.format(req.timestampStart), style: TextStyle(fontSize: 12)),
+                ),
+                Expanded(
+                  child: Text(req.name, style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+                SizedBox(width: 2),
+                Text('${req.timestampEnd.difference(req.timestampStart).inMilliseconds}ms', style: TextStyle(fontSize: 12)),
+              ],
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(req.type),
+                Text(
+                  req.error,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            )),
+      ),
+    );
+  }
+
+  Padding buildItemSuccess(BuildContext context, SCNRequest req) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 2.0),
+      child: GestureDetector(
+        onTap: () => Navigator.push(context, MaterialPageRoute<DebugRequestViewPage>(builder: (context) => DebugRequestViewPage(request: req))),
+        child: ListTile(
+          title: Row(
+            children: [
+              SizedBox(
+                width: 120,
+                child: Text(_dateFormat.format(req.timestampStart), style: TextStyle(fontSize: 12)),
+              ),
+              Expanded(
+                child: Text(req.name, style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+              SizedBox(width: 2),
+              Text('${req.timestampEnd.difference(req.timestampStart).inMilliseconds}ms', style: TextStyle(fontSize: 12)),
+            ],
+          ),
+          subtitle: Text(req.type),
+        ),
       ),
     );
   }

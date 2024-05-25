@@ -18,7 +18,7 @@ class Globals {
   String platform = '';
   String hostname = '';
 
-  init() async {
+  Future<void> init() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
     this.appName = packageInfo.appName;

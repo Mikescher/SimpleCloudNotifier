@@ -145,7 +145,7 @@ class MessageListItem extends StatelessWidget {
     );
   }
 
-  processContent(String? v) {
+  String processContent(String? v) {
     if (v == null) {
       return '';
     }
@@ -158,7 +158,7 @@ class MessageListItem extends StatelessWidget {
     return lines.sublist(0, min(_lineCount, lines.length)).join("\n").trim();
   }
 
-  processTitle(String? v) {
+  String processTitle(String? v) {
     if (v == null) {
       return '';
     }
@@ -174,7 +174,7 @@ class MessageListItem extends StatelessWidget {
     return allChannels[message.channelID]?.displayName ?? message.channelInternalName;
   }
 
-  showChannel(Message message) {
+  bool showChannel(Message message) {
     return message.channelInternalName != 'main';
   }
 }

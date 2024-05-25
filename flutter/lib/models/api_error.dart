@@ -13,10 +13,10 @@ class APIError {
 
   factory APIError.fromJson(Map<String, dynamic> json) {
     return APIError(
-      success: json['success'],
-      error: json['error'],
-      errhighlight: json['errhighlight'],
-      message: json['message'],
+      success: json['success'] as String,
+      error: json['error'] as String,
+      errhighlight: json['errhighlight'] as String,
+      message: json['message'] as String,
     );
   }
 }

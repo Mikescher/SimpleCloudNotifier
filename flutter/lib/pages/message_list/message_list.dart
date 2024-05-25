@@ -48,7 +48,7 @@ class _MessageListPageState extends State<MessageListPage> {
     try {
       if (_channels == null) {
         final channels = await APIClient.getChannelList(acc.auth!, ChannelSelector.allAny);
-        _channels = Map.fromIterable(channels, key: (e) => e.channelID);
+        _channels = <String, ChannelWithSubscription>{for (var v in channels) v.channelID: v};
       }
 
       final (npt, newItems) = await APIClient.getMessageList(acc.auth!, thisPageToken, _pageSize);
@@ -76,7 +76,7 @@ class _MessageListPageState extends State<MessageListPage> {
             message: item,
             allChannels: _channels ?? {},
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => MessageViewPage(message: item)));
+              Navigator.push(context, MaterialPageRoute<MessageViewPage>(builder: (context) => MessageViewPage(message: item)));
             },
           ),
         ),

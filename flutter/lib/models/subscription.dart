@@ -19,13 +19,13 @@ class Subscription {
 
   factory Subscription.fromJson(Map<String, dynamic> json) {
     return Subscription(
-      subscriptionID: json['subscription_id'],
-      subscriberUserID: json['subscriber_user_id'],
-      channelOwnerUserID: json['channel_owner_user_id'],
-      channelID: json['channel_id'],
-      channelInternalName: json['channel_internal_name'],
-      timestampCreated: json['timestamp_created'],
-      confirmed: json['confirmed'],
+      subscriptionID: json['subscription_id'] as String,
+      subscriberUserID: json['subscriber_user_id'] as String,
+      channelOwnerUserID: json['channel_owner_user_id'] as String,
+      channelID: json['channel_id'] as String,
+      channelInternalName: json['channel_internal_name'] as String,
+      timestampCreated: json['timestamp_created'] as String,
+      confirmed: json['confirmed'] as bool,
     );
   }
 }

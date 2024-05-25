@@ -39,7 +39,7 @@ class SCNAppBar extends StatelessWidget implements PreferredSizeWidget {
             icon: const Icon(FontAwesomeIcons.solidSpiderBlackWidow),
             tooltip: 'Debug',
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => DebugMainPage()));
+              Navigator.push(context, MaterialPageRoute<DebugMainPage>(builder: (context) => DebugMainPage()));
             },
           ),
         if (!showDebug) SizedBox.square(dimension: 40),
