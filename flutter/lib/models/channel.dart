@@ -24,31 +24,17 @@ class Channel {
   });
 
   factory Channel.fromJson(Map<String, dynamic> json) {
-    return switch (json) {
-      {
-        'channel_id': String channelID,
-        'owner_user_id': String ownerUserID,
-        'internal_name': String internalName,
-        'display_name': String displayName,
-        'description_name': String? descriptionName,
-        'subscribe_key': String? subscribeKey,
-        'timestamp_created': String timestampCreated,
-        'timestamp_lastsent': String? timestampLastSent,
-        'messages_sent': int messagesSent,
-      } =>
-        Channel(
-          channelID: channelID,
-          ownerUserID: ownerUserID,
-          internalName: internalName,
-          displayName: displayName,
-          descriptionName: descriptionName,
-          subscribeKey: subscribeKey,
-          timestampCreated: timestampCreated,
-          timestampLastSent: timestampLastSent,
-          messagesSent: messagesSent,
-        ),
-      _ => throw const FormatException('Failed to decode Channel.'),
-    };
+    return Channel(
+      channelID: json['channel_id'],
+      ownerUserID: json['owner_user_id'],
+      internalName: json['internal_name'],
+      displayName: json['display_name'],
+      descriptionName: json['description_name'],
+      subscribeKey: json['subscribe_key'],
+      timestampCreated: json['timestamp_created'],
+      timestampLastSent: json['timestamp_lastsent'],
+      messagesSent: json['messages_sent'],
+    );
   }
 }
 
@@ -69,32 +55,21 @@ class ChannelWithSubscription extends Channel {
   });
 
   factory ChannelWithSubscription.fromJson(Map<String, dynamic> json) {
-    return switch (json) {
-      {
-        'channel_id': String channelID,
-        'owner_user_id': String ownerUserID,
-        'internal_name': String internalName,
-        'display_name': String displayName,
-        'description_name': String? descriptionName,
-        'subscribe_key': String? subscribeKey,
-        'timestamp_created': String timestampCreated,
-        'timestamp_lastsent': String? timestampLastSent,
-        'messages_sent': int messagesSent,
-        'subscription': dynamic subscription,
-      } =>
-        ChannelWithSubscription(
-          channelID: channelID,
-          ownerUserID: ownerUserID,
-          internalName: internalName,
-          displayName: displayName,
-          descriptionName: descriptionName,
-          subscribeKey: subscribeKey,
-          timestampCreated: timestampCreated,
-          timestampLastSent: timestampLastSent,
-          messagesSent: messagesSent,
-          subscription: Subscription.fromJson(subscription),
-        ),
-      _ => throw const FormatException('Failed to decode Channel.'),
-    };
+    return ChannelWithSubscription(
+      channelID: json['channel_id'],
+      ownerUserID: json['owner_user_id'],
+      internalName: json['internal_name'],
+      displayName: json['display_name'],
+      descriptionName: json['description_name'],
+      subscribeKey: json['subscribe_key'],
+      timestampCreated: json['timestamp_created'],
+      timestampLastSent: json['timestamp_lastsent'],
+      messagesSent: json['messages_sent'],
+      subscription: Subscription.fromJson(json['subscription']),
+    );
+  }
+
+  static List<ChannelWithSubscription> fromJsonArray(List<dynamic> jsonArr) {
+    return jsonArr.map<ChannelWithSubscription>((e) => ChannelWithSubscription.fromJson(e)).toList();
   }
 }

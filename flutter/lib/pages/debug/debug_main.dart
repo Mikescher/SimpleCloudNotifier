@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:simplecloudnotifier/components/layout/scaffold.dart';
 import 'package:simplecloudnotifier/pages/debug/debug_colors.dart';
+import 'package:simplecloudnotifier/pages/debug/debug_logs.dart';
 import 'package:simplecloudnotifier/pages/debug/debug_persistence.dart';
 import 'package:simplecloudnotifier/pages/debug/debug_requests.dart';
 
@@ -9,13 +10,14 @@ class DebugMainPage extends StatefulWidget {
   _DebugMainPageState createState() => _DebugMainPageState();
 }
 
-enum DebugMainPageSubPage { colors, requests, persistence }
+enum DebugMainPageSubPage { colors, requests, persistence, logs }
 
 class _DebugMainPageState extends State<DebugMainPage> {
   final Map<DebugMainPageSubPage, Widget> _subpages = {
     DebugMainPageSubPage.colors: DebugColorsPage(),
     DebugMainPageSubPage.requests: DebugRequestsPage(),
     DebugMainPageSubPage.persistence: DebugPersistencePage(),
+    DebugMainPageSubPage.logs: DebugLogsPage(),
   };
 
   DebugMainPageSubPage _subPage = DebugMainPageSubPage.colors;
@@ -52,6 +54,7 @@ class _DebugMainPageState extends State<DebugMainPage> {
         ButtonSegment<DebugMainPageSubPage>(value: DebugMainPageSubPage.colors, label: Text('Theme')),
         ButtonSegment<DebugMainPageSubPage>(value: DebugMainPageSubPage.requests, label: Text('Requests')),
         ButtonSegment<DebugMainPageSubPage>(value: DebugMainPageSubPage.persistence, label: Text('Persistence')),
+        ButtonSegment<DebugMainPageSubPage>(value: DebugMainPageSubPage.logs, label: Text('Logs')),
       ],
       selected: <DebugMainPageSubPage>{_subPage},
       onSelectionChanged: (Set<DebugMainPageSubPage> v) {

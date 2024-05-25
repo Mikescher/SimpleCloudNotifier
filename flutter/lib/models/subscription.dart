@@ -18,26 +18,14 @@ class Subscription {
   });
 
   factory Subscription.fromJson(Map<String, dynamic> json) {
-    return switch (json) {
-      {
-        'subscription_id': String subscriptionID,
-        'subscriber_user_id': String subscriberUserID,
-        'channel_owner_user_id': String channelOwnerUserID,
-        'channel_id': String channelID,
-        'channel_internal_name': String channelInternalName,
-        'timestamp_created': String timestampCreated,
-        'confirmed': bool confirmed,
-      } =>
-        Subscription(
-          subscriptionID: subscriptionID,
-          subscriberUserID: subscriberUserID,
-          channelOwnerUserID: channelOwnerUserID,
-          channelID: channelID,
-          channelInternalName: channelInternalName,
-          timestampCreated: timestampCreated,
-          confirmed: confirmed,
-        ),
-      _ => throw const FormatException('Failed to decode Subscription.'),
-    };
+    return Subscription(
+      subscriptionID: json['subscription_id'],
+      subscriberUserID: json['subscriber_user_id'],
+      channelOwnerUserID: json['channel_owner_user_id'],
+      channelID: json['channel_id'],
+      channelInternalName: json['channel_internal_name'],
+      timestampCreated: json['timestamp_created'],
+      confirmed: json['confirmed'],
+    );
   }
 }

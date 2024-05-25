@@ -11,7 +11,7 @@
  - https://pub.dev/packages/sqflite
  - https://pub.dev/packages/sqflite_common_ffi
  
-
+ - https://pub.dev/packages/hive
 
 
  

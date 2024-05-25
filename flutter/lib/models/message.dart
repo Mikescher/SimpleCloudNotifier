@@ -30,38 +30,28 @@ class Message {
   });
 
   factory Message.fromJson(Map<String, dynamic> json) {
-    return switch (json) {
-      {
-        'message_id': String messageID,
-        'sender_user_id': String senderUserID,
-        'channel_internal_name': String channelInternalName,
-        'channel_id': String channelID,
-        'sender_name': String? senderName,
-        'sender_ip': String senderIP,
-        'timestamp': String timestamp,
-        'title': String title,
-        'content': String? content,
-        'priority': int priority,
-        'usr_message_id': String? userMessageID,
-        'used_key_id': String usedKeyID,
-        'trimmed': bool trimmed,
-      } =>
-        Message(
-          messageID: messageID,
-          senderUserID: senderUserID,
-          channelInternalName: channelInternalName,
-          channelID: channelID,
-          senderName: senderName,
-          senderIP: senderIP,
-          timestamp: timestamp,
-          title: title,
-          content: content,
-          priority: priority,
-          userMessageID: userMessageID,
-          usedKeyID: usedKeyID,
-          trimmed: trimmed,
-        ),
-      _ => throw const FormatException('Failed to decode Message.'),
-    };
+    return Message(
+      messageID: json['message_id'],
+      senderUserID: json['sender_user_id'],
+      channelInternalName: json['channel_internal_name'],
+      channelID: json['channel_id'],
+      senderName: json['sender_name'],
+      senderIP: json['sender_ip'],
+      timestamp: json['timestamp'],
+      title: json['title'],
+      content: json['content'],
+      priority: json['priority'],
+      userMessageID: json['usr_message_id'],
+      usedKeyID: json['used_key_id'],
+      trimmed: json['trimmed'],
+    );
+  }
+
+  static fromPaginatedJsonArray(Map<String, dynamic> data, String keyMessages, String keyToken) {
+    final npt = data[keyToken] as String;
+
+    final messages = (data[keyMessages] as List<dynamic>).map<Message>((e) => Message.fromJson(e)).toList();
+
+    return (npt, messages);
   }
 }

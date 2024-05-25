@@ -71,7 +71,7 @@ class UserAccount extends ChangeNotifier {
       throw Exception('Not authenticated');
     }
 
-    final user = await APIClient.getUser(_auth!.userId, _auth!.token);
+    final user = await APIClient.getUser(_auth!, _auth!.userId);
 
     setUser(user);
 

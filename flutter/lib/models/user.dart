@@ -40,48 +40,25 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
-    return switch (json) {
-      {
-        'user_id': String userID,
-        'username': String? username,
-        'timestamp_created': String timestampCreated,
-        'timestamp_lastread': String? timestampLastRead,
-        'timestamp_lastsent': String? timestampLastSent,
-        'messages_sent': int messagesSent,
-        'quota_used': int quotaUsed,
-        'quota_remaining': int quotaRemaining,
-        'quota_max': int quotaPerDay,
-        'is_pro': bool isPro,
-        'default_channel': String defaultChannel,
-        'max_body_size': int maxBodySize,
-        'max_title_length': int maxTitleLength,
-        'default_priority': int defaultPriority,
-        'max_channel_name_length': int maxChannelNameLength,
-        'max_channel_description_length': int maxChannelDescriptionLength,
-        'max_sender_name_length': int maxSenderNameLength,
-        'max_user_message_id_length': int maxUserMessageIDLength,
-      } =>
-        User(
-          userID: userID,
-          username: username,
-          timestampCreated: timestampCreated,
-          timestampLastRead: timestampLastRead,
-          timestampLastSent: timestampLastSent,
-          messagesSent: messagesSent,
-          quotaUsed: quotaUsed,
-          quotaRemaining: quotaRemaining,
-          quotaPerDay: quotaPerDay,
-          isPro: isPro,
-          defaultChannel: defaultChannel,
-          maxBodySize: maxBodySize,
-          maxTitleLength: maxTitleLength,
-          defaultPriority: defaultPriority,
-          maxChannelNameLength: maxChannelNameLength,
-          maxChannelDescriptionLength: maxChannelDescriptionLength,
-          maxSenderNameLength: maxSenderNameLength,
-          maxUserMessageIDLength: maxUserMessageIDLength,
-        ),
-      _ => throw const FormatException('Failed to decode User.'),
-    };
+    return User(
+      userID: json['user_id'],
+      username: json['username'],
+      timestampCreated: json['timestamp_created'],
+      timestampLastRead: json['timestamp_lastread'],
+      timestampLastSent: json['timestamp_lastsent'],
+      messagesSent: json['messages_sent'],
+      quotaUsed: json['quota_used'],
+      quotaRemaining: json['quota_remaining'],
+      quotaPerDay: json['quota_max'],
+      isPro: json['is_pro'],
+      defaultChannel: json['default_channel'],
+      maxBodySize: json['max_body_size'],
+      maxTitleLength: json['max_title_length'],
+      defaultPriority: json['default_priority'],
+      maxChannelNameLength: json['max_channel_name_length'],
+      maxChannelDescriptionLength: json['max_channel_description_length'],
+      maxSenderNameLength: json['max_sender_name_length'],
+      maxUserMessageIDLength: json['max_user_message_id_length'],
+    );
   }
 }

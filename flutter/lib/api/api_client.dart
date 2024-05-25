@@ -1,8 +1,13 @@
 import 'dart:convert';
 
+import 'package:fl_toast/fl_toast.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:simplecloudnotifier/models/api_error.dart';
 import 'package:simplecloudnotifier/models/key_token_auth.dart';
 import 'package:simplecloudnotifier/models/user.dart';
+import 'package:simplecloudnotifier/state/globals.dart';
+import 'package:simplecloudnotifier/state/request_log.dart';
 
 import '../models/channel.dart';
 import '../models/message.dart';
@@ -21,69 +26,141 @@ enum ChannelSelector {
 class APIClient {
   static const String _base = 'https://simplecloudnotifier.de/api/v2';
 
-  static Future<bool> verifyToken(String uid, String tok) async {
-    final uri = Uri.parse('$_base/users/$uid');
-    final response = await http.get(uri, headers: {'Authorization': 'SCN $tok'});
+  static Future<T> _request<T>({
+    required String name,
+    required String method,
+    required String relURL,
+    Map<String, String>? query,
+    required T Function(Map<String, dynamic> json)? fn,
+    dynamic jsonBody,
+    KeyTokenAuth? auth,
+    Map<String, String>? header,
+  }) async {
+    final t0 = DateTime.now();
 
-    return (response.statusCode == 200);
-  }
+    final uri = Uri.parse('$_base/$relURL').replace(queryParameters: query ?? {});
 
-  static Future<User> getUser(String uid, String tok) async {
-    final uri = Uri.parse('$_base/users/$uid');
-    final response = await http.get(uri, headers: {'Authorization': 'SCN $tok'});
+    final req = http.Request(method, uri);
 
-    if (response.statusCode != 200) {
-      throw Exception('API request failed');
+    if (jsonBody != null) {
+      req.body = jsonEncode(jsonBody);
+      req.headers['Content-Type'] = 'application/json';
     }
 
-    return User.fromJson(jsonDecode(response.body));
+    if (auth != null) {
+      req.headers['Authorization'] = 'SCN ${auth.token}';
+    }
+
+    req.headers['User-Agent'] = 'simplecloudnotifier/flutter/${Globals().platform.replaceAll(' ', '_')} ${Globals().version}+${Globals().buildNumber}';
+
+    if (header != null && !header.isEmpty) {
+      req.headers.addAll(header);
+    }
+
+    int responseStatusCode = 0;
+    String responseBody = '';
+    Map<String, String> responseHeaders = {};
+
+    try {
+      final response = await req.send();
+      responseBody = await response.stream.bytesToString();
+      responseStatusCode = response.statusCode;
+      responseHeaders = response.headers;
+    } catch (exc, trace) {
+      RequestLog.addRequestException(name, t0, method, uri, req.body, req.headers, exc, trace);
+      showPlatformToast(child: Text('Request "${name}" is fehlgeschlagen'), context: ToastProvider.context);
+      rethrow;
+    }
+
+    if (responseStatusCode != 200) {
+      try {
+        final apierr = APIError.fromJson(jsonDecode(responseBody));
+
+        RequestLog.addRequestAPIError(name, t0, method, uri, req.body, req.headers, responseStatusCode, responseBody, responseHeaders, apierr);
+        showPlatformToast(child: Text('Request "${name}" is fehlgeschlagen'), context: ToastProvider.context);
+        throw Exception(apierr.message);
+      } catch (_) {}
+
+      RequestLog.addRequestErrorStatuscode(name, t0, method, uri, req.body, req.headers, responseStatusCode, responseBody, responseHeaders);
+      showPlatformToast(child: Text('Request "${name}" is fehlgeschlagen'), context: ToastProvider.context);
+      throw Exception('API request failed with status code ${responseStatusCode}');
+    }
+
+    try {
+      final data = jsonDecode(responseBody);
+
+      if (fn != null) {
+        final result = fn(data);
+        RequestLog.addRequestSuccess(name, t0, method, uri, req.body, req.headers, responseStatusCode, responseBody, responseHeaders);
+        return result;
+      } else {
+        RequestLog.addRequestSuccess(name, t0, method, uri, req.body, req.headers, responseStatusCode, responseBody, responseHeaders);
+        return null as T;
+      }
+    } catch (exc, trace) {
+      RequestLog.addRequestDecodeError(name, t0, method, uri, req.body, req.headers, responseStatusCode, responseBody, responseHeaders, exc, trace);
+      showPlatformToast(child: Text('Request "${name}" is fehlgeschlagen'), context: ToastProvider.context);
+      rethrow;
+    }
+  }
+
+  // ==========================================================================================================================================================
+
+  static Future<bool> verifyToken(String uid, String tok) async {
+    try {
+      await _request<void>(
+        name: 'verifyToken',
+        method: 'GET',
+        relURL: '/users/$uid',
+        fn: null,
+        auth: KeyTokenAuth(userId: uid, token: tok),
+      );
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  static Future<User> getUser(KeyTokenAuth auth, String uid) async {
+    return await _request(
+      name: 'getUser',
+      method: 'GET',
+      relURL: 'users/$uid',
+      fn: User.fromJson,
+      auth: auth,
+    );
   }
 
   static Future<List<ChannelWithSubscription>> getChannelList(KeyTokenAuth auth, ChannelSelector sel) async {
-    var url = '$_base/users/${auth.userId}/channels?selector=${sel.apiKey}';
-    final uri = Uri.parse(url);
-
-    final response = await http.get(uri, headers: {'Authorization': 'SCN ${auth.token}'});
-
-    if (response.statusCode != 200) {
-      throw Exception('API request failed');
-    }
-
-    final data = jsonDecode(response.body);
-
-    return data['channels'].map<ChannelWithSubscription>((e) => ChannelWithSubscription.fromJson(e)).toList() as List<ChannelWithSubscription>;
+    return await _request(
+      name: 'getChannelList',
+      method: 'GET',
+      relURL: 'users/${auth.userId}/channels',
+      query: {'selector': sel.apiKey},
+      fn: (json) => ChannelWithSubscription.fromJsonArray(json['channels']),
+      auth: auth,
+    );
   }
 
   static Future<(String, List<Message>)> getMessageList(KeyTokenAuth auth, String pageToken, int? pageSize) async {
-    var url = '$_base/messages?next_page_token=$pageToken';
-    if (pageSize != null) {
-      url += '&page_size=$pageSize';
-    }
-    final uri = Uri.parse(url);
-
-    final response = await http.get(uri, headers: {'Authorization': 'SCN ${auth.token}'});
-
-    if (response.statusCode != 200) {
-      throw Exception('API request failed');
-    }
-
-    final data = jsonDecode(response.body);
-
-    final npt = data['next_page_token'] as String;
-
-    final messages = data['messages'].map<Message>((e) => Message.fromJson(e)).toList() as List<Message>;
-
-    return (npt, messages);
+    return await _request(
+      name: 'getMessageList',
+      method: 'GET',
+      relURL: 'messages',
+      query: {'next_page_token': pageToken, if (pageSize != null) 'page_size': pageSize.toString()},
+      fn: (json) => Message.fromPaginatedJsonArray(json, 'messages', 'next_page_token'),
+      auth: auth,
+    );
   }
 
   static Future<Message> getMessage(KeyTokenAuth auth, String msgid) async {
-    final uri = Uri.parse('$_base/messages/$msgid');
-    final response = await http.get(uri, headers: {'Authorization': 'SCN ${auth.token}'});
-
-    if (response.statusCode != 200) {
-      throw Exception('API request failed');
-    }
-
-    return Message.fromJson(jsonDecode(response.body));
+    return await _request(
+      name: 'getMessage',
+      method: 'GET',
+      relURL: 'messages/$msgid',
+      query: {},
+      fn: Message.fromJson,
+      auth: auth,
+    );
   }
 }
