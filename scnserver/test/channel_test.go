@@ -54,6 +54,16 @@ func TestCreateChannel(t *testing.T) {
 		tt.AssertMappedSet(t, "channels", []string{"asdf", "test"}, clist.Channels, "display_name")
 		tt.AssertMappedSet(t, "channels", []string{"asdf", "test"}, clist.Channels, "internal_name")
 	}
+	tt.RequestAuthPost[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid), gin.H{
+		"name":        "withdesc",
+		"description": "desc",
+	})
+
+	{
+		clist := tt.RequestAuthGet[chanlist](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", uid))
+		tt.AssertEqual(t, "chan.len", 3, len(clist.Channels))
+		tt.AssertEqual(t, "description_name", "desc", clist.Channels[2]["description_name"])
+	}
 }
 
 func TestCreateChannelNameTooLong(t *testing.T) {

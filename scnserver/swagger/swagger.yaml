@@ -139,6 +139,8 @@ definitions:
     type: object
   handler.CreateChannel.body:
     properties:
+      description:
+        type: string
       name:
         type: string
       subscribe:

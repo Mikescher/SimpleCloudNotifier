@@ -331,7 +331,7 @@ func (app *Application) GetOrCreateChannel(ctx *AppContext, userid models.UserID
 
 	subscribeKey := app.GenerateRandomAuthKey()
 
-	newChan, err := app.Database.Primary.CreateChannel(ctx, userid, displayChanName, intChanName, subscribeKey)
+	newChan, err := app.Database.Primary.CreateChannel(ctx, userid, displayChanName, intChanName, subscribeKey, nil)
 	if err != nil {
 		return models.Channel{}, err
 	}

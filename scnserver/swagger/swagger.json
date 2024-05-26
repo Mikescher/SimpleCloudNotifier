@@ -3047,6 +3047,9 @@
         "handler.CreateChannel.body": {
             "type": "object",
             "properties": {
+                "description": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },

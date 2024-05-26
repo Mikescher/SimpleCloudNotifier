@@ -180,6 +180,8 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 	type body struct {
 		Name      string `json:"name"`
 		Subscribe *bool  `json:"subscribe"`
+
+		Description *string `json:"description"`
 	}
 
 	var u uri
@@ -233,7 +235,7 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 
 	subscribeKey := h.app.GenerateRandomAuthKey()
 
-	channel, err := h.database.CreateChannel(ctx, u.UserID, channelDisplayName, channelInternalName, subscribeKey)
+	channel, err := h.database.CreateChannel(ctx, u.UserID, channelDisplayName, channelInternalName, subscribeKey, b.Description)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create channel", err)
 	}

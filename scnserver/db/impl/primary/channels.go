@@ -58,7 +58,15 @@ func (db *Database) GetChannelByID(ctx db.TxContext, chanid models.ChannelID) (*
 	return &channel, nil
 }
 
-func (db *Database) CreateChannel(ctx db.TxContext, userid models.UserID, dispName string, intName string, subscribeKey string) (models.Channel, error) {
+type CreateChanel struct {
+	UserId       models.UserID
+	DisplayName  string
+	IntName      string
+	SubscribeKey string
+	Description  *string
+}
+
+func (db *Database) CreateChannel(ctx db.TxContext, userid models.UserID, dispName string, intName string, subscribeKey string, description *string) (models.Channel, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Channel{}, err
@@ -70,6 +78,7 @@ func (db *Database) CreateChannel(ctx db.TxContext, userid models.UserID, dispNa
 		DisplayName:       dispName,
 		InternalName:      intName,
 		SubscribeKey:      subscribeKey,
+		DescriptionName:   description,
 		TimestampCreated:  time2DB(time.Now()),
 		TimestampLastSent: nil,
 		MessagesSent:      0,
