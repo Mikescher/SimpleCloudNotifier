@@ -51,7 +51,7 @@ class _MessageListPageState extends State<MessageListPage> {
         _channels = <String, ChannelWithSubscription>{for (var v in channels) v.channelID: v};
       }
 
-      final (npt, newItems) = await APIClient.getMessageList(acc.auth!, thisPageToken, _pageSize);
+      final (npt, newItems) = await APIClient.getMessageList(acc.auth!, thisPageToken, pageSize: _pageSize);
 
       if (npt == '@end') {
         _pagingController.appendLastPage(newItems);
@@ -68,15 +68,20 @@ class _MessageListPageState extends State<MessageListPage> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
-      child: PagedListView<String, Message>(
-        pagingController: _pagingController,
-        builderDelegate: PagedChildBuilderDelegate<Message>(
-          itemBuilder: (context, item, index) => MessageListItem(
-            message: item,
-            allChannels: _channels ?? {},
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute<MessageViewPage>(builder: (context) => MessageViewPage(message: item)));
-            },
+      child: RefreshIndicator(
+        onRefresh: () => Future.sync(
+          () => _pagingController.refresh(),
+        ),
+        child: PagedListView<String, Message>(
+          pagingController: _pagingController,
+          builderDelegate: PagedChildBuilderDelegate<Message>(
+            itemBuilder: (context, item, index) => MessageListItem(
+              message: item,
+              allChannels: _channels ?? {},
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute<MessageViewPage>(builder: (context) => MessageViewPage(message: item)));
+              },
+            ),
           ),
         ),
       ),

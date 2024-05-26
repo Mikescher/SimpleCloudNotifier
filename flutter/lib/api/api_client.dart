@@ -146,12 +146,16 @@ class APIClient {
     );
   }
 
-  static Future<(String, List<Message>)> getMessageList(KeyTokenAuth auth, String pageToken, int? pageSize) async {
+  static Future<(String, List<Message>)> getMessageList(KeyTokenAuth auth, String pageToken, {int? pageSize, List<String>? channelIDs}) async {
     return await _request(
       name: 'getMessageList',
       method: 'GET',
       relURL: 'messages',
-      query: {'next_page_token': pageToken, if (pageSize != null) 'page_size': pageSize.toString()},
+      query: {
+        'next_page_token': pageToken,
+        if (pageSize != null) 'page_size': pageSize.toString(),
+        if (channelIDs != null) 'channel_id': channelIDs.join(","),
+      },
       fn: (json) => Message.fromPaginatedJsonArray(json, 'messages', 'next_page_token'),
       auth: auth,
     );

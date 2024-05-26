@@ -44,6 +44,8 @@ class _ChannelRootPageState extends State<ChannelRootPage> {
     try {
       final items = await APIClient.getChannelList(acc.auth!, ChannelSelector.all);
 
+      items.sort((a, b) => -1 * (a.timestampLastSent ?? '').compareTo(b.timestampLastSent ?? ''));
+
       _pagingController.appendLastPage(items);
     } catch (exc, trace) {
       _pagingController.error = exc.toString();
@@ -53,11 +55,17 @@ class _ChannelRootPageState extends State<ChannelRootPage> {
 
   @override
   Widget build(BuildContext context) {
-    return PagedListView<int, Channel>(
-      pagingController: _pagingController,
-      builderDelegate: PagedChildBuilderDelegate<Channel>(
-        itemBuilder: (context, item, index) => ChannelListItem(
-          channel: item,
+    return RefreshIndicator(
+      onRefresh: () => Future.sync(
+        () => _pagingController.refresh(),
+      ),
+      child: PagedListView<int, Channel>(
+        pagingController: _pagingController,
+        builderDelegate: PagedChildBuilderDelegate<Channel>(
+          itemBuilder: (context, item, index) => ChannelListItem(
+            channel: item,
+            onPressed: () {/*TODO*/},
+          ),
         ),
       ),
     );
