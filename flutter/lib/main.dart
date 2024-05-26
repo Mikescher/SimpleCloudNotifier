@@ -59,6 +59,7 @@ class SCNApp extends StatelessWidget {
       builder: (context, appTheme, child) => MaterialApp(
         title: 'SimpleCloudNotifier',
         theme: ThemeData(
+          //TODO color settings
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: appTheme.darkMode ? Brightness.dark : Brightness.light),
           useMaterial3: true,
         ),

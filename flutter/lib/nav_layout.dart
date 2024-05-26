@@ -18,14 +18,6 @@ class SCNNavLayout extends StatefulWidget {
 class _SCNNavLayoutState extends State<SCNNavLayout> {
   int _selectedIndex = 0; // 4 == FAB
 
-  static const List<Widget> _subPages = <Widget>[
-    MessageListPage(),
-    ChannelRootPage(),
-    AccountRootPage(),
-    SettingsRootPage(),
-    SendRootPage(),
-  ];
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -47,7 +39,16 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
         showSearch: _selectedIndex == 0 || _selectedIndex == 1,
         showThemeSwitch: true,
       ),
-      body: _subPages.elementAt(_selectedIndex),
+      body: IndexedStack(
+        children: [
+          MessageListPage(),
+          ChannelRootPage(),
+          AccountRootPage(),
+          SettingsRootPage(),
+          SendRootPage(),
+        ],
+        index: _selectedIndex,
+      ),
       bottomNavigationBar: _buildNavBar(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: _buildFAB(context),
@@ -57,7 +58,6 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
   Widget _buildFAB(BuildContext context) {
     return FloatingActionButton(
       onPressed: _onFABTapped,
-      tooltip: 'Increment',
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(17))),
       elevation: 2.0,
       child: const Icon(FontAwesomeIcons.solidPaperPlaneTop),

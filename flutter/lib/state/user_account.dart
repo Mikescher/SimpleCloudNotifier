@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/models/key_token_auth.dart';
 import 'package:simplecloudnotifier/models/user.dart';
+import 'package:simplecloudnotifier/state/globals.dart';
 
 class UserAccount extends ChangeNotifier {
   User? _user;
@@ -37,11 +38,9 @@ class UserAccount extends ChangeNotifier {
     notifyListeners();
   }
 
-  void load() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    final uid = prefs.getString('auth.userid');
-    final tok = prefs.getString('auth.token');
+  void load() {
+    final uid = Globals().sharedPrefs.getString('auth.userid');
+    final tok = Globals().sharedPrefs.getString('auth.token');
 
     if (uid != null && tok != null) {
       setToken(KeyTokenAuth(userId: uid, token: tok));

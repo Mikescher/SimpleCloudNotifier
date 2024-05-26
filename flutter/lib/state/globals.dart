@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Globals {
   static final Globals _singleton = Globals._internal();
@@ -18,6 +19,8 @@ class Globals {
   String platform = '';
   String hostname = '';
 
+  late SharedPreferences sharedPrefs;
+
   Future<void> init() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
@@ -27,5 +30,7 @@ class Globals {
     this.buildNumber = packageInfo.buildNumber;
     this.platform = Platform.operatingSystem;
     this.hostname = Platform.localHostname;
+
+    this.sharedPrefs = await SharedPreferences.getInstance();
   }
 }
