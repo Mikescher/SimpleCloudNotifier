@@ -958,13 +958,13 @@
             }
         },
         "/api/v2/messages/{mid}": {
-            "delete": {
-                "description": "The user must own the message and request the resource with the ADMIN Key",
+            "get": {
+                "description": "The user must either own the message and request the resource with the READ or ADMIN Key\nOr the user must subscribe to the corresponding channel (and be confirmed) and request the resource with the READ or ADMIN Key\nThe returned message is never trimmed",
                 "tags": [
                     "API-v2"
                 ],
-                "summary": "Delete a single message",
-                "operationId": "api-messages-delete",
+                "summary": "Get a single message (untrimmed)",
+                "operationId": "api-messages-get",
                 "parameters": [
                     {
                         "type": "string",
@@ -1007,13 +1007,13 @@
                     }
                 }
             },
-            "patch": {
-                "description": "The user must either own the message and request the resource with the READ or ADMIN Key\nOr the user must subscribe to the corresponding channel (and be confirmed) and request the resource with the READ or ADMIN Key\nThe returned message is never trimmed",
+            "delete": {
+                "description": "The user must own the message and request the resource with the ADMIN Key",
                 "tags": [
                     "API-v2"
                 ],
-                "summary": "Get a single message (untrimmed)",
-                "operationId": "api-messages-get",
+                "summary": "Delete a single message",
+                "operationId": "api-messages-delete",
                 "parameters": [
                     {
                         "type": "string",
@@ -2449,6 +2449,104 @@
                 }
             }
         },
+        "/external/v1/uptime-kuma": {
+            "post": {
+                "description": "All parameter can be set via query-parameter or the json body. Only UserID, UserKey and Title are required",
+                "tags": [
+                    "External"
+                ],
+                "summary": "Send a new message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "channel",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "channel_down",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "channel_up",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "P3TNH8mvv14fm",
+                        "name": "key",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "priority",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "priority_down",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "priority_up",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "senderName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "7725",
+                        "name": "user_id",
+                        "in": "query"
+                    },
+                    {
+                        "description": " ",
+                        "name": "post_body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/handler.UptimeKuma.body"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.UptimeKuma.response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "The user_id was not found or the user_key is wrong",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "403": {
+                        "description": "The user has exceeded its daily quota - wait 24 hours or upgrade your account",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "An internal server error occurred - try again later",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
         "/send": {
             "post": {
                 "description": "All parameter can be set via query-parameter or the json body. Only UserID, UserKey and Title are required",
@@ -2629,72 +2727,120 @@
                 "parameters": [
                     {
                         "type": "string",
+                        "example": "test",
+                        "name": "channel",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "This is a message",
                         "name": "content",
                         "in": "query"
                     },
                     {
                         "type": "string",
+                        "example": "P3TNH8mvv14fm",
+                        "name": "key",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "db8b0e6a-a08c-4646",
                         "name": "msg_id",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            0,
+                            1,
+                            2
+                        ],
                         "type": "integer",
+                        "example": 1,
                         "name": "priority",
                         "in": "query"
                     },
                     {
+                        "type": "string",
+                        "example": "example-server",
+                        "name": "sender_name",
+                        "in": "query"
+                    },
+                    {
                         "type": "number",
+                        "example": 1669824037,
                         "name": "timestamp",
                         "in": "query"
                     },
                     {
                         "type": "string",
+                        "example": "Hello World",
                         "name": "title",
                         "in": "query"
                     },
                     {
-                        "type": "integer",
+                        "type": "string",
+                        "example": "7725",
                         "name": "user_id",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "name": "user_key",
-                        "in": "query"
+                        "example": "test",
+                        "name": "channel",
+                        "in": "formData"
                     },
                     {
                         "type": "string",
+                        "example": "This is a message",
                         "name": "content",
                         "in": "formData"
                     },
                     {
                         "type": "string",
+                        "example": "P3TNH8mvv14fm",
+                        "name": "key",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "example": "db8b0e6a-a08c-4646",
                         "name": "msg_id",
                         "in": "formData"
                     },
                     {
+                        "enum": [
+                            0,
+                            1,
+                            2
+                        ],
                         "type": "integer",
+                        "example": 1,
                         "name": "priority",
                         "in": "formData"
                     },
                     {
+                        "type": "string",
+                        "example": "example-server",
+                        "name": "sender_name",
+                        "in": "formData"
+                    },
+                    {
                         "type": "number",
+                        "example": 1669824037,
                         "name": "timestamp",
                         "in": "formData"
                     },
                     {
                         "type": "string",
+                        "example": "Hello World",
                         "name": "title",
                         "in": "formData"
                     },
                     {
-                        "type": "integer",
-                        "name": "user_id",
-                        "in": "formData"
-                    },
-                    {
                         "type": "string",
-                        "name": "user_key",
+                        "example": "7725",
+                        "name": "user_id",
                         "in": "formData"
                     }
                 ],
@@ -2702,7 +2848,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.SendMessageCompat.response"
+                            "$ref": "#/definitions/handler.SendMessage.response"
                         }
                     },
                     "400": {
@@ -2725,69 +2871,6 @@
                     },
                     "500": {
                         "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    }
-                }
-            }
-        },
-        "/webhook/uptime-kuma": {
-            "post": {
-                "description": "All parameter can be set via query-parameter or the json body. Only UserID, UserKey and Title are required",
-                "tags": [
-                    "External"
-                ],
-                "summary": "Send a new message",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "example": "P3TNH8mvv14fm",
-                        "name": "key",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "7725",
-                        "name": "user_id",
-                        "in": "query"
-                    },
-                    {
-                        "description": " ",
-                        "name": "post_body",
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/handler.UptimeKumaWebHook.uptimeKumaWebhookBody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "401": {
-                        "description": "The user_id was not found or the user_key is wrong",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "403": {
-                        "description": "The user has exceeded its daily quota - wait 24 hours or upgrade your account",
-                        "schema": {
-                            "$ref": "#/definitions/ginresp.apiError"
-                        }
-                    },
-                    "500": {
-                        "description": "An internal server error occurred - try again later",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -2964,6 +3047,9 @@
         "handler.CreateChannel.body": {
             "type": "object",
             "properties": {
+                "description": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -3323,41 +3409,6 @@
                 }
             }
         },
-        "handler.SendMessageCompat.response": {
-            "type": "object",
-            "properties": {
-                "errhighlight": {
-                    "type": "integer"
-                },
-                "error": {
-                    "$ref": "#/definitions/apierr.APIError"
-                },
-                "is_pro": {
-                    "type": "boolean"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "messagecount": {
-                    "type": "integer"
-                },
-                "quota": {
-                    "type": "integer"
-                },
-                "quota_max": {
-                    "type": "integer"
-                },
-                "scn_msg_id": {
-                    "type": "integer"
-                },
-                "success": {
-                    "type": "boolean"
-                },
-                "suppress_send": {
-                    "type": "boolean"
-                }
-            }
-        },
         "handler.Sleep.response": {
             "type": "object",
             "properties": {
@@ -3449,7 +3500,7 @@
                 }
             }
         },
-        "handler.UptimeKumaWebHook.uptimeKumaWebhookBody": {
+        "handler.UptimeKuma.body": {
             "type": "object",
             "properties": {
                 "heartbeat": {
@@ -3460,6 +3511,9 @@
                         },
                         "msg": {
                             "type": "string"
+                        },
+                        "status": {
+                            "type": "integer"
                         },
                         "time": {
                             "type": "string"
@@ -3484,6 +3538,14 @@
                     }
                 },
                 "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.UptimeKuma.response": {
+            "type": "object",
+            "properties": {
+                "message_id": {
                     "type": "string"
                 }
             }

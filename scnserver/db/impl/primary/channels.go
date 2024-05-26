@@ -66,7 +66,7 @@ type CreateChanel struct {
 	Description  *string
 }
 
-func (db *Database) CreateChannel(ctx db.TxContext, channel CreateChanel) (models.Channel, error) {
+func (db *Database) CreateChannel(ctx db.TxContext, userid models.UserID, dispName string, intName string, subscribeKey string, description *string) (models.Channel, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Channel{}, err
@@ -74,11 +74,11 @@ func (db *Database) CreateChannel(ctx db.TxContext, channel CreateChanel) (model
 
 	entity := models.ChannelDB{
 		ChannelID:         models.NewChannelID(),
-		OwnerUserID:       channel.UserId,
-		DisplayName:       channel.DisplayName,
-		InternalName:      channel.IntName,
-		SubscribeKey:      channel.SubscribeKey,
-		DescriptionName:   channel.Description,
+		OwnerUserID:       userid,
+		DisplayName:       dispName,
+		InternalName:      intName,
+		SubscribeKey:      subscribeKey,
+		DescriptionName:   description,
 		TimestampCreated:  time2DB(time.Now()),
 		TimestampLastSent: nil,
 		MessagesSent:      0,
