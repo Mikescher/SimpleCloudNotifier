@@ -47,9 +47,9 @@ class MessageListItem extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (message.priority == 2) FaIcon(FontAwesomeIcons.solidTriangleExclamation, size: 16, color: Theme.of(context).colorScheme.error),
+                  if (message.priority == 2) FaIcon(FontAwesomeIcons.solidTriangleExclamation, size: 16, color: Colors.red[900]),
                   if (message.priority == 2) SizedBox(width: 4),
-                  if (message.priority == 0) FaIcon(FontAwesomeIcons.solidDown, size: 16, color: Theme.of(context).colorScheme.primary),
+                  if (message.priority == 0) FaIcon(FontAwesomeIcons.solidDown, size: 16, color: Colors.lightBlue[900]),
                   if (message.priority == 0) SizedBox(width: 4),
                   Expanded(
                     child: Text(
@@ -98,9 +98,9 @@ class MessageListItem extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (message.priority == 2) FaIcon(FontAwesomeIcons.solidTriangleExclamation, size: 16, color: Theme.of(context).colorScheme.error),
+                  if (message.priority == 2) FaIcon(FontAwesomeIcons.solidTriangleExclamation, size: 16, color: Colors.red[900]),
                   if (message.priority == 2) SizedBox(width: 4),
-                  if (message.priority == 0) FaIcon(FontAwesomeIcons.solidDown, size: 16, color: Theme.of(context).colorScheme.primary),
+                  if (message.priority == 0) FaIcon(FontAwesomeIcons.solidDown, size: 16, color: Colors.lightBlue[900]),
                   if (message.priority == 0) SizedBox(width: 4),
                   Container(
                     padding: const EdgeInsets.fromLTRB(4, 0, 4, 0),

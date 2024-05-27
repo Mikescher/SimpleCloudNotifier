@@ -28,4 +28,8 @@ class Subscription {
       confirmed: json['confirmed'] as bool,
     );
   }
+
+  static List<Subscription> fromJsonArray(List<dynamic> jsonArr) {
+    return jsonArr.map<Subscription>((e) => Subscription.fromJson(e as Map<String, dynamic>)).toList();
+  }
 }

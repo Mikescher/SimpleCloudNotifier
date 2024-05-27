@@ -90,7 +90,7 @@ class _SendRootPageState extends State<SendRootPage> {
         builder: ((context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             if (snapshot.hasError) {
-              return Text('Error: ${snapshot.error}');
+              return Text('Error: ${snapshot.error}'); //TODO better error display
             }
             var url = 'https://simplecloudnotifier.com?preset_user_id=${acc.user!.userID}&preset_user_key=TODO'; // TODO get send-only key
             return GestureDetector(

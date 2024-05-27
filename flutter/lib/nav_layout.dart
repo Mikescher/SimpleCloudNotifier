@@ -1,12 +1,16 @@
+import 'package:fl_toast/fl_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_lazy_indexed_stack/flutter_lazy_indexed_stack.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/components/layout/app_bar.dart';
 import 'package:simplecloudnotifier/pages/channel_list/channel_list.dart';
 import 'package:simplecloudnotifier/pages/send/root.dart';
 import 'package:simplecloudnotifier/components/bottom_fab/fab_bottom_app_bar.dart';
-import 'package:simplecloudnotifier/pages/account/root.dart';
+import 'package:simplecloudnotifier/pages/account/account.dart';
 import 'package:simplecloudnotifier/pages/message_list/message_list.dart';
 import 'package:simplecloudnotifier/pages/settings/root.dart';
+import 'package:simplecloudnotifier/state/user_account.dart';
 
 class SCNNavLayout extends StatefulWidget {
   const SCNNavLayout({super.key});
@@ -18,13 +22,33 @@ class SCNNavLayout extends StatefulWidget {
 class _SCNNavLayoutState extends State<SCNNavLayout> {
   int _selectedIndex = 0; // 4 == FAB
 
+  @override
+  initState() {
+    final userAcc = Provider.of<UserAccount>(context, listen: false);
+    if (userAcc.auth == null) _selectedIndex = 2;
+
+    super.initState();
+  }
+
   void _onItemTapped(int index) {
+    final userAcc = Provider.of<UserAccount>(context, listen: false);
+    if (userAcc.auth == null) {
+      showPlatformToast(child: Text('Please login first or create a new account'), context: ToastProvider.context);
+      return;
+    }
+
     setState(() {
       _selectedIndex = index;
     });
   }
 
   void _onFABTapped() {
+    final userAcc = Provider.of<UserAccount>(context, listen: false);
+    if (userAcc.auth == null) {
+      showPlatformToast(child: Text('Please login first or create a new account'), context: ToastProvider.context);
+      return;
+    }
+
     setState(() {
       _selectedIndex = 4;
     });
@@ -39,7 +63,7 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
         showSearch: _selectedIndex == 0 || _selectedIndex == 1,
         showThemeSwitch: true,
       ),
-      body: IndexedStack(
+      body: LazyIndexedStack(
         children: [
           MessageListPage(),
           ChannelRootPage(),

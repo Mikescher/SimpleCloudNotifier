@@ -25,6 +25,7 @@ dependencies:
   package_info_plus: ^8.0.0
   fl_toast: ^3.2.0
   xid: ^1.2.1
+  flutter_lazy_indexed_stack: ^0.0.6
 
 
 dependency_overrides:

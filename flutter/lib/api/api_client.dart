@@ -4,7 +4,10 @@ import 'package:fl_toast/fl_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:simplecloudnotifier/models/api_error.dart';
+import 'package:simplecloudnotifier/models/client.dart';
 import 'package:simplecloudnotifier/models/key_token_auth.dart';
+import 'package:simplecloudnotifier/models/keytoken.dart';
+import 'package:simplecloudnotifier/models/subscription.dart';
 import 'package:simplecloudnotifier/models/user.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/globals.dart';
@@ -14,10 +17,10 @@ import 'package:simplecloudnotifier/models/message.dart';
 
 enum ChannelSelector {
   owned(apiKey: 'owned'), // Return all channels of the user
-  subscribedAny(apiKey: 'subscribed_any'), // Return all channels that the user is subscribing to
-  allAny(apiKey: 'all_any'), // Return channels that the user owns or is subscribing
-  subscribed(apiKey: 'subscribed'), // Return all channels that the user is subscribing to (even unconfirmed)
-  all(apiKey: 'all'); // Return channels that the user owns or is subscribing (even unconfirmed)
+  subscribedAny(apiKey: 'subscribed_any'), // Return all channels that the user is subscribing to (even unconfirmed)
+  allAny(apiKey: 'all_any'), // Return channels that the user owns or is subscribing (even unconfirmed)
+  subscribed(apiKey: 'subscribed'), // Return all channels that the user is subscribing to
+  all(apiKey: 'all'); // Return channels that the user owns or is subscribing
 
   const ChannelSelector({required this.apiKey});
   final String apiKey;
@@ -168,6 +171,36 @@ class APIClient {
       relURL: 'messages/$msgid',
       query: {},
       fn: Message.fromJson,
+      auth: auth,
+    );
+  }
+
+  static Future<List<Subscription>> getSubscriptionList(KeyTokenAuth auth) async {
+    return await _request(
+      name: 'getSubscriptionList',
+      method: 'GET',
+      relURL: 'users/${auth.userId}/subscriptions',
+      fn: (json) => Subscription.fromJsonArray(json['subscriptions'] as List<dynamic>),
+      auth: auth,
+    );
+  }
+
+  static Future<List<Client>> getClientList(KeyTokenAuth auth) async {
+    return await _request(
+      name: 'getClientList',
+      method: 'GET',
+      relURL: 'users/${auth.userId}/clients',
+      fn: (json) => Client.fromJsonArray(json['clients'] as List<dynamic>),
+      auth: auth,
+    );
+  }
+
+  static Future<List<KeyToken>> getKeyTokenList(KeyTokenAuth auth) async {
+    return await _request(
+      name: 'getKeyTokenList',
+      method: 'GET',
+      relURL: 'users/${auth.userId}/keys',
+      fn: (json) => KeyToken.fromJsonArray(json['keys'] as List<dynamic>),
       auth: auth,
     );
   }
