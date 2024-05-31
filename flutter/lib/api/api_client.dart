@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:fl_toast/fl_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:simplecloudnotifier/models/api_error.dart';
@@ -14,6 +13,7 @@ import 'package:simplecloudnotifier/state/globals.dart';
 import 'package:simplecloudnotifier/state/request_log.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
 import 'package:simplecloudnotifier/models/message.dart';
+import 'package:simplecloudnotifier/utils/toaster.dart';
 
 enum ChannelSelector {
   owned(apiKey: 'owned'), // Return all channels of the user
@@ -71,7 +71,7 @@ class APIClient {
       responseHeaders = response.headers;
     } catch (exc, trace) {
       RequestLog.addRequestException(name, t0, method, uri, req.body, req.headers, exc, trace);
-      showPlatformToast(child: Text('Request "${name}" failed'), context: ToastProvider.context);
+      Toaster.error("Error", 'Request "${name}" failed');
       ApplicationLog.error('Request "${name}" failed: ' + exc.toString(), trace: trace);
       rethrow;
     }
@@ -81,14 +81,14 @@ class APIClient {
         final apierr = APIError.fromJson(jsonDecode(responseBody) as Map<String, dynamic>);
 
         RequestLog.addRequestAPIError(name, t0, method, uri, req.body, req.headers, responseStatusCode, responseBody, responseHeaders, apierr);
-        showPlatformToast(child: Text('Request "${name}" is fehlgeschlagen'), context: ToastProvider.context);
+        Toaster.error("Error", 'Request "${name}" failed');
         throw Exception(apierr.message);
       } catch (exc, trace) {
         ApplicationLog.warn('Failed to decode api response as error-object', additional: exc.toString() + "\nBody:\n" + responseBody, trace: trace);
       }
 
       RequestLog.addRequestErrorStatuscode(name, t0, method, uri, req.body, req.headers, responseStatusCode, responseBody, responseHeaders);
-      showPlatformToast(child: Text('Request "${name}" is fehlgeschlagen'), context: ToastProvider.context);
+      Toaster.error("Error", 'Request "${name}" failed');
       throw Exception('API request failed with status code ${responseStatusCode}');
     }
 
@@ -105,7 +105,7 @@ class APIClient {
       }
     } catch (exc, trace) {
       RequestLog.addRequestDecodeError(name, t0, method, uri, req.body, req.headers, responseStatusCode, responseBody, responseHeaders, exc, trace);
-      showPlatformToast(child: Text('Request "${name}" is fehlgeschlagen'), context: ToastProvider.context);
+      Toaster.error("Error", 'Request "${name}" failed');
       ApplicationLog.error('Failed to decode response: ' + exc.toString(), additional: "\nBody:\n" + responseBody, trace: trace);
       rethrow;
     }

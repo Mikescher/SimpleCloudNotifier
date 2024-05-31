@@ -44,35 +44,37 @@ class _AccountRootPageState extends State<AccountRootPage> {
     futureChannelAllCount = null;
     futureChannelSubscribedCount = null;
 
-    futureChannelAllCount = () async {
-      if (userAcc.auth == null) throw new Exception('not logged in');
-      final channels = await APIClient.getChannelList(userAcc.auth!, ChannelSelector.all);
-      return channels.length;
-    }();
+    if (userAcc.auth != null) {
+      futureChannelAllCount = () async {
+        if (userAcc.auth == null) throw new Exception('not logged in');
+        final channels = await APIClient.getChannelList(userAcc.auth!, ChannelSelector.all);
+        return channels.length;
+      }();
 
-    futureChannelSubscribedCount = () async {
-      if (userAcc.auth == null) throw new Exception('not logged in');
-      final channels = await APIClient.getChannelList(userAcc.auth!, ChannelSelector.subscribed);
-      return channels.length;
-    }();
+      futureChannelSubscribedCount = () async {
+        if (userAcc.auth == null) throw new Exception('not logged in');
+        final channels = await APIClient.getChannelList(userAcc.auth!, ChannelSelector.subscribed);
+        return channels.length;
+      }();
 
-    futureSubscriptionCount = () async {
-      if (userAcc.auth == null) throw new Exception('not logged in');
-      final subs = await APIClient.getSubscriptionList(userAcc.auth!);
-      return subs.length;
-    }();
+      futureSubscriptionCount = () async {
+        if (userAcc.auth == null) throw new Exception('not logged in');
+        final subs = await APIClient.getSubscriptionList(userAcc.auth!);
+        return subs.length;
+      }();
 
-    futureClientCount = () async {
-      if (userAcc.auth == null) throw new Exception('not logged in');
-      final clients = await APIClient.getClientList(userAcc.auth!);
-      return clients.length;
-    }();
+      futureClientCount = () async {
+        if (userAcc.auth == null) throw new Exception('not logged in');
+        final clients = await APIClient.getClientList(userAcc.auth!);
+        return clients.length;
+      }();
 
-    futureKeyCount = () async {
-      if (userAcc.auth == null) throw new Exception('not logged in');
-      final keys = await APIClient.getKeyTokenList(userAcc.auth!);
-      return keys.length;
-    }();
+      futureKeyCount = () async {
+        if (userAcc.auth == null) throw new Exception('not logged in');
+        final keys = await APIClient.getKeyTokenList(userAcc.auth!);
+        return keys.length;
+      }();
+    }
   }
 
   @override

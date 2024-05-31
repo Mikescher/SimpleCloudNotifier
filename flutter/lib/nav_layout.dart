@@ -1,4 +1,3 @@
-import 'package:fl_toast/fl_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_lazy_indexed_stack/flutter_lazy_indexed_stack.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -11,6 +10,7 @@ import 'package:simplecloudnotifier/pages/account/account.dart';
 import 'package:simplecloudnotifier/pages/message_list/message_list.dart';
 import 'package:simplecloudnotifier/pages/settings/root.dart';
 import 'package:simplecloudnotifier/state/user_account.dart';
+import 'package:simplecloudnotifier/utils/toaster.dart';
 
 class SCNNavLayout extends StatefulWidget {
   const SCNNavLayout({super.key});
@@ -33,7 +33,7 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
   void _onItemTapped(int index) {
     final userAcc = Provider.of<UserAccount>(context, listen: false);
     if (userAcc.auth == null) {
-      showPlatformToast(child: Text('Please login first or create a new account'), context: ToastProvider.context);
+      Toaster.info("Not logged in", "Please login or create a new account first");
       return;
     }
 
@@ -45,7 +45,7 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
   void _onFABTapped() {
     final userAcc = Provider.of<UserAccount>(context, listen: false);
     if (userAcc.auth == null) {
-      showPlatformToast(child: Text('Please login first or create a new account'), context: ToastProvider.context);
+      Toaster.info("Not logged in", "Please login or create a new account first");
       return;
     }
 

@@ -1,5 +1,4 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:fl_toast/fl_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -11,6 +10,7 @@ import 'package:simplecloudnotifier/state/globals.dart';
 import 'package:simplecloudnotifier/state/request_log.dart';
 import 'package:simplecloudnotifier/state/user_account.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:toastification/toastification.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -87,15 +87,22 @@ class SCNApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppTheme>(
-      builder: (context, appTheme, child) => MaterialApp(
-        title: 'SimpleCloudNotifier',
-        theme: ThemeData(
-          //TODO color settings
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: appTheme.darkMode ? Brightness.dark : Brightness.light),
-          useMaterial3: true,
+    return ToastificationWrapper(
+      config: ToastificationConfig(
+        itemWidth: 440,
+        marginBuilder: (alignment) => EdgeInsets.symmetric(vertical: 64),
+        animationDuration: Duration(milliseconds: 200),
+      ),
+      child: Consumer<AppTheme>(
+        builder: (context, appTheme, child) => MaterialApp(
+          title: 'SimpleCloudNotifier',
+          theme: ThemeData(
+            //TODO color settings
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: appTheme.darkMode ? Brightness.dark : Brightness.light),
+            useMaterial3: true,
+          ),
+          home: SCNNavLayout(),
         ),
-        home: const ToastProvider(child: SCNNavLayout()),
       ),
     );
   }

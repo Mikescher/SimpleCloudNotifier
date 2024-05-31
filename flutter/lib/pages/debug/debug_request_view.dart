@@ -1,9 +1,9 @@
-import 'package:fl_toast/fl_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:simplecloudnotifier/components/layout/scaffold.dart';
 import 'package:simplecloudnotifier/state/request_log.dart';
+import 'package:simplecloudnotifier/utils/toaster.dart';
 
 class DebugRequestViewPage extends StatelessWidget {
   final SCNRequest request;
@@ -64,7 +64,7 @@ class DebugRequestViewPage extends StatelessWidget {
               constraints: BoxConstraints(),
               onPressed: () {
                 Clipboard.setData(new ClipboardData(text: value));
-                showPlatformToast(child: Text('Copied to clipboard'), context: ToastProvider.context);
+                Toaster.info("Clipboard", 'Copied text to Clipboard');
               },
             ),
           ],
