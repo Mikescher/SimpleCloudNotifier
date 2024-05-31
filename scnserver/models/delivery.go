@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
@@ -88,16 +89,16 @@ func (d DeliveryDB) Model() Delivery {
 	}
 }
 
-func DecodeDelivery(r *sqlx.Rows) (Delivery, error) {
-	data, err := sq.ScanSingle[DeliveryDB](r, sq.SModeFast, sq.Safe, true)
+func DecodeDelivery(ctx context.Context, q sq.Queryable, r *sqlx.Rows) (Delivery, error) {
+	data, err := sq.ScanSingle[DeliveryDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return Delivery{}, err
 	}
 	return data.Model(), nil
 }
 
-func DecodeDeliveries(r *sqlx.Rows) ([]Delivery, error) {
-	data, err := sq.ScanAll[DeliveryDB](r, sq.SModeFast, sq.Safe, true)
+func DecodeDeliveries(ctx context.Context, q sq.Queryable, r *sqlx.Rows) ([]Delivery, error) {
+	data, err := sq.ScanAll[DeliveryDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return nil, err
 	}

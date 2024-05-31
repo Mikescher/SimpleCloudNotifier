@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
@@ -145,16 +146,16 @@ func (m MessageDB) Model() Message {
 	}
 }
 
-func DecodeMessage(r *sqlx.Rows) (Message, error) {
-	data, err := sq.ScanSingle[MessageDB](r, sq.SModeFast, sq.Safe, true)
+func DecodeMessage(ctx context.Context, q sq.Queryable, r *sqlx.Rows) (Message, error) {
+	data, err := sq.ScanSingle[MessageDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return Message{}, err
 	}
 	return data.Model(), nil
 }
 
-func DecodeMessages(r *sqlx.Rows) ([]Message, error) {
-	data, err := sq.ScanAll[MessageDB](r, sq.SModeFast, sq.Safe, true)
+func DecodeMessages(ctx context.Context, q sq.Queryable, r *sqlx.Rows) ([]Message, error) {
+	data, err := sq.ScanAll[MessageDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return nil, err
 	}

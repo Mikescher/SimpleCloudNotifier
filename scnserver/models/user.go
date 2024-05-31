@@ -2,6 +2,7 @@ package models
 
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
+	"context"
 	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
@@ -171,16 +172,16 @@ func (u UserDB) Model() User {
 	}
 }
 
-func DecodeUser(r *sqlx.Rows) (User, error) {
-	data, err := sq.ScanSingle[UserDB](r, sq.SModeFast, sq.Safe, true)
+func DecodeUser(ctx context.Context, q sq.Queryable, r *sqlx.Rows) (User, error) {
+	data, err := sq.ScanSingle[UserDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return User{}, err
 	}
 	return data.Model(), nil
 }
 
-func DecodeUsers(r *sqlx.Rows) ([]User, error) {
-	data, err := sq.ScanAll[UserDB](r, sq.SModeFast, sq.Safe, true)
+func DecodeUsers(ctx context.Context, q sq.Queryable, r *sqlx.Rows) ([]User, error) {
+	data, err := sq.ScanAll[UserDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return nil, err
 	}

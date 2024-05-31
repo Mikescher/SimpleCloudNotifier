@@ -42,7 +42,7 @@ func NewPrimaryDatabase(cfg server.Config) (*Database, error) {
 		xdb.SetConnMaxIdleTime(60 * time.Minute)
 	}
 
-	qqdb := sq.NewDB(xdb)
+	qqdb := sq.NewDB(xdb, sq.DBOptions{})
 
 	if conf.EnableLogger {
 		qqdb.AddListener(dbtools.DBLogger{})

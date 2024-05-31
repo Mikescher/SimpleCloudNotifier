@@ -56,7 +56,7 @@ func (db *Database) ListClients(ctx db.TxContext, userid models.UserID) ([]model
 		return nil, err
 	}
 
-	data, err := models.DecodeClients(rows)
+	data, err := models.DecodeClients(ctx, tx, rows)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func (db *Database) GetClient(ctx db.TxContext, userid models.UserID, clientid m
 		return models.Client{}, err
 	}
 
-	client, err := models.DecodeClient(rows)
+	client, err := models.DecodeClient(ctx, tx, rows)
 	if err != nil {
 		return models.Client{}, err
 	}

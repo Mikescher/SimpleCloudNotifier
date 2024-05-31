@@ -310,7 +310,7 @@ func TestPrimaryDB_Migrate_from_3(t *testing.T) {
 		xdb, err := sqlx.Open("sqlite3", url)
 		tt.TestFailIfErr(t, err)
 
-		qqdb := sq.NewDB(xdb)
+		qqdb := sq.NewDB(xdb, sq.DBOptions{})
 
 		schemavers := 3
 

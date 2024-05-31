@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
@@ -71,16 +72,16 @@ func (c ClientDB) Model() Client {
 	}
 }
 
-func DecodeClient(r *sqlx.Rows) (Client, error) {
-	data, err := sq.ScanSingle[ClientDB](r, sq.SModeFast, sq.Safe, true)
+func DecodeClient(ctx context.Context, q sq.Queryable, r *sqlx.Rows) (Client, error) {
+	data, err := sq.ScanSingle[ClientDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return Client{}, err
 	}
 	return data.Model(), nil
 }
 
-func DecodeClients(r *sqlx.Rows) ([]Client, error) {
-	data, err := sq.ScanAll[ClientDB](r, sq.SModeFast, sq.Safe, true)
+func DecodeClients(ctx context.Context, q sq.Queryable, r *sqlx.Rows) ([]Client, error) {
+	data, err := sq.ScanAll[ClientDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return nil, err
 	}

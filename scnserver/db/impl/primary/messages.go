@@ -21,7 +21,7 @@ func (db *Database) GetMessageByUserMessageID(ctx db.TxContext, usrMsgId string)
 		return nil, err
 	}
 
-	msg, err := models.DecodeMessage(rows)
+	msg, err := models.DecodeMessage(ctx, tx, rows)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
@@ -50,7 +50,7 @@ func (db *Database) GetMessage(ctx db.TxContext, scnMessageID models.MessageID, 
 		return models.Message{}, err
 	}
 
-	msg, err := models.DecodeMessage(rows)
+	msg, err := models.DecodeMessage(ctx, tx, rows)
 	if err != nil {
 		return models.Message{}, err
 	}
@@ -138,7 +138,7 @@ func (db *Database) ListMessages(ctx db.TxContext, filter models.MessageFilter, 
 		return nil, ct.CursorToken{}, err
 	}
 
-	data, err := models.DecodeMessages(rows)
+	data, err := models.DecodeMessages(ctx, tx, rows)
 	if err != nil {
 		return nil, ct.CursorToken{}, err
 	}

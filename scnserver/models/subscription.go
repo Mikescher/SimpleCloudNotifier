@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
@@ -68,16 +69,16 @@ func (s SubscriptionDB) Model() Subscription {
 	}
 }
 
-func DecodeSubscription(r *sqlx.Rows) (Subscription, error) {
-	data, err := sq.ScanSingle[SubscriptionDB](r, sq.SModeFast, sq.Safe, true)
+func DecodeSubscription(ctx context.Context, q sq.Queryable, r *sqlx.Rows) (Subscription, error) {
+	data, err := sq.ScanSingle[SubscriptionDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return Subscription{}, err
 	}
 	return data.Model(), nil
 }
 
-func DecodeSubscriptions(r *sqlx.Rows) ([]Subscription, error) {
-	data, err := sq.ScanAll[SubscriptionDB](r, sq.SModeFast, sq.Safe, true)
+func DecodeSubscriptions(ctx context.Context, q sq.Queryable, r *sqlx.Rows) ([]Subscription, error) {
+	data, err := sq.ScanAll[SubscriptionDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return nil, err
 	}

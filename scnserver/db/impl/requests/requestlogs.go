@@ -78,7 +78,7 @@ func (db *Database) ListRequestLogs(ctx context.Context, filter models.RequestLo
 		return nil, ct.CursorToken{}, err
 	}
 
-	data, err := models.DecodeRequestLogs(rows)
+	data, err := models.DecodeRequestLogs(ctx, db.db, rows)
 	if err != nil {
 		return nil, ct.CursorToken{}, err
 	}

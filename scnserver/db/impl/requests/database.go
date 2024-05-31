@@ -42,7 +42,7 @@ func NewRequestsDatabase(cfg server.Config) (*Database, error) {
 		xdb.SetConnMaxIdleTime(60 * time.Minute)
 	}
 
-	qqdb := sq.NewDB(xdb)
+	qqdb := sq.NewDB(xdb, sq.DBOptions{})
 
 	if conf.EnableLogger {
 		qqdb.AddListener(dbtools.DBLogger{})
@@ -92,7 +92,7 @@ func (db *Database) Migrate(outerctx context.Context) error {
 		schemastr := schema.RequestsSchema[schema.RequestsSchemaVersion].SQL
 		schemahash := schema.RequestsSchema[schema.RequestsSchemaVersion].Hash
 
-		schemahash, err := sq.HashSqliteSchema(tctx, schemastr)
+		schemahash, err := sq.HashMattnSqliteSchema(tctx, schemastr)
 		if err != nil {
 			return err
 		}
