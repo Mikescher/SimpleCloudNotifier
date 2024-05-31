@@ -26,6 +26,9 @@ dependencies:
   fl_toast: ^3.2.0
   xid: ^1.2.1
   flutter_lazy_indexed_stack: ^0.0.6
+  firebase_core: ^2.32.0
+  firebase_messaging: ^14.9.4
+  device_info_plus: ^10.1.0
 
 
 dependency_overrides:

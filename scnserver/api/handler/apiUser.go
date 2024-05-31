@@ -28,13 +28,13 @@ import (
 //	@Router		/api/v2/users [POST]
 func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 	type body struct {
-		FCMToken     string  `json:"fcm_token"`
-		ProToken     *string `json:"pro_token"`
-		Username     *string `json:"username"`
-		AgentModel   string  `json:"agent_model"`
-		AgentVersion string  `json:"agent_version"`
-		ClientType   string  `json:"client_type"`
-		NoClient     bool    `json:"no_client"`
+		FCMToken     string            `json:"fcm_token"`
+		ProToken     *string           `json:"pro_token"`
+		Username     *string           `json:"username"`
+		AgentModel   string            `json:"agent_model"`
+		AgentVersion string            `json:"agent_version"`
+		ClientType   models.ClientType `json:"client_type"`
+		NoClient     bool              `json:"no_client"`
 	}
 
 	var b body
@@ -55,13 +55,10 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 		if b.ClientType == "" {
 			return ginresp.APIError(g, 400, apierr.INVALID_CLIENTTYPE, "Missing ClientType", nil)
 		}
-		if b.ClientType == string(models.ClientTypeAndroid) {
-			clientType = models.ClientTypeAndroid
-		} else if b.ClientType == string(models.ClientTypeIOS) {
-			clientType = models.ClientTypeIOS
-		} else {
+		if !b.ClientType.Valid() {
 			return ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Invalid ClientType", nil)
 		}
+		clientType = b.ClientType
 	}
 
 	if b.ProToken != nil {

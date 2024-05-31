@@ -12,6 +12,9 @@ type ClientType string //@enum:type
 const (
 	ClientTypeAndroid ClientType = "ANDROID"
 	ClientTypeIOS     ClientType = "IOS"
+	ClientTypeLinux   ClientType = "LINUX"
+	ClientTypeMacOS   ClientType = "MACOS"
+	ClientTypeWindows ClientType = "WINDOWS"
 )
 
 type Client struct {

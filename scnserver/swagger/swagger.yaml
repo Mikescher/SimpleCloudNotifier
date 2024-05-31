@@ -128,7 +128,7 @@ definitions:
       agent_version:
         type: string
       client_type:
-        type: string
+        $ref: '#/definitions/models.ClientType'
       fcm_token:
         type: string
     required:
@@ -162,7 +162,7 @@ definitions:
       agent_version:
         type: string
       client_type:
-        type: string
+        $ref: '#/definitions/models.ClientType'
       fcm_token:
         type: string
       no_client:
@@ -538,10 +538,16 @@ definitions:
     enum:
     - ANDROID
     - IOS
+    - LINUX
+    - MACOS
+    - WINDOWS
     type: string
     x-enum-varnames:
     - ClientTypeAndroid
     - ClientTypeIOS
+    - ClientTypeLinux
+    - ClientTypeMacOS
+    - ClientTypeWindows
   models.CompatMessage:
     properties:
       body:

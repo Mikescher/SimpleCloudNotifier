@@ -5,23 +5,30 @@ package models
 import "gogs.mikescher.com/BlackForestBytes/goext/langext"
 import "gogs.mikescher.com/BlackForestBytes/goext/enums"
 
-const ChecksumEnumGenerator = "8926e4a9845e67086109bef7ca447371ab5c0a94fcfd988f14fd4ee98da9e932" // GoExtVersion: 0.0.291
+const ChecksumEnumGenerator = "69a99f8c01a15baad2fc9b99c516a700e02ce4dbcae452699e6d43cc23bc01bc" // GoExtVersion: 0.0.463
 
 // ================================ ClientType ================================
 //
 // File:       client.go
 // StringEnum: true
 // DescrEnum:  false
+// DataEnum:   false
 //
 
 var __ClientTypeValues = []ClientType{
 	ClientTypeAndroid,
 	ClientTypeIOS,
+	ClientTypeLinux,
+	ClientTypeMacOS,
+	ClientTypeWindows,
 }
 
 var __ClientTypeVarnames = map[ClientType]string{
 	ClientTypeAndroid: "ClientTypeAndroid",
 	ClientTypeIOS:     "ClientTypeIOS",
+	ClientTypeLinux:   "ClientTypeLinux",
+	ClientTypeMacOS:   "ClientTypeMacOS",
+	ClientTypeWindows: "ClientTypeWindows",
 }
 
 func (e ClientType) Valid() bool {
@@ -51,6 +58,14 @@ func (e ClientType) VarName() string {
 	return ""
 }
 
+func (e ClientType) TypeName() string {
+	return "ClientType"
+}
+
+func (e ClientType) PackageName() string {
+	return "models"
+}
+
 func (e ClientType) Meta() enums.EnumMetaValue {
 	return enums.EnumMetaValue{VarName: e.VarName(), Value: e, Description: nil}
 }
@@ -72,6 +87,9 @@ func ClientTypeValuesMeta() []enums.EnumMetaValue {
 	return []enums.EnumMetaValue{
 		ClientTypeAndroid.Meta(),
 		ClientTypeIOS.Meta(),
+		ClientTypeLinux.Meta(),
+		ClientTypeMacOS.Meta(),
+		ClientTypeWindows.Meta(),
 	}
 }
 
@@ -80,6 +98,7 @@ func ClientTypeValuesMeta() []enums.EnumMetaValue {
 // File:       delivery.go
 // StringEnum: true
 // DescrEnum:  false
+// DataEnum:   false
 //
 
 var __DeliveryStatusValues = []DeliveryStatus{
@@ -121,6 +140,14 @@ func (e DeliveryStatus) VarName() string {
 	return ""
 }
 
+func (e DeliveryStatus) TypeName() string {
+	return "DeliveryStatus"
+}
+
+func (e DeliveryStatus) PackageName() string {
+	return "models"
+}
+
 func (e DeliveryStatus) Meta() enums.EnumMetaValue {
 	return enums.EnumMetaValue{VarName: e.VarName(), Value: e, Description: nil}
 }
@@ -151,6 +178,7 @@ func DeliveryStatusValuesMeta() []enums.EnumMetaValue {
 // File:       keytoken.go
 // StringEnum: true
 // DescrEnum:  true
+// DataEnum:   false
 //
 
 var __TokenPermValues = []TokenPerm{
@@ -208,8 +236,20 @@ func (e TokenPerm) VarName() string {
 	return ""
 }
 
+func (e TokenPerm) TypeName() string {
+	return "TokenPerm"
+}
+
+func (e TokenPerm) PackageName() string {
+	return "models"
+}
+
 func (e TokenPerm) Meta() enums.EnumMetaValue {
 	return enums.EnumMetaValue{VarName: e.VarName(), Value: e, Description: langext.Ptr(e.Description())}
+}
+
+func (e TokenPerm) DescriptionMeta() enums.EnumDescriptionMetaValue {
+	return enums.EnumDescriptionMetaValue{VarName: e.VarName(), Value: e, Description: e.Description()}
 }
 
 func ParseTokenPerm(vv string) (TokenPerm, bool) {
@@ -231,5 +271,24 @@ func TokenPermValuesMeta() []enums.EnumMetaValue {
 		PermChannelRead.Meta(),
 		PermChannelSend.Meta(),
 		PermUserRead.Meta(),
+	}
+}
+
+func TokenPermValuesDescriptionMeta() []enums.EnumDescriptionMetaValue {
+	return []enums.EnumDescriptionMetaValue{
+		PermAdmin.DescriptionMeta(),
+		PermChannelRead.DescriptionMeta(),
+		PermChannelSend.DescriptionMeta(),
+		PermUserRead.DescriptionMeta(),
+	}
+}
+
+// ================================ ================= ================================
+
+func AllPackageEnums() []enums.Enum {
+	return []enums.Enum{
+		ClientTypeAndroid,   // ClientType
+		DeliveryStatusRetry, // DeliveryStatus
+		PermAdmin,           // TokenPerm
 	}
 }

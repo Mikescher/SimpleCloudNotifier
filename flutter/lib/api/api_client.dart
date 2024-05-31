@@ -138,6 +138,37 @@ class APIClient {
     );
   }
 
+  static Future<Client> addClient(KeyTokenAuth? auth, String fcmToken, String agentModel, String agentVersion, String clientType) async {
+    return await _request(
+      name: 'addClient',
+      method: 'POST',
+      relURL: 'users/${auth!.userId}/clients',
+      jsonBody: {
+        'fcm_token': fcmToken,
+        'agent_model': agentModel,
+        'agent_version': agentVersion,
+        'client_type': clientType,
+      },
+      fn: Client.fromJson,
+      auth: auth,
+    );
+  }
+
+  static Future<Client> updateClient(KeyTokenAuth? auth, String clientID, String fcmToken, String agentModel, String agentVersion) async {
+    return await _request(
+      name: 'updateClient',
+      method: 'PUT',
+      relURL: 'users/${auth!.userId}/clients/$clientID',
+      jsonBody: {
+        'fcm_token': fcmToken,
+        'agent_model': agentModel,
+        'agent_version': agentVersion,
+      },
+      fn: Client.fromJson,
+      auth: auth,
+    );
+  }
+
   static Future<List<ChannelWithSubscription>> getChannelList(KeyTokenAuth auth, ChannelSelector sel) async {
     return await _request(
       name: 'getChannelList',

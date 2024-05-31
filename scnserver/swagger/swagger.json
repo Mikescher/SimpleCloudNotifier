@@ -3037,7 +3037,7 @@
                     "type": "string"
                 },
                 "client_type": {
-                    "type": "string"
+                    "$ref": "#/definitions/models.ClientType"
                 },
                 "fcm_token": {
                     "type": "string"
@@ -3082,7 +3082,7 @@
                     "type": "string"
                 },
                 "client_type": {
-                    "type": "string"
+                    "$ref": "#/definitions/models.ClientType"
                 },
                 "fcm_token": {
                     "type": "string"
@@ -3653,11 +3653,17 @@
             "type": "string",
             "enum": [
                 "ANDROID",
-                "IOS"
+                "IOS",
+                "LINUX",
+                "MACOS",
+                "WINDOWS"
             ],
             "x-enum-varnames": [
                 "ClientTypeAndroid",
-                "ClientTypeIOS"
+                "ClientTypeIOS",
+                "ClientTypeLinux",
+                "ClientTypeMacOS",
+                "ClientTypeWindows"
             ]
         },
         "models.CompatMessage": {

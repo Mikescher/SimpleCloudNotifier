@@ -119,10 +119,10 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 	type body struct {
-		FCMToken     string `json:"fcm_token" binding:"required"`
-		AgentModel   string `json:"agent_model" binding:"required"`
-		AgentVersion string `json:"agent_version" binding:"required"`
-		ClientType   string `json:"client_type" binding:"required"`
+		FCMToken     string            `json:"fcm_token" binding:"required"`
+		AgentModel   string            `json:"agent_model" binding:"required"`
+		AgentVersion string            `json:"agent_version" binding:"required"`
+		ClientType   models.ClientType `json:"client_type" binding:"required"`
 	}
 
 	var u uri
@@ -133,14 +133,10 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
-	var clientType models.ClientType
-	if b.ClientType == string(models.ClientTypeAndroid) {
-		clientType = models.ClientTypeAndroid
-	} else if b.ClientType == string(models.ClientTypeIOS) {
-		clientType = models.ClientTypeIOS
-	} else {
+	if !b.ClientType.Valid() {
 		return ginresp.APIError(g, 400, apierr.INVALID_CLIENTTYPE, "Invalid ClientType", nil)
 	}
+	clientType := b.ClientType
 
 	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
 		return *permResp

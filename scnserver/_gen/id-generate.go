@@ -13,7 +13,7 @@ func main() {
 		panic(err)
 	}
 
-	err = bfcodegen.GenerateCharsetIDSpecs(wd, dest)
+	err = bfcodegen.GenerateCharsetIDSpecs(wd, dest, bfcodegen.CSIDGenOptions{})
 	if err != nil {
 		panic(err)
 	}
