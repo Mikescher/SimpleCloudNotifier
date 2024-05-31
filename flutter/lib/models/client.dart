@@ -6,6 +6,7 @@ class Client {
   final String timestampCreated;
   final String agentModel;
   final String agentVersion;
+  final String? descriptionName;
 
   const Client({
     required this.clientID,
@@ -15,6 +16,7 @@ class Client {
     required this.timestampCreated,
     required this.agentModel,
     required this.agentVersion,
+    required this.descriptionName,
   });
 
   factory Client.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class Client {
       timestampCreated: json['timestamp_created'] as String,
       agentModel: json['agent_model'] as String,
       agentVersion: json['agent_version'] as String,
+      descriptionName: json['description_name'] as String?,
     );
   }
 

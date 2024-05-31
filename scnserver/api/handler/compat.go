@@ -206,7 +206,7 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create admin-key in db", err)
 	}
 
-	_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, *data.FCMToken, "compat", "compat")
+	_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, *data.FCMToken, "compat", "compat", nil)
 	if err != nil {
 		return ginresp.CompatAPIError(0, "Failed to create client in db")
 	}
@@ -661,7 +661,7 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 
 		}
 
-		_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, *data.FCMToken, "compat", "compat")
+		_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, *data.FCMToken, "compat", "compat", nil)
 		if err != nil {
 			return ginresp.CompatAPIError(0, "Failed to create client")
 		}

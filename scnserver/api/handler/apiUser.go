@@ -28,13 +28,14 @@ import (
 //	@Router		/api/v2/users [POST]
 func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 	type body struct {
-		FCMToken     string            `json:"fcm_token"`
-		ProToken     *string           `json:"pro_token"`
-		Username     *string           `json:"username"`
-		AgentModel   string            `json:"agent_model"`
-		AgentVersion string            `json:"agent_version"`
-		ClientType   models.ClientType `json:"client_type"`
-		NoClient     bool              `json:"no_client"`
+		FCMToken        string            `json:"fcm_token"`
+		ProToken        *string           `json:"pro_token"`
+		Username        *string           `json:"username"`
+		AgentModel      string            `json:"agent_model"`
+		AgentVersion    string            `json:"agent_version"`
+		DescriptionName *string           `json:"description_name"`
+		ClientType      models.ClientType `json:"client_type"`
+		NoClient        bool              `json:"no_client"`
 	}
 
 	var b body
@@ -123,7 +124,7 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete existing clients in db", err)
 		}
 
-		client, err := h.database.CreateClient(ctx, userobj.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion)
+		client, err := h.database.CreateClient(ctx, userobj.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion, b.DescriptionName)
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create client in db", err)
 		}

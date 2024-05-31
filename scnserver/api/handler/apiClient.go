@@ -119,10 +119,11 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 	type body struct {
-		FCMToken     string            `json:"fcm_token" binding:"required"`
-		AgentModel   string            `json:"agent_model" binding:"required"`
-		AgentVersion string            `json:"agent_version" binding:"required"`
-		ClientType   models.ClientType `json:"client_type" binding:"required"`
+		FCMToken        string            `json:"fcm_token"         binding:"required"`
+		AgentModel      string            `json:"agent_model"       binding:"required"`
+		AgentVersion    string            `json:"agent_version"     binding:"required"`
+		DescriptionName *string           `json:"description_name"`
+		ClientType      models.ClientType `json:"client_type"       binding:"required"`
 	}
 
 	var u uri
@@ -147,7 +148,7 @@ func (h APIHandler) AddClient(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete existing clients in db", err)
 	}
 
-	client, err := h.database.CreateClient(ctx, u.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion)
+	client, err := h.database.CreateClient(ctx, u.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion, b.DescriptionName)
 	if err != nil {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create client in db", err)
 	}
@@ -230,9 +231,10 @@ func (h APIHandler) UpdateClient(g *gin.Context) ginresp.HTTPResponse {
 		ClientID models.ClientID `uri:"cid" binding:"entityid"`
 	}
 	type body struct {
-		FCMToken     *string `json:"fcm_token"`
-		AgentModel   *string `json:"agent_model"`
-		AgentVersion *string `json:"agent_version"`
+		FCMToken        *string `json:"fcm_token"`
+		AgentModel      *string `json:"agent_model"`
+		AgentVersion    *string `json:"agent_version"`
+		DescriptionName *string `json:"description_name"`
 	}
 
 	var u uri
@@ -279,6 +281,20 @@ func (h APIHandler) UpdateClient(g *gin.Context) ginresp.HTTPResponse {
 		err = h.database.UpdateClientAgentVersion(ctx, u.ClientID, *b.AgentVersion)
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update client", err)
+		}
+	}
+
+	if b.DescriptionName != nil {
+		if *b.DescriptionName == "" {
+			err = h.database.UpdateClientDescriptionName(ctx, u.ClientID, nil)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update client", err)
+			}
+		} else {
+			err = h.database.UpdateClientDescriptionName(ctx, u.ClientID, langext.Ptr(*b.DescriptionName))
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update client", err)
+			}
 		}
 	}
 

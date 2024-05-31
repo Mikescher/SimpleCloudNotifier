@@ -26,6 +26,7 @@ type Client struct {
 	TimestampCreated time.Time
 	AgentModel       string
 	AgentVersion     string
+	DescriptionName  *string
 }
 
 func (c Client) JSON() ClientJSON {
@@ -37,6 +38,7 @@ func (c Client) JSON() ClientJSON {
 		TimestampCreated: c.TimestampCreated.Format(time.RFC3339Nano),
 		AgentModel:       c.AgentModel,
 		AgentVersion:     c.AgentVersion,
+		DescriptionName:  c.DescriptionName,
 	}
 }
 
@@ -48,6 +50,7 @@ type ClientJSON struct {
 	TimestampCreated string     `json:"timestamp_created"`
 	AgentModel       string     `json:"agent_model"`
 	AgentVersion     string     `json:"agent_version"`
+	DescriptionName  *string    `json:"description_name"`
 }
 
 type ClientDB struct {
@@ -58,6 +61,7 @@ type ClientDB struct {
 	TimestampCreated int64      `db:"timestamp_created"`
 	AgentModel       string     `db:"agent_model"`
 	AgentVersion     string     `db:"agent_version"`
+	DescriptionName  *string    `db:"description_name"`
 }
 
 func (c ClientDB) Model() Client {
@@ -69,6 +73,7 @@ func (c ClientDB) Model() Client {
 		TimestampCreated: timeFromMilli(c.TimestampCreated),
 		AgentModel:       c.AgentModel,
 		AgentVersion:     c.AgentVersion,
+		DescriptionName:  c.DescriptionName,
 	}
 }
 
