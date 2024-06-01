@@ -36,7 +36,7 @@ class APIClient {
     Map<String, String>? query,
     required T Function(Map<String, dynamic> json)? fn,
     dynamic jsonBody,
-    KeyTokenAuth? auth,
+    String? authToken,
     Map<String, String>? header,
   }) async {
     final t0 = DateTime.now();
@@ -52,8 +52,8 @@ class APIClient {
       req.headers['Content-Type'] = 'application/json';
     }
 
-    if (auth != null) {
-      req.headers['Authorization'] = 'SCN ${auth.tokenAdmin}';
+    if (authToken != null) {
+      req.headers['Authorization'] = 'SCN ${authToken}';
     }
 
     req.headers['User-Agent'] = 'simplecloudnotifier/flutter/${Globals().platform.replaceAll(' ', '_')} ${Globals().version}+${Globals().buildNumber}';
@@ -117,32 +117,17 @@ class APIClient {
 
   // ==========================================================================================================================================================
 
-  static Future<bool> verifyToken(String uid, String tok) async {
-    try {
-      await _request<void>(
-        name: 'verifyToken',
-        method: 'GET',
-        relURL: '/users/$uid',
-        fn: null,
-        auth: KeyTokenAuth(userId: uid, tokenAdmin: tok, tokenSend: ''),
-      );
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
   static Future<User> getUser(KeyTokenAuth auth, String uid) async {
     return await _request(
       name: 'getUser',
       method: 'GET',
       relURL: 'users/$uid',
       fn: User.fromJson,
-      auth: auth,
+      authToken: auth.tokenAdmin,
     );
   }
 
-  static Future<Client> addClient(KeyTokenAuth? auth, String fcmToken, String agentModel, String agentVersion, String? descriptionName, String clientType) async {
+  static Future<Client> addClient(KeyTokenAuth? auth, String fcmToken, String agentModel, String agentVersion, String? name, String clientType) async {
     return await _request(
       name: 'addClient',
       method: 'POST',
@@ -152,14 +137,14 @@ class APIClient {
         'agent_model': agentModel,
         'agent_version': agentVersion,
         'client_type': clientType,
-        'description_name': descriptionName,
+        'name': name,
       },
       fn: Client.fromJson,
-      auth: auth,
+      authToken: auth.tokenAdmin,
     );
   }
 
-  static Future<Client> updateClient(KeyTokenAuth? auth, String clientID, String fcmToken, String agentModel, String? descriptionName, String agentVersion) async {
+  static Future<Client> updateClient(KeyTokenAuth? auth, String clientID, String fcmToken, String agentModel, String? name, String agentVersion) async {
     return await _request(
       name: 'updateClient',
       method: 'PUT',
@@ -168,10 +153,10 @@ class APIClient {
         'fcm_token': fcmToken,
         'agent_model': agentModel,
         'agent_version': agentVersion,
-        'description_name': descriptionName,
+        'name': name,
       },
       fn: Client.fromJson,
-      auth: auth,
+      authToken: auth.tokenAdmin,
     );
   }
 
@@ -182,7 +167,7 @@ class APIClient {
       relURL: 'users/${auth.userId}/channels',
       query: {'selector': sel.apiKey},
       fn: (json) => ChannelWithSubscription.fromJsonArray(json['channels'] as List<dynamic>),
-      auth: auth,
+      authToken: auth.tokenAdmin,
     );
   }
 
@@ -197,7 +182,7 @@ class APIClient {
         if (channelIDs != null) 'channel_id': channelIDs.join(","),
       },
       fn: (json) => Message.fromPaginatedJsonArray(json, 'messages', 'next_page_token'),
-      auth: auth,
+      authToken: auth.tokenAdmin,
     );
   }
 
@@ -208,7 +193,7 @@ class APIClient {
       relURL: 'messages/$msgid',
       query: {},
       fn: Message.fromJson,
-      auth: auth,
+      authToken: auth.tokenAdmin,
     );
   }
 
@@ -218,7 +203,7 @@ class APIClient {
       method: 'GET',
       relURL: 'users/${auth.userId}/subscriptions',
       fn: (json) => Subscription.fromJsonArray(json['subscriptions'] as List<dynamic>),
-      auth: auth,
+      authToken: auth.tokenAdmin,
     );
   }
 
@@ -228,7 +213,7 @@ class APIClient {
       method: 'GET',
       relURL: 'users/${auth.userId}/clients',
       fn: (json) => Client.fromJsonArray(json['clients'] as List<dynamic>),
-      auth: auth,
+      authToken: auth.tokenAdmin,
     );
   }
 
@@ -238,11 +223,11 @@ class APIClient {
       method: 'GET',
       relURL: 'users/${auth.userId}/keys',
       fn: (json) => KeyToken.fromJsonArray(json['keys'] as List<dynamic>),
-      auth: auth,
+      authToken: auth.tokenAdmin,
     );
   }
 
-  static Future<UserWithClientsAndKeys> createUserWithClient(String? username, String clientFcmToken, String clientAgentModel, String clientAgentVersion, String? clientDescriptionName, String clientType) async {
+  static Future<UserWithClientsAndKeys> createUserWithClient(String? username, String clientFcmToken, String clientAgentModel, String clientAgentVersion, String? clientName, String clientType) async {
     return await _request(
       name: 'createUserWithClient',
       method: 'POST',
@@ -252,11 +237,31 @@ class APIClient {
         'fcm_token': clientFcmToken,
         'agent_model': clientAgentModel,
         'agent_version': clientAgentVersion,
-        'description_name': clientDescriptionName,
+        'client_name': clientName,
         'client_type': clientType,
         'no_client': false,
       },
       fn: UserWithClientsAndKeys.fromJson,
+    );
+  }
+
+  static Future<KeyToken> getKeyToken(KeyTokenAuth auth, String kid) async {
+    return await _request(
+      name: 'getKeyToken',
+      method: 'GET',
+      relURL: 'users/${auth.userId}/keys/$kid',
+      fn: KeyToken.fromJson,
+      authToken: auth.tokenAdmin,
+    );
+  }
+
+  static Future<KeyToken> getKeyTokenByToken(String userid, String token) async {
+    return await _request(
+      name: 'getCurrentKeyToken',
+      method: 'GET',
+      relURL: 'users/${userid}/keys/current',
+      fn: KeyToken.fromJson,
+      authToken: token,
     );
   }
 }

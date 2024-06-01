@@ -90,7 +90,7 @@ class _AccountRootPageState extends State<AccountRootPage> {
     return Consumer<UserAccount>(
       builder: (context, acc, child) {
         if (acc.auth == null) {
-          return buildNoAuth(context);
+          return _buildNoAuth(context);
         } else {
           return FutureBuilder(
             future: acc.loadUser(false),
@@ -99,7 +99,7 @@ class _AccountRootPageState extends State<AccountRootPage> {
                 if (snapshot.hasError) {
                   return Text('Error: ${snapshot.error}'); //TODO better error display
                 }
-                return buildShowAccount(context, acc, snapshot.data!);
+                return _buildShowAccount(context, acc, snapshot.data!);
               }
               return Center(child: CircularProgressIndicator());
             }),
@@ -109,61 +109,63 @@ class _AccountRootPageState extends State<AccountRootPage> {
     );
   }
 
-  Widget buildNoAuth(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (!loading)
-            Center(
-              child: Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.secondary,
-                  borderRadius: BorderRadius.circular(100),
+  Widget _buildNoAuth(BuildContext context) {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (!loading)
+              Center(
+                child: Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.secondary,
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Center(child: FaIcon(FontAwesomeIcons.userSecret, size: 96, color: Theme.of(context).colorScheme.onSecondary)),
                 ),
-                child: Center(child: FaIcon(FontAwesomeIcons.userSecret, size: 96, color: Theme.of(context).colorScheme.onSecondary)),
               ),
-            ),
-          if (loading)
-            Center(
-              child: Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.secondary,
-                  borderRadius: BorderRadius.circular(100),
+            if (loading)
+              Center(
+                child: Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.secondary,
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.onSecondary)),
                 ),
-                child: Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.onSecondary)),
               ),
+            const SizedBox(height: 32),
+            FilledButton(
+              style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 24), padding: const EdgeInsets.fromLTRB(8, 12, 8, 12)),
+              onPressed: () {
+                if (loading) return;
+                _createNewAccount();
+              },
+              child: const Text('Create new account'),
             ),
-          const SizedBox(height: 32),
-          FilledButton(
-            style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 24), padding: const EdgeInsets.fromLTRB(8, 12, 8, 12)),
-            onPressed: () {
-              if (loading) return;
-              createNewAccount();
-            },
-            child: const Text('Create new account'),
-          ),
-          const SizedBox(height: 16),
-          FilledButton.tonal(
-            style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 24), padding: const EdgeInsets.fromLTRB(8, 12, 8, 12)),
-            onPressed: () {
-              if (loading) return;
-              Navigator.push(context, MaterialPageRoute<AccountLoginPage>(builder: (context) => AccountLoginPage()));
-            },
-            child: const Text('Use existing account'),
-          ),
-        ],
+            const SizedBox(height: 16),
+            FilledButton.tonal(
+              style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 24), padding: const EdgeInsets.fromLTRB(8, 12, 8, 12)),
+              onPressed: () {
+                if (loading) return;
+                Navigator.push(context, MaterialPageRoute<AccountLoginPage>(builder: (context) => AccountLoginPage()));
+              },
+              child: const Text('Use existing account'),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget buildShowAccount(BuildContext context, UserAccount acc, User user) {
+  Widget _buildShowAccount(BuildContext context, UserAccount acc, User user) {
     //TODO better layout
     return Column(
       children: [
@@ -173,23 +175,23 @@ class _AccountRootPageState extends State<AccountRootPage> {
             padding: const EdgeInsets.fromLTRB(8.0, 24.0, 8.0, 8.0),
             child: Column(
               children: [
-                buildHeader(context, user),
+                _buildHeader(context, user),
                 const SizedBox(height: 16),
                 Text(user.username ?? user.userID, overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
                 const SizedBox(height: 16),
-                ...buildCards(context, user),
+                ..._buildCards(context, user),
               ],
             ),
           ),
         ),
         const Expanded(child: SizedBox(height: 16)),
-        buildFooter(context, user),
+        _buildFooter(context, user),
         SizedBox(height: 40)
       ],
     );
   }
 
-  Row buildHeader(BuildContext context, User user) {
+  Row _buildHeader(BuildContext context, User user) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -284,7 +286,7 @@ class _AccountRootPageState extends State<AccountRootPage> {
     );
   }
 
-  List<Widget> buildCards(BuildContext context, User user) {
+  List<Widget> _buildCards(BuildContext context, User user) {
     return [
       Card.filled(
         margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
@@ -416,20 +418,20 @@ class _AccountRootPageState extends State<AccountRootPage> {
     ];
   }
 
-  Widget buildFooter(BuildContext context, User user) {
+  Widget _buildFooter(BuildContext context, User user) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
       child: Row(
         children: [
-          Expanded(child: FilledButton(onPressed: () {/*TODO*/}, child: Text('Logout'), style: TextButton.styleFrom(backgroundColor: Colors.orange))),
+          Expanded(child: FilledButton(onPressed: _logout, child: Text('Logout'), style: TextButton.styleFrom(backgroundColor: Colors.orange))),
           const SizedBox(width: 8),
-          Expanded(child: FilledButton(onPressed: () {/*TODO*/}, child: Text('Delete Account'), style: TextButton.styleFrom(backgroundColor: Colors.red))),
+          Expanded(child: FilledButton(onPressed: _deleteAccount, child: Text('Delete Account'), style: TextButton.styleFrom(backgroundColor: Colors.red))),
         ],
       ),
     );
   }
 
-  void createNewAccount() async {
+  void _createNewAccount() async {
     setState(() => loading = true);
 
     final acc = Provider.of<UserAccount>(context, listen: false);
@@ -453,9 +455,8 @@ class _AccountRootPageState extends State<AccountRootPage> {
 
       final user = await APIClient.createUserWithClient(null, fcmToken, Globals().platform, Globals().version, Globals().hostname, Globals().clientType);
 
-      acc.setUser(user.user);
-      acc.setToken(KeyTokenAuth(userId: user.user.userID, tokenAdmin: user.adminKey, tokenSend: user.sendKey));
-      acc.setClient(user.clients[0]);
+      acc.set(user.user, user.clients[0], KeyTokenAuth(userId: user.user.userID, tokenAdmin: user.adminKey, tokenSend: user.sendKey));
+
       await acc.save();
     } catch (exc, trace) {
       ApplicationLog.error('Failed to create user account: ' + exc.toString(), trace: trace);
@@ -463,5 +464,18 @@ class _AccountRootPageState extends State<AccountRootPage> {
     } finally {
       setState(() => loading = false);
     }
+  }
+
+  void _logout() async {
+    final acc = Provider.of<UserAccount>(context, listen: false);
+
+    acc.clear();
+    await acc.save();
+
+    Toaster.info('Logout', 'Successfully logged out');
+  }
+
+  void _deleteAccount() async {
+    //TODO
   }
 }

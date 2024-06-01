@@ -58,6 +58,20 @@ class UserAccount extends ChangeNotifier {
     notifyListeners();
   }
 
+  void set(User user, Client client, KeyTokenAuth auth) {
+    _client = client;
+    _user = user;
+    _auth = auth;
+    notifyListeners();
+  }
+
+  void clear() {
+    _client = null;
+    _user = null;
+    _auth = null;
+    notifyListeners();
+  }
+
   void load() {
     final uid = Globals().sharedPrefs.getString('auth.userid');
     final toka = Globals().sharedPrefs.getString('auth.tokenadmin');
