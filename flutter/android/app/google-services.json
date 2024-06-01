@@ -1,0 +1,56 @@
+{
+  "project_info": {
+    "project_number": "232728961679",
+    "firebase_url": "https://simplecloudnotifier-ea7ef.firebaseio.com",
+    "project_id": "simplecloudnotifier-ea7ef",
+    "storage_bucket": "simplecloudnotifier-ea7ef.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:232728961679:android:23c75317f79601c9",
+        "android_client_info": {
+          "package_name": "com.blackforestbytes.simplecloudnotifier"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "232728961679-o7gig6f684mp1l1ok7719v3jf3csejc1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.blackforestbytes.simplecloudnotifier",
+            "certificate_hash": "3bcafbd39256422f0cb51fd446a228c26543afb4"
+          }
+        },
+        {
+          "client_id": "232728961679-t1h2eo5keha2lrvhsvdr5kgbkbfkja0o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBasR6JLAjM5Ut0rPb0euE_9DdDoTkcvKQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "232728961679-f2951kg24ngsttkhd96qhcr8j3lc8nnk.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "232728961679-bsbtc6orskaqafc8gtsuqia53f6ree48.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.blackforestbytes.SimpleCloudNotifier",
+                "app_store_id": "6455594868"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

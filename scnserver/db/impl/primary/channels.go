@@ -23,7 +23,7 @@ func (db *Database) GetChannelByName(ctx db.TxContext, userid models.UserID, cha
 		return nil, err
 	}
 
-	channel, err := models.DecodeChannel(rows)
+	channel, err := models.DecodeChannel(ctx, tx, rows)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
@@ -47,7 +47,7 @@ func (db *Database) GetChannelByID(ctx db.TxContext, chanid models.ChannelID) (*
 		return nil, err
 	}
 
-	channel, err := models.DecodeChannel(rows)
+	channel, err := models.DecodeChannel(ctx, tx, rows)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
@@ -108,7 +108,7 @@ func (db *Database) ListChannelsByOwner(ctx db.TxContext, userid models.UserID, 
 		return nil, err
 	}
 
-	data, err := models.DecodeChannelsWithSubscription(rows)
+	data, err := models.DecodeChannelsWithSubscription(ctx, tx, rows)
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +138,7 @@ func (db *Database) ListChannelsBySubscriber(ctx db.TxContext, userid models.Use
 		return nil, err
 	}
 
-	data, err := models.DecodeChannelsWithSubscription(rows)
+	data, err := models.DecodeChannelsWithSubscription(ctx, tx, rows)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +169,7 @@ func (db *Database) ListChannelsByAccess(ctx db.TxContext, userid models.UserID,
 		return nil, err
 	}
 
-	data, err := models.DecodeChannelsWithSubscription(rows)
+	data, err := models.DecodeChannelsWithSubscription(ctx, tx, rows)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +203,7 @@ func (db *Database) GetChannel(ctx db.TxContext, userid models.UserID, channelid
 		return models.ChannelWithSubscription{}, err
 	}
 
-	channel, err := models.DecodeChannelWithSubscription(rows)
+	channel, err := models.DecodeChannelWithSubscription(ctx, tx, rows)
 	if err != nil {
 		return models.ChannelWithSubscription{}, err
 	}

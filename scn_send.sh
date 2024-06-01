@@ -87,6 +87,7 @@ title="${args[0]}"
 args=("${args[@]:1}")
 
 content=""
+filecontent=""
 
 if [ ${#args[@]} -gt 0 ]; then
     content="${args[0]}"
@@ -106,7 +107,8 @@ fi
 
 if [[ "$content" == --scnsend-read-body-from-file=* ]]; then
   path="$( awk '{ print substr($0, 31) }' <<< "$content" )"
-  content="$( cat "$path" )"
+  filecontent="$path"
+  content=""
 fi
 
 curlparams=()
@@ -119,6 +121,10 @@ curlparams+=( "--data-urlencode" "msg_id=$usr_msg_id"  )
 
 if [[ -n "$content" ]]; then
     curlparams+=("--data-urlencode" "content=$content")
+fi
+
+if [[ -n "$filecontent" && -z "$content" ]]; then
+    curlparams+=("--data-urlencode" "content@$filecontent")
 fi
 
 if [[ -n "$priority" ]]; then

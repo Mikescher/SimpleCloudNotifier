@@ -49,7 +49,7 @@ func (db *Database) ListKeyTokens(ctx db.TxContext, ownerID models.UserID) ([]mo
 		return nil, err
 	}
 
-	data, err := models.DecodeKeyTokens(rows)
+	data, err := models.DecodeKeyTokens(ctx, tx, rows)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func (db *Database) GetKeyToken(ctx db.TxContext, userid models.UserID, keyToken
 		return models.KeyToken{}, err
 	}
 
-	keyToken, err := models.DecodeKeyToken(rows)
+	keyToken, err := models.DecodeKeyToken(ctx, tx, rows)
 	if err != nil {
 		return models.KeyToken{}, err
 	}
@@ -90,7 +90,7 @@ func (db *Database) GetKeyTokenByToken(ctx db.TxContext, key string) (*models.Ke
 		return nil, err
 	}
 
-	user, err := models.DecodeKeyToken(rows)
+	user, err := models.DecodeKeyToken(ctx, tx, rows)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}

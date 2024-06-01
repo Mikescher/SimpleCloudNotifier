@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func (db *Database) CreateClient(ctx db.TxContext, userid models.UserID, ctype models.ClientType, fcmToken string, agentModel string, agentVersion string) (models.Client, error) {
+func (db *Database) CreateClient(ctx db.TxContext, userid models.UserID, ctype models.ClientType, fcmToken string, agentModel string, agentVersion string, name *string) (models.Client, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Client{}, err
@@ -21,6 +21,7 @@ func (db *Database) CreateClient(ctx db.TxContext, userid models.UserID, ctype m
 		TimestampCreated: time2DB(time.Now()),
 		AgentModel:       agentModel,
 		AgentVersion:     agentVersion,
+		Name:             name,
 	}
 
 	_, err = sq.InsertSingle(ctx, tx, "clients", entity)
@@ -56,7 +57,7 @@ func (db *Database) ListClients(ctx db.TxContext, userid models.UserID) ([]model
 		return nil, err
 	}
 
-	data, err := models.DecodeClients(rows)
+	data, err := models.DecodeClients(ctx, tx, rows)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +79,7 @@ func (db *Database) GetClient(ctx db.TxContext, userid models.UserID, clientid m
 		return models.Client{}, err
 	}
 
-	client, err := models.DecodeClient(rows)
+	client, err := models.DecodeClient(ctx, tx, rows)
 	if err != nil {
 		return models.Client{}, err
 	}
@@ -156,6 +157,23 @@ func (db *Database) UpdateClientAgentVersion(ctx db.TxContext, clientid models.C
 
 	_, err = tx.Exec(ctx, "UPDATE clients SET agent_version = :vvv WHERE client_id = :cid", sq.PP{
 		"vvv": agentVersion,
+		"cid": clientid,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *Database) UpdateClientDescriptionName(ctx db.TxContext, clientid models.ClientID, descriptionName *string) error {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, "UPDATE clients SET name = :vvv WHERE client_id = :cid", sq.PP{
+		"vvv": descriptionName,
 		"cid": clientid,
 	})
 	if err != nil {

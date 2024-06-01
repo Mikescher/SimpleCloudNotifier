@@ -75,7 +75,7 @@ func (pp *DBPreprocessor) Init(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	resrows1, err := sq.ScanAll[tabInfo](rows1, sq.SModeFast, sq.Unsafe, true)
+	resrows1, err := sq.ScanAll[tabInfo](ctx, pp.db, rows1, sq.SModeFast, sq.Unsafe, true)
 	if err != nil {
 		return err
 	}
@@ -85,7 +85,7 @@ func (pp *DBPreprocessor) Init(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		resrows2, err := sq.ScanAll[colInfo](rows2, sq.SModeFast, sq.Unsafe, true)
+		resrows2, err := sq.ScanAll[colInfo](ctx, pp.db, rows2, sq.SModeFast, sq.Unsafe, true)
 		if err != nil {
 			return err
 		}

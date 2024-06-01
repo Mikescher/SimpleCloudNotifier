@@ -310,7 +310,7 @@ func TestPrimaryDB_Migrate_from_3(t *testing.T) {
 		xdb, err := sqlx.Open("sqlite3", url)
 		tt.TestFailIfErr(t, err)
 
-		qqdb := sq.NewDB(xdb)
+		qqdb := sq.NewDB(xdb, sq.DBOptions{})
 
 		schemavers := 3
 
@@ -357,10 +357,108 @@ func TestPrimaryDB_Migrate_from_3(t *testing.T) {
 			tt.TestFailIfErr(t, err)
 		}
 
+		//================================================
 		{
 			err = db1.Migrate(ctx)
 			tt.TestFailIfErr(t, err)
 		}
+		//================================================
+
+		{
+			tctx := simplectx.CreateSimpleContext(ctx, nil)
+
+			schema2, err := db1.ReadSchema(tctx)
+			tt.TestFailIfErr(t, err)
+			tt.AssertEqual(t, "schema2", schema.PrimarySchemaVersion, schema2)
+
+			err = tctx.CommitTransaction()
+			tt.TestFailIfErr(t, err)
+		}
+
+		{
+			tctx := simplectx.CreateSimpleContext(ctx, nil)
+			schemHashDB, err := sq.HashSqliteDatabase(tctx, db1.DB())
+			tt.TestFailIfErr(t, err)
+			tt.AssertEqual(t, "schemHashDB", schema.PrimarySchema[schema.PrimarySchemaVersion].Hash, schemHashDB)
+			err = tctx.CommitTransaction()
+			tt.TestFailIfErr(t, err)
+		}
+
+		err = db1.Stop(ctx)
+		tt.TestFailIfErr(t, err)
+	}
+}
+
+func TestPrimaryDB_Migrate_from_4(t *testing.T) {
+	dbf1, dbf2, dbf3, conf, stop := tt.StartSimpleTestspace(t)
+	defer stop()
+
+	ctx := context.Background()
+
+	tt.AssertAny(dbf1)
+	tt.AssertAny(dbf2)
+	tt.AssertAny(dbf3)
+	tt.AssertAny(conf)
+
+	{
+		url := fmt.Sprintf("file:%s", dbf1)
+
+		xdb, err := sqlx.Open("sqlite3", url)
+		tt.TestFailIfErr(t, err)
+
+		qqdb := sq.NewDB(xdb, sq.DBOptions{})
+
+		schemavers := 4
+
+		dbschema := schema.PrimarySchema[schemavers]
+
+		_, err = qqdb.Exec(ctx, dbschema.SQL, sq.PP{})
+		tt.TestFailIfErr(t, err)
+
+		_, err = qqdb.Exec(ctx, "INSERT INTO meta (meta_key, value_int) VALUES (:key, :val) ON CONFLICT(meta_key) DO UPDATE SET value_int = :val", sq.PP{
+			"key": "schema",
+			"val": schemavers,
+		})
+
+		_, err = qqdb.Exec(ctx, "INSERT INTO meta (meta_key, value_txt) VALUES (:key, :val) ON CONFLICT(meta_key) DO UPDATE SET value_txt = :val", sq.PP{
+			"key": "schema_hash",
+			"val": dbschema.Hash,
+		})
+
+		{
+			tctx := simplectx.CreateSimpleContext(ctx, nil)
+			schemHashDB, err := sq.HashSqliteDatabase(tctx, qqdb)
+			tt.TestFailIfErr(t, err)
+			tt.AssertEqual(t, "schemHashDB", dbschema.Hash, schemHashDB)
+			err = tctx.CommitTransaction()
+			tt.TestFailIfErr(t, err)
+		}
+
+		err = qqdb.Exit()
+		tt.TestFailIfErr(t, err)
+	}
+
+	{
+		db1, err := primary.NewPrimaryDatabase(conf)
+		tt.TestFailIfErr(t, err)
+
+		{
+			tctx := simplectx.CreateSimpleContext(ctx, nil)
+
+			schema1, err := db1.ReadSchema(tctx)
+			tt.TestFailIfErr(t, err)
+			tt.AssertEqual(t, "schema1", 4, schema1)
+
+			err = tctx.CommitTransaction()
+			tt.TestFailIfErr(t, err)
+		}
+
+		//================================================
+		{
+			err = db1.Migrate(ctx)
+			tt.TestFailIfErr(t, err)
+		}
+		//================================================
 
 		{
 			tctx := simplectx.CreateSimpleContext(ctx, nil)

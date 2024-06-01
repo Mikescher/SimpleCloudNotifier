@@ -61,7 +61,7 @@ func (db *Database) GetUser(ctx db.TxContext, userid models.UserID) (models.User
 		return models.User{}, err
 	}
 
-	user, err := models.DecodeUser(rows)
+	user, err := models.DecodeUser(ctx, tx, rows)
 	if err != nil {
 		return models.User{}, err
 	}

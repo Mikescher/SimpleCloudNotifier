@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
@@ -115,32 +116,32 @@ func (c ChannelWithSubscriptionDB) Model() ChannelWithSubscription {
 	}
 }
 
-func DecodeChannel(r *sqlx.Rows) (Channel, error) {
-	data, err := sq.ScanSingle[ChannelDB](r, sq.SModeFast, sq.Safe, true)
+func DecodeChannel(ctx context.Context, q sq.Queryable, r *sqlx.Rows) (Channel, error) {
+	data, err := sq.ScanSingle[ChannelDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return Channel{}, err
 	}
 	return data.Model(), nil
 }
 
-func DecodeChannels(r *sqlx.Rows) ([]Channel, error) {
-	data, err := sq.ScanAll[ChannelDB](r, sq.SModeFast, sq.Safe, true)
+func DecodeChannels(ctx context.Context, q sq.Queryable, r *sqlx.Rows) ([]Channel, error) {
+	data, err := sq.ScanAll[ChannelDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return nil, err
 	}
 	return langext.ArrMap(data, func(v ChannelDB) Channel { return v.Model() }), nil
 }
 
-func DecodeChannelWithSubscription(r *sqlx.Rows) (ChannelWithSubscription, error) {
-	data, err := sq.ScanSingle[ChannelWithSubscriptionDB](r, sq.SModeExtended, sq.Safe, true)
+func DecodeChannelWithSubscription(ctx context.Context, q sq.Queryable, r *sqlx.Rows) (ChannelWithSubscription, error) {
+	data, err := sq.ScanSingle[ChannelWithSubscriptionDB](ctx, q, r, sq.SModeExtended, sq.Safe, true)
 	if err != nil {
 		return ChannelWithSubscription{}, err
 	}
 	return data.Model(), nil
 }
 
-func DecodeChannelsWithSubscription(r *sqlx.Rows) ([]ChannelWithSubscription, error) {
-	data, err := sq.ScanAll[ChannelWithSubscriptionDB](r, sq.SModeExtended, sq.Safe, true)
+func DecodeChannelsWithSubscription(ctx context.Context, q sq.Queryable, r *sqlx.Rows) ([]ChannelWithSubscription, error) {
+	data, err := sq.ScanAll[ChannelWithSubscriptionDB](ctx, q, r, sq.SModeExtended, sq.Safe, true)
 	if err != nil {
 		return nil, err
 	}

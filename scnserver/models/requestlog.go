@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
@@ -170,16 +171,16 @@ func (c RequestLogDB) Model() RequestLog {
 	}
 }
 
-func DecodeRequestLog(r *sqlx.Rows) (RequestLog, error) {
-	data, err := sq.ScanSingle[RequestLogDB](r, sq.SModeFast, sq.Safe, true)
+func DecodeRequestLog(ctx context.Context, q sq.Queryable, r *sqlx.Rows) (RequestLog, error) {
+	data, err := sq.ScanSingle[RequestLogDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return RequestLog{}, err
 	}
 	return data.Model(), nil
 }
 
-func DecodeRequestLogs(r *sqlx.Rows) ([]RequestLog, error) {
-	data, err := sq.ScanAll[RequestLogDB](r, sq.SModeFast, sq.Safe, true)
+func DecodeRequestLogs(ctx context.Context, q sq.Queryable, r *sqlx.Rows) ([]RequestLog, error) {
+	data, err := sq.ScanAll[RequestLogDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return nil, err
 	}

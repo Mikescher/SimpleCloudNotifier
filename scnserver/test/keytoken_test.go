@@ -672,3 +672,53 @@ func TestTokenKeysCreateDefaultParam(t *testing.T) {
 		tt.AssertEqual(t, "Channels.Len", 0, len(key2.Channels))
 	}
 }
+
+func TestTokenKeysGetCurrent(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitSingleData(t, ws)
+
+	type keyobj struct {
+		AllChannels  bool     `json:"all_channels"`
+		Channels     []string `json:"channels"`
+		KeytokenId   string   `json:"keytoken_id"`
+		MessagesSent int      `json:"messages_sent"`
+		Name         string   `json:"name"`
+		OwnerUserId  string   `json:"owner_user_id"`
+		Permissions  string   `json:"permissions"`
+		Token        string   `json:"token"` // only in create
+	}
+	type keylist struct {
+		Keys []keyobj `json:"keys"`
+	}
+
+	klist := tt.RequestAuthGet[keylist](t, data.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", data.UID))
+	tt.AssertEqual(t, "len(keys)", 3, len(klist.Keys))
+
+	keyAdmin := *langext.ArrFirstOrNil(klist.Keys, func(v keyobj) bool { return v.Permissions == "A" })
+	keySend := *langext.ArrFirstOrNil(klist.Keys, func(v keyobj) bool { return v.Permissions == "CS" })
+	keyRead := *langext.ArrFirstOrNil(klist.Keys, func(v keyobj) bool { return v.Permissions == "UR;CR" })
+
+	{
+		currKey := tt.RequestAuthGet[keyobj](t, data.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys/current", data.UID))
+		tt.AssertEqual(t, "currKey.KeytokenId", keyAdmin.KeytokenId, currKey.KeytokenId)
+		tt.AssertEqual(t, "currKey.Permissions", "A", currKey.Permissions)
+		tt.AssertEqual(t, "currKey.Token", data.AdminKey, currKey.Token)
+	}
+
+	{
+		currKey := tt.RequestAuthGet[keyobj](t, data.SendKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys/current", data.UID))
+		tt.AssertEqual(t, "currKey.KeytokenId", keySend.KeytokenId, currKey.KeytokenId)
+		tt.AssertEqual(t, "currKey.Permissions", "CS", currKey.Permissions)
+		tt.AssertEqual(t, "currKey.Token", data.SendKey, currKey.Token)
+	}
+
+	{
+		currKey := tt.RequestAuthGet[keyobj](t, data.ReadKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys/current", data.UID))
+		tt.AssertEqual(t, "currKey.KeytokenId", keyRead.KeytokenId, currKey.KeytokenId)
+		tt.AssertEqual(t, "currKey.Permissions", "UR;CR", currKey.Permissions)
+		tt.AssertEqual(t, "currKey.Token", data.ReadKey, currKey.Token)
+	}
+
+}

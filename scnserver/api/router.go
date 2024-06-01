@@ -130,6 +130,7 @@ func (r *Router) Init(e *gin.Engine) error {
 
 		apiv2.GET("/users/:uid/keys", r.Wrap(r.apiHandler.ListUserKeys))
 		apiv2.POST("/users/:uid/keys", r.Wrap(r.apiHandler.CreateUserKey))
+		apiv2.GET("/users/:uid/keys/current", r.Wrap(r.apiHandler.GetCurrentUserKey))
 		apiv2.GET("/users/:uid/keys/:kid", r.Wrap(r.apiHandler.GetUserKey))
 		apiv2.PATCH("/users/:uid/keys/:kid", r.Wrap(r.apiHandler.UpdateUserKey))
 		apiv2.DELETE("/users/:uid/keys/:kid", r.Wrap(r.apiHandler.DeleteUserKey))

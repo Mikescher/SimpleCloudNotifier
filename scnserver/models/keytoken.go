@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
@@ -108,7 +109,7 @@ type KeyTokenWithTokenJSON struct {
 	Token string `json:"token"`
 }
 
-func (j KeyTokenJSON) WithToken(tok string) any {
+func (j KeyTokenJSON) WithToken(tok string) KeyTokenWithTokenJSON {
 	return KeyTokenWithTokenJSON{
 		KeyTokenJSON: j,
 		Token:        tok,
@@ -149,16 +150,16 @@ func (k KeyTokenDB) Model() KeyToken {
 	}
 }
 
-func DecodeKeyToken(r *sqlx.Rows) (KeyToken, error) {
-	data, err := sq.ScanSingle[KeyTokenDB](r, sq.SModeFast, sq.Safe, true)
+func DecodeKeyToken(ctx context.Context, q sq.Queryable, r *sqlx.Rows) (KeyToken, error) {
+	data, err := sq.ScanSingle[KeyTokenDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return KeyToken{}, err
 	}
 	return data.Model(), nil
 }
 
-func DecodeKeyTokens(r *sqlx.Rows) ([]KeyToken, error) {
-	data, err := sq.ScanAll[KeyTokenDB](r, sq.SModeFast, sq.Safe, true)
+func DecodeKeyTokens(ctx context.Context, q sq.Queryable, r *sqlx.Rows) ([]KeyToken, error) {
+	data, err := sq.ScanAll[KeyTokenDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return nil, err
 	}

@@ -82,7 +82,7 @@ func (db *Database) ListRetrieableDeliveries(ctx db.TxContext, pageSize int) ([]
 		return nil, err
 	}
 
-	data, err := models.DecodeDeliveries(rows)
+	data, err := models.DecodeDeliveries(ctx, tx, rows)
 	if err != nil {
 		return nil, err
 	}

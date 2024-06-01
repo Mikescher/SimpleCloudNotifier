@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/dataext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"math/rand"
 	"runtime/debug"
 	"time"
 )
@@ -60,7 +61,7 @@ func Wrap(rlacc RequestLogAcceptor, fn WHandlerFunc) gin.HandlerFunc {
 					panic(err)
 				}
 
-				time.Sleep(retrySleep)
+				time.Sleep(time.Duration(int64(float64(retrySleep) * (0.5 + rand.Float64()))))
 				continue
 			}
 
@@ -174,8 +175,14 @@ func resetBody(g *gin.Context) error {
 
 func isSqlite3Busy(r HTTPResponse) bool {
 	if errwrap, ok := r.(*errorHTTPResponse); ok && errwrap != nil {
-		if s3err, ok := (errwrap.error).(sqlite3.Error); ok {
-			if s3err.Code == sqlite3.ErrBusy {
+
+		if errors.Is(errwrap.error, sqlite3.ErrBusy) {
+			return true
+		}
+
+		var s3err sqlite3.Error
+		if errors.As(errwrap.error, &s3err) {
+			if errors.Is(s3err.Code, sqlite3.ErrBusy) {
 				return true
 			}
 		}

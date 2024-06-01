@@ -206,7 +206,7 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create admin-key in db", err)
 	}
 
-	_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, *data.FCMToken, "compat", "compat")
+	_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, *data.FCMToken, "compat", "compat", nil)
 	if err != nil {
 		return ginresp.CompatAPIError(0, "Failed to create client in db")
 	}
@@ -296,11 +296,11 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.CompatAPIError(204, "Authentification failed")
-	}
 	if err != nil {
 		return ginresp.CompatAPIError(0, "Failed to query token")
+	}
+	if keytok == nil {
+		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 	if !keytok.IsAdmin(user.UserID) {
 		return ginresp.CompatAPIError(204, "Authentification failed")
@@ -404,11 +404,11 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.CompatAPIError(204, "Authentification failed")
-	}
 	if err != nil {
 		return ginresp.CompatAPIError(0, "Failed to query token")
+	}
+	if keytok == nil {
+		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 	if !keytok.IsAdmin(user.UserID) {
 		return ginresp.CompatAPIError(204, "Authentification failed")
@@ -506,11 +506,11 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.CompatAPIError(204, "Authentification failed")
-	}
 	if err != nil {
 		return ginresp.CompatAPIError(0, "Failed to query token")
+	}
+	if keytok == nil {
+		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 	if !keytok.IsAdmin(user.UserID) {
 		return ginresp.CompatAPIError(204, "Authentification failed")
@@ -623,11 +623,11 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.CompatAPIError(204, "Authentification failed")
-	}
 	if err != nil {
 		return ginresp.CompatAPIError(0, "Failed to query token")
+	}
+	if keytok == nil {
+		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 	if !keytok.IsAdmin(user.UserID) {
 		return ginresp.CompatAPIError(204, "Authentification failed")
@@ -661,9 +661,9 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 
 		}
 
-		_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, *data.FCMToken, "compat", "compat")
+		_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, *data.FCMToken, "compat", "compat", nil)
 		if err != nil {
-			return ginresp.CompatAPIError(0, "Failed to delete client")
+			return ginresp.CompatAPIError(0, "Failed to create client")
 		}
 
 	}
@@ -753,11 +753,11 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.CompatAPIError(204, "Authentification failed")
-	}
 	if err != nil {
 		return ginresp.CompatAPIError(0, "Failed to query token")
+	}
+	if keytok == nil {
+		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 	if !keytok.IsAdmin(user.UserID) {
 		return ginresp.CompatAPIError(204, "Authentification failed")
@@ -872,11 +872,11 @@ func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.CompatAPIError(204, "Authentification failed")
-	}
 	if err != nil {
 		return ginresp.CompatAPIError(0, "Failed to query token")
+	}
+	if keytok == nil {
+		return ginresp.CompatAPIError(204, "Authentification failed")
 	}
 	if !keytok.IsAdmin(user.UserID) {
 		return ginresp.CompatAPIError(204, "Authentification failed")

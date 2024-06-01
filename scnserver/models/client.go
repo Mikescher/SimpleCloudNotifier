@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
@@ -12,6 +13,9 @@ type ClientType string //@enum:type
 const (
 	ClientTypeAndroid ClientType = "ANDROID"
 	ClientTypeIOS     ClientType = "IOS"
+	ClientTypeLinux   ClientType = "LINUX"
+	ClientTypeMacOS   ClientType = "MACOS"
+	ClientTypeWindows ClientType = "WINDOWS"
 )
 
 type Client struct {
@@ -22,6 +26,7 @@ type Client struct {
 	TimestampCreated time.Time
 	AgentModel       string
 	AgentVersion     string
+	Name             *string
 }
 
 func (c Client) JSON() ClientJSON {
@@ -33,6 +38,7 @@ func (c Client) JSON() ClientJSON {
 		TimestampCreated: c.TimestampCreated.Format(time.RFC3339Nano),
 		AgentModel:       c.AgentModel,
 		AgentVersion:     c.AgentVersion,
+		Name:             c.Name,
 	}
 }
 
@@ -44,6 +50,7 @@ type ClientJSON struct {
 	TimestampCreated string     `json:"timestamp_created"`
 	AgentModel       string     `json:"agent_model"`
 	AgentVersion     string     `json:"agent_version"`
+	Name             *string    `json:"name"`
 }
 
 type ClientDB struct {
@@ -54,6 +61,7 @@ type ClientDB struct {
 	TimestampCreated int64      `db:"timestamp_created"`
 	AgentModel       string     `db:"agent_model"`
 	AgentVersion     string     `db:"agent_version"`
+	Name             *string    `db:"name"`
 }
 
 func (c ClientDB) Model() Client {
@@ -65,19 +73,20 @@ func (c ClientDB) Model() Client {
 		TimestampCreated: timeFromMilli(c.TimestampCreated),
 		AgentModel:       c.AgentModel,
 		AgentVersion:     c.AgentVersion,
+		Name:             c.Name,
 	}
 }
 
-func DecodeClient(r *sqlx.Rows) (Client, error) {
-	data, err := sq.ScanSingle[ClientDB](r, sq.SModeFast, sq.Safe, true)
+func DecodeClient(ctx context.Context, q sq.Queryable, r *sqlx.Rows) (Client, error) {
+	data, err := sq.ScanSingle[ClientDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return Client{}, err
 	}
 	return data.Model(), nil
 }
 
-func DecodeClients(r *sqlx.Rows) ([]Client, error) {
-	data, err := sq.ScanAll[ClientDB](r, sq.SModeFast, sq.Safe, true)
+func DecodeClients(ctx context.Context, q sq.Queryable, r *sqlx.Rows) ([]Client, error) {
+	data, err := sq.ScanAll[ClientDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
 	if err != nil {
 		return nil, err
 	}

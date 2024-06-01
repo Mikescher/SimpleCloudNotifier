@@ -50,7 +50,7 @@ func (db *Database) ListSubscriptions(ctx db.TxContext, filter models.Subscripti
 		return nil, err
 	}
 
-	data, err := models.DecodeSubscriptions(rows)
+	data, err := models.DecodeSubscriptions(ctx, tx, rows)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func (db *Database) GetSubscription(ctx db.TxContext, subid models.SubscriptionI
 		return models.Subscription{}, err
 	}
 
-	sub, err := models.DecodeSubscription(rows)
+	sub, err := models.DecodeSubscription(ctx, tx, rows)
 	if err != nil {
 		return models.Subscription{}, err
 	}
@@ -91,7 +91,7 @@ func (db *Database) GetSubscriptionBySubscriber(ctx db.TxContext, subscriberId m
 		return nil, err
 	}
 
-	user, err := models.DecodeSubscription(rows)
+	user, err := models.DecodeSubscription(ctx, tx, rows)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}

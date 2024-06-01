@@ -28,13 +28,14 @@ import (
 //	@Router		/api/v2/users [POST]
 func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 	type body struct {
-		FCMToken     string  `json:"fcm_token"`
-		ProToken     *string `json:"pro_token"`
-		Username     *string `json:"username"`
-		AgentModel   string  `json:"agent_model"`
-		AgentVersion string  `json:"agent_version"`
-		ClientType   string  `json:"client_type"`
-		NoClient     bool    `json:"no_client"`
+		FCMToken     string            `json:"fcm_token"`
+		ProToken     *string           `json:"pro_token"`
+		Username     *string           `json:"username"`
+		AgentModel   string            `json:"agent_model"`
+		AgentVersion string            `json:"agent_version"`
+		ClientName   *string           `json:"client_name"`
+		ClientType   models.ClientType `json:"client_type"`
+		NoClient     bool              `json:"no_client"`
 	}
 
 	var b body
@@ -55,13 +56,10 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 		if b.ClientType == "" {
 			return ginresp.APIError(g, 400, apierr.INVALID_CLIENTTYPE, "Missing ClientType", nil)
 		}
-		if b.ClientType == string(models.ClientTypeAndroid) {
-			clientType = models.ClientTypeAndroid
-		} else if b.ClientType == string(models.ClientTypeIOS) {
-			clientType = models.ClientTypeIOS
-		} else {
+		if !b.ClientType.Valid() {
 			return ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Invalid ClientType", nil)
 		}
+		clientType = b.ClientType
 	}
 
 	if b.ProToken != nil {
@@ -126,7 +124,7 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete existing clients in db", err)
 		}
 
-		client, err := h.database.CreateClient(ctx, userobj.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion)
+		client, err := h.database.CreateClient(ctx, userobj.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion, b.ClientName)
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create client in db", err)
 		}

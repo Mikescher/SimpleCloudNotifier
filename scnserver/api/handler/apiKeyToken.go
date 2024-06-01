@@ -56,6 +56,55 @@ func (h APIHandler) ListUserKeys(g *gin.Context) ginresp.HTTPResponse {
 	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{Keys: res}))
 }
 
+// GetCurrentUserKey swaggerdoc
+//
+//	@Summary		Get the key currently used by this request
+//	@Description	Can be done with keys of any permission - the returned key does not include its token.
+//	@ID				api-tokenkeys-get-current
+//	@Tags			API-v2
+//
+//	@Param			uid	path		string	true	"UserID"
+//	@Param			kid	path		string	true	"TokenKeyID"
+//
+//	@Success		200	{object}	models.KeyTokenWithTokenJSON
+//	@Failure		400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure		401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure		404	{object}	ginresp.apiError	"message not found"
+//	@Failure		500	{object}	ginresp.apiError	"internal server error"
+//
+//	@Router			/api/v2/users/{uid}/keys/current [GET]
+func (h APIHandler) GetCurrentUserKey(g *gin.Context) ginresp.HTTPResponse {
+	type uri struct {
+		UserID models.UserID `uri:"uid" binding:"entityid"`
+	}
+
+	var u uri
+	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	if permResp := ctx.CheckPermissionAny(); permResp != nil {
+		return *permResp
+	}
+
+	tokid := ctx.GetPermissionKeyTokenID()
+	if tokid == nil {
+		return ginresp.APIError(g, 400, apierr.USER_AUTH_FAILED, "Missing KeyTokenID in context", nil)
+	}
+
+	keytoken, err := h.database.GetKeyToken(ctx, u.UserID, *tokid)
+	if errors.Is(err, sql.ErrNoRows) {
+		return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
+	}
+	if err != nil {
+		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
+	}
+
+	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, keytoken.JSON().WithToken(keytoken.Token)))
+}
+
 // GetUserKey swaggerdoc
 //
 //	@Summary		Get a single key

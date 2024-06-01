@@ -42,7 +42,7 @@ func NewPrimaryDatabase(cfg server.Config) (*Database, error) {
 		xdb.SetConnMaxIdleTime(60 * time.Minute)
 	}
 
-	qqdb := sq.NewDB(xdb)
+	qqdb := sq.NewDB(xdb, sq.DBOptions{})
 
 	if conf.EnableLogger {
 		qqdb.AddListener(dbtools.DBLogger{})
@@ -160,12 +160,57 @@ func (db *Database) Migrate(outerctx context.Context) error {
 			return err
 		}
 
-		log.Info().Int("currschema", currschema).Msg("Upgrade schema from 3 -> 4 succesfuly")
+		log.Info().Int("currschema", currschema).Msg("Upgrade schema from 3 -> 4 succesfully")
 
 		ppReInit = true
 	}
 
 	if currschema == 4 {
+
+		schemaHashMeta, err := db.ReadMetaString(tctx, "schema_hash")
+		if err != nil {
+			return err
+		}
+
+		schemHashDB, err := sq.HashSqliteDatabase(tctx, tx)
+		if err != nil {
+			return err
+		}
+
+		if schemHashDB != langext.Coalesce(schemaHashMeta, "") || langext.Coalesce(schemaHashMeta, "") != schema.PrimarySchema[currschema].Hash {
+			log.Debug().Str("schemHashDB", schemHashDB).Msg("Schema (primary db)")
+			log.Debug().Str("schemaHashMeta", langext.Coalesce(schemaHashMeta, "")).Msg("Schema (primary db)")
+			log.Debug().Str("schemaHashAsset", schema.PrimarySchema[currschema].Hash).Msg("Schema (primary db)")
+			return errors.New("database schema does not match (primary db)")
+		} else {
+			log.Debug().Str("schemHash", schemHashDB).Msg("Verified Schema consistency (primary db)")
+		}
+
+		log.Info().Int("currschema", currschema).Msg("Upgrade schema from 4 -> 5")
+
+		_, err = tx.Exec(tctx, schema.PrimaryMigration_4_5, sq.PP{})
+		if err != nil {
+			return err
+		}
+
+		currschema = 5
+
+		err = db.WriteMetaInt(tctx, "schema", int64(currschema))
+		if err != nil {
+			return err
+		}
+
+		err = db.WriteMetaString(tctx, "schema_hash", schema.PrimarySchema[currschema].Hash)
+		if err != nil {
+			return err
+		}
+
+		log.Info().Int("currschema", currschema).Msg("Upgrade schema from 4 -> 5 succesfully")
+
+		ppReInit = true
+	}
+
+	if currschema == 5 {
 
 		schemaHashMeta, err := db.ReadMetaString(tctx, "schema_hash")
 		if err != nil {

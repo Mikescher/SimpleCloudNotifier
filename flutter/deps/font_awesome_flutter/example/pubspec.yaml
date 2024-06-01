@@ -1,0 +1,17 @@
+name: font_awesome_flutter_example
+description: The Font Awesome Flutter Gallery
+
+dependencies:
+  flutter:
+    sdk: flutter
+  font_awesome_flutter:
+    path: ../
+
+dev_dependencies:
+  flutter_lints: ^2.0.1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+flutter:
+  uses-material-design: true

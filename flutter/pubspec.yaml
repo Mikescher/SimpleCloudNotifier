@@ -1,0 +1,48 @@
+name: simplecloudnotifier
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 2.0.0+100
+
+environment:
+  sdk: '>=3.2.6 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  font_awesome_flutter: '>= 4.7.0'
+  cupertino_icons: ^1.0.2
+  http: ^1.2.0
+  provider: ^6.1.1
+  shared_preferences: ^2.2.2
+  qr_flutter: ^4.1.0
+  url_launcher: ^6.2.4
+  infinite_scroll_pagination: ^4.0.0
+  intl: ^0.19.0
+  path_provider: ^2.1.3
+  hive_flutter: ^1.1.0
+  package_info_plus: ^8.0.0
+  xid: ^1.2.1
+  flutter_lazy_indexed_stack: ^0.0.6
+  firebase_core: ^2.32.0
+  firebase_messaging: ^14.9.4
+  device_info_plus: ^10.1.0
+  toastification: ^2.0.0
+
+
+dependency_overrides:
+  font_awesome_flutter:
+    path: deps/font_awesome_flutter
+
+    
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^4.0.0
+  hive_generator: ^2.0.1
+  build_runner: ^2.1.4
+
+flutter:
+  uses-material-design: true
