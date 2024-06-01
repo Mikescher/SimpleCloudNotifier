@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"fmt"
 	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
@@ -92,6 +93,14 @@ func (m Message) ShortContent() string {
 		return *m.Content
 	}
 	return (*m.Content)[0:ContentLengthShort-3] + "..."
+}
+
+func (m Message) FormatNotificationTitle(user User, channel Channel) string {
+	if m.ChannelInternalName == user.DefaultChannel() {
+		return m.Title
+	}
+
+	return fmt.Sprintf("[%s] %s", channel.DisplayName, m.Title)
 }
 
 type MessageJSON struct {

@@ -33,3 +33,7 @@
         - [ ] sq.DBOptions - enable CommentTrimmer and DefaultConverter
         - [ ] run unit-tests...
         - [ ] Copy db.Migrate code
+
+ - [ ] Disable compat | remove code 
+        - [x] compat message title
+        - [ ] ...

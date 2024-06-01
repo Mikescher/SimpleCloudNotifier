@@ -704,44 +704,6 @@ func TestCompatRequery(t *testing.T) {
 
 }
 
-func TestCompatTitlePatch(t *testing.T) {
-	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
-	defer stop()
-
-	pusher := ws.Pusher.(*push.TestSink)
-
-	r0 := tt.RequestPost[gin.H](t, baseUrl, "/api/v2/users", gin.H{
-		"agent_model":   "DUMMY_PHONE",
-		"agent_version": "4X",
-		"client_type":   "ANDROID",
-		"fcm_token":     "DUMMY_FCM",
-	})
-
-	uid := r0["user_id"].(string)
-	admintok := r0["admin_key"].(string)
-	sendtok := r0["send_key"].(string)
-
-	type clientlist struct {
-		Clients []gin.H `json:"clients"`
-	}
-
-	clist1 := tt.RequestAuthGet[clientlist](t, admintok, baseUrl, fmt.Sprintf("/api/v2/users/%s/clients", url.QueryEscape(uid)))
-
-	tt.SetCompatClient(t, ws, clist1.Clients[0]["client_id"].(string))
-
-	_ = tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-		"key":     sendtok,
-		"user_id": uid,
-		"title":   "HelloWorld_001",
-		"channel": "TestChan",
-	})
-
-	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
-	tt.AssertStrRepEqual(t, "msg.title", "HelloWorld_001", pusher.Last().Message.Title)
-	tt.AssertStrRepEqual(t, "msg.ovrTitle", "[TestChan] HelloWorld_001", pusher.Last().CompatTitleOverride)
-
-}
-
 func TestCompatAckCount(t *testing.T) {
 	_, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()

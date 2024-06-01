@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/rs/zerolog/log"
-	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/syncext"
 	"time"
 )
@@ -149,6 +148,25 @@ func (j *DeliveryRetryJob) redeliver(ctx *simplectx.SimpleContext, delivery mode
 		return
 	}
 
+	user, err := j.app.Database.Primary.GetUser(ctx, delivery.ReceiverUserID)
+	if err != nil {
+		log.Err(err).Str("ReceiverUserID", delivery.ReceiverUserID.String()).Msg("Failed to get user")
+		ctx.RollbackTransaction()
+		return
+	}
+
+	channel, err := j.app.Database.Primary.GetChannelByID(ctx, msg.ChannelID)
+	if err != nil {
+		log.Err(err).Str("ChannelID", msg.ChannelID.String()).Msg("Failed to get channel")
+		ctx.RollbackTransaction()
+		return
+	}
+	if channel == nil {
+		log.Error().Str("ChannelID", msg.ChannelID.String()).Msg("Failed to get channel")
+		ctx.RollbackTransaction()
+		return
+	}
+
 	if msg.Deleted {
 		err = j.app.Database.Primary.SetDeliveryFailed(ctx, delivery)
 		if err != nil {
@@ -158,29 +176,7 @@ func (j *DeliveryRetryJob) redeliver(ctx *simplectx.SimpleContext, delivery mode
 		}
 	} else {
 
-		isCompatClient, err := j.app.Database.Primary.IsCompatClient(ctx, client.ClientID)
-		if err != nil {
-			log.Err(err).Str("MessageID", delivery.MessageID.String()).Str("ClientID", client.ClientID.String()).Msg("Failed to get <IsCompatClient>")
-			ctx.RollbackTransaction()
-			return
-		}
-
-		var titleOverride *string = nil
-		var msgidOverride *string = nil
-		if isCompatClient {
-
-			messageIdComp, err := j.app.Database.Primary.ConvertToCompatIDOrCreate(ctx, "messageid", msg.MessageID.String())
-			if err != nil {
-				log.Err(err).Str("MessageID", delivery.MessageID.String()).Str("ClientID", client.ClientID.String()).Msg("Failed to query/create messageid")
-				ctx.RollbackTransaction()
-				return
-			}
-
-			titleOverride = langext.Ptr(j.app.CompatizeMessageTitle(ctx, msg))
-			msgidOverride = langext.Ptr(fmt.Sprintf("%d", messageIdComp))
-		}
-
-		fcmDelivID, err := j.app.DeliverMessage(ctx, client, msg, titleOverride, msgidOverride)
+		fcmDelivID, err := j.app.DeliverMessage(ctx, user, client, *channel, msg)
 		if err == nil {
 			err = j.app.Database.Primary.SetDeliverySuccess(ctx, delivery, fcmDelivID)
 			if err != nil {

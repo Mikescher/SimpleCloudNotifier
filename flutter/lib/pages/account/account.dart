@@ -216,7 +216,7 @@ class _AccountRootPageState extends State<AccountRootPage> {
                     padding: const EdgeInsets.fromLTRB(4, 1, 4, 1),
                     decoration: BoxDecoration(
                       color: Colors.blue,
-                      borderRadius: BorderRadius.only(topLeft: Radius.circular(8)),
+                      borderRadius: BorderRadius.only(topLeft: Radius.circular(4)),
                     ),
                   ),
                 ),
@@ -228,7 +228,7 @@ class _AccountRootPageState extends State<AccountRootPage> {
                     padding: const EdgeInsets.fromLTRB(4, 1, 4, 1),
                     decoration: BoxDecoration(
                       color: Colors.purple,
-                      borderRadius: BorderRadius.only(topLeft: Radius.circular(8)),
+                      borderRadius: BorderRadius.only(topLeft: Radius.circular(4)),
                     ),
                   ),
                 ),
@@ -240,18 +240,7 @@ class _AccountRootPageState extends State<AccountRootPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Expanded(child: Text(user.username ?? user.userID, overflow: TextOverflow.ellipsis)),
-                  IconButton(
-                    icon: FaIcon(FontAwesomeIcons.pen),
-                    iconSize: 18,
-                    padding: EdgeInsets.fromLTRB(0, 0, 4, 0),
-                    constraints: BoxConstraints(),
-                    onPressed: () {/*TODO*/},
-                  ),
-                ],
-              ),
+              Text(user.username ?? user.userID, overflow: TextOverflow.ellipsis),
               const SizedBox(height: 4),
               Row(
                 children: [
@@ -281,6 +270,29 @@ class _AccountRootPageState extends State<AccountRootPage> {
               ),
             ],
           ),
+        ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            IconButton(
+              icon: FaIcon(FontAwesomeIcons.pen),
+              iconSize: 18,
+              padding: EdgeInsets.all(4),
+              constraints: BoxConstraints(),
+              style: ButtonStyle(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+              onPressed: () {/*TODO*/},
+            ),
+            const SizedBox(height: 4),
+            if (!user.isPro)
+              IconButton(
+                icon: FaIcon(FontAwesomeIcons.cartCircleArrowUp),
+                iconSize: 18,
+                padding: EdgeInsets.all(4),
+                constraints: BoxConstraints(),
+                style: ButtonStyle(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                onPressed: () {/*TODO*/},
+              ),
+          ],
         ),
       ],
     );
@@ -458,6 +470,7 @@ class _AccountRootPageState extends State<AccountRootPage> {
       acc.set(user.user, user.clients[0], KeyTokenAuth(userId: user.user.userID, tokenAdmin: user.adminKey, tokenSend: user.sendKey));
 
       await acc.save();
+      Toaster.success("Success", 'Successfully Created a new account');
     } catch (exc, trace) {
       ApplicationLog.error('Failed to create user account: ' + exc.toString(), trace: trace);
       Toaster.error("Error", 'Failed to create user account');
@@ -469,6 +482,7 @@ class _AccountRootPageState extends State<AccountRootPage> {
   void _logout() async {
     final acc = Provider.of<UserAccount>(context, listen: false);
 
+    //TODO clear messages/channels/etc in open views
     acc.clear();
     await acc.save();
 

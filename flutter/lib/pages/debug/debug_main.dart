@@ -57,7 +57,7 @@ class _DebugMainPageState extends State<DebugMainPage> {
         ButtonSegment<DebugMainPageSubPage>(value: DebugMainPageSubPage.colors, icon: Icon(FontAwesomeIcons.solidPaintRoller, size: 14)),
         ButtonSegment<DebugMainPageSubPage>(value: DebugMainPageSubPage.actions, icon: Icon(FontAwesomeIcons.solidHammer, size: 14)),
         ButtonSegment<DebugMainPageSubPage>(value: DebugMainPageSubPage.requests, icon: Icon(FontAwesomeIcons.solidNetworkWired, size: 14)),
-        ButtonSegment<DebugMainPageSubPage>(value: DebugMainPageSubPage.persistence, icon: Icon(FontAwesomeIcons.solidFloppyDisk, size: 14)),
+        ButtonSegment<DebugMainPageSubPage>(value: DebugMainPageSubPage.persistence, icon: Icon(FontAwesomeIcons.solidDatabase, size: 14)),
         ButtonSegment<DebugMainPageSubPage>(value: DebugMainPageSubPage.logs, icon: Icon(FontAwesomeIcons.solidFileLines, size: 14)),
       ],
       style: ButtonStyle(

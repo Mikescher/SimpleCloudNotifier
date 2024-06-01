@@ -185,19 +185,7 @@ func (app *Application) SendMessage(g *gin.Context, ctx *AppContext, UserID *mod
 
 		for _, client := range clients {
 
-			isCompatClient, err := app.Database.Primary.IsCompatClient(ctx, client.ClientID)
-			if err != nil {
-				return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query compat_clients", err))
-			}
-
-			var titleOverride *string = nil
-			var msgidOverride *string = nil
-			if isCompatClient {
-				titleOverride = langext.Ptr(app.CompatizeMessageTitle(ctx, msg))
-				msgidOverride = langext.Ptr(fmt.Sprintf("%d", compatMsgID))
-			}
-
-			fcmDelivID, err := app.DeliverMessage(ctx, client, msg, titleOverride, msgidOverride)
+			fcmDelivID, err := app.DeliverMessage(ctx, user, client, channel, msg)
 			if err != nil {
 				_, err = app.Database.Primary.CreateRetryDelivery(ctx, client, msg)
 				if err != nil {

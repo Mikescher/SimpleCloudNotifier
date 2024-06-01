@@ -11,10 +11,8 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
-	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -53,30 +51,34 @@ type Notification struct {
 	Priority int
 }
 
-func (fb FirebaseConnector) SendNotification(ctx context.Context, client models.Client, msg models.Message, compatTitleOverride *string, compatMsgIDOverride *string) (string, error) {
+func (fb FirebaseConnector) SendNotification(ctx context.Context, user models.User, client models.Client, channel models.Channel, msg models.Message) (string, error) {
 
 	uri := "https://fcm.googleapis.com/v1/projects/" + fb.fbProject + "/messages:send"
 
 	jsonBody := gin.H{
-		"data": gin.H{
-			"scn_msg_id": langext.Coalesce(compatMsgIDOverride, msg.MessageID.String()),
-			"usr_msg_id": langext.Coalesce(msg.UserMessageID, ""),
-			"client_id":  client.ClientID.String(),
-			"timestamp":  strconv.FormatInt(msg.Timestamp().Unix(), 10),
-			"priority":   strconv.Itoa(msg.Priority),
-			"trimmed":    langext.Conditional(msg.NeedsTrim(), "true", "false"),
-			"title":      langext.Coalesce(compatTitleOverride, msg.Title),
-			"body":       langext.Coalesce(msg.TrimmedContent(), ""),
-		},
 		"token": client.FCMToken,
-		"android": gin.H{
-			"priority": "high",
-		},
-		"apns": gin.H{},
 	}
+
 	if client.Type == models.ClientTypeIOS {
 		jsonBody["notification"] = gin.H{
 			"title": msg.Title,
+			"body":  msg.ShortContent(),
+		}
+		jsonBody["apns"] = gin.H{}
+	} else if client.Type == models.ClientTypeAndroid {
+		jsonBody["android"] = gin.H{
+			"priority":     "high",
+			"collapse_key": msg.ChannelID.String(),
+			"notification": gin.H{
+				"event_time": msg.Timestamp().Format(time.RFC3339),
+				"title":      msg.FormatNotificationTitle(user, channel),
+				"body":       msg.ShortContent(),
+			},
+			"fcm_options": gin.H{},
+		}
+	} else {
+		jsonBody["notification"] = gin.H{
+			"title": msg.FormatNotificationTitle(user, channel),
 			"body":  msg.ShortContent(),
 		}
 	}

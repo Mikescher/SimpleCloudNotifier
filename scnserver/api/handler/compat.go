@@ -535,7 +535,7 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 		}
 
 		compMsgs = append(compMsgs, models.CompatMessage{
-			Title:         h.app.CompatizeMessageTitle(ctx, v),
+			Title:         v.Title,
 			Body:          v.Content,
 			Priority:      v.Priority,
 			Timestamp:     v.Timestamp().Unix(),
@@ -783,7 +783,7 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 		Success: true,
 		Message: "ok",
 		Data: models.CompatMessage{
-			Title:         h.app.CompatizeMessageTitle(ctx, msg),
+			Title:         msg.Title,
 			Body:          msg.Content,
 			Trimmed:       langext.Ptr(false),
 			Priority:      msg.Priority,

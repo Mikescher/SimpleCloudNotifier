@@ -149,12 +149,13 @@ class _AccountLoginPageState extends State<AccountLoginPage> {
 
       final user = await APIClient.getUser(kta, uid);
 
-      final client = await APIClient.addClient(acc.auth, fcmToken, Globals().deviceModel, Globals().version, Globals().hostname, Globals().clientType);
+      final client = await APIClient.addClient(kta, fcmToken, Globals().deviceModel, Globals().version, Globals().hostname, Globals().clientType);
 
       acc.set(user, client, kta);
       await acc.save();
 
       Toaster.success("Login", "Successfully logged in");
+      Navigator.popUntil(context, (route) => route.isFirst);
     } catch (exc, trace) {
       ApplicationLog.error('Failed to verify token: ' + exc.toString(), trace: trace);
       Toaster.error("Error", 'Failed to verify token');
