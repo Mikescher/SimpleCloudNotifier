@@ -109,7 +109,7 @@ type KeyTokenWithTokenJSON struct {
 	Token string `json:"token"`
 }
 
-func (j KeyTokenJSON) WithToken(tok string) any {
+func (j KeyTokenJSON) WithToken(tok string) KeyTokenWithTokenJSON {
 	return KeyTokenWithTokenJSON{
 		KeyTokenJSON: j,
 		Token:        tok,
