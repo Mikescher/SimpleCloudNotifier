@@ -17,28 +17,28 @@ class _DebugActionsPageState extends State<DebugActionsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
+              FilledButton(
+                style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
                 onPressed: () => Toaster.success("Hello World", "This was a triumph!"),
                 child: const Text('Show Success Notification'),
               ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
+              FilledButton(
+                style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
                 onPressed: () => Toaster.info("Hello World", "This was a triumph!"),
                 child: const Text('Show Info Notification'),
               ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
+              FilledButton(
+                style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
                 onPressed: () => Toaster.warn("Hello World", "This was a triumph!"),
                 child: const Text('Show Warn Notification'),
               ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
+              FilledButton(
+                style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
                 onPressed: () => Toaster.error("Hello World", "This was a triumph!"),
                 child: const Text('Show Info Notification'),
               ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
+              FilledButton(
+                style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
                 onPressed: () => Toaster.simple("Hello World"),
                 child: const Text('Show Simple Notification'),
               ),

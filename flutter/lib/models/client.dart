@@ -28,7 +28,7 @@ class Client {
       timestampCreated: json['timestamp_created'] as String,
       agentModel: json['agent_model'] as String,
       agentVersion: json['agent_version'] as String,
-      descriptionName: json['description_name'] as String?,
+      descriptionName: json.containsKey('description_name') ? (json['description_name'] as String?) : null, //TODO change once API is updated / branch is merged
     );
   }
 

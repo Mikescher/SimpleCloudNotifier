@@ -63,8 +63,8 @@ class _SendRootPageState extends State<SendRootPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
+              FilledButton(
+                style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
                 onPressed: _send,
                 child: const Text('Send'),
               ),
@@ -92,7 +92,7 @@ class _SendRootPageState extends State<SendRootPage> {
             if (snapshot.hasError) {
               return Text('Error: ${snapshot.error}'); //TODO better error display
             }
-            var url = 'https://simplecloudnotifier.com?preset_user_id=${acc.user!.userID}&preset_user_key=TODO'; // TODO get send-only key
+            var url = 'https://simplecloudnotifier.de?preset_user_id=${acc.user!.userID}&preset_user_key=${acc.auth!.tokenSend}';
             return GestureDetector(
               onTap: () {
                 _openWeb(url);
@@ -121,7 +121,7 @@ class _SendRootPageState extends State<SendRootPage> {
       );
     }
 
-    var url = 'https://simplecloudnotifier.com?preset_user_id=${acc.user!.userID}&preset_user_key=TODO'; // TODO get send-only key
+    var url = 'https://simplecloudnotifier.de?preset_user_id=${acc.user!.userID}&preset_user_key=${acc.auth!.tokenSend}';
 
     return GestureDetector(
       onTap: () {

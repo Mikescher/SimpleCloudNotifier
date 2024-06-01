@@ -1,10 +1,16 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
+import 'package:simplecloudnotifier/models/key_token_auth.dart';
 import 'package:simplecloudnotifier/models/user.dart';
+import 'package:simplecloudnotifier/pages/account/login.dart';
+import 'package:simplecloudnotifier/state/application_log.dart';
+import 'package:simplecloudnotifier/state/globals.dart';
 import 'package:simplecloudnotifier/state/user_account.dart';
+import 'package:simplecloudnotifier/utils/toaster.dart';
 
 class AccountRootPage extends StatefulWidget {
   const AccountRootPage({super.key});
@@ -21,6 +27,8 @@ class _AccountRootPageState extends State<AccountRootPage> {
   late Future<int>? futureChannelSubscribedCount;
 
   late UserAccount userAcc;
+
+  bool loading = false;
 
   @override
   void initState() {
@@ -102,24 +110,53 @@ class _AccountRootPageState extends State<AccountRootPage> {
   }
 
   Widget buildNoAuth(BuildContext context) {
-    return Center(
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
-            onPressed: () {
-              //TODO
-            },
-            child: const Text('Use existing account'),
-          ),
+          if (!loading)
+            Center(
+              child: Container(
+                width: 200,
+                height: 200,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.secondary,
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: Center(child: FaIcon(FontAwesomeIcons.userSecret, size: 96, color: Theme.of(context).colorScheme.onSecondary)),
+              ),
+            ),
+          if (loading)
+            Center(
+              child: Container(
+                width: 200,
+                height: 200,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.secondary,
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.onSecondary)),
+              ),
+            ),
           const SizedBox(height: 32),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
+          FilledButton(
+            style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 24), padding: const EdgeInsets.fromLTRB(8, 12, 8, 12)),
             onPressed: () {
-              //TODO
+              if (loading) return;
+              createNewAccount();
             },
             child: const Text('Create new account'),
+          ),
+          const SizedBox(height: 16),
+          FilledButton.tonal(
+            style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 24), padding: const EdgeInsets.fromLTRB(8, 12, 8, 12)),
+            onPressed: () {
+              if (loading) return;
+              Navigator.push(context, MaterialPageRoute<AccountLoginPage>(builder: (context) => AccountLoginPage()));
+            },
+            child: const Text('Use existing account'),
           ),
         ],
       ),
@@ -390,5 +427,41 @@ class _AccountRootPageState extends State<AccountRootPage> {
         ],
       ),
     );
+  }
+
+  void createNewAccount() async {
+    setState(() => loading = true);
+
+    final acc = Provider.of<UserAccount>(context, listen: false);
+
+    try {
+      final notificationSettings = await FirebaseMessaging.instance.requestPermission(provisional: true);
+
+      if (notificationSettings.authorizationStatus == AuthorizationStatus.denied) {
+        Toaster.error("Missing Permission", 'Please allow notifications to create an account');
+        return;
+      }
+
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+
+      if (fcmToken == null) {
+        Toaster.warn("Missing Token", 'No FCM Token found, please allow notifications, ensure you have a network connection and restart the app');
+        return;
+      }
+
+      await Globals().setPrefFCMToken(fcmToken);
+
+      final user = await APIClient.createUserWithClient(null, fcmToken, Globals().platform, Globals().version, Globals().hostname, Globals().clientType);
+
+      acc.setUser(user.user);
+      acc.setToken(KeyTokenAuth(userId: user.user.userID, tokenAdmin: user.adminKey, tokenSend: user.sendKey));
+      acc.setClient(user.clients[0]);
+      await acc.save();
+    } catch (exc, trace) {
+      ApplicationLog.error('Failed to create user account: ' + exc.toString(), trace: trace);
+      Toaster.error("Error", 'Failed to create user account');
+    } finally {
+      setState(() => loading = false);
+    }
   }
 }

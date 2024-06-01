@@ -1,6 +1,11 @@
 class KeyTokenAuth {
   final String userId;
-  final String token;
+  final String tokenAdmin;
+  final String tokenSend;
 
-  KeyTokenAuth({required this.userId, required this.token});
+  KeyTokenAuth({
+    required this.userId,
+    required this.tokenAdmin,
+    required this.tokenSend,
+  });
 }

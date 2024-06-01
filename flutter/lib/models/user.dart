@@ -1,3 +1,5 @@
+import 'package:simplecloudnotifier/models/client.dart';
+
 class User {
   final String userID;
   final String? username;
@@ -59,6 +61,32 @@ class User {
       maxChannelDescriptionLength: json['max_channel_description_length'] as int,
       maxSenderNameLength: json['max_sender_name_length'] as int,
       maxUserMessageIDLength: json['max_user_message_id_length'] as int,
+    );
+  }
+}
+
+class UserWithClientsAndKeys {
+  final User user;
+  final List<Client> clients;
+  final String sendKey;
+  final String readKey;
+  final String adminKey;
+
+  UserWithClientsAndKeys({
+    required this.user,
+    required this.clients,
+    required this.sendKey,
+    required this.readKey,
+    required this.adminKey,
+  });
+
+  factory UserWithClientsAndKeys.fromJson(Map<String, dynamic> json) {
+    return UserWithClientsAndKeys(
+      user: User.fromJson(json),
+      clients: Client.fromJsonArray(json['clients'] as List<dynamic>),
+      sendKey: json['send_key'] as String,
+      readKey: json['read_key'] as String,
+      adminKey: json['admin_key'] as String,
     );
   }
 }

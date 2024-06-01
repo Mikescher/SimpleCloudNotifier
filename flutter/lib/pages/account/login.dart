@@ -54,8 +54,8 @@ class _AccountLoginPageState extends State<AccountLoginPage> {
             ),
           ),
           const SizedBox(height: 16),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
+          FilledButton(
+            style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
             onPressed: _login,
             child: const Text('Login'),
           ),
@@ -66,7 +66,7 @@ class _AccountLoginPageState extends State<AccountLoginPage> {
 
   void _login() async {
     final msgr = ScaffoldMessenger.of(context);
-    final prov = Provider.of<UserAccount>(context, listen: false);
+    final acc = Provider.of<UserAccount>(context, listen: false);
 
     try {
       final uid = _ctrlUserID.text;
@@ -79,8 +79,8 @@ class _AccountLoginPageState extends State<AccountLoginPage> {
             content: Text('Data ok'), //TODO use toast?
           ),
         );
-        prov.setToken(KeyTokenAuth(userId: uid, token: tok));
-        await prov.save();
+        acc.setToken(KeyTokenAuth(userId: uid, tokenAdmin: tok, tokenSend: '')); //TOTO send token
+        await acc.save();
         widget.onLogin?.call();
       } else {
         msgr.showSnackBar(

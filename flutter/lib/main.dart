@@ -14,6 +14,8 @@ import 'package:toastification/toastification.dart';
 import 'firebase_options.dart';
 
 void main() async {
+  print('[INIT] Application starting...');
+
   WidgetsFlutterBinding.ensureInitialized();
 
   await Hive.initFlutter();
@@ -43,7 +45,7 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  final notificationSettings = await FirebaseMessaging.instance.requestPermission(provisional: true);
+  await FirebaseMessaging.instance.requestPermission(provisional: true);
 
   FirebaseMessaging.instance.onTokenRefresh.listen((fcmToken) {
     try {
@@ -54,6 +56,15 @@ void main() async {
   }).onError((dynamic err) {
     ApplicationLog.error('Failed to listen to token refresh events: ' + (err?.toString() ?? ''));
   });
+
+  try {
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    if (fcmToken != null) {
+      setFirebaseToken(fcmToken);
+    }
+  } catch (exc, trace) {
+    ApplicationLog.error('Failed to get+set firebase token: ' + exc.toString(), trace: trace);
+  }
 
   ApplicationLog.debug('Application started');
 
@@ -69,14 +80,25 @@ void main() async {
 }
 
 void setFirebaseToken(String fcmToken) async {
-  ApplicationLog.info('New firebase token: $fcmToken');
   final acc = UserAccount();
+
+  final oldToken = Globals().getPrefFCMToken();
+
+  if (oldToken != null && oldToken == fcmToken && acc.client != null && acc.client!.fcmToken == fcmToken) {
+    ApplicationLog.info('Firebase token unchanged - do nothing', additional: 'Token: $fcmToken');
+    return;
+  }
+
+  ApplicationLog.info('New firebase token received', additional: 'Token: $fcmToken (old: $oldToken)');
+
+  await Globals().setPrefFCMToken(fcmToken);
+
   if (acc.auth != null) {
     if (acc.client == null) {
-      final client = await APIClient.addClient(acc.auth, fcmToken, Globals().platform, Globals().version, Globals().clientType);
+      final client = await APIClient.addClient(acc.auth, fcmToken, Globals().deviceModel, Globals().version, Globals().hostname, Globals().clientType);
       acc.setClient(client);
     } else {
-      final client = await APIClient.updateClient(acc.auth, acc.client!.clientID, fcmToken, Globals().platform, Globals().version);
+      final client = await APIClient.updateClient(acc.auth, acc.client!.clientID, fcmToken, Globals().deviceModel, Globals().hostname, Globals().version);
       acc.setClient(client);
     }
   }

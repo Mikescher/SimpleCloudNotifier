@@ -42,7 +42,7 @@ class _ChannelRootPageState extends State<ChannelRootPage> {
     }
 
     try {
-      final items = await APIClient.getChannelList(acc.auth!, ChannelSelector.all);
+      final items = (await APIClient.getChannelList(acc.auth!, ChannelSelector.all)).map((p) => p.channel).toList();
 
       items.sort((a, b) => -1 * (a.timestampLastSent ?? '').compareTo(b.timestampLastSent ?? ''));
 

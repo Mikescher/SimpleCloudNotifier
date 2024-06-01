@@ -60,10 +60,11 @@ class UserAccount extends ChangeNotifier {
 
   void load() {
     final uid = Globals().sharedPrefs.getString('auth.userid');
-    final tok = Globals().sharedPrefs.getString('auth.token');
+    final toka = Globals().sharedPrefs.getString('auth.tokenadmin');
+    final toks = Globals().sharedPrefs.getString('auth.tokensend');
 
-    if (uid != null && tok != null) {
-      setToken(KeyTokenAuth(userId: uid, token: tok));
+    if (uid != null && toka != null && toks != null) {
+      setToken(KeyTokenAuth(userId: uid, tokenAdmin: toka, tokenSend: toks));
     } else {
       clearToken();
     }
@@ -73,10 +74,12 @@ class UserAccount extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     if (_auth == null) {
       await prefs.remove('auth.userid');
-      await prefs.remove('auth.token');
+      await prefs.remove('auth.tokenadmin');
+      await prefs.remove('auth.tokensend');
     } else {
       await prefs.setString('auth.userid', _auth!.userId);
-      await prefs.setString('auth.token', _auth!.token);
+      await prefs.setString('auth.tokenadmin', _auth!.tokenAdmin);
+      await prefs.setString('auth.tokensend', _auth!.tokenSend);
     }
   }
 

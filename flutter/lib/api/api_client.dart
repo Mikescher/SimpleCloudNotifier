@@ -45,13 +45,15 @@ class APIClient {
 
     final req = http.Request(method, uri);
 
+    print('[REQUEST|RUN] [${method}] ${name}');
+
     if (jsonBody != null) {
       req.body = jsonEncode(jsonBody);
       req.headers['Content-Type'] = 'application/json';
     }
 
     if (auth != null) {
-      req.headers['Authorization'] = 'SCN ${auth.token}';
+      req.headers['Authorization'] = 'SCN ${auth.tokenAdmin}';
     }
 
     req.headers['User-Agent'] = 'simplecloudnotifier/flutter/${Globals().platform.replaceAll(' ', '_')} ${Globals().version}+${Globals().buildNumber}';
@@ -98,9 +100,11 @@ class APIClient {
       if (fn != null) {
         final result = fn(data as Map<String, dynamic>);
         RequestLog.addRequestSuccess(name, t0, method, uri, req.body, req.headers, responseStatusCode, responseBody, responseHeaders);
+        print('[REQUEST|FIN] [${method}] ${name}');
         return result;
       } else {
         RequestLog.addRequestSuccess(name, t0, method, uri, req.body, req.headers, responseStatusCode, responseBody, responseHeaders);
+        print('[REQUEST|FIN] [${method}] ${name}');
         return null as T;
       }
     } catch (exc, trace) {
@@ -120,7 +124,7 @@ class APIClient {
         method: 'GET',
         relURL: '/users/$uid',
         fn: null,
-        auth: KeyTokenAuth(userId: uid, token: tok),
+        auth: KeyTokenAuth(userId: uid, tokenAdmin: tok, tokenSend: ''),
       );
       return true;
     } catch (e) {
@@ -138,7 +142,7 @@ class APIClient {
     );
   }
 
-  static Future<Client> addClient(KeyTokenAuth? auth, String fcmToken, String agentModel, String agentVersion, String clientType) async {
+  static Future<Client> addClient(KeyTokenAuth? auth, String fcmToken, String agentModel, String agentVersion, String? descriptionName, String clientType) async {
     return await _request(
       name: 'addClient',
       method: 'POST',
@@ -148,13 +152,14 @@ class APIClient {
         'agent_model': agentModel,
         'agent_version': agentVersion,
         'client_type': clientType,
+        'description_name': descriptionName,
       },
       fn: Client.fromJson,
       auth: auth,
     );
   }
 
-  static Future<Client> updateClient(KeyTokenAuth? auth, String clientID, String fcmToken, String agentModel, String agentVersion) async {
+  static Future<Client> updateClient(KeyTokenAuth? auth, String clientID, String fcmToken, String agentModel, String? descriptionName, String agentVersion) async {
     return await _request(
       name: 'updateClient',
       method: 'PUT',
@@ -163,6 +168,7 @@ class APIClient {
         'fcm_token': fcmToken,
         'agent_model': agentModel,
         'agent_version': agentVersion,
+        'description_name': descriptionName,
       },
       fn: Client.fromJson,
       auth: auth,
@@ -233,6 +239,24 @@ class APIClient {
       relURL: 'users/${auth.userId}/keys',
       fn: (json) => KeyToken.fromJsonArray(json['keys'] as List<dynamic>),
       auth: auth,
+    );
+  }
+
+  static Future<UserWithClientsAndKeys> createUserWithClient(String? username, String clientFcmToken, String clientAgentModel, String clientAgentVersion, String? clientDescriptionName, String clientType) async {
+    return await _request(
+      name: 'createUserWithClient',
+      method: 'POST',
+      relURL: 'users',
+      jsonBody: {
+        'username': username,
+        'fcm_token': clientFcmToken,
+        'agent_model': clientAgentModel,
+        'agent_version': clientAgentVersion,
+        'description_name': clientDescriptionName,
+        'client_type': clientType,
+        'no_client': false,
+      },
+      fn: UserWithClientsAndKeys.fromJson,
     );
   }
 }

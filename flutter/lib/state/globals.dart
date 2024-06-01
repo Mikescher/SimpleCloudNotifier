@@ -55,4 +55,12 @@ class Globals {
 
     this.sharedPrefs = await SharedPreferences.getInstance();
   }
+
+  String? getPrefFCMToken() {
+    return sharedPrefs.getString("fcm.token");
+  }
+
+  Future<bool> setPrefFCMToken(String value) {
+    return sharedPrefs.setString("fcm.token", value);
+  }
 }

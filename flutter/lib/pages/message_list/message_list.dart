@@ -48,7 +48,7 @@ class _MessageListPageState extends State<MessageListPage> {
     try {
       if (_channels == null) {
         final channels = await APIClient.getChannelList(acc.auth!, ChannelSelector.allAny);
-        _channels = <String, ChannelWithSubscription>{for (var v in channels) v.channelID: v};
+        _channels = <String, Channel>{for (var v in channels) v.channel.channelID: v.channel};
       }
 
       final (npt, newItems) = await APIClient.getMessageList(acc.auth!, thisPageToken, pageSize: _pageSize);

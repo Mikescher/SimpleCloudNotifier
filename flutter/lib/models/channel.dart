@@ -38,33 +38,18 @@ class Channel {
   }
 }
 
-class ChannelWithSubscription extends Channel {
+class ChannelWithSubscription {
+  final Channel channel;
   final Subscription subscription;
 
   ChannelWithSubscription({
-    required super.channelID,
-    required super.ownerUserID,
-    required super.internalName,
-    required super.displayName,
-    required super.descriptionName,
-    required super.subscribeKey,
-    required super.timestampCreated,
-    required super.timestampLastSent,
-    required super.messagesSent,
+    required this.channel,
     required this.subscription,
   });
 
   factory ChannelWithSubscription.fromJson(Map<String, dynamic> json) {
     return ChannelWithSubscription(
-      channelID: json['channel_id'] as String,
-      ownerUserID: json['owner_user_id'] as String,
-      internalName: json['internal_name'] as String,
-      displayName: json['display_name'] as String,
-      descriptionName: json['description_name'] as String?,
-      subscribeKey: json['subscribe_key'] as String?,
-      timestampCreated: json['timestamp_created'] as String,
-      timestampLastSent: json['timestamp_lastsent'] as String?,
-      messagesSent: json['messages_sent'] as int,
+      channel: Channel.fromJson(json),
       subscription: Subscription.fromJson(json['subscription'] as Map<String, dynamic>),
     );
   }
