@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func (db *Database) CreateClient(ctx db.TxContext, userid models.UserID, ctype models.ClientType, fcmToken string, agentModel string, agentVersion string, descriptionName *string) (models.Client, error) {
+func (db *Database) CreateClient(ctx db.TxContext, userid models.UserID, ctype models.ClientType, fcmToken string, agentModel string, agentVersion string, name *string) (models.Client, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return models.Client{}, err
@@ -21,7 +21,7 @@ func (db *Database) CreateClient(ctx db.TxContext, userid models.UserID, ctype m
 		TimestampCreated: time2DB(time.Now()),
 		AgentModel:       agentModel,
 		AgentVersion:     agentVersion,
-		DescriptionName:  descriptionName,
+		Name:             name,
 	}
 
 	_, err = sq.InsertSingle(ctx, tx, "clients", entity)
@@ -172,7 +172,7 @@ func (db *Database) UpdateClientDescriptionName(ctx db.TxContext, clientid model
 		return err
 	}
 
-	_, err = tx.Exec(ctx, "UPDATE clients SET description_name = :vvv WHERE client_id = :cid", sq.PP{
+	_, err = tx.Exec(ctx, "UPDATE clients SET name = :vvv WHERE client_id = :cid", sq.PP{
 		"vvv": descriptionName,
 		"cid": clientid,
 	})

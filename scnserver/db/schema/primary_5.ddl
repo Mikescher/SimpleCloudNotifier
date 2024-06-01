@@ -46,17 +46,17 @@ CREATE  UNIQUE INDEX "idx_keytokens_token" ON keytokens (token);
 
 CREATE TABLE clients
 (
-    client_id          TEXT                                           NOT NULL,
+    client_id          TEXT                                                                    NOT NULL,
 
-    user_id            TEXT                                           NOT NULL,
-    type               TEXT       CHECK(type IN ('ANDROID', 'IOS'))   NOT NULL,
-    fcm_token          TEXT                                           NOT NULL,
-    description_name   TEXT                                               NULL,
+    user_id            TEXT                                                                    NOT NULL,
+    type               TEXT       CHECK(type IN ('ANDROID','IOS','LINUX','MACOS','WINDOWS'))   NOT NULL,
+    fcm_token          TEXT                                                                    NOT NULL,
+    name               TEXT                                                                        NULL,
 
-    timestamp_created  INTEGER                                        NOT NULL,
+    timestamp_created  INTEGER                                                                 NOT NULL,
 
-    agent_model        TEXT                                           NOT NULL,
-    agent_version      TEXT                                           NOT NULL,
+    agent_model        TEXT                                                                    NOT NULL,
+    agent_version      TEXT                                                                    NOT NULL,
 
     PRIMARY KEY (client_id)
 ) STRICT;

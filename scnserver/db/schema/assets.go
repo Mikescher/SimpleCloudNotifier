@@ -40,7 +40,7 @@ var PrimarySchema = map[int]Def{
 	2: {primarySchema2, "07ed1449114416ed043084a30e0722a5f97bf172161338d2f7106a8dfd387d0a"},
 	3: {primarySchema3, "65c2125ad0e12d02490cf2275f0067ef3c62a8522edf9a35ee8aa3f3c09b12e8"},
 	4: {primarySchema4, "cb022156ab0e7aea39dd0c985428c43cae7d60e41ca8e9e5a84c774b3019d2ca"},
-	5: {primarySchema5, "04bd0d4a81540f69f10c8f8cd656a1fdf852d4ef7a2ab2918ca6369b5423b1b6"},
+	5: {primarySchema5, "9d6217ba4a3503cfe090f72569367f95a413bb14e9effe49ffeabbf255bce8dd"},
 }
 
 var PrimarySchemaVersion = 5

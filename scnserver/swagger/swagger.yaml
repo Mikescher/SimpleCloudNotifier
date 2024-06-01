@@ -129,9 +129,9 @@ definitions:
         type: string
       client_type:
         $ref: '#/definitions/models.ClientType'
-      description_name:
-        type: string
       fcm_token:
+        type: string
+      name:
         type: string
     required:
     - agent_model
@@ -163,10 +163,10 @@ definitions:
         type: string
       agent_version:
         type: string
+      client_name:
+        type: string
       client_type:
         $ref: '#/definitions/models.ClientType'
-      description_name:
-        type: string
       fcm_token:
         type: string
       no_client:
@@ -529,9 +529,9 @@ definitions:
         type: string
       client_id:
         type: string
-      description_name:
-        type: string
       fcm_token:
+        type: string
+      name:
         type: string
       timestamp_created:
         type: string
@@ -592,6 +592,31 @@ definitions:
       timestamp_created:
         type: string
       timestamp_lastused:
+        type: string
+    type: object
+  models.KeyTokenWithTokenJSON:
+    properties:
+      all_channels:
+        type: boolean
+      channels:
+        items:
+          type: string
+        type: array
+      keytoken_id:
+        type: string
+      messages_sent:
+        type: integer
+      name:
+        type: string
+      owner_user_id:
+        type: string
+      permissions:
+        type: string
+      timestamp_created:
+        type: string
+      timestamp_lastused:
+        type: string
+      token:
         type: string
     type: object
   models.MessageJSON:
@@ -2195,6 +2220,46 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Update a key
+      tags:
+      - API-v2
+  /api/v2/users/{uid}/keys/current:
+    get:
+      description: Can be done with keys of any permission - the returned key does
+        not include its token.
+      operationId: api-tokenkeys-get-current
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: string
+      - description: TokenKeyID
+        in: path
+        name: kid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.KeyTokenWithTokenJSON'
+        "400":
+          description: supplied values/parameters cannot be parsed / are invalid
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: user is not authorized / has missing permissions
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: message not found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Get the key currently used by this request
       tags:
       - API-v2
   /api/v2/users/{uid}/subscriptions:

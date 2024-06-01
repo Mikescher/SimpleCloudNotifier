@@ -1981,6 +1981,64 @@
                 }
             }
         },
+        "/api/v2/users/{uid}/keys/current": {
+            "get": {
+                "description": "Can be done with keys of any permission - the returned key does not include its token.",
+                "tags": [
+                    "API-v2"
+                ],
+                "summary": "Get the key currently used by this request",
+                "operationId": "api-tokenkeys-get-current",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UserID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "TokenKeyID",
+                        "name": "kid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.KeyTokenWithTokenJSON"
+                        }
+                    },
+                    "400": {
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "user is not authorized / has missing permissions",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "message not found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v2/users/{uid}/keys/{kid}": {
             "get": {
                 "description": "The request must be done with an ADMIN key, the returned key does not include its token.",
@@ -3039,10 +3097,10 @@
                 "client_type": {
                     "$ref": "#/definitions/models.ClientType"
                 },
-                "description_name": {
+                "fcm_token": {
                     "type": "string"
                 },
-                "fcm_token": {
+                "name": {
                     "type": "string"
                 }
             }
@@ -3084,11 +3142,11 @@
                 "agent_version": {
                     "type": "string"
                 },
+                "client_name": {
+                    "type": "string"
+                },
                 "client_type": {
                     "$ref": "#/definitions/models.ClientType"
-                },
-                "description_name": {
-                    "type": "string"
                 },
                 "fcm_token": {
                     "type": "string"
@@ -3641,10 +3699,10 @@
                 "client_id": {
                     "type": "string"
                 },
-                "description_name": {
+                "fcm_token": {
                     "type": "string"
                 },
-                "fcm_token": {
+                "name": {
                     "type": "string"
                 },
                 "timestamp_created": {
@@ -3732,6 +3790,44 @@
                     "type": "string"
                 },
                 "timestamp_lastused": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.KeyTokenWithTokenJSON": {
+            "type": "object",
+            "properties": {
+                "all_channels": {
+                    "type": "boolean"
+                },
+                "channels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "keytoken_id": {
+                    "type": "string"
+                },
+                "messages_sent": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_user_id": {
+                    "type": "string"
+                },
+                "permissions": {
+                    "type": "string"
+                },
+                "timestamp_created": {
+                    "type": "string"
+                },
+                "timestamp_lastused": {
+                    "type": "string"
+                },
+                "token": {
                     "type": "string"
                 }
             }
