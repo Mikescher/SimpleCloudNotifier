@@ -21,7 +21,15 @@ CREATE TABLE clients_new
     PRIMARY KEY (client_id)
 ) STRICT;
 
-INSERT INTO clients_new SELECT * FROM clients;
+UPDATE clients SET agent_model   = 'UNKNOWN' WHERE agent_model IS NULL;
+UPDATE clients SET agent_version = 'UNKNOWN' WHERE agent_version IS NULL;
+
+INSERT INTO clients_new
+SELECT
+    client_id, user_id, type, fcm_token, name, timestamp_created, agent_model, agent_version
+FROM clients;
+
+
 DROP TABLE clients;
 ALTER TABLE clients_new RENAME TO clients;
 
