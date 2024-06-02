@@ -43,10 +43,19 @@ class _DebugActionsPageState extends State<DebugActionsPage> {
                 child: const Text('Show Simple Notification'),
               ),
               SizedBox(height: 20),
+              FilledButton(
+                style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
+                onPressed: _sendTokenToServer,
+                child: const Text('Send FCM Token to Server'),
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _sendTokenToServer() {
+    //TODO
   }
 }

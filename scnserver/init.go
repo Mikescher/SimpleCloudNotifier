@@ -5,6 +5,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"gogs.mikescher.com/BlackForestBytes/goext/exerr"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"os"
 	"path"
 	"path/filepath"
@@ -23,6 +25,14 @@ func init() {
 }
 
 func Init(cfg Config) {
+	exerr.Init(exerr.ErrorPackageConfigInit{
+		ZeroLogErrTraces:       langext.PTrue,
+		ZeroLogAllTraces:       langext.PTrue,
+		RecursiveErrors:        langext.PTrue,
+		ExtendedGinOutput:      &cfg.ReturnRawErrors,
+		IncludeMetaInGinOutput: &cfg.ReturnRawErrors,
+	})
+
 	cw := zerolog.ConsoleWriter{
 		Out:          os.Stdout,
 		TimeFormat:   "2006-01-02 15:04:05 Z07:00",
