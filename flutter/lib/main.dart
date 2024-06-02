@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
+import 'package:simplecloudnotifier/models/client.dart';
 import 'package:simplecloudnotifier/nav_layout.dart';
 import 'package:simplecloudnotifier/state/app_theme.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/globals.dart';
 import 'package:simplecloudnotifier/state/request_log.dart';
-import 'package:simplecloudnotifier/state/user_account.dart';
+import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:toastification/toastification.dart';
 import 'firebase_options.dart';
@@ -41,7 +42,20 @@ void main() async {
     ApplicationLog.error('Failed to open Hive-Box: scn-logs: ' + exc.toString(), trace: trace);
   }
 
-  UserAccount(); // ensure UserAccount is loaded
+  final appAuth = AppAuth(); // ensure UserAccount is loaded
+
+  if (appAuth.isAuth()) {
+    try {
+      await appAuth.loadUser();
+    } catch (exc, trace) {
+      ApplicationLog.error('Failed to load user (on startup): ' + exc.toString(), trace: trace);
+    }
+    try {
+      await appAuth.loadClient();
+    } catch (exc, trace) {
+      ApplicationLog.error('Failed to load user (on startup): ' + exc.toString(), trace: trace);
+    }
+  }
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
@@ -71,7 +85,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => UserAccount(), lazy: false),
+        ChangeNotifierProvider(create: (context) => AppAuth(), lazy: false),
         ChangeNotifierProvider(create: (context) => AppTheme(), lazy: false),
       ],
       child: const SCNApp(),
@@ -80,27 +94,38 @@ void main() async {
 }
 
 void setFirebaseToken(String fcmToken) async {
-  final acc = UserAccount();
+  final acc = AppAuth();
 
   final oldToken = Globals().getPrefFCMToken();
 
-  if (oldToken != null && oldToken == fcmToken && acc.client != null && acc.client!.fcmToken == fcmToken) {
+  await Globals().setPrefFCMToken(fcmToken);
+
+  ApplicationLog.info('New firebase token received', additional: 'Token: $fcmToken (old: $oldToken)');
+
+  if (!acc.isAuth()) return;
+
+  Client? client;
+  try {
+    client = await acc.loadClient(force: true);
+  } catch (exc, trace) {
+    ApplicationLog.error('Failed to get client: ' + exc.toString(), trace: trace);
+    return;
+  }
+
+  if (oldToken != null && oldToken == fcmToken && client != null && client!.fcmToken == fcmToken) {
     ApplicationLog.info('Firebase token unchanged - do nothing', additional: 'Token: $fcmToken');
     return;
   }
 
-  ApplicationLog.info('New firebase token received', additional: 'Token: $fcmToken (old: $oldToken)');
-
-  await Globals().setPrefFCMToken(fcmToken);
-
-  if (acc.auth != null) {
-    if (acc.client == null) {
-      final client = await APIClient.addClient(acc.auth, fcmToken, Globals().deviceModel, Globals().version, Globals().hostname, Globals().clientType);
-      acc.setClient(client);
-    } else {
-      final client = await APIClient.updateClient(acc.auth, acc.client!.clientID, fcmToken, Globals().deviceModel, Globals().hostname, Globals().version);
-      acc.setClient(client);
-    }
+  if (client == null) {
+    // should not really happen - perhaps someone externally deleted the client?
+    final newClient = await APIClient.addClient(acc, fcmToken, Globals().deviceModel, Globals().version, Globals().hostname, Globals().clientType);
+    acc.setClientAndClientID(newClient);
+    await acc.save();
+  } else {
+    final newClient = await APIClient.updateClient(acc, client.clientID, fcmToken, Globals().deviceModel, Globals().hostname, Globals().version);
+    acc.setClientAndClientID(newClient);
+    await acc.save();
   }
 }
 

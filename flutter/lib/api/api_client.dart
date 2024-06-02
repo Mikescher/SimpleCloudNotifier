@@ -1,18 +1,19 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:simplecloudnotifier/api/api_exception.dart';
 import 'package:simplecloudnotifier/models/api_error.dart';
 import 'package:simplecloudnotifier/models/client.dart';
-import 'package:simplecloudnotifier/models/key_token_auth.dart';
 import 'package:simplecloudnotifier/models/keytoken.dart';
 import 'package:simplecloudnotifier/models/subscription.dart';
 import 'package:simplecloudnotifier/models/user.dart';
+import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/globals.dart';
 import 'package:simplecloudnotifier/state/request_log.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
 import 'package:simplecloudnotifier/models/message.dart';
+import 'package:simplecloudnotifier/state/token_source.dart';
 import 'package:simplecloudnotifier/utils/toaster.dart';
 
 enum ChannelSelector {
@@ -84,7 +85,7 @@ class APIClient {
 
         RequestLog.addRequestAPIError(name, t0, method, uri, req.body, req.headers, responseStatusCode, responseBody, responseHeaders, apierr);
         Toaster.error("Error", 'Request "${name}" failed');
-        throw Exception(apierr.message);
+        throw APIException(responseStatusCode, apierr.error, apierr.errhighlight, apierr.message);
       } catch (exc, trace) {
         ApplicationLog.warn('Failed to decode api response as error-object', additional: exc.toString() + "\nBody:\n" + responseBody, trace: trace);
       }
@@ -117,21 +118,21 @@ class APIClient {
 
   // ==========================================================================================================================================================
 
-  static Future<User> getUser(KeyTokenAuth auth, String uid) async {
+  static Future<User> getUser(TokenSource auth, String uid) async {
     return await _request(
       name: 'getUser',
       method: 'GET',
       relURL: 'users/$uid',
       fn: User.fromJson,
-      authToken: auth.tokenAdmin,
+      authToken: auth.getToken(),
     );
   }
 
-  static Future<Client> addClient(KeyTokenAuth? auth, String fcmToken, String agentModel, String agentVersion, String? name, String clientType) async {
+  static Future<Client> addClient(TokenSource auth, String fcmToken, String agentModel, String agentVersion, String? name, String clientType) async {
     return await _request(
       name: 'addClient',
       method: 'POST',
-      relURL: 'users/${auth!.userId}/clients',
+      relURL: 'users/${auth.getUserID()}/clients',
       jsonBody: {
         'fcm_token': fcmToken,
         'agent_model': agentModel,
@@ -140,15 +141,15 @@ class APIClient {
         'name': name,
       },
       fn: Client.fromJson,
-      authToken: auth.tokenAdmin,
+      authToken: auth.getToken(),
     );
   }
 
-  static Future<Client> updateClient(KeyTokenAuth? auth, String clientID, String fcmToken, String agentModel, String? name, String agentVersion) async {
+  static Future<Client> updateClient(TokenSource auth, String clientID, String fcmToken, String agentModel, String? name, String agentVersion) async {
     return await _request(
       name: 'updateClient',
       method: 'PUT',
-      relURL: 'users/${auth!.userId}/clients/$clientID',
+      relURL: 'users/${auth.getUserID()}/clients/$clientID',
       jsonBody: {
         'fcm_token': fcmToken,
         'agent_model': agentModel,
@@ -156,22 +157,32 @@ class APIClient {
         'name': name,
       },
       fn: Client.fromJson,
-      authToken: auth.tokenAdmin,
+      authToken: auth.getToken(),
     );
   }
 
-  static Future<List<ChannelWithSubscription>> getChannelList(KeyTokenAuth auth, ChannelSelector sel) async {
+  static Future<Client> getClient(TokenSource auth, String cid) async {
+    return await _request(
+      name: 'getClient',
+      method: 'GET',
+      relURL: 'users/${auth.getUserID()}/clients/$cid',
+      fn: Client.fromJson,
+      authToken: auth.getToken(),
+    );
+  }
+
+  static Future<List<ChannelWithSubscription>> getChannelList(TokenSource auth, ChannelSelector sel) async {
     return await _request(
       name: 'getChannelList',
       method: 'GET',
-      relURL: 'users/${auth.userId}/channels',
+      relURL: 'users/${auth.getUserID()}/channels',
       query: {'selector': sel.apiKey},
       fn: (json) => ChannelWithSubscription.fromJsonArray(json['channels'] as List<dynamic>),
-      authToken: auth.tokenAdmin,
+      authToken: auth.getToken(),
     );
   }
 
-  static Future<(String, List<Message>)> getMessageList(KeyTokenAuth auth, String pageToken, {int? pageSize, List<String>? channelIDs}) async {
+  static Future<(String, List<Message>)> getMessageList(TokenSource auth, String pageToken, {int? pageSize, List<String>? channelIDs}) async {
     return await _request(
       name: 'getMessageList',
       method: 'GET',
@@ -182,48 +193,48 @@ class APIClient {
         if (channelIDs != null) 'channel_id': channelIDs.join(","),
       },
       fn: (json) => Message.fromPaginatedJsonArray(json, 'messages', 'next_page_token'),
-      authToken: auth.tokenAdmin,
+      authToken: auth.getToken(),
     );
   }
 
-  static Future<Message> getMessage(KeyTokenAuth auth, String msgid) async {
+  static Future<Message> getMessage(TokenSource auth, String msgid) async {
     return await _request(
       name: 'getMessage',
       method: 'GET',
       relURL: 'messages/$msgid',
       query: {},
       fn: Message.fromJson,
-      authToken: auth.tokenAdmin,
+      authToken: auth.getToken(),
     );
   }
 
-  static Future<List<Subscription>> getSubscriptionList(KeyTokenAuth auth) async {
+  static Future<List<Subscription>> getSubscriptionList(TokenSource auth) async {
     return await _request(
       name: 'getSubscriptionList',
       method: 'GET',
-      relURL: 'users/${auth.userId}/subscriptions',
+      relURL: 'users/${auth.getUserID()}/subscriptions',
       fn: (json) => Subscription.fromJsonArray(json['subscriptions'] as List<dynamic>),
-      authToken: auth.tokenAdmin,
+      authToken: auth.getToken(),
     );
   }
 
-  static Future<List<Client>> getClientList(KeyTokenAuth auth) async {
+  static Future<List<Client>> getClientList(TokenSource auth) async {
     return await _request(
       name: 'getClientList',
       method: 'GET',
-      relURL: 'users/${auth.userId}/clients',
+      relURL: 'users/${auth.getUserID()}/clients',
       fn: (json) => Client.fromJsonArray(json['clients'] as List<dynamic>),
-      authToken: auth.tokenAdmin,
+      authToken: auth.getToken(),
     );
   }
 
-  static Future<List<KeyToken>> getKeyTokenList(KeyTokenAuth auth) async {
+  static Future<List<KeyToken>> getKeyTokenList(TokenSource auth) async {
     return await _request(
       name: 'getKeyTokenList',
       method: 'GET',
-      relURL: 'users/${auth.userId}/keys',
+      relURL: 'users/${auth.getUserID()}/keys',
       fn: (json) => KeyToken.fromJsonArray(json['keys'] as List<dynamic>),
-      authToken: auth.tokenAdmin,
+      authToken: auth.getToken(),
     );
   }
 
@@ -245,13 +256,13 @@ class APIClient {
     );
   }
 
-  static Future<KeyToken> getKeyToken(KeyTokenAuth auth, String kid) async {
+  static Future<KeyToken> getKeyToken(TokenSource auth, String kid) async {
     return await _request(
       name: 'getKeyToken',
       method: 'GET',
-      relURL: 'users/${auth.userId}/keys/$kid',
+      relURL: 'users/${auth.getUserID()}/keys/$kid',
       fn: KeyToken.fromJson,
-      authToken: auth.tokenAdmin,
+      authToken: auth.getToken(),
     );
   }
 

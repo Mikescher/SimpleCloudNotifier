@@ -6,7 +6,7 @@ import 'package:simplecloudnotifier/models/channel.dart';
 import 'package:simplecloudnotifier/models/message.dart';
 import 'package:simplecloudnotifier/pages/message_view/message_view.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
-import 'package:simplecloudnotifier/state/user_account.dart';
+import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/pages/message_list/message_list_item.dart';
 
 class MessageListPage extends StatefulWidget {
@@ -38,20 +38,20 @@ class _MessageListPageState extends State<MessageListPage> {
   }
 
   Future<void> _fetchPage(String thisPageToken) async {
-    final acc = Provider.of<UserAccount>(context, listen: false);
+    final acc = Provider.of<AppAuth>(context, listen: false);
 
-    if (acc.auth == null) {
+    if (!acc.isAuth()) {
       _pagingController.error = 'Not logged in';
       return;
     }
 
     try {
       if (_channels == null) {
-        final channels = await APIClient.getChannelList(acc.auth!, ChannelSelector.allAny);
+        final channels = await APIClient.getChannelList(acc, ChannelSelector.allAny);
         _channels = <String, Channel>{for (var v in channels) v.channel.channelID: v.channel};
       }
 
-      final (npt, newItems) = await APIClient.getMessageList(acc.auth!, thisPageToken, pageSize: _pageSize);
+      final (npt, newItems) = await APIClient.getMessageList(acc, thisPageToken, pageSize: _pageSize);
 
       if (npt == '@end') {
         _pagingController.appendLastPage(newItems);

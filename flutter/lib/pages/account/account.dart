@@ -1,15 +1,13 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
-import 'package:simplecloudnotifier/models/key_token_auth.dart';
 import 'package:simplecloudnotifier/models/user.dart';
 import 'package:simplecloudnotifier/pages/account/login.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/globals.dart';
-import 'package:simplecloudnotifier/state/user_account.dart';
+import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/utils/toaster.dart';
 
 class AccountRootPage extends StatefulWidget {
@@ -26,7 +24,7 @@ class _AccountRootPageState extends State<AccountRootPage> {
   late Future<int>? futureChannelAllCount;
   late Future<int>? futureChannelSubscribedCount;
 
-  late UserAccount userAcc;
+  late AppAuth userAcc;
 
   bool loading = false;
 
@@ -34,7 +32,7 @@ class _AccountRootPageState extends State<AccountRootPage> {
   void initState() {
     super.initState();
 
-    userAcc = Provider.of<UserAccount>(context, listen: false);
+    userAcc = Provider.of<AppAuth>(context, listen: false);
     userAcc.addListener(_onAuthStateChanged);
     _onAuthStateChanged();
   }
@@ -52,34 +50,34 @@ class _AccountRootPageState extends State<AccountRootPage> {
     futureChannelAllCount = null;
     futureChannelSubscribedCount = null;
 
-    if (userAcc.auth != null) {
+    if (userAcc.isAuth()) {
       futureChannelAllCount = () async {
-        if (userAcc.auth == null) throw new Exception('not logged in');
-        final channels = await APIClient.getChannelList(userAcc.auth!, ChannelSelector.all);
+        if (!userAcc.isAuth()) throw new Exception('not logged in');
+        final channels = await APIClient.getChannelList(userAcc, ChannelSelector.all);
         return channels.length;
       }();
 
       futureChannelSubscribedCount = () async {
-        if (userAcc.auth == null) throw new Exception('not logged in');
-        final channels = await APIClient.getChannelList(userAcc.auth!, ChannelSelector.subscribed);
+        if (!userAcc.isAuth()) throw new Exception('not logged in');
+        final channels = await APIClient.getChannelList(userAcc, ChannelSelector.subscribed);
         return channels.length;
       }();
 
       futureSubscriptionCount = () async {
-        if (userAcc.auth == null) throw new Exception('not logged in');
-        final subs = await APIClient.getSubscriptionList(userAcc.auth!);
+        if (!userAcc.isAuth()) throw new Exception('not logged in');
+        final subs = await APIClient.getSubscriptionList(userAcc);
         return subs.length;
       }();
 
       futureClientCount = () async {
-        if (userAcc.auth == null) throw new Exception('not logged in');
-        final clients = await APIClient.getClientList(userAcc.auth!);
+        if (!userAcc.isAuth()) throw new Exception('not logged in');
+        final clients = await APIClient.getClientList(userAcc);
         return clients.length;
       }();
 
       futureKeyCount = () async {
-        if (userAcc.auth == null) throw new Exception('not logged in');
-        final keys = await APIClient.getKeyTokenList(userAcc.auth!);
+        if (!userAcc.isAuth()) throw new Exception('not logged in');
+        final keys = await APIClient.getKeyTokenList(userAcc);
         return keys.length;
       }();
     }
@@ -87,13 +85,13 @@ class _AccountRootPageState extends State<AccountRootPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<UserAccount>(
+    return Consumer<AppAuth>(
       builder: (context, acc, child) {
-        if (acc.auth == null) {
+        if (!userAcc.isAuth()) {
           return _buildNoAuth(context);
         } else {
           return FutureBuilder(
-            future: acc.loadUser(false),
+            future: acc.loadUser(force: false),
             builder: ((context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {
                 if (snapshot.hasError) {
@@ -165,7 +163,7 @@ class _AccountRootPageState extends State<AccountRootPage> {
     );
   }
 
-  Widget _buildShowAccount(BuildContext context, UserAccount acc, User user) {
+  Widget _buildShowAccount(BuildContext context, AppAuth acc, User user) {
     //TODO better layout
     return Column(
       children: [
@@ -446,7 +444,7 @@ class _AccountRootPageState extends State<AccountRootPage> {
   void _createNewAccount() async {
     setState(() => loading = true);
 
-    final acc = Provider.of<UserAccount>(context, listen: false);
+    final acc = Provider.of<AppAuth>(context, listen: false);
 
     try {
       final notificationSettings = await FirebaseMessaging.instance.requestPermission(provisional: true);
@@ -467,7 +465,7 @@ class _AccountRootPageState extends State<AccountRootPage> {
 
       final user = await APIClient.createUserWithClient(null, fcmToken, Globals().platform, Globals().version, Globals().hostname, Globals().clientType);
 
-      acc.set(user.user, user.clients[0], KeyTokenAuth(userId: user.user.userID, tokenAdmin: user.adminKey, tokenSend: user.sendKey));
+      acc.set(user.user, user.clients[0], user.adminKey, user.sendKey);
 
       await acc.save();
       Toaster.success("Success", 'Successfully Created a new account');
@@ -480,7 +478,7 @@ class _AccountRootPageState extends State<AccountRootPage> {
   }
 
   void _logout() async {
-    final acc = Provider.of<UserAccount>(context, listen: false);
+    final acc = Provider.of<AppAuth>(context, listen: false);
 
     //TODO clear messages/channels/etc in open views
     acc.clear();

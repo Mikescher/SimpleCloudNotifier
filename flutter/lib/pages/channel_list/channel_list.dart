@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
-import 'package:simplecloudnotifier/state/user_account.dart';
+import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/pages/channel_list/channel_list_item.dart';
 
 class ChannelRootPage extends StatefulWidget {
@@ -16,8 +16,6 @@ class ChannelRootPage extends StatefulWidget {
 
 class _ChannelRootPageState extends State<ChannelRootPage> {
   final PagingController<int, Channel> _pagingController = PagingController(firstPageKey: 0);
-
-  late UserAccount userAcc;
 
   @override
   void initState() {
@@ -34,15 +32,15 @@ class _ChannelRootPageState extends State<ChannelRootPage> {
   }
 
   Future<void> _fetchPage(int pageKey) async {
-    final acc = Provider.of<UserAccount>(context, listen: false);
+    final acc = Provider.of<AppAuth>(context, listen: false);
 
-    if (acc.auth == null) {
+    if (!acc.isAuth()) {
       _pagingController.error = 'Not logged in';
       return;
     }
 
     try {
-      final items = (await APIClient.getChannelList(acc.auth!, ChannelSelector.all)).map((p) => p.channel).toList();
+      final items = (await APIClient.getChannelList(acc, ChannelSelector.all)).map((p) => p.channel).toList();
 
       items.sort((a, b) => -1 * (a.timestampLastSent ?? '').compareTo(b.timestampLastSent ?? ''));
 

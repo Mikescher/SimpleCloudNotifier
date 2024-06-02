@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lazy_indexed_stack/flutter_lazy_indexed_stack.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:simplecloudnotifier/components/hidable_fab/hidable_fab.dart';
 import 'package:simplecloudnotifier/components/layout/app_bar.dart';
 import 'package:simplecloudnotifier/pages/channel_list/channel_list.dart';
-import 'package:simplecloudnotifier/pages/send/root.dart';
+import 'package:simplecloudnotifier/pages/send/send.dart';
 import 'package:simplecloudnotifier/components/bottom_fab/fab_bottom_app_bar.dart';
 import 'package:simplecloudnotifier/pages/account/account.dart';
 import 'package:simplecloudnotifier/pages/message_list/message_list.dart';
 import 'package:simplecloudnotifier/pages/settings/root.dart';
-import 'package:simplecloudnotifier/state/user_account.dart';
+import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/utils/toaster.dart';
 
 class SCNNavLayout extends StatefulWidget {
@@ -24,15 +25,15 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
 
   @override
   initState() {
-    final userAcc = Provider.of<UserAccount>(context, listen: false);
-    if (userAcc.auth == null) _selectedIndex = 2;
+    final userAcc = Provider.of<AppAuth>(context, listen: false);
+    if (!userAcc.isAuth()) _selectedIndex = 2;
 
     super.initState();
   }
 
   void _onItemTapped(int index) {
-    final userAcc = Provider.of<UserAccount>(context, listen: false);
-    if (userAcc.auth == null) {
+    final userAcc = Provider.of<AppAuth>(context, listen: false);
+    if (!userAcc.isAuth()) {
       Toaster.info("Not logged in", "Please login or create a new account first");
       return;
     }
@@ -43,8 +44,8 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
   }
 
   void _onFABTapped() {
-    final userAcc = Provider.of<UserAccount>(context, listen: false);
-    if (userAcc.auth == null) {
+    final userAcc = Provider.of<AppAuth>(context, listen: false);
+    if (!userAcc.isAuth()) {
       Toaster.info("Not logged in", "Please login or create a new account first");
       return;
     }
@@ -75,16 +76,10 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
       ),
       bottomNavigationBar: _buildNavBar(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: _buildFAB(context),
-    );
-  }
-
-  Widget _buildFAB(BuildContext context) {
-    return FloatingActionButton(
-      onPressed: _onFABTapped,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(17))),
-      elevation: 2.0,
-      child: const Icon(FontAwesomeIcons.solidPaperPlaneTop),
+      floatingActionButton: HidableFAB(
+        onPressed: _onFABTapped,
+        icon: FontAwesomeIcons.solidPaperPlaneTop,
+      ),
     );
   }
 

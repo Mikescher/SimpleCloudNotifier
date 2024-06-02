@@ -4,10 +4,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/components/layout/scaffold.dart';
-import 'package:simplecloudnotifier/models/key_token_auth.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/globals.dart';
-import 'package:simplecloudnotifier/state/user_account.dart';
+import 'package:simplecloudnotifier/state/app_auth.dart';
+import 'package:simplecloudnotifier/state/token_source.dart';
 import 'package:simplecloudnotifier/utils/toaster.dart';
 
 class AccountLoginPage extends StatefulWidget {
@@ -115,7 +115,7 @@ class _AccountLoginPageState extends State<AccountLoginPage> {
   }
 
   void _login() async {
-    final acc = Provider.of<UserAccount>(context, listen: false);
+    final acc = Provider.of<AppAuth>(context, listen: false);
 
     try {
       setState(() => loading = true);
@@ -145,13 +145,11 @@ class _AccountLoginPageState extends State<AccountLoginPage> {
         return;
       }
 
-      final kta = KeyTokenAuth(userId: uid, tokenAdmin: atokv, tokenSend: stokv);
+      final user = await APIClient.getUser(DirectTokenSource(uid, atokv), uid);
 
-      final user = await APIClient.getUser(kta, uid);
+      final client = await APIClient.addClient(DirectTokenSource(uid, atokv), fcmToken, Globals().deviceModel, Globals().version, Globals().hostname, Globals().clientType);
 
-      final client = await APIClient.addClient(kta, fcmToken, Globals().deviceModel, Globals().version, Globals().hostname, Globals().clientType);
-
-      acc.set(user, client, kta);
+      acc.set(user, client, atokv, stokv);
       await acc.save();
 
       Toaster.success("Login", "Successfully logged in");

@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
 import 'package:simplecloudnotifier/models/message.dart';
-import 'package:simplecloudnotifier/state/user_account.dart';
+import 'package:simplecloudnotifier/state/app_auth.dart';
 
 class ChannelListItem extends StatefulWidget {
   static final _dateFormat = DateFormat('yyyy-MM-dd kk:mm');
@@ -29,11 +29,11 @@ class _ChannelListItemState extends State<ChannelListItem> {
   void initState() {
     super.initState();
 
-    final acc = Provider.of<UserAccount>(context, listen: false);
+    final acc = Provider.of<AppAuth>(context, listen: false);
 
-    if (acc.auth != null) {
+    if (acc.isAuth()) {
       () async {
-        final (_, channelMessages) = await APIClient.getMessageList(acc.auth!, '@start', pageSize: 1, channelIDs: [widget.channel.channelID]);
+        final (_, channelMessages) = await APIClient.getMessageList(acc, '@start', pageSize: 1, channelIDs: [widget.channel.channelID]);
         setState(() {
           lastMessage = channelMessages.firstOrNull;
         });

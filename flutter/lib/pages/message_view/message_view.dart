@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/components/layout/scaffold.dart';
 import 'package:simplecloudnotifier/models/message.dart';
-import 'package:simplecloudnotifier/state/user_account.dart';
+import 'package:simplecloudnotifier/state/app_auth.dart';
 
 class MessageViewPage extends StatefulWidget {
   const MessageViewPage({super.key, required this.message});
@@ -24,9 +24,9 @@ class _MessageViewPageState extends State<MessageViewPage> {
   }
 
   Future<Message> fetchMessage() async {
-    final acc = Provider.of<UserAccount>(context, listen: false);
+    final acc = Provider.of<AppAuth>(context, listen: false);
 
-    return await APIClient.getMessage(acc.auth!, widget.message.messageID);
+    return await APIClient.getMessage(acc, widget.message.messageID);
   }
 
   @override
