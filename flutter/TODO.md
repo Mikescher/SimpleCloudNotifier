@@ -37,3 +37,4 @@
  - [ ] Disable compat | remove code 
         - [x] compat message title
         - [ ] ...
+ - [ ] RWLock directly in go - prevent/reduce db-locked exception

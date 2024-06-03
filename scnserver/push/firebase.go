@@ -67,8 +67,7 @@ func (fb FirebaseConnector) SendNotification(ctx context.Context, user models.Us
 		jsonBody["apns"] = gin.H{}
 	} else if client.Type == models.ClientTypeAndroid {
 		jsonBody["android"] = gin.H{
-			"priority":     "high",
-			"collapse_key": msg.ChannelID.String(),
+			"priority": "high",
 			"notification": gin.H{
 				"event_time": msg.Timestamp().Format(time.RFC3339),
 				"title":      msg.FormatNotificationTitle(user, channel),
