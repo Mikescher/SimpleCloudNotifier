@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -9,6 +11,7 @@ import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/globals.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/utils/toaster.dart';
+import 'package:uuid/uuid.dart';
 
 class AccountRootPage extends StatefulWidget {
   const AccountRootPage({super.key});
@@ -447,14 +450,20 @@ class _AccountRootPageState extends State<AccountRootPage> {
     final acc = Provider.of<AppAuth>(context, listen: false);
 
     try {
-      final notificationSettings = await FirebaseMessaging.instance.requestPermission(provisional: true);
+      final String? fcmToken;
+      if (Platform.isLinux) {
+        Toaster.warn("Unsupported Platform", 'Your platform is not supported by FCM - notifications will not work');
+        fcmToken = '(linux-' + Uuid().v4() + ')';
+      } else {
+        final notificationSettings = await FirebaseMessaging.instance.requestPermission(provisional: true);
 
-      if (notificationSettings.authorizationStatus == AuthorizationStatus.denied) {
-        Toaster.error("Missing Permission", 'Please allow notifications to create an account');
-        return;
+        if (notificationSettings.authorizationStatus == AuthorizationStatus.denied) {
+          Toaster.error("Missing Permission", 'Please allow notifications to create an account');
+          return;
+        }
+
+        fcmToken = await FirebaseMessaging.instance.getToken();
       }
-
-      final fcmToken = await FirebaseMessaging.instance.getToken();
 
       if (fcmToken == null) {
         Toaster.warn("Missing Token", 'No FCM Token found, please allow notifications, ensure you have a network connection and restart the app');

@@ -12,6 +12,9 @@ import 'package:simplecloudnotifier/pages/message_list/message_list_item.dart';
 class MessageListPage extends StatefulWidget {
   const MessageListPage({super.key});
 
+  //TODO reload on switch to tab
+  //TODO reload on app to foreground
+
   @override
   State<MessageListPage> createState() => _MessageListPageState();
 }
