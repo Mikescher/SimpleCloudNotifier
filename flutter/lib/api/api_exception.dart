@@ -1,6 +1,6 @@
 class APIException implements Exception {
   final int httpStatus;
-  final String error;
+  final int error;
   final String errHighlight;
   final String message;
 

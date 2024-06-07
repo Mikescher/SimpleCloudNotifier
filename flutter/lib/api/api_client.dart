@@ -182,6 +182,16 @@ class APIClient {
     );
   }
 
+  static Future<ChannelWithSubscription> getChannel(TokenSource auth, String cid) async {
+    return await _request(
+      name: 'getChannel',
+      method: 'GET',
+      relURL: 'users/${auth.getUserID()}/channels/${cid}',
+      fn: ChannelWithSubscription.fromJson,
+      authToken: auth.getToken(),
+    );
+  }
+
   static Future<(String, List<Message>)> getMessageList(TokenSource auth, String pageToken, {int? pageSize, List<String>? channelIDs}) async {
     return await _request(
       name: 'getMessageList',
