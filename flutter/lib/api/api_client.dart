@@ -7,7 +7,6 @@ import 'package:simplecloudnotifier/models/client.dart';
 import 'package:simplecloudnotifier/models/keytoken.dart';
 import 'package:simplecloudnotifier/models/subscription.dart';
 import 'package:simplecloudnotifier/models/user.dart';
-import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/globals.dart';
 import 'package:simplecloudnotifier/state/request_log.dart';

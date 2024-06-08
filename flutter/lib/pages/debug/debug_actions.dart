@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:simplecloudnotifier/utils/toaster.dart';
 import 'package:simplecloudnotifier/utils/ui.dart';
-import 'package:toastification/toastification.dart';
 
 class DebugActionsPage extends StatefulWidget {
   @override

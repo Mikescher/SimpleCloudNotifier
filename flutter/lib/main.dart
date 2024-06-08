@@ -138,7 +138,7 @@ void setFirebaseToken(String fcmToken) async {
     return;
   }
 
-  if (oldToken != null && oldToken == fcmToken && client != null && client!.fcmToken == fcmToken) {
+  if (oldToken != null && oldToken == fcmToken && client != null && client.fcmToken == fcmToken) {
     ApplicationLog.info('Firebase token unchanged - do nothing', additional: 'Token: $fcmToken');
     return;
   }
