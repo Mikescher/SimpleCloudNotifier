@@ -64,13 +64,13 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
         showSearch: _selectedIndex == 0 || _selectedIndex == 1,
         showThemeSwitch: true,
       ),
-      body: LazyIndexedStack(
+      body: IndexedStack(
         children: [
-          MessageListPage(),
-          ChannelRootPage(),
-          AccountRootPage(),
-          SettingsRootPage(),
-          SendRootPage(),
+          ExcludeFocus(excluding: _selectedIndex != 0, child: MessageListPage()),
+          ExcludeFocus(excluding: _selectedIndex != 1, child: ChannelRootPage()),
+          ExcludeFocus(excluding: _selectedIndex != 2, child: AccountRootPage()),
+          ExcludeFocus(excluding: _selectedIndex != 3, child: SettingsRootPage()),
+          ExcludeFocus(excluding: _selectedIndex != 4, child: SendRootPage()),
         ],
         index: _selectedIndex,
       ),

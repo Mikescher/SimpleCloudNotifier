@@ -11,6 +11,7 @@ import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/globals.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/utils/toaster.dart';
+import 'package:simplecloudnotifier/utils/ui.dart';
 import 'package:uuid/uuid.dart';
 
 class AccountRootPage extends StatefulWidget {
@@ -143,22 +144,23 @@ class _AccountRootPageState extends State<AccountRootPage> {
                 ),
               ),
             const SizedBox(height: 32),
-            FilledButton(
-              style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 24), padding: const EdgeInsets.fromLTRB(8, 12, 8, 12)),
+            UI.button(
+              text: 'Create new account',
               onPressed: () {
                 if (loading) return;
                 _createNewAccount();
               },
-              child: const Text('Create new account'),
+              big: true,
             ),
             const SizedBox(height: 16),
-            FilledButton.tonal(
-              style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 24), padding: const EdgeInsets.fromLTRB(8, 12, 8, 12)),
+            UI.button(
+              text: 'Use existing account',
               onPressed: () {
                 if (loading) return;
                 Navigator.push(context, MaterialPageRoute<AccountLoginPage>(builder: (context) => AccountLoginPage()));
               },
-              child: const Text('Use existing account'),
+              tonal: true,
+              big: true,
             ),
           ],
         ),
@@ -167,28 +169,22 @@ class _AccountRootPageState extends State<AccountRootPage> {
   }
 
   Widget _buildShowAccount(BuildContext context, AppAuth acc, User user) {
-    //TODO better layout
-    return Column(
-      children: [
-        SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(8.0, 24.0, 8.0, 8.0),
-            child: Column(
-              children: [
-                _buildHeader(context, user),
-                const SizedBox(height: 16),
-                Text(user.username ?? user.userID, overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                const SizedBox(height: 16),
-                ..._buildCards(context, user),
-              ],
-            ),
-          ),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(8.0, 24.0, 8.0, 8.0),
+        child: Column(
+          children: [
+            _buildHeader(context, user),
+            const SizedBox(height: 16),
+            Text(user.username ?? user.userID, overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+            const SizedBox(height: 16),
+            ..._buildCards(context, user),
+            SizedBox(height: 16),
+            _buildFooter(context, user),
+            SizedBox(height: 40),
+          ],
         ),
-        const Expanded(child: SizedBox(height: 16)),
-        _buildFooter(context, user),
-        SizedBox(height: 40)
-      ],
+      ),
     );
   }
 
@@ -275,23 +271,15 @@ class _AccountRootPageState extends State<AccountRootPage> {
         Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            IconButton(
-              icon: FaIcon(FontAwesomeIcons.pen),
-              iconSize: 18,
-              padding: EdgeInsets.all(4),
-              constraints: BoxConstraints(),
-              style: ButtonStyle(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+            UI.buttonIconOnly(
               onPressed: () {/*TODO*/},
+              icon: FontAwesomeIcons.pen,
             ),
             const SizedBox(height: 4),
             if (!user.isPro)
-              IconButton(
-                icon: FaIcon(FontAwesomeIcons.cartCircleArrowUp),
-                iconSize: 18,
-                padding: EdgeInsets.all(4),
-                constraints: BoxConstraints(),
-                style: ButtonStyle(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+              UI.buttonIconOnly(
                 onPressed: () {/*TODO*/},
+                icon: FontAwesomeIcons.cartCircleArrowUp,
               ),
           ],
         ),
@@ -301,132 +289,97 @@ class _AccountRootPageState extends State<AccountRootPage> {
 
   List<Widget> _buildCards(BuildContext context, User user) {
     return [
-      Card.filled(
+      UI.buttonCard(
+        context: context,
         margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
-        shape: BeveledRectangleBorder(borderRadius: BorderRadius.circular(0)),
-        color: Theme.of(context).cardTheme.color,
-        child: InkWell(
-          splashColor: Theme.of(context).splashColor,
-          onTap: () {/*TODO*/},
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                FutureBuilder(
-                  future: futureSubscriptionCount,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      return Text('${snapshot.data}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20));
-                    }
-                    return const SizedBox(width: 12, height: 12, child: Center(child: CircularProgressIndicator()));
-                  },
-                ),
-                const SizedBox(width: 12),
-                Text('Subscriptions', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-              ],
+        child: Row(
+          children: [
+            FutureBuilder(
+              future: futureSubscriptionCount,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  return Text('${snapshot.data}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20));
+                }
+                return const SizedBox(width: 12, height: 12, child: Center(child: CircularProgressIndicator()));
+              },
             ),
-          ),
+            const SizedBox(width: 12),
+            Text('Subscriptions', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+          ],
         ),
+        onTap: () {/*TODO*/},
       ),
-      Card.filled(
+      UI.buttonCard(
+        context: context,
         margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
-        shape: BeveledRectangleBorder(borderRadius: BorderRadius.circular(0)),
-        color: Theme.of(context).cardTheme.color,
-        child: InkWell(
-          splashColor: Theme.of(context).splashColor,
-          onTap: () {/*TODO*/},
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                FutureBuilder(
-                  future: futureClientCount,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      return Text('${snapshot.data}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20));
-                    }
-                    return const SizedBox(width: 12, height: 12, child: Center(child: CircularProgressIndicator()));
-                  },
-                ),
-                const SizedBox(width: 12),
-                Text('Clients', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-              ],
+        child: Row(
+          children: [
+            FutureBuilder(
+              future: futureClientCount,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  return Text('${snapshot.data}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20));
+                }
+                return const SizedBox(width: 12, height: 12, child: Center(child: CircularProgressIndicator()));
+              },
             ),
-          ),
+            const SizedBox(width: 12),
+            Text('Clients', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+          ],
         ),
+        onTap: () {/*TODO*/},
       ),
-      Card.filled(
+      UI.buttonCard(
+        context: context,
         margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
-        shape: BeveledRectangleBorder(borderRadius: BorderRadius.circular(0)),
-        color: Theme.of(context).cardTheme.color,
-        child: InkWell(
-          splashColor: Theme.of(context).splashColor,
-          onTap: () {/*TODO*/},
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                FutureBuilder(
-                  future: futureKeyCount,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      return Text('${snapshot.data}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20));
-                    }
-                    return const SizedBox(width: 12, height: 12, child: Center(child: CircularProgressIndicator()));
-                  },
-                ),
-                const SizedBox(width: 12),
-                Text('Keys', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-              ],
+        child: Row(
+          children: [
+            FutureBuilder(
+              future: futureKeyCount,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  return Text('${snapshot.data}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20));
+                }
+                return const SizedBox(width: 12, height: 12, child: Center(child: CircularProgressIndicator()));
+              },
             ),
-          ),
+            const SizedBox(width: 12),
+            Text('Keys', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+          ],
         ),
+        onTap: () {/*TODO*/},
       ),
-      Card.filled(
+      UI.buttonCard(
+        context: context,
         margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
-        shape: BeveledRectangleBorder(borderRadius: BorderRadius.circular(0)),
-        color: Theme.of(context).cardTheme.color,
-        child: InkWell(
-          splashColor: Theme.of(context).splashColor,
-          onTap: () {/*TODO*/},
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                FutureBuilder(
-                  future: futureChannelSubscribedCount,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      return Text('${snapshot.data}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20));
-                    }
-                    return const SizedBox(width: 12, height: 12, child: Center(child: CircularProgressIndicator()));
-                  },
-                ),
-                const SizedBox(width: 12),
-                Text('Channels', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-              ],
+        child: Row(
+          children: [
+            FutureBuilder(
+              future: futureChannelSubscribedCount,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  return Text('${snapshot.data}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20));
+                }
+                return const SizedBox(width: 12, height: 12, child: Center(child: CircularProgressIndicator()));
+              },
             ),
-          ),
+            const SizedBox(width: 12),
+            Text('Channels', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+          ],
         ),
+        onTap: () {/*TODO*/},
       ),
-      Card.filled(
+      UI.buttonCard(
+        context: context,
         margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
-        shape: BeveledRectangleBorder(borderRadius: BorderRadius.circular(0)),
-        color: Theme.of(context).cardTheme.color,
-        child: InkWell(
-          splashColor: Theme.of(context).splashColor,
-          onTap: () {/*TODO*/},
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Text('${user.messagesSent}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                const SizedBox(width: 12),
-                Text('Messages', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-              ],
-            ),
-          ),
+        child: Row(
+          children: [
+            Text('${user.messagesSent}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+            const SizedBox(width: 12),
+            Text('Messages', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+          ],
         ),
+        onTap: () {/*TODO*/},
       ),
     ];
   }
@@ -436,9 +389,19 @@ class _AccountRootPageState extends State<AccountRootPage> {
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
       child: Row(
         children: [
-          Expanded(child: FilledButton(onPressed: _logout, child: Text('Logout'), style: TextButton.styleFrom(backgroundColor: Colors.orange))),
+          Expanded(
+              child: UI.button(
+            text: 'Logout',
+            onPressed: _logout,
+            color: Colors.orange,
+          )),
           const SizedBox(width: 8),
-          Expanded(child: FilledButton(onPressed: _deleteAccount, child: Text('Delete Account'), style: TextButton.styleFrom(backgroundColor: Colors.red))),
+          Expanded(
+              child: UI.button(
+            text: 'Delete Account',
+            onPressed: _deleteAccount,
+            color: Colors.red,
+          )),
         ],
       ),
     );

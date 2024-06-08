@@ -9,6 +9,7 @@ import 'package:simplecloudnotifier/state/globals.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/state/token_source.dart';
 import 'package:simplecloudnotifier/utils/toaster.dart';
+import 'package:simplecloudnotifier/utils/ui.dart';
 
 class AccountLoginPage extends StatefulWidget {
   const AccountLoginPage({super.key});
@@ -102,10 +103,10 @@ class _AccountLoginPageState extends State<AccountLoginPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              FilledButton(
-                style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 24), padding: const EdgeInsets.fromLTRB(8, 12, 8, 12)),
+              UI.button(
+                text: 'Login',
+                big: true,
                 onPressed: _login,
-                child: const Text('Login'),
               ),
             ],
           ),

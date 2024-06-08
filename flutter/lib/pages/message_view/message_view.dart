@@ -12,6 +12,7 @@ import 'package:simplecloudnotifier/models/keytoken.dart';
 import 'package:simplecloudnotifier/models/message.dart';
 import 'package:simplecloudnotifier/models/user.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
+import 'package:simplecloudnotifier/utils/ui.dart';
 
 class MessageViewPage extends StatefulWidget {
   const MessageViewPage({super.key, required this.message});
@@ -129,19 +130,11 @@ class _MessageViewPageState extends State<MessageViewPage> {
     return [
       Row(
         children: [
-          Container(
-            padding: const EdgeInsets.fromLTRB(4, 0, 4, 0),
+          UI.channelChip(
+            context: context,
+            text: _resolveChannelName(channel, message),
             margin: const EdgeInsets.fromLTRB(0, 0, 4, 0),
-            decoration: BoxDecoration(
-              color: Theme.of(context).hintColor,
-              borderRadius: BorderRadius.all(Radius.circular(4)),
-            ),
-            child: Text(
-              _resolveChannelName(channel, message),
-              style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).cardColor, fontSize: 16),
-              overflow: TextOverflow.clip,
-              maxLines: 1,
-            ),
+            fontSize: 16,
           ),
           Expanded(child: SizedBox()),
           Text(_dateFormat.format(DateTime.parse(message.timestamp)), style: const TextStyle(fontSize: 14)),
@@ -157,29 +150,18 @@ class _MessageViewPageState extends State<MessageViewPage> {
       Row(
         children: [
           Expanded(child: SizedBox()),
-          IconButton(
-            icon: FaIcon(FontAwesomeIcons.copy),
-            iconSize: 18,
-            padding: EdgeInsets.all(4),
-            constraints: BoxConstraints(),
-            style: ButtonStyle(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+          UI.buttonIconOnly(
             onPressed: () {/*TODO*/},
+            icon: FontAwesomeIcons.copy,
           ),
-          IconButton(
-            icon: FaIcon(FontAwesomeIcons.lineColumns),
-            iconSize: 18,
-            padding: EdgeInsets.all(4),
-            constraints: BoxConstraints(),
-            style: ButtonStyle(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+          UI.buttonIconOnly(
+            icon: FontAwesomeIcons.lineColumns,
             onPressed: () {/*TODO*/},
           ),
         ],
       ),
-      Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: Theme.of(context).hintColor),
-          borderRadius: BorderRadius.circular(4),
-        ),
+      UI.box(
+        context: context,
         padding: const EdgeInsets.all(4),
         child: Text(message.content ?? ''),
       ),
@@ -187,12 +169,9 @@ class _MessageViewPageState extends State<MessageViewPage> {
   }
 
   Widget _buildMetaCard(BuildContext context, IconData icn, String title, List<String> values, void Function()? action) {
-    final container = Container(
+    final container = UI.box(
+      context: context,
       padding: EdgeInsets.fromLTRB(16, 2, 4, 2),
-      decoration: BoxDecoration(
-        border: Border.all(color: Theme.of(context).hintColor),
-        borderRadius: BorderRadius.circular(4),
-      ),
       child: Row(
         children: [
           FaIcon(icn, size: 18),

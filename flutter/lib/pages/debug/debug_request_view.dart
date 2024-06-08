@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:simplecloudnotifier/components/layout/scaffold.dart';
 import 'package:simplecloudnotifier/state/request_log.dart';
 import 'package:simplecloudnotifier/utils/toaster.dart';
+import 'package:simplecloudnotifier/utils/ui.dart';
 
 class DebugRequestViewPage extends StatelessWidget {
   final SCNRequest request;
@@ -55,17 +56,13 @@ class DebugRequestViewPage extends StatelessWidget {
             Expanded(
               child: Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
             ),
-            IconButton(
-              icon: FaIcon(
-                FontAwesomeIcons.copy,
-              ),
+            UI.buttonIconOnly(
               iconSize: 14,
-              padding: EdgeInsets.fromLTRB(0, 0, 4, 0),
-              constraints: BoxConstraints(),
               onPressed: () {
-                Clipboard.setData(new ClipboardData(text: value));
+                Clipboard.setData(new ClipboardData(text: title));
                 Toaster.info("Clipboard", 'Copied text to Clipboard');
               },
+              icon: FontAwesomeIcons.copy,
             ),
           ],
         ),
