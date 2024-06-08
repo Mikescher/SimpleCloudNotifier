@@ -96,11 +96,11 @@ class UI {
     );
   }
 
-  static Widget box({required BuildContext context, required Widget child, required EdgeInsets? padding}) {
+  static Widget box({required BuildContext context, required Widget child, required EdgeInsets? padding, Color? borderColor = null}) {
     return Container(
       padding: padding ?? EdgeInsets.all(4),
       decoration: BoxDecoration(
-        border: Border.all(color: Theme.of(context).hintColor),
+        border: Border.all(color: borderColor ?? Theme.of(context).hintColor),
         borderRadius: BorderRadius.circular(DefaultBorderRadius),
       ),
       child: child,

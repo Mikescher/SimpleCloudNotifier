@@ -28,6 +28,7 @@ class _MessageListPageState extends State<MessageListPage> {
 
   @override
   void initState() {
+    //TODO init with state from cache - also allow tho show cache on error
     _pagingController.addPageRequestListener((pageKey) {
       _fetchPage(pageKey);
     });

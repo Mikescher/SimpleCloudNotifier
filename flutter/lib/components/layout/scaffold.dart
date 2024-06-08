@@ -9,6 +9,8 @@ class SCNScaffold extends StatelessWidget {
     this.showThemeSwitch = true,
     this.showDebug = true,
     this.showSearch = true,
+    this.showShare = false,
+    this.onShare = null,
   }) : super(key: key);
 
   final Widget child;
@@ -16,6 +18,8 @@ class SCNScaffold extends StatelessWidget {
   final bool showThemeSwitch;
   final bool showDebug;
   final bool showSearch;
+  final bool showShare;
+  final void Function()? onShare;
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +29,8 @@ class SCNScaffold extends StatelessWidget {
         showThemeSwitch: showThemeSwitch,
         showDebug: showDebug,
         showSearch: showSearch,
+        showShare: showShare,
+        onShare: onShare ?? () {},
       ),
       body: child,
     );
