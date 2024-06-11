@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/api/api_exception.dart';
 import 'package:simplecloudnotifier/models/client.dart';
@@ -63,6 +62,8 @@ class AppAuth extends ChangeNotifier implements TokenSource {
   }
 
   void load() {
+    //final cdat = Globals().sharedPrefs.getString('auth.cdate');
+    //final mdat = Globals().sharedPrefs.getString('auth.mdate');
     final uid = Globals().sharedPrefs.getString('auth.userid');
     final cid = Globals().sharedPrefs.getString('auth.clientid');
     final toka = Globals().sharedPrefs.getString('auth.tokenadmin');
@@ -85,17 +86,23 @@ class AppAuth extends ChangeNotifier implements TokenSource {
   }
 
   Future<void> save() async {
-    final prefs = await SharedPreferences.getInstance();
     if (_clientID == null || _userID == null || _tokenAdmin == null || _tokenSend == null) {
-      await prefs.remove('auth.userid');
-      await prefs.remove('auth.tokenadmin');
-      await prefs.remove('auth.tokensend');
+      await Globals().sharedPrefs.remove('auth.userid');
+      await Globals().sharedPrefs.remove('auth.clientid');
+      await Globals().sharedPrefs.remove('auth.tokenadmin');
+      await Globals().sharedPrefs.remove('auth.tokensend');
+      await Globals().sharedPrefs.setString('auth.cdate', "");
+      await Globals().sharedPrefs.setString('auth.mdate', DateTime.now().toIso8601String());
     } else {
-      await prefs.setString('auth.userid', _userID!);
-      await prefs.setString('auth.clientid', _clientID!);
-      await prefs.setString('auth.tokenadmin', _tokenAdmin!);
-      await prefs.setString('auth.tokensend', _tokenSend!);
+      await Globals().sharedPrefs.setString('auth.userid', _userID!);
+      await Globals().sharedPrefs.setString('auth.clientid', _clientID!);
+      await Globals().sharedPrefs.setString('auth.tokenadmin', _tokenAdmin!);
+      await Globals().sharedPrefs.setString('auth.tokensend', _tokenSend!);
+      if (Globals().sharedPrefs.getString('auth.cdate') == null) await Globals().sharedPrefs.setString('auth.cdate', DateTime.now().toIso8601String());
+      await Globals().sharedPrefs.setString('auth.mdate', DateTime.now().toIso8601String());
     }
+
+    Globals().sharedPrefs.setString('auth.mdate', DateTime.now().toIso8601String());
   }
 
   Future<User> loadUser({bool force = false}) async {

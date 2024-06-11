@@ -24,7 +24,7 @@
 
 
 
-pid="$( pgrep -f 'flutter_tools\.[s]napshot run' || echo '' )"
+pid="$( pgrep -f 'flutter_tools\.[s]napshot run' || echo '' | tail -n 1 )"
 
 if [ -z "$pid" ]; then
     red "No [flutter run] process found - exiting"

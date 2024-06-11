@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:simplecloudnotifier/utils/toaster.dart';
-import 'package:toastification/toastification.dart';
+import 'package:simplecloudnotifier/utils/ui.dart';
 
 class DebugActionsPage extends StatefulWidget {
   @override
@@ -17,36 +17,40 @@ class _DebugActionsPageState extends State<DebugActionsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              FilledButton(
-                style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
+              UI.button(
+                big: false,
                 onPressed: () => Toaster.success("Hello World", "This was a triumph!"),
-                child: const Text('Show Success Notification'),
+                text: 'Show Success Notification',
               ),
-              FilledButton(
-                style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
+              SizedBox(height: 4),
+              UI.button(
+                big: false,
                 onPressed: () => Toaster.info("Hello World", "This was a triumph!"),
-                child: const Text('Show Info Notification'),
+                text: 'Show Info Notification',
               ),
-              FilledButton(
-                style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
+              SizedBox(height: 4),
+              UI.button(
+                big: false,
                 onPressed: () => Toaster.warn("Hello World", "This was a triumph!"),
-                child: const Text('Show Warn Notification'),
+                text: 'Show Warn Notification',
               ),
-              FilledButton(
-                style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
+              SizedBox(height: 4),
+              UI.button(
+                big: false,
                 onPressed: () => Toaster.error("Hello World", "This was a triumph!"),
-                child: const Text('Show Info Notification'),
+                text: 'Show Info Notification',
               ),
-              FilledButton(
-                style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
+              SizedBox(height: 4),
+              UI.button(
+                big: false,
                 onPressed: () => Toaster.simple("Hello World"),
-                child: const Text('Show Simple Notification'),
+                text: 'Show Simple Notification',
               ),
               SizedBox(height: 20),
-              FilledButton(
-                style: FilledButton.styleFrom(textStyle: const TextStyle(fontSize: 20)),
+              UI.button(
+                big: false,
                 onPressed: _sendTokenToServer,
-                child: const Text('Send FCM Token to Server'),
+                text: 'Send FCM Token to Server',
               ),
             ],
           ),

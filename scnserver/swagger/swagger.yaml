@@ -327,19 +327,36 @@ definitions:
     type: object
   handler.SendMessage.combined:
     properties:
+      channel:
+        example: test
+        type: string
       content:
+        example: This is a message
+        type: string
+      key:
+        example: P3TNH8mvv14fm
         type: string
       msg_id:
+        example: db8b0e6a-a08c-4646
         type: string
       priority:
+        enum:
+        - 0
+        - 1
+        - 2
+        example: 1
         type: integer
+      sender_name:
+        example: example-server
+        type: string
       timestamp:
+        example: 1669824037
         type: number
       title:
+        example: Hello World
         type: string
       user_id:
-        type: integer
-      user_key:
+        example: "7725"
         type: string
     type: object
   handler.SendMessage.response:
@@ -359,7 +376,7 @@ definitions:
       quota_max:
         type: integer
       scn_msg_id:
-        type: integer
+        type: string
       success:
         type: boolean
       suppress_send:
@@ -480,6 +497,19 @@ definitions:
       uri:
         type: string
     type: object
+  models.ChannelPreviewJSON:
+    properties:
+      channel_id:
+        type: string
+      description_name:
+        type: string
+      display_name:
+        type: string
+      internal_name:
+        type: string
+      owner_user_id:
+        type: string
+    type: object
   models.ChannelWithSubscriptionJSON:
     properties:
       channel_id:
@@ -575,6 +605,23 @@ definitions:
       timestamp_created:
         type: string
       timestamp_lastused:
+        type: string
+    type: object
+  models.KeyTokenPreviewJSON:
+    properties:
+      all_channels:
+        type: boolean
+      channels:
+        items:
+          type: string
+        type: array
+      keytoken_id:
+        type: string
+      name:
+        type: string
+      owner_user_id:
+        type: string
+      permissions:
         type: string
     type: object
   models.KeyTokenWithTokenJSON:
@@ -736,6 +783,13 @@ definitions:
       username:
         type: string
     type: object
+  models.UserPreviewJSON:
+    properties:
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
 host: simplecloudnotifier.de
 info:
   contact: {}
@@ -748,52 +802,90 @@ paths:
       description: All parameter can be set via query-parameter or the json body.
         Only UserID, UserKey and Title are required
       parameters:
-      - in: query
+      - example: test
+        in: query
+        name: channel
+        type: string
+      - example: This is a message
+        in: query
         name: content
         type: string
-      - in: query
+      - example: P3TNH8mvv14fm
+        in: query
+        name: key
+        type: string
+      - example: db8b0e6a-a08c-4646
+        in: query
         name: msg_id
         type: string
-      - in: query
+      - enum:
+        - 0
+        - 1
+        - 2
+        example: 1
+        in: query
         name: priority
         type: integer
-      - in: query
+      - example: example-server
+        in: query
+        name: sender_name
+        type: string
+      - example: 1669824037
+        in: query
         name: timestamp
         type: number
-      - in: query
+      - example: Hello World
+        in: query
         name: title
         type: string
-      - in: query
+      - example: "7725"
+        in: query
         name: user_id
-        type: integer
-      - in: query
-        name: user_key
         type: string
       - description: ' '
         in: body
         name: post_body
         schema:
           $ref: '#/definitions/handler.SendMessage.combined'
-      - in: formData
+      - example: test
+        in: formData
+        name: channel
+        type: string
+      - example: This is a message
+        in: formData
         name: content
         type: string
-      - in: formData
+      - example: P3TNH8mvv14fm
+        in: formData
+        name: key
+        type: string
+      - example: db8b0e6a-a08c-4646
+        in: formData
         name: msg_id
         type: string
-      - in: formData
+      - enum:
+        - 0
+        - 1
+        - 2
+        example: 1
+        in: formData
         name: priority
         type: integer
-      - in: formData
+      - example: example-server
+        in: formData
+        name: sender_name
+        type: string
+      - example: 1669824037
+        in: formData
         name: timestamp
         type: number
-      - in: formData
+      - example: Hello World
+        in: formData
         name: title
         type: string
-      - in: formData
+      - example: "7725"
+        in: formData
         name: user_id
-        type: integer
-      - in: formData
-        name: user_key
         type: string
       responses:
         "200":
@@ -1420,6 +1512,108 @@ paths:
           schema:
             $ref: '#/definitions/ginresp.apiError'
       summary: Get a single message (untrimmed)
+      tags:
+      - API-v2
+  /api/v2/preview/channels/{cid}:
+    get:
+      operationId: api-channels-get-preview
+      parameters:
+      - description: ChannelID
+        in: path
+        name: cid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ChannelPreviewJSON'
+        "400":
+          description: supplied values/parameters cannot be parsed / are invalid
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: user is not authorized / has missing permissions
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: channel not found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Get a single channel (similar to api-channels-get, but can be called
+        from anyone and only returns a subset of fields)
+      tags:
+      - API-v2
+  /api/v2/preview/keys/{kid}:
+    get:
+      operationId: api-tokenkeys-get-preview
+      parameters:
+      - description: TokenKeyID
+        in: path
+        name: kid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.KeyTokenPreviewJSON'
+        "400":
+          description: supplied values/parameters cannot be parsed / are invalid
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: user is not authorized / has missing permissions
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: message not found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Get a single key (similar to api-tokenkeys-get, but can be called from
+        anyone and only returns a subset of fields)
+      tags:
+      - API-v2
+  /api/v2/preview/users/{uid}:
+    get:
+      operationId: api-user-get-preview
+      parameters:
+      - description: UserID
+        in: path
+        name: uid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserPreviewJSON'
+        "400":
+          description: supplied values/parameters cannot be parsed / are invalid
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: user is not authorized / has missing permissions
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: user not found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: Get a user (similar to api-user-get, but can be called from anyone
+        and only returns a subset of fields)
       tags:
       - API-v2
   /api/v2/users:
@@ -2491,52 +2685,90 @@ paths:
       description: All parameter can be set via query-parameter or the json body.
         Only UserID, UserKey and Title are required
       parameters:
-      - in: query
+      - example: test
+        in: query
+        name: channel
+        type: string
+      - example: This is a message
+        in: query
         name: content
         type: string
-      - in: query
+      - example: P3TNH8mvv14fm
+        in: query
+        name: key
+        type: string
+      - example: db8b0e6a-a08c-4646
+        in: query
         name: msg_id
         type: string
-      - in: query
+      - enum:
+        - 0
+        - 1
+        - 2
+        example: 1
+        in: query
         name: priority
         type: integer
-      - in: query
+      - example: example-server
+        in: query
+        name: sender_name
+        type: string
+      - example: 1669824037
+        in: query
         name: timestamp
         type: number
-      - in: query
+      - example: Hello World
+        in: query
         name: title
         type: string
-      - in: query
+      - example: "7725"
+        in: query
         name: user_id
-        type: integer
-      - in: query
-        name: user_key
         type: string
       - description: ' '
         in: body
         name: post_body
         schema:
           $ref: '#/definitions/handler.SendMessage.combined'
-      - in: formData
+      - example: test
+        in: formData
+        name: channel
+        type: string
+      - example: This is a message
+        in: formData
         name: content
         type: string
-      - in: formData
+      - example: P3TNH8mvv14fm
+        in: formData
+        name: key
+        type: string
+      - example: db8b0e6a-a08c-4646
+        in: formData
         name: msg_id
         type: string
-      - in: formData
+      - enum:
+        - 0
+        - 1
+        - 2
+        example: 1
+        in: formData
         name: priority
         type: integer
-      - in: formData
+      - example: example-server
+        in: formData
+        name: sender_name
+        type: string
+      - example: 1669824037
+        in: formData
         name: timestamp
         type: number
-      - in: formData
+      - example: Hello World
+        in: formData
         name: title
         type: string
-      - in: formData
+      - example: "7725"
+        in: formData
         name: user_id
-        type: integer
-      - in: formData
-        name: user_key
         type: string
       responses:
         "200":
@@ -2569,47 +2801,85 @@ paths:
       description: All parameter can be set via query-parameter or form-data body.
         Only UserID, UserKey and Title are required
       parameters:
-      - in: query
+      - example: test
+        in: query
+        name: channel
+        type: string
+      - example: This is a message
+        in: query
         name: content
         type: string
-      - in: query
+      - example: P3TNH8mvv14fm
+        in: query
+        name: key
+        type: string
+      - example: db8b0e6a-a08c-4646
+        in: query
         name: msg_id
         type: string
-      - in: query
+      - enum:
+        - 0
+        - 1
+        - 2
+        example: 1
+        in: query
         name: priority
         type: integer
-      - in: query
+      - example: example-server
+        in: query
+        name: sender_name
+        type: string
+      - example: 1669824037
+        in: query
         name: timestamp
         type: number
-      - in: query
+      - example: Hello World
+        in: query
         name: title
         type: string
-      - in: query
+      - example: "7725"
+        in: query
         name: user_id
-        type: integer
-      - in: query
-        name: user_key
         type: string
-      - in: formData
+      - example: test
+        in: formData
+        name: channel
+        type: string
+      - example: This is a message
+        in: formData
         name: content
         type: string
-      - in: formData
+      - example: P3TNH8mvv14fm
+        in: formData
+        name: key
+        type: string
+      - example: db8b0e6a-a08c-4646
+        in: formData
         name: msg_id
         type: string
-      - in: formData
+      - enum:
+        - 0
+        - 1
+        - 2
+        example: 1
+        in: formData
         name: priority
         type: integer
-      - in: formData
+      - example: example-server
+        in: formData
+        name: sender_name
+        type: string
+      - example: 1669824037
+        in: formData
         name: timestamp
         type: number
-      - in: formData
+      - example: Hello World
+        in: formData
         name: title
         type: string
-      - in: formData
+      - example: "7725"
+        in: formData
         name: user_id
-        type: integer
-      - in: formData
-        name: user_key
         type: string
       responses:
         "200":

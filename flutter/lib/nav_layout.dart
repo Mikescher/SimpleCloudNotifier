@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lazy_indexed_stack/flutter_lazy_indexed_stack.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/components/hidable_fab/hidable_fab.dart';
@@ -62,15 +61,16 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
         title: null,
         showDebug: true,
         showSearch: _selectedIndex == 0 || _selectedIndex == 1,
+        showShare: false,
         showThemeSwitch: true,
       ),
-      body: LazyIndexedStack(
+      body: IndexedStack(
         children: [
-          MessageListPage(),
-          ChannelRootPage(),
-          AccountRootPage(),
-          SettingsRootPage(),
-          SendRootPage(),
+          ExcludeFocus(excluding: _selectedIndex != 0, child: MessageListPage()),
+          ExcludeFocus(excluding: _selectedIndex != 1, child: ChannelRootPage()),
+          ExcludeFocus(excluding: _selectedIndex != 2, child: AccountRootPage()),
+          ExcludeFocus(excluding: _selectedIndex != 3, child: SettingsRootPage()),
+          ExcludeFocus(excluding: _selectedIndex != 4, child: SendRootPage()),
         ],
         index: _selectedIndex,
       ),

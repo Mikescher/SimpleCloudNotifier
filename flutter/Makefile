@@ -7,6 +7,9 @@ run:
 test:
 	dart analyze
 
+fix:
+	dart fix --apply
+
 gen:
 	dart run build_runner build
 	

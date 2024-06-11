@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
 import 'package:simplecloudnotifier/models/message.dart';
 import 'package:intl/intl.dart';
+import 'package:simplecloudnotifier/utils/ui.dart';
 
 class MessageListItem extends StatelessWidget {
   static final _dateFormat = DateFormat('yyyy-MM-dd kk:mm');
@@ -102,19 +103,10 @@ class MessageListItem extends StatelessWidget {
                   if (message.priority == 2) SizedBox(width: 4),
                   if (message.priority == 0) FaIcon(FontAwesomeIcons.solidDown, size: 16, color: Colors.lightBlue[900]),
                   if (message.priority == 0) SizedBox(width: 4),
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(4, 0, 4, 0),
-                    margin: const EdgeInsets.fromLTRB(0, 0, 4, 0),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).hintColor,
-                      borderRadius: BorderRadius.all(Radius.circular(4)),
-                    ),
-                    child: Text(
-                      resolveChannelName(message),
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).cardColor, fontSize: 12),
-                      overflow: TextOverflow.clip,
-                      maxLines: 1,
-                    ),
+                  UI.channelChip(
+                    context: context,
+                    text: resolveChannelName(message),
+                    margin: EdgeInsets.fromLTRB(0, 0, 4, 0),
                   ),
                   Expanded(child: SizedBox()),
                   Text(
