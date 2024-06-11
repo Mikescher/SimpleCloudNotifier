@@ -157,6 +157,10 @@ func (r *Router) Init(e *gin.Engine) error {
 		apiv2.GET("/messages", r.Wrap(r.apiHandler.ListMessages))
 		apiv2.GET("/messages/:mid", r.Wrap(r.apiHandler.GetMessage))
 		apiv2.DELETE("/messages/:mid", r.Wrap(r.apiHandler.DeleteMessage))
+
+		apiv2.GET("/preview/users/:uid", r.Wrap(r.apiHandler.GetUserPreview))
+		apiv2.GET("/preview/keys/:kid", r.Wrap(r.apiHandler.GetUserKeyPreview))
+		apiv2.GET("/preview/channels/:cid", r.Wrap(r.apiHandler.GetChannelPreview))
 	}
 
 	// ================ Send API (unversioned) ================

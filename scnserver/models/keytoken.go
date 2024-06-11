@@ -92,6 +92,17 @@ func (k KeyToken) JSON() KeyTokenJSON {
 	}
 }
 
+func (k KeyToken) JSONPreview() KeyTokenPreviewJSON {
+	return KeyTokenPreviewJSON{
+		KeyTokenID:  k.KeyTokenID,
+		Name:        k.Name,
+		OwnerUserID: k.OwnerUserID,
+		AllChannels: k.AllChannels,
+		Channels:    k.Channels,
+		Permissions: k.Permissions.String(),
+	}
+}
+
 type KeyTokenJSON struct {
 	KeyTokenID        KeyTokenID  `json:"keytoken_id"`
 	Name              string      `json:"name"`
@@ -107,6 +118,15 @@ type KeyTokenJSON struct {
 type KeyTokenWithTokenJSON struct {
 	KeyTokenJSON
 	Token string `json:"token"`
+}
+
+type KeyTokenPreviewJSON struct {
+	KeyTokenID  KeyTokenID  `json:"keytoken_id"`
+	Name        string      `json:"name"`
+	OwnerUserID UserID      `json:"owner_user_id"`
+	AllChannels bool        `json:"all_channels"`
+	Channels    []ChannelID `json:"channels"`
+	Permissions string      `json:"permissions"`
 }
 
 func (j KeyTokenJSON) WithToken(tok string) KeyTokenWithTokenJSON {

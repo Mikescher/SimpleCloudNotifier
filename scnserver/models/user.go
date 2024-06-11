@@ -116,6 +116,13 @@ func (u User) MaxTimestampDiffHours() int {
 	return 24
 }
 
+func (u User) JSONPreview() UserPreviewJSON {
+	return UserPreviewJSON{
+		UserID:   u.UserID,
+		Username: u.Username,
+	}
+}
+
 type UserJSON struct {
 	UserID                      UserID  `json:"user_id"`
 	Username                    *string `json:"username"`
@@ -135,6 +142,11 @@ type UserJSON struct {
 	MaxChannelDescriptionLength int     `json:"max_channel_description_length"`
 	MaxSenderNameLength         int     `json:"max_sender_name_length"`
 	MaxUserMessageIDLength      int     `json:"max_user_message_id_length"`
+}
+
+type UserPreviewJSON struct {
+	UserID   UserID  `json:"user_id"`
+	Username *string `json:"username"`
 }
 
 type UserJSONWithClientsAndKeys struct {

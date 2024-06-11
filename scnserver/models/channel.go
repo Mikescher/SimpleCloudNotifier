@@ -41,6 +41,16 @@ func (c Channel) WithSubscription(sub *Subscription) ChannelWithSubscription {
 	}
 }
 
+func (c Channel) JSONPreview() ChannelPreviewJSON {
+	return ChannelPreviewJSON{
+		ChannelID:       c.ChannelID,
+		OwnerUserID:     c.OwnerUserID,
+		InternalName:    c.InternalName,
+		DisplayName:     c.DisplayName,
+		DescriptionName: c.DescriptionName,
+	}
+}
+
 type ChannelWithSubscription struct {
 	Channel
 	Subscription *Subscription
@@ -72,6 +82,14 @@ type ChannelJSON struct {
 type ChannelWithSubscriptionJSON struct {
 	ChannelJSON
 	Subscription *SubscriptionJSON `json:"subscription"`
+}
+
+type ChannelPreviewJSON struct {
+	ChannelID       ChannelID `json:"channel_id"`
+	OwnerUserID     UserID    `json:"owner_user_id"`
+	InternalName    string    `json:"internal_name"`
+	DisplayName     string    `json:"display_name"`
+	DescriptionName *string   `json:"description_name"`
 }
 
 type ChannelDB struct {
