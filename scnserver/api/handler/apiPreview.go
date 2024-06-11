@@ -37,6 +37,10 @@ func (h APIHandler) GetUserPreview(g *gin.Context) ginresp.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
+	if permResp := ctx.CheckPermissionAny(); permResp != nil {
+		return *permResp
+	}
+
 	user, err := h.database.GetUser(ctx, u.UserID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 404, apierr.USER_NOT_FOUND, "User not found", err)
@@ -76,6 +80,10 @@ func (h APIHandler) GetChannelPreview(g *gin.Context) ginresp.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
+	if permResp := ctx.CheckPermissionAny(); permResp != nil {
+		return *permResp
+	}
+
 	channel, err := h.database.GetChannelByID(ctx, u.ChannelID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
@@ -114,6 +122,10 @@ func (h APIHandler) GetUserKeyPreview(g *gin.Context) ginresp.HTTPResponse {
 		return *errResp
 	}
 	defer ctx.Cancel()
+
+	if permResp := ctx.CheckPermissionAny(); permResp != nil {
+		return *permResp
+	}
 
 	keytoken, err := h.database.GetKeyToken(ctx, u.UserID, u.KeyID)
 	if errors.Is(err, sql.ErrNoRows) {
