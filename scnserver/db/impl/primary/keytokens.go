@@ -79,6 +79,27 @@ func (db *Database) GetKeyToken(ctx db.TxContext, userid models.UserID, keyToken
 	return keyToken, nil
 }
 
+func (db *Database) GetKeyTokenByID(ctx db.TxContext, keyTokenid models.KeyTokenID) (models.KeyToken, error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return models.KeyToken{}, err
+	}
+
+	rows, err := tx.Query(ctx, "SELECT * FROM keytokens WHERE keytoken_id = :cid LIMIT 1", sq.PP{
+		"cid": keyTokenid,
+	})
+	if err != nil {
+		return models.KeyToken{}, err
+	}
+
+	keyToken, err := models.DecodeKeyToken(ctx, tx, rows)
+	if err != nil {
+		return models.KeyToken{}, err
+	}
+
+	return keyToken, nil
+}
+
 func (db *Database) GetKeyTokenByToken(ctx db.TxContext, key string) (*models.KeyToken, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {

@@ -69,7 +69,6 @@ func (h APIHandler) GetUserPreview(g *gin.Context) ginresp.HTTPResponse {
 //	@Router		/api/v2/preview/channels/{cid} [GET]
 func (h APIHandler) GetChannelPreview(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID    models.UserID    `uri:"uid" binding:"entityid"`
 		ChannelID models.ChannelID `uri:"cid" binding:"entityid"`
 	}
 
@@ -112,8 +111,7 @@ func (h APIHandler) GetChannelPreview(g *gin.Context) ginresp.HTTPResponse {
 //	@Router		/api/v2/preview/keys/{kid} [GET]
 func (h APIHandler) GetUserKeyPreview(g *gin.Context) ginresp.HTTPResponse {
 	type uri struct {
-		UserID models.UserID     `uri:"uid" binding:"entityid"`
-		KeyID  models.KeyTokenID `uri:"kid" binding:"entityid"`
+		KeyID models.KeyTokenID `uri:"kid" binding:"entityid"`
 	}
 
 	var u uri
@@ -127,7 +125,7 @@ func (h APIHandler) GetUserKeyPreview(g *gin.Context) ginresp.HTTPResponse {
 		return *permResp
 	}
 
-	keytoken, err := h.database.GetKeyToken(ctx, u.UserID, u.KeyID)
+	keytoken, err := h.database.GetKeyTokenByID(ctx, u.KeyID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
 	}
