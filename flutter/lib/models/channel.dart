@@ -58,3 +58,29 @@ class ChannelWithSubscription {
     return jsonArr.map<ChannelWithSubscription>((e) => ChannelWithSubscription.fromJson(e as Map<String, dynamic>)).toList();
   }
 }
+
+class ChannelPreview {
+  final String channelID;
+  final String ownerUserID;
+  final String internalName;
+  final String displayName;
+  final String? descriptionName;
+
+  const ChannelPreview({
+    required this.channelID,
+    required this.ownerUserID,
+    required this.internalName,
+    required this.displayName,
+    required this.descriptionName,
+  });
+
+  factory ChannelPreview.fromJson(Map<String, dynamic> json) {
+    return ChannelPreview(
+      channelID: json['channel_id'] as String,
+      ownerUserID: json['owner_user_id'] as String,
+      internalName: json['internal_name'] as String,
+      displayName: json['display_name'] as String,
+      descriptionName: json['description_name'] as String?,
+    );
+  }
+}

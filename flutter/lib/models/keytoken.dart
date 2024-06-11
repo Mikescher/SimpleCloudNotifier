@@ -39,3 +39,32 @@ class KeyToken {
     return jsonArr.map<KeyToken>((e) => KeyToken.fromJson(e as Map<String, dynamic>)).toList();
   }
 }
+
+class KeyTokenPreview {
+  final String keytokenID;
+  final String name;
+  final String ownerUserID;
+  final bool allChannels;
+  final List<String> channels;
+  final String permissions;
+
+  const KeyTokenPreview({
+    required this.keytokenID,
+    required this.name,
+    required this.ownerUserID,
+    required this.allChannels,
+    required this.channels,
+    required this.permissions,
+  });
+
+  factory KeyTokenPreview.fromJson(Map<String, dynamic> json) {
+    return KeyTokenPreview(
+      keytokenID: json['keytoken_id'] as String,
+      name: json['name'] as String,
+      ownerUserID: json['owner_user_id'] as String,
+      allChannels: json['all_channels'] as bool,
+      channels: (json['channels'] as List<dynamic>).map((e) => e as String).toList(),
+      permissions: json['permissions'] as String,
+    );
+  }
+}
