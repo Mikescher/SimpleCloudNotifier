@@ -8,6 +8,7 @@ import 'package:simplecloudnotifier/pages/message_view/message_view.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/pages/message_list/message_list_item.dart';
+import 'package:simplecloudnotifier/utils/navi.dart';
 
 class MessageListPage extends StatefulWidget {
   const MessageListPage({super.key});
@@ -83,7 +84,7 @@ class _MessageListPageState extends State<MessageListPage> {
               message: item,
               allChannels: _channels ?? {},
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute<MessageViewPage>(builder: (context) => MessageViewPage(message: item)));
+                Navi.push(context, () => MessageViewPage(message: item));
               },
             ),
           ),

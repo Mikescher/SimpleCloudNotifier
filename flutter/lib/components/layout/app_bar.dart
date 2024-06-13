@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/pages/debug/debug_main.dart';
 import 'package:simplecloudnotifier/state/app_theme.dart';
+import 'package:simplecloudnotifier/utils/navi.dart';
 
 class SCNAppBar extends StatelessWidget implements PreferredSizeWidget {
   const SCNAppBar({
@@ -43,7 +44,7 @@ class SCNAppBar extends StatelessWidget implements PreferredSizeWidget {
         icon: const Icon(FontAwesomeIcons.solidSpiderBlackWidow),
         tooltip: 'Debug',
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute<DebugMainPage>(builder: (context) => DebugMainPage()));
+          Navi.push(context, () => DebugMainPage());
         },
       ));
     } else {

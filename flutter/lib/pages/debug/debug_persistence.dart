@@ -5,6 +5,7 @@ import 'package:simplecloudnotifier/pages/debug/debug_persistence_hive.dart';
 import 'package:simplecloudnotifier/pages/debug/debug_persistence_sharedprefs.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/request_log.dart';
+import 'package:simplecloudnotifier/utils/navi.dart';
 
 class DebugPersistencePage extends StatefulWidget {
   @override
@@ -33,7 +34,7 @@ class _DebugPersistencePageState extends State<DebugPersistencePage> {
               padding: const EdgeInsets.all(8.0),
               child: GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute<DebugSharedPrefPage>(builder: (context) => DebugSharedPrefPage(sharedPref: prefs!)));
+                  Navi.push(context, () => DebugSharedPrefPage(sharedPref: prefs!));
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -51,7 +52,7 @@ class _DebugPersistencePageState extends State<DebugPersistencePage> {
               padding: const EdgeInsets.all(8.0),
               child: GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute<DebugHiveBoxPage>(builder: (context) => DebugHiveBoxPage(boxName: 'scn-requests', box: Hive.box<SCNRequest>('scn-requests'))));
+                  Navi.push(context, () => DebugHiveBoxPage(boxName: 'scn-requests', box: Hive.box<SCNRequest>('scn-requests')));
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -69,7 +70,7 @@ class _DebugPersistencePageState extends State<DebugPersistencePage> {
               padding: const EdgeInsets.all(8.0),
               child: GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute<DebugHiveBoxPage>(builder: (context) => DebugHiveBoxPage(boxName: 'scn-requests', box: Hive.box<SCNLog>('scn-logs'))));
+                  Navi.push(context, () => DebugHiveBoxPage(boxName: 'scn-requests', box: Hive.box<SCNLog>('scn-logs')));
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

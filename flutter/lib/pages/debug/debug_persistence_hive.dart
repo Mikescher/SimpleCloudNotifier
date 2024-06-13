@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:simplecloudnotifier/components/layout/scaffold.dart';
 import 'package:simplecloudnotifier/pages/debug/debug_persistence_hiveentry.dart';
 import 'package:simplecloudnotifier/state/interfaces.dart';
+import 'package:simplecloudnotifier/utils/navi.dart';
 
 class DebugHiveBoxPage extends StatelessWidget {
   final String boxName;
@@ -21,7 +22,7 @@ class DebugHiveBoxPage extends StatelessWidget {
         itemBuilder: (context, listIndex) {
           return GestureDetector(
             onTap: () {
-              Navigator.push(context, MaterialPageRoute<DebugHiveEntryPage>(builder: (context) => DebugHiveEntryPage(value: box.getAt(listIndex)!)));
+              Navi.push(context, () => DebugHiveEntryPage(value: box.getAt(listIndex)!));
             },
             child: ListTile(
               title: Text(box.getAt(listIndex).toString(), style: TextStyle(fontWeight: FontWeight.bold)),

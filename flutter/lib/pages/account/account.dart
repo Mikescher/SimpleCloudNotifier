@@ -10,6 +10,7 @@ import 'package:simplecloudnotifier/pages/account/login.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/globals.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
+import 'package:simplecloudnotifier/utils/navi.dart';
 import 'package:simplecloudnotifier/utils/toaster.dart';
 import 'package:simplecloudnotifier/utils/ui.dart';
 import 'package:uuid/uuid.dart';
@@ -157,7 +158,7 @@ class _AccountRootPageState extends State<AccountRootPage> {
               text: 'Use existing account',
               onPressed: () {
                 if (loading) return;
-                Navigator.push(context, MaterialPageRoute<AccountLoginPage>(builder: (context) => AccountLoginPage()));
+                Navi.push(context, () => AccountLoginPage());
               },
               tonal: true,
               big: true,
