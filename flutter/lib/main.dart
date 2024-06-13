@@ -7,12 +7,14 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/models/client.dart';
 import 'package:simplecloudnotifier/nav_layout.dart';
+import 'package:simplecloudnotifier/state/app_bar_state.dart';
 import 'package:simplecloudnotifier/state/app_theme.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/globals.dart';
 import 'package:simplecloudnotifier/state/request_log.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:simplecloudnotifier/utils/navi.dart';
 import 'package:toastification/toastification.dart';
 import 'firebase_options.dart';
 
@@ -113,8 +115,9 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (context) => AppAuth(), lazy: false),
         ChangeNotifierProvider(create: (context) => AppTheme(), lazy: false),
+        ChangeNotifierProvider(create: (context) => AppBarState(), lazy: false),
       ],
-      child: const SCNApp(),
+      child: SCNApp(),
     ),
   );
 }
@@ -156,7 +159,7 @@ void setFirebaseToken(String fcmToken) async {
 }
 
 class SCNApp extends StatelessWidget {
-  const SCNApp({super.key});
+  SCNApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -169,6 +172,7 @@ class SCNApp extends StatelessWidget {
       child: Consumer<AppTheme>(
         builder: (context, appTheme, child) => MaterialApp(
           title: 'SimpleCloudNotifier',
+          navigatorObservers: [Navi.routeObserver],
           theme: ThemeData(
             //TODO color settings
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: appTheme.darkMode ? Brightness.dark : Brightness.light),

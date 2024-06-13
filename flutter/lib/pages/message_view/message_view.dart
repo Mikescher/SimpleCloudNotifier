@@ -11,6 +11,7 @@ import 'package:simplecloudnotifier/models/keytoken.dart';
 import 'package:simplecloudnotifier/models/message.dart';
 import 'package:simplecloudnotifier/models/user.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
+import 'package:simplecloudnotifier/state/app_bar_state.dart';
 import 'package:simplecloudnotifier/utils/toaster.dart';
 import 'package:simplecloudnotifier/utils/ui.dart';
 
@@ -32,32 +33,38 @@ class _MessageViewPageState extends State<MessageViewPage> {
 
   @override
   void initState() {
-    super.initState();
     mainFuture = fetchData();
+    super.initState();
   }
 
   Future<(Message, ChannelPreview, KeyTokenPreview, UserPreview)> fetchData() async {
-    final acc = Provider.of<AppAuth>(context, listen: false);
+    try {
+      await Future.delayed(const Duration(seconds: 0), () {}); // this is annoyingly important - otherwise we call setLoadingIndeterminate directly in initStat() and get an exception....
 
-    final msg = await APIClient.getMessage(acc, widget.message.messageID);
+      AppBarState().setLoadingIndeterminate(true);
 
-    final fut_chn = APIClient.getChannelPreview(acc, msg.channelID);
-    final fut_key = APIClient.getKeyTokenPreview(acc, msg.usedKeyID);
-    final fut_usr = APIClient.getUserPreview(acc, msg.senderUserID);
+      final acc = Provider.of<AppAuth>(context, listen: false);
 
-    final chn = await fut_chn;
-    final key = await fut_key;
-    final usr = await fut_usr;
+      final msg = await APIClient.getMessage(acc, widget.message.messageID);
 
-    //TODO getShortUser for sender
+      final fut_chn = APIClient.getChannelPreview(acc, msg.channelID);
+      final fut_key = APIClient.getKeyTokenPreview(acc, msg.usedKeyID);
+      final fut_usr = APIClient.getUserPreview(acc, msg.senderUserID);
 
-    //await Future.delayed(const Duration(seconds: 2), () {});
+      final chn = await fut_chn;
+      final key = await fut_key;
+      final usr = await fut_usr;
 
-    final r = (msg, chn, key, usr);
+      //await Future.delayed(const Duration(seconds: 10), () {});
 
-    mainFutureSnapshot = r;
+      final r = (msg, chn, key, usr);
 
-    return r;
+      mainFutureSnapshot = r;
+
+      return r;
+    } finally {
+      AppBarState().setLoadingIndeterminate(false);
+    }
   }
 
   @override
@@ -77,11 +84,11 @@ class _MessageViewPageState extends State<MessageViewPage> {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             final (msg, chn, tok, usr) = snapshot.data!;
-            return _buildMessageView(context, msg, chn, tok, usr, false);
+            return _buildMessageView(context, msg, chn, tok, usr);
           } else if (snapshot.hasError) {
             return Center(child: Text('${snapshot.error}')); //TODO nice error page
           } else if (!widget.message.trimmed) {
-            return _buildMessageView(context, widget.message, null, null, null, true);
+            return _buildMessageView(context, widget.message, null, null, null);
           } else {
             return const Center(child: CircularProgressIndicator());
           }
@@ -111,7 +118,7 @@ class _MessageViewPageState extends State<MessageViewPage> {
     }
   }
 
-  Widget _buildMessageView(BuildContext context, Message message, ChannelPreview? channel, KeyTokenPreview? token, UserPreview? user, bool loading) {
+  Widget _buildMessageView(BuildContext context, Message message, ChannelPreview? channel, KeyTokenPreview? token, UserPreview? user) {
     final userAccUserID = context.select<AppAuth, String?>((v) => v.userID);
 
     return SingleChildScrollView(
@@ -120,7 +127,7 @@ class _MessageViewPageState extends State<MessageViewPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ..._buildMessageHeader(context, message, channel, loading),
+            ..._buildMessageHeader(context, message, channel),
             SizedBox(height: 8),
             if (message.content != null) ..._buildMessageContent(context, message),
             SizedBox(height: 8),
@@ -141,7 +148,7 @@ class _MessageViewPageState extends State<MessageViewPage> {
     return channel?.displayName ?? message.channelInternalName;
   }
 
-  List<Widget> _buildMessageHeader(BuildContext context, Message message, ChannelPreview? channel, bool loading) {
+  List<Widget> _buildMessageHeader(BuildContext context, Message message, ChannelPreview? channel) {
     return [
       Row(
         children: [
@@ -156,24 +163,7 @@ class _MessageViewPageState extends State<MessageViewPage> {
         ],
       ),
       SizedBox(height: 8),
-      if (!loading) Text(message.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-      if (loading)
-        Stack(
-          children: [
-            Row(
-              children: [
-                Flexible(child: Text(message.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
-                SizedBox(height: 20, width: 20),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(child: SizedBox(width: 0)),
-                SizedBox(child: CircularProgressIndicator(), height: 20, width: 20),
-              ],
-            ),
-          ],
-        ),
+      Text(message.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
     ];
   }
 

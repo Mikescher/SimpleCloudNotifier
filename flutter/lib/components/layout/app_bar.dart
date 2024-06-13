@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:simplecloudnotifier/components/layout/app_bar_progress_indicator.dart';
 import 'package:simplecloudnotifier/pages/debug/debug_main.dart';
 import 'package:simplecloudnotifier/state/app_theme.dart';
 import 'package:simplecloudnotifier/utils/navi.dart';
@@ -71,6 +72,10 @@ class SCNAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Text(title ?? 'Simple Cloud Notifier 2.0'),
       actions: actions,
       backgroundColor: Theme.of(context).secondaryHeaderColor,
+      bottom: PreferredSize(
+        preferredSize: Size(double.infinity, 1.0),
+        child: AppBarProgressIndicator(),
+      ),
     );
   }
 
