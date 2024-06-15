@@ -6,6 +6,8 @@ import 'package:simplecloudnotifier/models/message.dart';
 import 'package:simplecloudnotifier/pages/debug/debug_persistence_hive.dart';
 import 'package:simplecloudnotifier/pages/debug/debug_persistence_sharedprefs.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
+import 'package:simplecloudnotifier/state/fb_message.dart';
+import 'package:simplecloudnotifier/state/interfaces.dart';
 import 'package:simplecloudnotifier/state/request_log.dart';
 import 'package:simplecloudnotifier/utils/navi.dart';
 
@@ -31,97 +33,55 @@ class _DebugPersistencePageState extends State<DebugPersistencePage> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Card.outlined(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: GestureDetector(
-                onTap: () {
-                  Navi.push(context, () => DebugSharedPrefPage(sharedPref: prefs!));
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SizedBox(width: 30, child: Text('')),
-                    Expanded(child: Text('Shared Preferences', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    SizedBox(width: 40, child: Text('${prefs?.getKeys().length.toString()}', textAlign: TextAlign.end)),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Card.outlined(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: GestureDetector(
-                onTap: () {
-                  Navi.push(context, () => DebugHiveBoxPage(boxName: 'scn-requests', box: Hive.box<SCNRequest>('scn-requests')));
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SizedBox(width: 30, child: Text('')),
-                    Expanded(child: Text('Hive [scn-requests]', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    SizedBox(width: 40, child: Text('${Hive.box<SCNRequest>('scn-requests').length.toString()}', textAlign: TextAlign.end)),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Card.outlined(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: GestureDetector(
-                onTap: () {
-                  Navi.push(context, () => DebugHiveBoxPage(boxName: 'scn-requests', box: Hive.box<SCNLog>('scn-logs')));
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SizedBox(width: 30, child: Text('')),
-                    Expanded(child: Text('Hive [scn-logs]', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    SizedBox(width: 40, child: Text('${Hive.box<SCNLog>('scn-logs').length.toString()}', textAlign: TextAlign.end)),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Card.outlined(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: GestureDetector(
-                onTap: () {
-                  Navi.push(context, () => DebugHiveBoxPage(boxName: 'scn-message-cache', box: Hive.box<Message>('scn-message-cache')));
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SizedBox(width: 30, child: Text('')),
-                    Expanded(child: Text('Hive [scn-message-cache]', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    SizedBox(width: 40, child: Text('${Hive.box<Message>('scn-message-cache').length.toString()}', textAlign: TextAlign.end)),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Card.outlined(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: GestureDetector(
-                onTap: () {
-                  Navi.push(context, () => DebugHiveBoxPage(boxName: 'scn-channel-cache', box: Hive.box<Channel>('scn-channel-cache')));
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SizedBox(width: 30, child: Text('')),
-                    Expanded(child: Text('Hive [scn-channel-cache]', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    SizedBox(width: 40, child: Text('${Hive.box<Channel>('scn-channel-cache').length.toString()}', textAlign: TextAlign.end)),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          _buildSharedPrefCard(context),
+          _buildHiveCard(context, () => Hive.box<SCNRequest>('scn-requests'), 'scn-requests'),
+          _buildHiveCard(context, () => Hive.box<SCNLog>('scn-logs'), 'scn-logs'),
+          _buildHiveCard(context, () => Hive.box<Message>('scn-message-cache'), 'scn-message-cache'),
+          _buildHiveCard(context, () => Hive.box<Channel>('scn-channel-cache'), 'scn-channel-cache'),
+          _buildHiveCard(context, () => Hive.box<FBMessage>('scn-fb-messages'), 'scn-fb-messages'),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSharedPrefCard(BuildContext context) {
+    return Card.outlined(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: GestureDetector(
+          onTap: () {
+            Navi.push(context, () => DebugSharedPrefPage(sharedPref: prefs!));
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(width: 30, child: Text('')),
+              Expanded(child: Text('Shared Preferences', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
+              SizedBox(width: 40, child: Text('${prefs?.getKeys().length.toString()}', textAlign: TextAlign.end)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHiveCard(BuildContext context, Box<FieldDebuggable> Function() boxFunc, String boxname) {
+    return Card.outlined(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: GestureDetector(
+          onTap: () {
+            Navi.push(context, () => DebugHiveBoxPage(boxName: boxname, box: Hive.box<FBMessage>(boxname)));
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(width: 30, child: Text('')),
+              Expanded(child: Text('Hive [$boxname]', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
+              SizedBox(width: 40, child: Text('${boxFunc().length.toString()}', textAlign: TextAlign.end)),
+            ],
+          ),
+        ),
       ),
     );
   }
