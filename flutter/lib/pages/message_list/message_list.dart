@@ -27,6 +27,8 @@ class MessageListPage extends StatefulWidget {
 class _MessageListPageState extends State<MessageListPage> with RouteAware {
   static const _pageSize = 128;
 
+  late final AppLifecycleListener _lifecyleListener;
+
   PagingController<String, Message> _pagingController = PagingController.fromValue(PagingState(nextPageKey: null, itemList: [], error: null), firstPageKey: '@start');
 
   Map<String, Channel>? _channels = null;
@@ -40,6 +42,10 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
     _pagingController.addPageRequestListener(_fetchPage);
 
     if (widget.isVisiblePage && !_isInitialized) _realInitState();
+
+    _lifecyleListener = AppLifecycleListener(
+      onResume: _onLifecycleResume,
+    );
   }
 
   @override
@@ -91,6 +97,7 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
     ApplicationLog.debug('MessageListPage::dispose');
     Navi.modalRouteObserver.unsubscribe(this);
     _pagingController.dispose();
+    _lifecyleListener.dispose();
     super.dispose();
   }
 
@@ -102,6 +109,11 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
   @override
   void didPopNext() {
     ApplicationLog.debug('[MessageList::RouteObserver] --> didPopNext (will background-refresh)');
+    _backgroundRefresh(false);
+  }
+
+  void _onLifecycleResume() {
+    ApplicationLog.debug('[MessageList::_onLifecycleResume] --> (will background-refresh)');
     _backgroundRefresh(false);
   }
 
