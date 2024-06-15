@@ -118,7 +118,6 @@ class AppAuth extends ChangeNotifier implements TokenSource {
     final user = await APIClient.getUser(this, _userID!);
 
     _user = user;
-    notifyListeners();
 
     await save();
 
@@ -142,14 +141,12 @@ class AppAuth extends ChangeNotifier implements TokenSource {
       final client = await APIClient.getClient(this, _clientID!);
 
       _client = client;
-      notifyListeners();
 
       await save();
 
       return client;
     } on APIException catch (_) {
       _client = null;
-      notifyListeners();
       return null;
     } catch (exc) {
       _client = null;

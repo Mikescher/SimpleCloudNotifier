@@ -43,7 +43,7 @@ class _DebugPersistencePageState extends State<DebugPersistencePage> {
                   children: [
                     SizedBox(width: 30, child: Text('')),
                     Expanded(child: Text('Shared Preferences', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    SizedBox(width: 30, child: Text('${prefs?.getKeys().length.toString()}', textAlign: TextAlign.end)),
+                    SizedBox(width: 40, child: Text('${prefs?.getKeys().length.toString()}', textAlign: TextAlign.end)),
                   ],
                 ),
               ),
@@ -61,7 +61,7 @@ class _DebugPersistencePageState extends State<DebugPersistencePage> {
                   children: [
                     SizedBox(width: 30, child: Text('')),
                     Expanded(child: Text('Hive [scn-requests]', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    SizedBox(width: 30, child: Text('${Hive.box<SCNRequest>('scn-requests').length.toString()}', textAlign: TextAlign.end)),
+                    SizedBox(width: 40, child: Text('${Hive.box<SCNRequest>('scn-requests').length.toString()}', textAlign: TextAlign.end)),
                   ],
                 ),
               ),
@@ -79,7 +79,7 @@ class _DebugPersistencePageState extends State<DebugPersistencePage> {
                   children: [
                     SizedBox(width: 30, child: Text('')),
                     Expanded(child: Text('Hive [scn-logs]', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    SizedBox(width: 30, child: Text('${Hive.box<SCNLog>('scn-logs').length.toString()}', textAlign: TextAlign.end)),
+                    SizedBox(width: 40, child: Text('${Hive.box<SCNLog>('scn-logs').length.toString()}', textAlign: TextAlign.end)),
                   ],
                 ),
               ),
@@ -97,7 +97,7 @@ class _DebugPersistencePageState extends State<DebugPersistencePage> {
                   children: [
                     SizedBox(width: 30, child: Text('')),
                     Expanded(child: Text('Hive [scn-message-cache]', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    SizedBox(width: 30, child: Text('${Hive.box<Message>('scn-message-cache').length.toString()}', textAlign: TextAlign.end)),
+                    SizedBox(width: 40, child: Text('${Hive.box<Message>('scn-message-cache').length.toString()}', textAlign: TextAlign.end)),
                   ],
                 ),
               ),
@@ -115,7 +115,7 @@ class _DebugPersistencePageState extends State<DebugPersistencePage> {
                   children: [
                     SizedBox(width: 30, child: Text('')),
                     Expanded(child: Text('Hive [scn-channel-cache]', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    SizedBox(width: 30, child: Text('${Hive.box<Channel>('scn-channel-cache').length.toString()}', textAlign: TextAlign.end)),
+                    SizedBox(width: 40, child: Text('${Hive.box<Channel>('scn-channel-cache').length.toString()}', textAlign: TextAlign.end)),
                   ],
                 ),
               ),

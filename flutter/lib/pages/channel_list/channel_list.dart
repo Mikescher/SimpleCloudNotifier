@@ -3,6 +3,7 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
+import 'package:simplecloudnotifier/state/app_bar_state.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/pages/channel_list/channel_list_item.dart';
@@ -27,11 +28,12 @@ class _ChannelRootPageState extends State<ChannelRootPage> {
 
     _pagingController.addPageRequestListener(_fetchPage);
 
-    if (widget.isVisiblePage && !_isInitialized) realInitState();
+    if (widget.isVisiblePage && !_isInitialized) _realInitState();
   }
 
   @override
   void dispose() {
+    ApplicationLog.debug('ChannelRootPage::dispose');
     _pagingController.dispose();
     super.dispose();
   }
@@ -42,14 +44,15 @@ class _ChannelRootPageState extends State<ChannelRootPage> {
 
     if (oldWidget.isVisiblePage != widget.isVisiblePage && widget.isVisiblePage) {
       if (!_isInitialized) {
-        realInitState();
+        _realInitState();
       } else {
-        //TODO background refresh
+        _backgroundRefresh();
       }
     }
   }
 
-  void realInitState() {
+  void _realInitState() {
+    ApplicationLog.debug('ChannelRootPage::_realInitState');
     _pagingController.refresh();
     _isInitialized = true;
   }
@@ -69,10 +72,38 @@ class _ChannelRootPageState extends State<ChannelRootPage> {
 
       items.sort((a, b) => -1 * (a.timestampLastSent ?? '').compareTo(b.timestampLastSent ?? ''));
 
-      _pagingController.appendLastPage(items);
+      _pagingController.value = PagingState(nextPageKey: null, itemList: items, error: null);
     } catch (exc, trace) {
       _pagingController.error = exc.toString();
       ApplicationLog.error('Failed to list channels: ' + exc.toString(), trace: trace);
+    }
+  }
+
+  Future<void> _backgroundRefresh() async {
+    final acc = Provider.of<AppAuth>(context, listen: false);
+
+    ApplicationLog.debug('Start background refresh of channel list');
+
+    if (!acc.isAuth()) {
+      _pagingController.error = 'Not logged in';
+      return;
+    }
+
+    try {
+      await Future.delayed(const Duration(seconds: 0), () {}); // this is annoyingly important - otherwise we call setLoadingIndeterminate directly in initStat() and get an exception....
+
+      AppBarState().setLoadingIndeterminate(true);
+
+      final items = (await APIClient.getChannelList(acc, ChannelSelector.all)).map((p) => p.channel).toList();
+
+      items.sort((a, b) => -1 * (a.timestampLastSent ?? '').compareTo(b.timestampLastSent ?? ''));
+
+      _pagingController.value = PagingState(nextPageKey: null, itemList: items, error: null);
+    } catch (exc, trace) {
+      _pagingController.error = exc.toString();
+      ApplicationLog.error('Failed to list channels: ' + exc.toString(), trace: trace);
+    } finally {
+      AppBarState().setLoadingIndeterminate(false);
     }
   }
 

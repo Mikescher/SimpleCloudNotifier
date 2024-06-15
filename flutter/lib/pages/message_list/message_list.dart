@@ -39,7 +39,7 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
 
     _pagingController.addPageRequestListener(_fetchPage);
 
-    if (widget.isVisiblePage && !_isInitialized) realInitState();
+    if (widget.isVisiblePage && !_isInitialized) _realInitState();
   }
 
   @override
@@ -48,14 +48,16 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
 
     if (oldWidget.isVisiblePage != widget.isVisiblePage && widget.isVisiblePage) {
       if (!_isInitialized) {
-        realInitState();
+        _realInitState();
       } else {
         _backgroundRefresh(false);
       }
     }
   }
 
-  void realInitState() {
+  void _realInitState() {
+    ApplicationLog.debug('MessageListPage::_realInitState');
+
     final chnCache = Hive.box<Channel>('scn-channel-cache');
     final msgCache = Hive.box<Message>('scn-message-cache');
 
@@ -86,6 +88,7 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
 
   @override
   void dispose() {
+    ApplicationLog.debug('MessageListPage::dispose');
     Navi.modalRouteObserver.unsubscribe(this);
     _pagingController.dispose();
     super.dispose();
@@ -93,14 +96,13 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
 
   @override
   void didPush() {
-    // Route was pushed onto navigator and is now the topmost route.
-    ApplicationLog.debug('[MessageList::RouteObserver] --> didPush');
+    // ...
   }
 
   @override
   void didPopNext() {
-    // Covering route was popped off the navigator.
-    ApplicationLog.debug('[MessageList::RouteObserver] --> didPopNext');
+    ApplicationLog.debug('[MessageList::RouteObserver] --> didPopNext (will background-refresh)');
+    _backgroundRefresh(false);
   }
 
   Future<void> _fetchPage(String thisPageToken) async {

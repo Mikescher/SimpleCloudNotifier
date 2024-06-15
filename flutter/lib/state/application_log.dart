@@ -5,6 +5,8 @@ import 'package:xid/xid.dart';
 part 'application_log.g.dart';
 
 class ApplicationLog {
+  //TODO max size, auto clear old
+
   static void debug(String message, {String? additional, StackTrace? trace}) {
     (additional != null && additional != '') ? print('[DEBUG] ${message}: ${additional}') : print('[DEBUG] ${message}');
 
