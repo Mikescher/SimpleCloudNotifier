@@ -11,8 +11,10 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -55,30 +57,43 @@ func (fb FirebaseConnector) SendNotification(ctx context.Context, user models.Us
 
 	uri := "https://fcm.googleapis.com/v1/projects/" + fb.fbProject + "/messages:send"
 
-	jsonBody := gin.H{
-		"token": client.FCMToken,
-	}
+	jsonBody := gin.H{}
 
 	if client.Type == models.ClientTypeIOS {
-		jsonBody["notification"] = gin.H{
-			"title": msg.Title,
-			"body":  msg.ShortContent(),
-		}
-		jsonBody["apns"] = gin.H{}
-	} else if client.Type == models.ClientTypeAndroid {
-		jsonBody["android"] = gin.H{
-			"priority": "high",
+		jsonBody = gin.H{
+			"token": client.FCMToken,
 			"notification": gin.H{
-				"event_time": msg.Timestamp().Format(time.RFC3339),
-				"title":      msg.FormatNotificationTitle(user, channel),
-				"body":       msg.ShortContent(),
+				"title": msg.Title,
+				"body":  msg.ShortContent(),
 			},
-			"fcm_options": gin.H{},
+			"apns": gin.H{},
+		}
+	} else if client.Type == models.ClientTypeAndroid {
+		jsonBody = gin.H{
+			"token": client.FCMToken,
+			"android": gin.H{
+				"priority":    "high",
+				"fcm_options": gin.H{},
+			},
+			"data": gin.H{
+				"scn_msg_id": msg.MessageID.String(),
+				"usr_msg_id": langext.Coalesce(msg.UserMessageID, ""),
+				"client_id":  client.ClientID.String(),
+				"timestamp":  strconv.FormatInt(msg.Timestamp().Unix(), 10),
+				"priority":   strconv.Itoa(msg.Priority),
+				"trimmed":    langext.Conditional(msg.NeedsTrim(), "true", "false"),
+				"title":      msg.Title,
+				"channel":    channel.DisplayName,
+				"body":       langext.Coalesce(msg.TrimmedContent(), ""),
+			},
 		}
 	} else {
-		jsonBody["notification"] = gin.H{
-			"title": msg.FormatNotificationTitle(user, channel),
-			"body":  msg.ShortContent(),
+		jsonBody = gin.H{
+			"token": client.FCMToken,
+			"notification": gin.H{
+				"title": msg.FormatNotificationTitle(user, channel),
+				"body":  msg.ShortContent(),
+			},
 		}
 	}
 
