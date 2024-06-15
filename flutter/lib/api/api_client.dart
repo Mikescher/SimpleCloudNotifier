@@ -11,7 +11,7 @@ import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/globals.dart';
 import 'package:simplecloudnotifier/state/request_log.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
-import 'package:simplecloudnotifier/models/message.dart';
+import 'package:simplecloudnotifier/models/scn_message.dart';
 import 'package:simplecloudnotifier/state/token_source.dart';
 import 'package:simplecloudnotifier/utils/toaster.dart';
 
@@ -211,7 +211,7 @@ class APIClient {
     );
   }
 
-  static Future<(String, List<Message>)> getMessageList(TokenSource auth, String pageToken, {int? pageSize, List<String>? channelIDs}) async {
+  static Future<(String, List<SCNMessage>)> getMessageList(TokenSource auth, String pageToken, {int? pageSize, List<String>? channelIDs}) async {
     return await _request(
       name: 'getMessageList',
       method: 'GET',
@@ -221,18 +221,18 @@ class APIClient {
         if (pageSize != null) 'page_size': pageSize.toString(),
         if (channelIDs != null) 'channel_id': channelIDs.join(","),
       },
-      fn: (json) => Message.fromPaginatedJsonArray(json, 'messages', 'next_page_token'),
+      fn: (json) => SCNMessage.fromPaginatedJsonArray(json, 'messages', 'next_page_token'),
       authToken: auth.getToken(),
     );
   }
 
-  static Future<Message> getMessage(TokenSource auth, String msgid) async {
+  static Future<SCNMessage> getMessage(TokenSource auth, String msgid) async {
     return await _request(
       name: 'getMessage',
       method: 'GET',
       relURL: 'messages/$msgid',
       query: {},
-      fn: Message.fromJson,
+      fn: SCNMessage.fromJson,
       authToken: auth.getToken(),
     );
   }

@@ -8,7 +8,7 @@ import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/components/layout/scaffold.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
 import 'package:simplecloudnotifier/models/keytoken.dart';
-import 'package:simplecloudnotifier/models/message.dart';
+import 'package:simplecloudnotifier/models/scn_message.dart';
 import 'package:simplecloudnotifier/models/user.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/state/app_bar_state.dart';
@@ -18,15 +18,15 @@ import 'package:simplecloudnotifier/utils/ui.dart';
 class MessageViewPage extends StatefulWidget {
   const MessageViewPage({super.key, required this.message});
 
-  final Message message; // Potentially trimmed
+  final SCNMessage message; // Potentially trimmed
 
   @override
   State<MessageViewPage> createState() => _MessageViewPageState();
 }
 
 class _MessageViewPageState extends State<MessageViewPage> {
-  late Future<(Message, ChannelPreview, KeyTokenPreview, UserPreview)>? mainFuture;
-  (Message, ChannelPreview, KeyTokenPreview, UserPreview)? mainFutureSnapshot = null;
+  late Future<(SCNMessage, ChannelPreview, KeyTokenPreview, UserPreview)>? mainFuture;
+  (SCNMessage, ChannelPreview, KeyTokenPreview, UserPreview)? mainFutureSnapshot = null;
   static final _dateFormat = DateFormat('yyyy-MM-dd kk:mm');
 
   bool _monospaceMode = false;
@@ -37,7 +37,7 @@ class _MessageViewPageState extends State<MessageViewPage> {
     super.initState();
   }
 
-  Future<(Message, ChannelPreview, KeyTokenPreview, UserPreview)> fetchData() async {
+  Future<(SCNMessage, ChannelPreview, KeyTokenPreview, UserPreview)> fetchData() async {
     try {
       await Future.delayed(const Duration(seconds: 0), () {}); // this is annoyingly important - otherwise we call setLoadingIndeterminate directly in initStat() and get an exception....
 
@@ -79,7 +79,7 @@ class _MessageViewPageState extends State<MessageViewPage> {
       showSearch: false,
       showShare: true,
       onShare: _share,
-      child: FutureBuilder<(Message, ChannelPreview, KeyTokenPreview, UserPreview)>(
+      child: FutureBuilder<(SCNMessage, ChannelPreview, KeyTokenPreview, UserPreview)>(
         future: mainFuture,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
@@ -118,7 +118,7 @@ class _MessageViewPageState extends State<MessageViewPage> {
     }
   }
 
-  Widget _buildMessageView(BuildContext context, Message message, ChannelPreview? channel, KeyTokenPreview? token, UserPreview? user) {
+  Widget _buildMessageView(BuildContext context, SCNMessage message, ChannelPreview? channel, KeyTokenPreview? token, UserPreview? user) {
     final userAccUserID = context.select<AppAuth, String?>((v) => v.userID);
 
     return SingleChildScrollView(
@@ -144,11 +144,11 @@ class _MessageViewPageState extends State<MessageViewPage> {
     );
   }
 
-  String _resolveChannelName(ChannelPreview? channel, Message message) {
+  String _resolveChannelName(ChannelPreview? channel, SCNMessage message) {
     return channel?.displayName ?? message.channelInternalName;
   }
 
-  List<Widget> _buildMessageHeader(BuildContext context, Message message, ChannelPreview? channel) {
+  List<Widget> _buildMessageHeader(BuildContext context, SCNMessage message, ChannelPreview? channel) {
     return [
       Row(
         children: [
@@ -167,7 +167,7 @@ class _MessageViewPageState extends State<MessageViewPage> {
     ];
   }
 
-  List<Widget> _buildMessageContent(BuildContext context, Message message) {
+  List<Widget> _buildMessageContent(BuildContext context, SCNMessage message) {
     return [
       Row(
         children: [
@@ -249,7 +249,7 @@ class _MessageViewPageState extends State<MessageViewPage> {
     }
   }
 
-  String _preformatTitle(Message message) {
+  String _preformatTitle(SCNMessage message) {
     return message.title.replaceAll('\n', '').replaceAll('\r', '').replaceAll('\t', ' ');
   }
 }

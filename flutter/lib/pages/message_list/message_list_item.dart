@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
-import 'package:simplecloudnotifier/models/message.dart';
+import 'package:simplecloudnotifier/models/scn_message.dart';
 import 'package:intl/intl.dart';
 import 'package:simplecloudnotifier/utils/ui.dart';
 
@@ -18,7 +18,7 @@ class MessageListItem extends StatelessWidget {
     super.key,
   });
 
-  final Message message;
+  final SCNMessage message;
   final Map<String, Channel> allChannels;
   final Null Function() onPressed;
 
@@ -176,11 +176,11 @@ class MessageListItem extends StatelessWidget {
     return v;
   }
 
-  String resolveChannelName(Message message) {
+  String resolveChannelName(SCNMessage message) {
     return allChannels[message.channelID]?.displayName ?? message.channelInternalName;
   }
 
-  bool showChannel(Message message) {
+  bool showChannel(SCNMessage message) {
     return message.channelInternalName != 'main';
   }
 }

@@ -1,10 +1,10 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:simplecloudnotifier/state/interfaces.dart';
 
-part 'message.g.dart';
+part 'scn_message.g.dart';
 
 @HiveType(typeId: 105)
-class Message extends HiveObject implements FieldDebuggable {
+class SCNMessage extends HiveObject implements FieldDebuggable {
   @HiveField(0)
   final String messageID;
 
@@ -33,7 +33,7 @@ class Message extends HiveObject implements FieldDebuggable {
   @HiveField(21)
   final bool trimmed;
 
-  Message({
+  SCNMessage({
     required this.messageID,
     required this.senderUserID,
     required this.channelInternalName,
@@ -49,8 +49,8 @@ class Message extends HiveObject implements FieldDebuggable {
     required this.trimmed,
   });
 
-  factory Message.fromJson(Map<String, dynamic> json) {
-    return Message(
+  factory SCNMessage.fromJson(Map<String, dynamic> json) {
+    return SCNMessage(
       messageID: json['message_id'] as String,
       senderUserID: json['sender_user_id'] as String,
       channelInternalName: json['channel_internal_name'] as String,
@@ -67,10 +67,10 @@ class Message extends HiveObject implements FieldDebuggable {
     );
   }
 
-  static (String, List<Message>) fromPaginatedJsonArray(Map<String, dynamic> data, String keyMessages, String keyToken) {
+  static (String, List<SCNMessage>) fromPaginatedJsonArray(Map<String, dynamic> data, String keyMessages, String keyToken) {
     final npt = data[keyToken] as String;
 
-    final messages = (data[keyMessages] as List<dynamic>).map<Message>((e) => Message.fromJson(e as Map<String, dynamic>)).toList();
+    final messages = (data[keyMessages] as List<dynamic>).map<SCNMessage>((e) => SCNMessage.fromJson(e as Map<String, dynamic>)).toList();
 
     return (npt, messages);
   }

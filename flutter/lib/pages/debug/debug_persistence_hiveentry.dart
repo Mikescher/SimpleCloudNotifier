@@ -13,11 +13,13 @@ class DebugHiveEntryPage extends StatelessWidget {
     return SCNScaffold(
       title: 'HiveEntry',
       showSearch: false,
-      showDebug: false,
       child: ListView.separated(
         itemCount: fields.length,
         itemBuilder: (context, listIndex) {
           return ListTile(
+            dense: true,
+            contentPadding: EdgeInsets.fromLTRB(8, 0, 8, 0),
+            visualDensity: VisualDensity(horizontal: 0, vertical: -4),
             title: Text(fields[listIndex].$1, style: TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Text(fields[listIndex].$2, style: TextStyle(fontFamily: "monospace")),
           );

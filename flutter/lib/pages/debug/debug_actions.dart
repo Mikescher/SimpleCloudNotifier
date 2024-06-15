@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:simplecloudnotifier/utils/notifier.dart';
 import 'package:simplecloudnotifier/utils/toaster.dart';
 import 'package:simplecloudnotifier/utils/ui.dart';
 
@@ -51,6 +52,12 @@ class _DebugActionsPageState extends State<DebugActionsPage> {
                 big: false,
                 onPressed: _sendTokenToServer,
                 text: 'Send FCM Token to Server',
+              ),
+              SizedBox(height: 20),
+              UI.button(
+                big: false,
+                onPressed: () => Notifier.showLocalNotification('TEST_CHANNEL', "Test Channel", "Channel for testing", "Hello World", "Local Notification test", null),
+                text: 'Show local notification',
               ),
             ],
           ),

@@ -7,7 +7,6 @@ class SCNScaffold extends StatelessWidget {
     required this.child,
     this.title,
     this.showThemeSwitch = true,
-    this.showDebug = true,
     this.showSearch = true,
     this.showShare = false,
     this.onShare = null,
@@ -16,7 +15,6 @@ class SCNScaffold extends StatelessWidget {
   final Widget child;
   final String? title;
   final bool showThemeSwitch;
-  final bool showDebug;
   final bool showSearch;
   final bool showShare;
   final void Function()? onShare;
@@ -27,7 +25,6 @@ class SCNScaffold extends StatelessWidget {
       appBar: SCNAppBar(
         title: title,
         showThemeSwitch: showThemeSwitch,
-        showDebug: showDebug,
         showSearch: showSearch,
         showShare: showShare,
         onShare: onShare ?? () {},

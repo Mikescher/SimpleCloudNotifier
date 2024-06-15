@@ -30,7 +30,6 @@ class _DebugMainPageState extends State<DebugMainPage> {
     return SCNScaffold(
       title: 'Debug',
       showSearch: false,
-      showDebug: false,
       child: Column(
         children: [
           Padding(

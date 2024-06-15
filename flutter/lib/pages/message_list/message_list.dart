@@ -4,8 +4,9 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
-import 'package:simplecloudnotifier/models/message.dart';
+import 'package:simplecloudnotifier/models/scn_message.dart';
 import 'package:simplecloudnotifier/pages/message_view/message_view.dart';
+import 'package:simplecloudnotifier/settings/app_settings.dart';
 import 'package:simplecloudnotifier/state/app_bar_state.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
@@ -25,11 +26,9 @@ class MessageListPage extends StatefulWidget {
 }
 
 class _MessageListPageState extends State<MessageListPage> with RouteAware {
-  static const _pageSize = 128;
-
   late final AppLifecycleListener _lifecyleListener;
 
-  PagingController<String, Message> _pagingController = PagingController.fromValue(PagingState(nextPageKey: null, itemList: [], error: null), firstPageKey: '@start');
+  PagingController<String, SCNMessage> _pagingController = PagingController.fromValue(PagingState(nextPageKey: null, itemList: [], error: null), firstPageKey: '@start');
 
   Map<String, Channel>? _channels = null;
 
@@ -65,7 +64,7 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
     ApplicationLog.debug('MessageListPage::_realInitState');
 
     final chnCache = Hive.box<Channel>('scn-channel-cache');
-    final msgCache = Hive.box<Message>('scn-message-cache');
+    final msgCache = Hive.box<SCNMessage>('scn-message-cache');
 
     if (chnCache.isNotEmpty && msgCache.isNotEmpty) {
       // ==== Use cache values - and refresh in background
@@ -119,6 +118,7 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
 
   Future<void> _fetchPage(String thisPageToken) async {
     final acc = Provider.of<AppAuth>(context, listen: false);
+    final cfg = Provider.of<AppSettings>(context, listen: false);
 
     ApplicationLog.debug('Start MessageList::_pagingController::_fetchPage [ ${thisPageToken} ]');
 
@@ -135,7 +135,7 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
         _setChannelCache(channels); // no await
       }
 
-      final (npt, newItems) = await APIClient.getMessageList(acc, thisPageToken, pageSize: _pageSize);
+      final (npt, newItems) = await APIClient.getMessageList(acc, thisPageToken, pageSize: cfg.messagePageSize);
 
       _addToMessageCache(newItems); // no await
 
@@ -154,6 +154,7 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
 
   Future<void> _backgroundRefresh(bool fullReplaceState) async {
     final acc = Provider.of<AppAuth>(context, listen: false);
+    final cfg = Provider.of<AppSettings>(context, listen: false);
 
     ApplicationLog.debug('Start background refresh of message list (fullReplaceState: $fullReplaceState)');
 
@@ -170,7 +171,7 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
         _setChannelCache(channels); // no await
       }
 
-      final (npt, newItems) = await APIClient.getMessageList(acc, '@start', pageSize: _pageSize);
+      final (npt, newItems) = await APIClient.getMessageList(acc, '@start', pageSize: cfg.messagePageSize);
 
       _addToMessageCache(newItems); // no await
 
@@ -225,9 +226,9 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
         onRefresh: () => Future.sync(
           () => _pagingController.refresh(),
         ),
-        child: PagedListView<String, Message>(
+        child: PagedListView<String, SCNMessage>(
           pagingController: _pagingController,
-          builderDelegate: PagedChildBuilderDelegate<Message>(
+          builderDelegate: PagedChildBuilderDelegate<SCNMessage>(
             itemBuilder: (context, item, index) => MessageListItem(
               message: item,
               allChannels: _channels ?? {},
@@ -249,20 +250,22 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
     for (var chn in channels) await cache.put(chn.channel.channelID, chn.channel);
   }
 
-  Future<void> _addToMessageCache(List<Message> newItems) async {
-    final cache = Hive.box<Message>('scn-message-cache');
+  Future<void> _addToMessageCache(List<SCNMessage> newItems) async {
+    final cfg = AppSettings();
+
+    final cache = Hive.box<SCNMessage>('scn-message-cache');
 
     for (var msg in newItems) await cache.put(msg.messageID, msg);
 
     // delete all but the newest 128 messages
 
-    if (cache.length < _pageSize) return;
+    if (cache.length < cfg.messagePageSize) return;
 
     final allValues = cache.values.toList();
 
     allValues.sort((a, b) => -1 * a.timestamp.compareTo(b.timestamp));
 
-    for (var val in allValues.sublist(_pageSize)) {
+    for (var val in allValues.sublist(cfg.messagePageSize)) {
       await cache.delete(val.messageID);
     }
   }

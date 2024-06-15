@@ -32,8 +32,6 @@ class FBMessage extends HiveObject implements FieldDebuggable {
   final String? messageType;
   @HiveField(8)
   final bool mutableContent;
-  @HiveField(9)
-  final RemoteNotification? notification;
   @HiveField(10)
   final DateTime? sentTime;
   @HiveField(11)
@@ -54,7 +52,7 @@ class FBMessage extends HiveObject implements FieldDebuggable {
   @HiveField(25)
   final String? notificationAndroidLink;
   @HiveField(26)
-  final AndroidNotificationPriority? notificationAndroidPriority;
+  final String? notificationAndroidPriority;
   @HiveField(27)
   final String? notificationAndroidSmallIcon;
   @HiveField(28)
@@ -62,14 +60,14 @@ class FBMessage extends HiveObject implements FieldDebuggable {
   @HiveField(29)
   final String? notificationAndroidTicker;
   @HiveField(30)
-  final AndroidNotificationVisibility? notificationAndroidVisibility;
+  final String? notificationAndroidVisibility;
   @HiveField(31)
   final String? notificationAndroidTag;
 
   @HiveField(40)
   final String? notificationAppleBadge;
   @HiveField(41)
-  final AppleNotificationSound? notificationAppleSound;
+  final String? notificationAppleSound;
   @HiveField(42)
   final String? notificationAppleImageUrl;
   @HiveField(43)
@@ -109,7 +107,6 @@ class FBMessage extends HiveObject implements FieldDebuggable {
     required this.messageId,
     required this.messageType,
     required this.mutableContent,
-    required this.notification,
     required this.sentTime,
     required this.threadId,
     required this.ttl,
@@ -152,7 +149,6 @@ class FBMessage extends HiveObject implements FieldDebuggable {
         this.messageId = rmsg.messageId,
         this.messageType = rmsg.messageType,
         this.mutableContent = rmsg.mutableContent,
-        this.notification = rmsg.notification,
         this.sentTime = rmsg.sentTime,
         this.threadId = rmsg.threadId,
         this.ttl = rmsg.ttl,
@@ -162,14 +158,14 @@ class FBMessage extends HiveObject implements FieldDebuggable {
         this.notificationAndroidCount = rmsg.notification?.android?.count,
         this.notificationAndroidImageUrl = rmsg.notification?.android?.imageUrl,
         this.notificationAndroidLink = rmsg.notification?.android?.link,
-        this.notificationAndroidPriority = rmsg.notification?.android?.priority,
+        this.notificationAndroidPriority = rmsg.notification?.android?.priority?.toString(),
         this.notificationAndroidSmallIcon = rmsg.notification?.android?.smallIcon,
         this.notificationAndroidSound = rmsg.notification?.android?.sound,
         this.notificationAndroidTicker = rmsg.notification?.android?.ticker,
-        this.notificationAndroidVisibility = rmsg.notification?.android?.visibility,
+        this.notificationAndroidVisibility = rmsg.notification?.android?.visibility?.toString(),
         this.notificationAndroidTag = rmsg.notification?.android?.tag,
         this.notificationAppleBadge = rmsg.notification?.apple?.badge,
-        this.notificationAppleSound = rmsg.notification?.apple?.sound,
+        this.notificationAppleSound = rmsg.notification?.apple?.sound?.toString(),
         this.notificationAppleImageUrl = rmsg.notification?.apple?.imageUrl,
         this.notificationAppleSubtitle = rmsg.notification?.apple?.subtitle,
         this.notificationAppleSubtitleLocArgs = rmsg.notification?.apple?.subtitleLocArgs,
@@ -195,12 +191,11 @@ class FBMessage extends HiveObject implements FieldDebuggable {
       ('category', this.category ?? ''),
       ('collapseKey', this.collapseKey ?? ''),
       ('contentAvailable', this.contentAvailable.toString()),
-      ('data', this.data.toString()),
+      ('data', this.data.entries.map((e) => '${e.key} := ${e.value}').join('\n')),
       ('from', this.from ?? ''),
       ('messageId', this.messageId ?? ''),
       ('messageType', this.messageType ?? ''),
       ('mutableContent', this.mutableContent.toString()),
-      ('notification', this.notification?.toString() ?? ''),
       ('sentTime', this.sentTime?.toString() ?? ''),
       ('threadId', this.threadId ?? ''),
       ('ttl', this.ttl?.toString() ?? ''),

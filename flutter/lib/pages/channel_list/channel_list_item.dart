@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
-import 'package:simplecloudnotifier/models/message.dart';
+import 'package:simplecloudnotifier/models/scn_message.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
 
 class ChannelListItem extends StatefulWidget {
@@ -23,7 +23,7 @@ class ChannelListItem extends StatefulWidget {
 }
 
 class _ChannelListItemState extends State<ChannelListItem> {
-  Message? lastMessage;
+  SCNMessage? lastMessage;
 
   @override
   void initState() {

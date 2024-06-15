@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/components/layout/app_bar_progress_indicator.dart';
 import 'package:simplecloudnotifier/pages/debug/debug_main.dart';
+import 'package:simplecloudnotifier/settings/app_settings.dart';
 import 'package:simplecloudnotifier/state/app_theme.dart';
 import 'package:simplecloudnotifier/utils/navi.dart';
 
@@ -12,7 +12,6 @@ class SCNAppBar extends StatelessWidget implements PreferredSizeWidget {
     Key? key,
     required this.title,
     required this.showThemeSwitch,
-    required this.showDebug,
     required this.showSearch,
     required this.showShare,
     this.onShare = null,
@@ -20,16 +19,17 @@ class SCNAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   final String? title;
   final bool showThemeSwitch;
-  final bool showDebug;
   final bool showSearch;
   final bool showShare;
   final void Function()? onShare;
 
   @override
   Widget build(BuildContext context) {
+    final cfg = Provider.of<AppSettings>(context);
+
     var actions = <Widget>[];
 
-    if (showDebug) {
+    if (cfg.showDebugButton) {
       actions.add(IconButton(
         icon: const Icon(FontAwesomeIcons.solidSpiderBlackWidow),
         tooltip: 'Debug',

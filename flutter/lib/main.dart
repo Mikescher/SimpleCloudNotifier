@@ -2,13 +2,15 @@ import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
 import 'package:simplecloudnotifier/models/client.dart';
-import 'package:simplecloudnotifier/models/message.dart';
+import 'package:simplecloudnotifier/models/scn_message.dart';
 import 'package:simplecloudnotifier/nav_layout.dart';
+import 'package:simplecloudnotifier/settings/app_settings.dart';
 import 'package:simplecloudnotifier/state/app_bar_state.dart';
 import 'package:simplecloudnotifier/state/app_theme.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
@@ -18,6 +20,7 @@ import 'package:simplecloudnotifier/state/request_log.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:simplecloudnotifier/utils/navi.dart';
+import 'package:simplecloudnotifier/utils/notifier.dart';
 import 'package:toastification/toastification.dart';
 import 'firebase_options.dart';
 
@@ -39,19 +42,9 @@ void main() async {
   Hive.registerAdapter(SCNRequestAdapter());
   Hive.registerAdapter(SCNLogAdapter());
   Hive.registerAdapter(SCNLogLevelAdapter());
-  Hive.registerAdapter(MessageAdapter());
+  Hive.registerAdapter(SCNMessageAdapter());
   Hive.registerAdapter(ChannelAdapter());
   Hive.registerAdapter(FBMessageAdapter());
-
-  print('[INIT] Load Hive<scn-requests>...');
-
-  try {
-    await Hive.openBox<SCNRequest>('scn-requests');
-  } catch (exc, trace) {
-    Hive.deleteBoxFromDisk('scn-requests');
-    await Hive.openBox<SCNRequest>('scn-requests');
-    ApplicationLog.error('Failed to open Hive-Box: scn-requests: ' + exc.toString(), trace: trace);
-  }
 
   print('[INIT] Load Hive<scn-logs>...');
 
@@ -63,13 +56,23 @@ void main() async {
     ApplicationLog.error('Failed to open Hive-Box: scn-logs: ' + exc.toString(), trace: trace);
   }
 
+  print('[INIT] Load Hive<scn-requests>...');
+
+  try {
+    await Hive.openBox<SCNRequest>('scn-requests');
+  } catch (exc, trace) {
+    Hive.deleteBoxFromDisk('scn-requests');
+    await Hive.openBox<SCNRequest>('scn-requests');
+    ApplicationLog.error('Failed to open Hive-Box: scn-requests: ' + exc.toString(), trace: trace);
+  }
+
   print('[INIT] Load Hive<scn-message-cache>...');
 
   try {
-    await Hive.openBox<Message>('scn-message-cache');
+    await Hive.openBox<SCNMessage>('scn-message-cache');
   } catch (exc, trace) {
     Hive.deleteBoxFromDisk('scn-message-cache');
-    await Hive.openBox<Message>('scn-message-cache');
+    await Hive.openBox<SCNMessage>('scn-message-cache');
     ApplicationLog.error('Failed to open Hive-Box: scn-message-cache' + exc.toString(), trace: trace);
   }
 
@@ -147,6 +150,38 @@ void main() async {
     print('[INIT] Skip Firebase init (Platform == Linux)...');
   }
 
+  print('[INIT] Load Notifications...');
+
+  final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  final flutterLocalNotificationsPluginImpl = flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+  if (flutterLocalNotificationsPluginImpl == null) {
+    ApplicationLog.error('Failed to get AndroidFlutterLocalNotificationsPlugin', trace: StackTrace.current);
+  } else {
+    flutterLocalNotificationsPluginImpl.requestNotificationsPermission();
+
+    final initializationSettingsAndroid = AndroidInitializationSettings('ic_notification_white');
+    final initializationSettingsDarwin = DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+      onDidReceiveLocalNotification: _receiveLocalDarwinNotification,
+      notificationCategories: getDarwinNotificationCategories(),
+    );
+    final initializationSettingsLinux = LinuxInitializationSettings(defaultActionName: 'Open notification');
+    final initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsDarwin,
+      linux: initializationSettingsLinux,
+    );
+    flutterLocalNotificationsPlugin.initialize(initializationSettings, onDidReceiveNotificationResponse: _receiveLocalNotification);
+
+    final appLaunchNotification = await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
+    if (appLaunchNotification != null) {
+      //TODO show message (also this only works on android+localnotifications, also handle ios)
+      ApplicationLog.info('App launched by notification: ${appLaunchNotification.notificationResponse?.id}');
+    }
+  }
+
   ApplicationLog.debug('[INIT] Application started');
 
   runApp(
@@ -155,6 +190,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => AppAuth(), lazy: false),
         ChangeNotifierProvider(create: (context) => AppTheme(), lazy: false),
         ChangeNotifierProvider(create: (context) => AppBarState(), lazy: false),
+        ChangeNotifierProvider(create: (context) => AppSettings(), lazy: false),
       ],
       child: SCNApp(),
     ),
@@ -186,6 +222,11 @@ class SCNApp extends StatelessWidget {
       ),
     );
   }
+}
+
+@pragma('vm:entry-point')
+void notificationTapBackground(NotificationResponse notificationResponse) {
+  ApplicationLog.info('Received local notification<vm:entry-point>: ${notificationResponse.id}');
 }
 
 void setFirebaseToken(String fcmToken) async {
@@ -233,9 +274,96 @@ void _onForegroundMessage(RemoteMessage message) {
 }
 
 Future<void> _receiveMessage(RemoteMessage message, bool foreground) async {
-  // ensure init
-  Hive.openBox<SCNLog>('scn-logs');
+  try {
+    // ensure globals init
+    if (!Globals().isInitialized) {
+      print('[LATE-INIT] Init Globals() - to ensure working _receiveMessage($foreground)...');
+      await Globals().init();
+    }
+
+    // ensure hive init
+    if (!Hive.isBoxOpen('scn-logs')) {
+      print('[LATE-INIT] Init Hive - to ensure working _receiveMessage($foreground)...');
+
+      await Hive.initFlutter();
+      Hive.registerAdapter(SCNRequestAdapter());
+      Hive.registerAdapter(SCNLogAdapter());
+      Hive.registerAdapter(SCNLogLevelAdapter());
+      Hive.registerAdapter(SCNMessageAdapter());
+      Hive.registerAdapter(ChannelAdapter());
+      Hive.registerAdapter(FBMessageAdapter());
+    }
+
+    print('[LATE-INIT] Ensure hive boxes are open for _receiveMessage($foreground)...');
+
+    await Hive.openBox<SCNLog>('scn-logs');
+    await Hive.openBox<FBMessage>('scn-fb-messages');
+    await Hive.openBox<SCNMessage>('scn-message-cache');
+  } catch (exc, trace) {
+    ApplicationLog.error('Failed to init hive:' + exc.toString(), trace: trace);
+    Notifier.showLocalNotification("@ERROR", "@ERROR", 'Error Channel', "Error", "Failed to receive SCN message (init failed)", null);
+    return;
+  }
 
   ApplicationLog.info('Received FB message (${foreground ? 'foreground' : 'background'}): ${message.messageId ?? 'NULL'}');
-  FBMessageLog.insert(message);
+
+  SCNMessage? receivedMessage;
+
+  try {
+    final scn_msg_id = message.data['scn_msg_id'] as String;
+    final usr_msg_id = message.data['usr_msg_id'] as String;
+    final timestamp = DateTime.fromMillisecondsSinceEpoch(int.parse(message.data['timestamp'] as String) * 1000);
+    final priority = int.parse(message.data['priority'] as String);
+    final title = message.data['title'] as String;
+    final channel = message.data['channel'] as String;
+    final channel_id = message.data['channel_id'] as String;
+    final body = message.data['body'] as String;
+
+    Notifier.showLocalNotification(channel_id, channel, 'Channel: ${channel}', title, body, timestamp);
+
+    receivedMessage = SCNMessage(
+      messageID: scn_msg_id,
+      userMessageID: usr_msg_id,
+      timestamp: timestamp.toIso8601String(),
+      priority: priority,
+      trimmed: true,
+      title: title,
+      channelID: channel_id,
+      channelInternalName: channel,
+      content: body,
+      senderIP: '',
+      senderName: '',
+      senderUserID: '',
+      usedKeyID: '',
+    );
+  } catch (exc, trace) {
+    ApplicationLog.error('Failed to decode received FB message' + exc.toString(), trace: trace);
+    Notifier.showLocalNotification("@ERROR", "@ERROR", 'Error Channel', "Error", "Failed to receive SCN message (decode failed)", null);
+    return;
+  }
+
+  try {
+    FBMessageLog.insert(message);
+  } catch (exc, trace) {
+    ApplicationLog.error('Failed to persist received FB message' + exc.toString(), trace: trace);
+    Notifier.showLocalNotification("@ERROR", "@ERROR", 'Error Channel', "Error", "Failed to receive SCN message (persist failed)", null);
+    return;
+  }
+
+  //TODO add to scn-message-cache
+  //TODO refresh message_list view (if shown/initialized)
+}
+
+void _receiveLocalDarwinNotification(int id, String? title, String? body, String? payload) {
+  ApplicationLog.info('Received local notification<darwin>: $id -> [$title]');
+}
+
+void _receiveLocalNotification(NotificationResponse details) {
+  ApplicationLog.info('Received local notification: ${details.id}');
+}
+
+List<DarwinNotificationCategory> getDarwinNotificationCategories() {
+  return <DarwinNotificationCategory>[
+    //TODO ?!?
+  ];
 }

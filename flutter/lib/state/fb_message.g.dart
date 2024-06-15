@@ -26,7 +26,6 @@ class FBMessageAdapter extends TypeAdapter<FBMessage> {
       messageId: fields[6] as String?,
       messageType: fields[7] as String?,
       mutableContent: fields[8] as bool,
-      notification: fields[9] as RemoteNotification?,
       sentTime: fields[10] as DateTime?,
       threadId: fields[11] as String?,
       ttl: fields[12] as int?,
@@ -36,15 +35,14 @@ class FBMessageAdapter extends TypeAdapter<FBMessage> {
       notificationAndroidCount: fields[23] as int?,
       notificationAndroidImageUrl: fields[24] as String?,
       notificationAndroidLink: fields[25] as String?,
-      notificationAndroidPriority: fields[26] as AndroidNotificationPriority?,
+      notificationAndroidPriority: fields[26] as String?,
       notificationAndroidSmallIcon: fields[27] as String?,
       notificationAndroidSound: fields[28] as String?,
       notificationAndroidTicker: fields[29] as String?,
-      notificationAndroidVisibility:
-          fields[30] as AndroidNotificationVisibility?,
+      notificationAndroidVisibility: fields[30] as String?,
       notificationAndroidTag: fields[31] as String?,
       notificationAppleBadge: fields[40] as String?,
-      notificationAppleSound: fields[41] as AppleNotificationSound?,
+      notificationAppleSound: fields[41] as String?,
       notificationAppleImageUrl: fields[42] as String?,
       notificationAppleSubtitle: fields[43] as String?,
       notificationAppleSubtitleLocArgs: (fields[44] as List?)?.cast<String>(),
@@ -64,7 +62,7 @@ class FBMessageAdapter extends TypeAdapter<FBMessage> {
   @override
   void write(BinaryWriter writer, FBMessage obj) {
     writer
-      ..writeByte(40)
+      ..writeByte(39)
       ..writeByte(0)
       ..write(obj.senderId)
       ..writeByte(1)
@@ -83,8 +81,6 @@ class FBMessageAdapter extends TypeAdapter<FBMessage> {
       ..write(obj.messageType)
       ..writeByte(8)
       ..write(obj.mutableContent)
-      ..writeByte(9)
-      ..write(obj.notification)
       ..writeByte(10)
       ..write(obj.sentTime)
       ..writeByte(11)
