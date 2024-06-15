@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class SettingsRootPage extends StatefulWidget {
-  const SettingsRootPage({super.key});
+  const SettingsRootPage({super.key, required bool isVisiblePage});
 
   @override
   State<SettingsRootPage> createState() => _SettingsRootPageState();

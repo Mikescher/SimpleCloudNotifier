@@ -16,7 +16,9 @@ import 'package:simplecloudnotifier/utils/ui.dart';
 import 'package:uuid/uuid.dart';
 
 class AccountRootPage extends StatefulWidget {
-  const AccountRootPage({super.key});
+  const AccountRootPage({super.key, required this.isVisiblePage});
+
+  final bool isVisiblePage;
 
   @override
   State<AccountRootPage> createState() => _AccountRootPageState();
@@ -33,13 +35,34 @@ class _AccountRootPageState extends State<AccountRootPage> {
 
   bool loading = false;
 
+  bool _isInitialized = false;
+
   @override
   void initState() {
     super.initState();
 
     userAcc = Provider.of<AppAuth>(context, listen: false);
     userAcc.addListener(_onAuthStateChanged);
+
+    if (widget.isVisiblePage && !_isInitialized) realInitState();
+  }
+
+  @override
+  void didUpdateWidget(AccountRootPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.isVisiblePage != widget.isVisiblePage && widget.isVisiblePage) {
+      if (!_isInitialized) {
+        realInitState();
+      } else {
+        //TODO background refresh
+      }
+    }
+  }
+
+  void realInitState() {
     _onAuthStateChanged();
+    _isInitialized = true;
   }
 
   @override
@@ -92,6 +115,8 @@ class _AccountRootPageState extends State<AccountRootPage> {
   Widget build(BuildContext context) {
     return Consumer<AppAuth>(
       builder: (context, acc, child) {
+        if (!_isInitialized) return SizedBox();
+
         if (!userAcc.isAuth()) {
           return _buildNoAuth(context);
         } else {

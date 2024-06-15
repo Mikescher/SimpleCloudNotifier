@@ -6,7 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
 
 class SendRootPage extends StatefulWidget {
-  const SendRootPage({super.key});
+  const SendRootPage({super.key, required bool isVisiblePage});
 
   @override
   State<SendRootPage> createState() => _SendRootPageState();

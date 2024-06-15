@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
+import 'package:simplecloudnotifier/models/channel.dart';
 import 'package:simplecloudnotifier/models/client.dart';
+import 'package:simplecloudnotifier/models/message.dart';
 import 'package:simplecloudnotifier/nav_layout.dart';
 import 'package:simplecloudnotifier/state/app_bar_state.dart';
 import 'package:simplecloudnotifier/state/app_theme.dart';
@@ -36,6 +38,8 @@ void main() async {
   Hive.registerAdapter(SCNRequestAdapter());
   Hive.registerAdapter(SCNLogAdapter());
   Hive.registerAdapter(SCNLogLevelAdapter());
+  Hive.registerAdapter(MessageAdapter());
+  Hive.registerAdapter(ChannelAdapter());
 
   print('[INIT] Load Hive<scn-requests>...');
 
@@ -55,6 +59,26 @@ void main() async {
     Hive.deleteBoxFromDisk('scn-logs');
     await Hive.openBox<SCNLog>('scn-logs');
     ApplicationLog.error('Failed to open Hive-Box: scn-logs: ' + exc.toString(), trace: trace);
+  }
+
+  print('[INIT] Load Hive<scn-message-cache>...');
+
+  try {
+    await Hive.openBox<Message>('scn-message-cache');
+  } catch (exc, trace) {
+    Hive.deleteBoxFromDisk('scn-message-cache');
+    await Hive.openBox<Message>('scn-message-cache');
+    ApplicationLog.error('Failed to open Hive-Box: scn-message-cache' + exc.toString(), trace: trace);
+  }
+
+  print('[INIT] Load Hive<scn-channel-cache>...');
+
+  try {
+    await Hive.openBox<Channel>('scn-channel-cache');
+  } catch (exc, trace) {
+    Hive.deleteBoxFromDisk('scn-channel-cache');
+    await Hive.openBox<Channel>('scn-channel-cache');
+    ApplicationLog.error('Failed to open Hive-Box: scn-channel-cache' + exc.toString(), trace: trace);
   }
 
   print('[INIT] Load AppAuth...');
@@ -135,7 +159,7 @@ void setFirebaseToken(String fcmToken) async {
 
   Client? client;
   try {
-    client = await acc.loadClient(force: true);
+    client = await acc.loadClient(forceIfOlder: Duration(seconds: 60));
   } catch (exc, trace) {
     ApplicationLog.error('Failed to get client: ' + exc.toString(), trace: trace);
     return;
@@ -172,7 +196,7 @@ class SCNApp extends StatelessWidget {
       child: Consumer<AppTheme>(
         builder: (context, appTheme, child) => MaterialApp(
           title: 'SimpleCloudNotifier',
-          navigatorObservers: [Navi.routeObserver],
+          navigatorObservers: [Navi.routeObserver, Navi.modalRouteObserver],
           theme: ThemeData(
             //TODO color settings
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: appTheme.darkMode ? Brightness.dark : Brightness.light),

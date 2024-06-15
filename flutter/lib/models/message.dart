@@ -1,19 +1,39 @@
-class Message {
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:simplecloudnotifier/state/interfaces.dart';
+
+part 'message.g.dart';
+
+@HiveType(typeId: 105)
+class Message extends HiveObject implements FieldDebuggable {
+  @HiveField(0)
   final String messageID;
+
+  @HiveField(10)
   final String senderUserID;
+  @HiveField(11)
   final String channelInternalName;
+  @HiveField(12)
   final String channelID;
+  @HiveField(13)
   final String? senderName;
+  @HiveField(14)
   final String senderIP;
+  @HiveField(15)
   final String timestamp;
+  @HiveField(16)
   final String title;
+  @HiveField(17)
   final String? content;
+  @HiveField(18)
   final int priority;
+  @HiveField(19)
   final String? userMessageID;
+  @HiveField(20)
   final String usedKeyID;
+  @HiveField(21)
   final bool trimmed;
 
-  const Message({
+  Message({
     required this.messageID,
     required this.senderUserID,
     required this.channelInternalName,
@@ -53,5 +73,28 @@ class Message {
     final messages = (data[keyMessages] as List<dynamic>).map<Message>((e) => Message.fromJson(e as Map<String, dynamic>)).toList();
 
     return (npt, messages);
+  }
+
+  @override
+  String toString() {
+    return 'Message[${this.messageID}]';
+  }
+
+  List<(String, String)> debugFieldList() {
+    return [
+      ('messageID', this.messageID),
+      ('senderUserID', this.senderUserID),
+      ('channelInternalName', this.channelInternalName),
+      ('channelID', this.channelID),
+      ('senderName', this.senderName ?? ''),
+      ('senderIP', this.senderIP),
+      ('timestamp', this.timestamp),
+      ('title', this.title),
+      ('content', this.content ?? ''),
+      ('priority', '${this.priority}'),
+      ('userMessageID', this.userMessageID ?? ''),
+      ('usedKeyID', this.usedKeyID),
+      ('trimmed', '${this.trimmed}'),
+    ];
   }
 }

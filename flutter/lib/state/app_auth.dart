@@ -14,6 +14,7 @@ class AppAuth extends ChangeNotifier implements TokenSource {
 
   User? _user;
   Client? _client;
+  DateTime? _clientQueryTime;
 
   String? get userID => _userID;
   String? get tokenAdmin => _tokenAdmin;
@@ -124,7 +125,11 @@ class AppAuth extends ChangeNotifier implements TokenSource {
     return user;
   }
 
-  Future<Client?> loadClient({bool force = false}) async {
+  Future<Client?> loadClient({bool force = false, Duration? forceIfOlder = null}) async {
+    if (forceIfOlder != null && _clientQueryTime != null && _clientQueryTime!.difference(DateTime.now()) > forceIfOlder) {
+      force = true;
+    }
+
     if (!force && _client != null && _client!.clientID == _clientID) {
       return _client!;
     }

@@ -4,6 +4,7 @@ import 'package:simplecloudnotifier/state/app_bar_state.dart';
 
 class Navi {
   static final SCNRouteObserver routeObserver = SCNRouteObserver();
+  static final RouteObserver<ModalRoute<void>> modalRouteObserver = RouteObserver<ModalRoute<void>>();
 
   static void push<T extends Widget>(BuildContext context, T Function() builder) {
     Provider.of<AppBarState>(context, listen: false).setLoadingIndeterminate(false);

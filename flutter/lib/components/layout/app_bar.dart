@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/components/layout/app_bar_progress_indicator.dart';
@@ -28,6 +29,16 @@ class SCNAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     var actions = <Widget>[];
 
+    if (showDebug) {
+      actions.add(IconButton(
+        icon: const Icon(FontAwesomeIcons.solidSpiderBlackWidow),
+        tooltip: 'Debug',
+        onPressed: () {
+          Navi.push(context, () => DebugMainPage());
+        },
+      ));
+    }
+
     if (showThemeSwitch) {
       actions.add(Consumer<AppTheme>(
         builder: (context, appTheme, child) => IconButton(
@@ -37,19 +48,16 @@ class SCNAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       ));
     } else {
-      actions.add(SizedBox.square(dimension: 40));
-    }
-
-    if (showDebug) {
-      actions.add(IconButton(
-        icon: const Icon(FontAwesomeIcons.solidSpiderBlackWidow),
-        tooltip: 'Debug',
-        onPressed: () {
-          Navi.push(context, () => DebugMainPage());
-        },
+      actions.add(Visibility(
+        visible: false,
+        maintainSize: true,
+        maintainAnimation: true,
+        maintainState: true,
+        child: IconButton(
+          icon: const Icon(FontAwesomeIcons.square),
+          onPressed: () {/*TODO*/},
+        ),
       ));
-    } else {
-      actions.add(SizedBox.square(dimension: 40));
     }
 
     if (showSearch) {
@@ -65,7 +73,16 @@ class SCNAppBar extends StatelessWidget implements PreferredSizeWidget {
         onPressed: onShare ?? () {},
       ));
     } else {
-      actions.add(SizedBox.square(dimension: 40));
+      actions.add(Visibility(
+        visible: false,
+        maintainSize: true,
+        maintainAnimation: true,
+        maintainState: true,
+        child: IconButton(
+          icon: const Icon(FontAwesomeIcons.square),
+          onPressed: () {/*TODO*/},
+        ),
+      ));
     }
 
     return AppBar(
