@@ -130,6 +130,8 @@ class _SendRootPageState extends State<SendRootPage> {
     try {
       final Uri uri = Uri.parse(url);
 
+      ApplicationLog.debug('Opening URL: [ ${uri.toString()} ]');
+
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri);
       } else {

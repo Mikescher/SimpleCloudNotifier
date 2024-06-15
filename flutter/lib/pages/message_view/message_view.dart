@@ -163,7 +163,7 @@ class _MessageViewPageState extends State<MessageViewPage> {
         ],
       ),
       SizedBox(height: 8),
-      Text(message.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      Text(_preformatTitle(message), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
     ];
   }
 
@@ -247,5 +247,9 @@ class _MessageViewPageState extends State<MessageViewPage> {
         ),
       );
     }
+  }
+
+  String _preformatTitle(Message message) {
+    return message.title.replaceAll('\n', '').replaceAll('\r', '').replaceAll('\t', ' ');
   }
 }

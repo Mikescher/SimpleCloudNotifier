@@ -48,10 +48,6 @@ class MessageListItem extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (message.priority == 2) FaIcon(FontAwesomeIcons.solidTriangleExclamation, size: 16, color: Colors.red[900]),
-                  if (message.priority == 2) SizedBox(width: 4),
-                  if (message.priority == 0) FaIcon(FontAwesomeIcons.solidDown, size: 16, color: Colors.lightBlue[900]),
-                  if (message.priority == 0) SizedBox(width: 4),
                   Expanded(
                     child: Text(
                       processTitle(message.title),
@@ -69,11 +65,22 @@ class MessageListItem extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 4),
-              Text(
-                processContent(message.content),
-                style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color?.withAlpha(160)),
-                overflow: TextOverflow.ellipsis,
-                maxLines: _lineCount,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Text(
+                      processContent(message.content),
+                      style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color?.withAlpha(160)),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: _lineCount,
+                    ),
+                  ),
+                  if (message.priority == 2) SizedBox(width: 4),
+                  if (message.priority == 2) FaIcon(FontAwesomeIcons.solidTriangleExclamation, size: 16, color: Colors.red[900]),
+                  if (message.priority == 0) SizedBox(width: 4),
+                  if (message.priority == 0) FaIcon(FontAwesomeIcons.solidDown, size: 16, color: Colors.lightBlue[900]),
+                ],
               ),
             ],
           ),
@@ -99,10 +106,6 @@ class MessageListItem extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (message.priority == 2) FaIcon(FontAwesomeIcons.solidTriangleExclamation, size: 16, color: Colors.red[900]),
-                  if (message.priority == 2) SizedBox(width: 4),
-                  if (message.priority == 0) FaIcon(FontAwesomeIcons.solidDown, size: 16, color: Colors.lightBlue[900]),
-                  if (message.priority == 0) SizedBox(width: 4),
                   UI.channelChip(
                     context: context,
                     text: resolveChannelName(message),
@@ -124,11 +127,22 @@ class MessageListItem extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 maxLines: 3,
               ),
-              Text(
-                processContent(message.content),
-                style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color?.withAlpha(160)),
-                overflow: TextOverflow.ellipsis,
-                maxLines: _lineCount,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Text(
+                      processContent(message.content),
+                      style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color?.withAlpha(160)),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: _lineCount,
+                    ),
+                  ),
+                  if (message.priority == 2) SizedBox(width: 4),
+                  if (message.priority == 2) FaIcon(FontAwesomeIcons.solidTriangleExclamation, size: 16, color: Colors.red[900]),
+                  if (message.priority == 0) SizedBox(width: 4),
+                  if (message.priority == 0) FaIcon(FontAwesomeIcons.solidDown, size: 16, color: Colors.lightBlue[900]),
+                ],
               ),
             ],
           ),
