@@ -84,6 +84,7 @@ func (fb FirebaseConnector) SendNotification(ctx context.Context, user models.Us
 				"trimmed":    langext.Conditional(msg.NeedsTrim(), "true", "false"),
 				"title":      msg.Title,
 				"channel":    channel.DisplayName,
+				"channel_id": channel.ChannelID,
 				"body":       langext.Coalesce(msg.TrimmedContent(), ""),
 			},
 		}
