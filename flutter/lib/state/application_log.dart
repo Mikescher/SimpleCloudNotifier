@@ -5,8 +5,10 @@ import 'package:xid/xid.dart';
 part 'application_log.g.dart';
 
 class ApplicationLog {
+  //TODO max size, auto clear old
+
   static void debug(String message, {String? additional, StackTrace? trace}) {
-    print('[DEBUG] ${message}: ${additional ?? ''}');
+    (additional != null && additional != '') ? print('[DEBUG] ${message}: ${additional}') : print('[DEBUG] ${message}');
 
     Hive.box<SCNLog>('scn-logs').add(SCNLog(
       id: Xid().toString(),
@@ -19,7 +21,7 @@ class ApplicationLog {
   }
 
   static void info(String message, {String? additional, StackTrace? trace}) {
-    print('[INFO] ${message}: ${additional ?? ''}');
+    (additional != null && additional != '') ? print('[INFO] ${message}: ${additional}') : print('[INFO] ${message}');
 
     Hive.box<SCNLog>('scn-logs').add(SCNLog(
       id: Xid().toString(),
@@ -32,7 +34,7 @@ class ApplicationLog {
   }
 
   static void warn(String message, {String? additional, StackTrace? trace}) {
-    print('[WARN] ${message}: ${additional ?? ''}');
+    (additional != null && additional != '') ? print('[WARN] ${message}: ${additional}') : print('[WARN] ${message}');
 
     Hive.box<SCNLog>('scn-logs').add(SCNLog(
       id: Xid().toString(),
@@ -45,7 +47,7 @@ class ApplicationLog {
   }
 
   static void error(String message, {String? additional, StackTrace? trace}) {
-    print('[ERROR] ${message}: ${additional ?? ''}');
+    (additional != null && additional != '') ? print('[ERROR] ${message}: ${additional}') : print('[ERROR] ${message}');
 
     Hive.box<SCNLog>('scn-logs').add(SCNLog(
       id: Xid().toString(),
@@ -58,7 +60,7 @@ class ApplicationLog {
   }
 
   static void fatal(String message, {String? additional, StackTrace? trace}) {
-    print('[FATAL] ${message}: ${additional ?? ''}');
+    (additional != null && additional != '') ? print('[FATAL] ${message}: ${additional}') : print('[FATAL] ${message}');
 
     Hive.box<SCNLog>('scn-logs').add(SCNLog(
       id: Xid().toString(),

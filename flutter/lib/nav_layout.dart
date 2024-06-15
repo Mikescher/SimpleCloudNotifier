@@ -66,11 +66,11 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
       ),
       body: IndexedStack(
         children: [
-          ExcludeFocus(excluding: _selectedIndex != 0, child: MessageListPage()),
-          ExcludeFocus(excluding: _selectedIndex != 1, child: ChannelRootPage()),
-          ExcludeFocus(excluding: _selectedIndex != 2, child: AccountRootPage()),
-          ExcludeFocus(excluding: _selectedIndex != 3, child: SettingsRootPage()),
-          ExcludeFocus(excluding: _selectedIndex != 4, child: SendRootPage()),
+          ExcludeFocus(excluding: _selectedIndex != 0, child: MessageListPage(isVisiblePage: _selectedIndex == 0)),
+          ExcludeFocus(excluding: _selectedIndex != 1, child: ChannelRootPage(isVisiblePage: _selectedIndex == 1)),
+          ExcludeFocus(excluding: _selectedIndex != 2, child: AccountRootPage(isVisiblePage: _selectedIndex == 2)),
+          ExcludeFocus(excluding: _selectedIndex != 3, child: SettingsRootPage(isVisiblePage: _selectedIndex == 3)),
+          ExcludeFocus(excluding: _selectedIndex != 4, child: SendRootPage(isVisiblePage: _selectedIndex == 4)),
         ],
         index: _selectedIndex,
       ),

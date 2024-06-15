@@ -127,6 +127,16 @@ class APIClient {
     );
   }
 
+  static Future<UserPreview> getUserPreview(TokenSource auth, String uid) async {
+    return await _request(
+      name: 'getUserPreview',
+      method: 'GET',
+      relURL: 'preview/users/$uid',
+      fn: UserPreview.fromJson,
+      authToken: auth.getToken(),
+    );
+  }
+
   static Future<Client> addClient(TokenSource auth, String fcmToken, String agentModel, String agentVersion, String? name, String clientType) async {
     return await _request(
       name: 'addClient',
@@ -187,6 +197,16 @@ class APIClient {
       method: 'GET',
       relURL: 'users/${auth.getUserID()}/channels/${cid}',
       fn: ChannelWithSubscription.fromJson,
+      authToken: auth.getToken(),
+    );
+  }
+
+  static Future<ChannelPreview> getChannelPreview(TokenSource auth, String cid) async {
+    return await _request(
+      name: 'getChannelPreview',
+      method: 'GET',
+      relURL: 'preview/channels/${cid}',
+      fn: ChannelPreview.fromJson,
       authToken: auth.getToken(),
     );
   }
@@ -271,6 +291,16 @@ class APIClient {
       method: 'GET',
       relURL: 'users/${auth.getUserID()}/keys/$kid',
       fn: KeyToken.fromJson,
+      authToken: auth.getToken(),
+    );
+  }
+
+  static Future<KeyTokenPreview> getKeyTokenPreview(TokenSource auth, String kid) async {
+    return await _request(
+      name: 'getKeyTokenPreview',
+      method: 'GET',
+      relURL: 'preview/keys/$kid',
+      fn: KeyTokenPreview.fromJson,
       authToken: auth.getToken(),
     );
   }

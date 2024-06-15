@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:simplecloudnotifier/pages/debug/debug_request_view.dart';
 import 'package:simplecloudnotifier/state/request_log.dart';
+import 'package:simplecloudnotifier/utils/navi.dart';
 
 class DebugRequestsPage extends StatefulWidget {
   @override
@@ -40,7 +41,7 @@ class _DebugRequestsPageState extends State<DebugRequestsPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 2.0),
       child: GestureDetector(
-        onTap: () => Navigator.push(context, MaterialPageRoute<DebugRequestViewPage>(builder: (context) => DebugRequestViewPage(request: req))),
+        onTap: () => Navi.push(context, () => DebugRequestViewPage(request: req)),
         child: ListTile(
             tileColor: Theme.of(context).colorScheme.errorContainer,
             textColor: Theme.of(context).colorScheme.onErrorContainer,
@@ -76,7 +77,7 @@ class _DebugRequestsPageState extends State<DebugRequestsPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 2.0),
       child: GestureDetector(
-        onTap: () => Navigator.push(context, MaterialPageRoute<DebugRequestViewPage>(builder: (context) => DebugRequestViewPage(request: req))),
+        onTap: () => Navi.push(context, () => DebugRequestViewPage(request: req)),
         child: ListTile(
           title: Row(
             children: [

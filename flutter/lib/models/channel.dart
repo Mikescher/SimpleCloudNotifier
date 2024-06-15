@@ -1,17 +1,32 @@
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:simplecloudnotifier/models/subscription.dart';
+import 'package:simplecloudnotifier/state/interfaces.dart';
 
-class Channel {
+part 'channel.g.dart';
+
+@HiveType(typeId: 104)
+class Channel extends HiveObject implements FieldDebuggable {
+  @HiveField(0)
   final String channelID;
+
+  @HiveField(10)
   final String ownerUserID;
+  @HiveField(11)
   final String internalName;
+  @HiveField(12)
   final String displayName;
+  @HiveField(13)
   final String? descriptionName;
+  @HiveField(14)
   final String? subscribeKey;
+  @HiveField(15)
   final String timestampCreated;
+  @HiveField(16)
   final String? timestampLastSent;
+  @HiveField(17)
   final int messagesSent;
 
-  const Channel({
+  Channel({
     required this.channelID,
     required this.ownerUserID,
     required this.internalName,
@@ -36,6 +51,25 @@ class Channel {
       messagesSent: json['messages_sent'] as int,
     );
   }
+
+  @override
+  String toString() {
+    return 'Channel[${this.channelID}]';
+  }
+
+  List<(String, String)> debugFieldList() {
+    return [
+      ('channelID', this.channelID),
+      ('ownerUserID', this.ownerUserID),
+      ('internalName', this.internalName),
+      ('displayName', this.displayName),
+      ('descriptionName', this.descriptionName ?? ''),
+      ('subscribeKey', this.subscribeKey ?? ''),
+      ('timestampCreated', this.timestampCreated),
+      ('timestampLastSent', this.timestampLastSent ?? ''),
+      ('messagesSent', '${this.messagesSent}'),
+    ];
+  }
 }
 
 class ChannelWithSubscription {
@@ -56,5 +90,31 @@ class ChannelWithSubscription {
 
   static List<ChannelWithSubscription> fromJsonArray(List<dynamic> jsonArr) {
     return jsonArr.map<ChannelWithSubscription>((e) => ChannelWithSubscription.fromJson(e as Map<String, dynamic>)).toList();
+  }
+}
+
+class ChannelPreview {
+  final String channelID;
+  final String ownerUserID;
+  final String internalName;
+  final String displayName;
+  final String? descriptionName;
+
+  const ChannelPreview({
+    required this.channelID,
+    required this.ownerUserID,
+    required this.internalName,
+    required this.displayName,
+    required this.descriptionName,
+  });
+
+  factory ChannelPreview.fromJson(Map<String, dynamic> json) {
+    return ChannelPreview(
+      channelID: json['channel_id'] as String,
+      ownerUserID: json['owner_user_id'] as String,
+      internalName: json['internal_name'] as String,
+      displayName: json['display_name'] as String,
+      descriptionName: json['description_name'] as String?,
+    );
   }
 }

@@ -7,30 +7,38 @@ import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/models/user.dart';
 import 'package:simplecloudnotifier/pages/account/login.dart';
+import 'package:simplecloudnotifier/state/app_bar_state.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/globals.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
+import 'package:simplecloudnotifier/types/immediate_future.dart';
+import 'package:simplecloudnotifier/utils/navi.dart';
 import 'package:simplecloudnotifier/utils/toaster.dart';
 import 'package:simplecloudnotifier/utils/ui.dart';
 import 'package:uuid/uuid.dart';
 
 class AccountRootPage extends StatefulWidget {
-  const AccountRootPage({super.key});
+  const AccountRootPage({super.key, required this.isVisiblePage});
+
+  final bool isVisiblePage;
 
   @override
   State<AccountRootPage> createState() => _AccountRootPageState();
 }
 
 class _AccountRootPageState extends State<AccountRootPage> {
-  late Future<int>? futureSubscriptionCount;
-  late Future<int>? futureClientCount;
-  late Future<int>? futureKeyCount;
-  late Future<int>? futureChannelAllCount;
-  late Future<int>? futureChannelSubscribedCount;
+  late ImmediateFuture<int>? futureSubscriptionCount;
+  late ImmediateFuture<int>? futureClientCount;
+  late ImmediateFuture<int>? futureKeyCount;
+  late ImmediateFuture<int>? futureChannelAllCount;
+  late ImmediateFuture<int>? futureChannelSubscribedCount;
+  late ImmediateFuture<User>? futureUser;
 
   late AppAuth userAcc;
 
   bool loading = false;
+
+  bool _isInitialized = false;
 
   @override
   void initState() {
@@ -38,16 +46,42 @@ class _AccountRootPageState extends State<AccountRootPage> {
 
     userAcc = Provider.of<AppAuth>(context, listen: false);
     userAcc.addListener(_onAuthStateChanged);
+
+    if (widget.isVisiblePage && !_isInitialized) _realInitState();
+  }
+
+  @override
+  void didUpdateWidget(AccountRootPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.isVisiblePage != widget.isVisiblePage && widget.isVisiblePage) {
+      if (!_isInitialized) {
+        _realInitState();
+      } else {
+        _backgroundRefresh();
+      }
+    }
+  }
+
+  void _realInitState() {
+    ApplicationLog.debug('AccountRootPage::_realInitState');
     _onAuthStateChanged();
+    _isInitialized = true;
   }
 
   @override
   void dispose() {
+    ApplicationLog.debug('AccountRootPage::dispose');
     userAcc.removeListener(_onAuthStateChanged);
     super.dispose();
   }
 
   void _onAuthStateChanged() {
+    ApplicationLog.debug('AccountRootPage::_onAuthStateChanged');
+    _createFutures();
+  }
+
+  void _createFutures() {
     futureSubscriptionCount = null;
     futureClientCount = null;
     futureKeyCount = null;
@@ -55,35 +89,70 @@ class _AccountRootPageState extends State<AccountRootPage> {
     futureChannelSubscribedCount = null;
 
     if (userAcc.isAuth()) {
-      futureChannelAllCount = () async {
+      futureChannelAllCount = ImmediateFuture.ofFuture(() async {
         if (!userAcc.isAuth()) throw new Exception('not logged in');
         final channels = await APIClient.getChannelList(userAcc, ChannelSelector.all);
         return channels.length;
-      }();
+      }());
 
-      futureChannelSubscribedCount = () async {
+      futureChannelSubscribedCount = ImmediateFuture.ofFuture(() async {
         if (!userAcc.isAuth()) throw new Exception('not logged in');
         final channels = await APIClient.getChannelList(userAcc, ChannelSelector.subscribed);
         return channels.length;
-      }();
+      }());
 
-      futureSubscriptionCount = () async {
+      futureSubscriptionCount = ImmediateFuture.ofFuture(() async {
         if (!userAcc.isAuth()) throw new Exception('not logged in');
         final subs = await APIClient.getSubscriptionList(userAcc);
         return subs.length;
-      }();
+      }());
 
-      futureClientCount = () async {
+      futureClientCount = ImmediateFuture.ofFuture(() async {
         if (!userAcc.isAuth()) throw new Exception('not logged in');
         final clients = await APIClient.getClientList(userAcc);
         return clients.length;
-      }();
+      }());
 
-      futureKeyCount = () async {
+      futureKeyCount = ImmediateFuture.ofFuture(() async {
         if (!userAcc.isAuth()) throw new Exception('not logged in');
         final keys = await APIClient.getKeyTokenList(userAcc);
         return keys.length;
-      }();
+      }());
+
+      futureUser = ImmediateFuture.ofFuture(userAcc.loadUser(force: false));
+    }
+  }
+
+  Future<void> _backgroundRefresh() async {
+    if (userAcc.isAuth()) {
+      try {
+        await Future.delayed(const Duration(seconds: 0), () {}); // this is annoyingly important - otherwise we call setLoadingIndeterminate directly in initStat() and get an exception....
+
+        AppBarState().setLoadingIndeterminate(true);
+
+        // refresh all data and then replace teh futures used in build()
+
+        final channelsAll = await APIClient.getChannelList(userAcc, ChannelSelector.all);
+        final channelsSubscribed = await APIClient.getChannelList(userAcc, ChannelSelector.subscribed);
+        final subs = await APIClient.getSubscriptionList(userAcc);
+        final clients = await APIClient.getClientList(userAcc);
+        final keys = await APIClient.getKeyTokenList(userAcc);
+        final user = await userAcc.loadUser(force: true);
+
+        setState(() {
+          futureChannelAllCount = ImmediateFuture.ofValue(channelsAll.length);
+          futureChannelSubscribedCount = ImmediateFuture.ofValue(channelsSubscribed.length);
+          futureSubscriptionCount = ImmediateFuture.ofValue(subs.length);
+          futureClientCount = ImmediateFuture.ofValue(clients.length);
+          futureKeyCount = ImmediateFuture.ofValue(keys.length);
+          futureUser = ImmediateFuture.ofValue(user);
+        });
+      } catch (exc, trace) {
+        ApplicationLog.error('Failed to refresh account data: ' + exc.toString(), trace: trace);
+        Toaster.error("Error", 'Failed to refresh account data');
+      } finally {
+        AppBarState().setLoadingIndeterminate(false);
+      }
     }
   }
 
@@ -91,19 +160,23 @@ class _AccountRootPageState extends State<AccountRootPage> {
   Widget build(BuildContext context) {
     return Consumer<AppAuth>(
       builder: (context, acc, child) {
+        if (!_isInitialized) return SizedBox();
+
         if (!userAcc.isAuth()) {
           return _buildNoAuth(context);
         } else {
           return FutureBuilder(
-            future: acc.loadUser(force: false),
+            future: futureUser!.future,
             builder: ((context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-                if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}'); //TODO better error display
-                }
+              if (futureUser?.value != null) {
+                return _buildShowAccount(context, acc, futureUser!.value!);
+              } else if (snapshot.connectionState == ConnectionState.done && snapshot.hasError) {
+                return Text('Error: ${snapshot.error}'); //TODO better error display
+              } else if (snapshot.connectionState == ConnectionState.done) {
                 return _buildShowAccount(context, acc, snapshot.data!);
+              } else {
+                return Center(child: CircularProgressIndicator());
               }
-              return Center(child: CircularProgressIndicator());
             }),
           );
         }
@@ -157,7 +230,7 @@ class _AccountRootPageState extends State<AccountRootPage> {
               text: 'Use existing account',
               onPressed: () {
                 if (loading) return;
-                Navigator.push(context, MaterialPageRoute<AccountLoginPage>(builder: (context) => AccountLoginPage()));
+                Navi.push(context, () => AccountLoginPage());
               },
               tonal: true,
               big: true,
@@ -255,12 +328,15 @@ class _AccountRootPageState extends State<AccountRootPage> {
                 children: [
                   SizedBox(width: 80, child: Text("Channels", style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color?.withAlpha(160)))),
                   FutureBuilder(
-                    future: futureChannelAllCount,
+                    future: futureChannelAllCount!.future,
                     builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.done) {
+                      if (futureChannelAllCount?.value != null) {
+                        return Text('${futureChannelAllCount!.value}');
+                      } else if (snapshot.connectionState == ConnectionState.done) {
                         return Text('${snapshot.data}');
+                      } else {
+                        return const SizedBox(width: 8, height: 8, child: Center(child: CircularProgressIndicator()));
                       }
-                      return const SizedBox(width: 8, height: 8, child: Center(child: CircularProgressIndicator()));
                     },
                   )
                 ],
@@ -289,86 +365,10 @@ class _AccountRootPageState extends State<AccountRootPage> {
 
   List<Widget> _buildCards(BuildContext context, User user) {
     return [
-      UI.buttonCard(
-        context: context,
-        margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
-        child: Row(
-          children: [
-            FutureBuilder(
-              future: futureSubscriptionCount,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done) {
-                  return Text('${snapshot.data}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20));
-                }
-                return const SizedBox(width: 12, height: 12, child: Center(child: CircularProgressIndicator()));
-              },
-            ),
-            const SizedBox(width: 12),
-            Text('Subscriptions', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-          ],
-        ),
-        onTap: () {/*TODO*/},
-      ),
-      UI.buttonCard(
-        context: context,
-        margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
-        child: Row(
-          children: [
-            FutureBuilder(
-              future: futureClientCount,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done) {
-                  return Text('${snapshot.data}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20));
-                }
-                return const SizedBox(width: 12, height: 12, child: Center(child: CircularProgressIndicator()));
-              },
-            ),
-            const SizedBox(width: 12),
-            Text('Clients', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-          ],
-        ),
-        onTap: () {/*TODO*/},
-      ),
-      UI.buttonCard(
-        context: context,
-        margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
-        child: Row(
-          children: [
-            FutureBuilder(
-              future: futureKeyCount,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done) {
-                  return Text('${snapshot.data}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20));
-                }
-                return const SizedBox(width: 12, height: 12, child: Center(child: CircularProgressIndicator()));
-              },
-            ),
-            const SizedBox(width: 12),
-            Text('Keys', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-          ],
-        ),
-        onTap: () {/*TODO*/},
-      ),
-      UI.buttonCard(
-        context: context,
-        margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
-        child: Row(
-          children: [
-            FutureBuilder(
-              future: futureChannelSubscribedCount,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done) {
-                  return Text('${snapshot.data}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20));
-                }
-                return const SizedBox(width: 12, height: 12, child: Center(child: CircularProgressIndicator()));
-              },
-            ),
-            const SizedBox(width: 12),
-            Text('Channels', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-          ],
-        ),
-        onTap: () {/*TODO*/},
-      ),
+      _buildNumberCard(context, 'Subscriptions', futureSubscriptionCount, () {/*TODO*/}),
+      _buildNumberCard(context, 'Clients', futureClientCount, () {/*TODO*/}),
+      _buildNumberCard(context, 'Keys', futureKeyCount, () {/*TODO*/}),
+      _buildNumberCard(context, 'Channels', futureChannelSubscribedCount, () {/*TODO*/}),
       UI.buttonCard(
         context: context,
         margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
@@ -382,6 +382,32 @@ class _AccountRootPageState extends State<AccountRootPage> {
         onTap: () {/*TODO*/},
       ),
     ];
+  }
+
+  Widget _buildNumberCard(BuildContext context, String txt, ImmediateFuture<int>? future, void Function() action) {
+    return UI.buttonCard(
+      context: context,
+      margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
+      child: Row(
+        children: [
+          FutureBuilder(
+            future: future?.future,
+            builder: (context, snapshot) {
+              if (future?.value != null) {
+                return Text('${future?.value}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20));
+              } else if (snapshot.connectionState == ConnectionState.done) {
+                return Text('${snapshot.data}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20));
+              } else {
+                return const SizedBox(width: 12, height: 12, child: Center(child: CircularProgressIndicator()));
+              }
+            },
+          ),
+          const SizedBox(width: 12),
+          Text(txt, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+        ],
+      ),
+      onTap: action,
+    );
   }
 
   Widget _buildFooter(BuildContext context, User user) {

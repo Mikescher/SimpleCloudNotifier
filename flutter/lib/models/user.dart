@@ -90,3 +90,20 @@ class UserWithClientsAndKeys {
     );
   }
 }
+
+class UserPreview {
+  final String userID;
+  final String? username;
+
+  const UserPreview({
+    required this.userID,
+    required this.username,
+  });
+
+  factory UserPreview.fromJson(Map<String, dynamic> json) {
+    return UserPreview(
+      userID: json['user_id'] as String,
+      username: json['username'] as String?,
+    );
+  }
+}

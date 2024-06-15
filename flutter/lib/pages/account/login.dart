@@ -8,6 +8,7 @@ import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/globals.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/state/token_source.dart';
+import 'package:simplecloudnotifier/utils/navi.dart';
 import 'package:simplecloudnotifier/utils/toaster.dart';
 import 'package:simplecloudnotifier/utils/ui.dart';
 
@@ -154,7 +155,7 @@ class _AccountLoginPageState extends State<AccountLoginPage> {
       await acc.save();
 
       Toaster.success("Login", "Successfully logged in");
-      Navigator.popUntil(context, (route) => route.isFirst);
+      Navi.popToRoot(context);
     } catch (exc, trace) {
       ApplicationLog.error('Failed to verify token: ' + exc.toString(), trace: trace);
       Toaster.error("Error", 'Failed to verify token');

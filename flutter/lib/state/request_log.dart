@@ -6,6 +6,8 @@ import 'package:xid/xid.dart';
 part 'request_log.g.dart';
 
 class RequestLog {
+  //TODO max size, auto clear old
+
   static void addRequestException(String name, DateTime tStart, String method, Uri uri, String reqbody, Map<String, String> reqheaders, dynamic e, StackTrace trace) {
     Hive.box<SCNRequest>('scn-requests').add(SCNRequest(
       id: Xid().toString(),
