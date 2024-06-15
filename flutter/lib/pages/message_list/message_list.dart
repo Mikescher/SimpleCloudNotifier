@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
 import 'package:simplecloudnotifier/models/scn_message.dart';
+import 'package:simplecloudnotifier/pages/message_list/message_filter_chiplet.dart';
 import 'package:simplecloudnotifier/pages/message_view/message_view.dart';
 import 'package:simplecloudnotifier/settings/app_settings.dart';
 import 'package:simplecloudnotifier/state/app_bar_state.dart';
@@ -34,9 +35,13 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
 
   bool _isInitialized = false;
 
+  List<MessageFilterChiplet> _filterChiplets = [];
+
   @override
   void initState() {
     super.initState();
+
+    AppBarState().subscribeSearchListener(_onAppBarSearch);
 
     _pagingController.addPageRequestListener(_fetchPage);
 
@@ -94,6 +99,7 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
   @override
   void dispose() {
     ApplicationLog.debug('MessageListPage::dispose');
+    AppBarState().unsubscribeSearchListener(_onAppBarSearch);
     Navi.modalRouteObserver.unsubscribe(this);
     _pagingController.dispose();
     _lifecyleListener.dispose();
@@ -222,22 +228,50 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
-      child: RefreshIndicator(
-        onRefresh: () => Future.sync(
-          () => _pagingController.refresh(),
-        ),
-        child: PagedListView<String, SCNMessage>(
-          pagingController: _pagingController,
-          builderDelegate: PagedChildBuilderDelegate<SCNMessage>(
-            itemBuilder: (context, item, index) => MessageListItem(
-              message: item,
-              allChannels: _channels ?? {},
-              onPressed: () {
-                Navi.push(context, () => MessageViewPage(message: item));
-              },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (_filterChiplets.isNotEmpty)
+            Wrap(
+              alignment: WrapAlignment.start,
+              spacing: 5.0,
+              children: [
+                for (var chiplet in _filterChiplets) _buildFilterChip(context, chiplet),
+              ],
+            ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () => Future.sync(
+                () => _pagingController.refresh(),
+              ),
+              child: PagedListView<String, SCNMessage>(
+                pagingController: _pagingController,
+                builderDelegate: PagedChildBuilderDelegate<SCNMessage>(
+                  itemBuilder: (context, item, index) => MessageListItem(
+                    message: item,
+                    allChannels: _channels ?? {},
+                    onPressed: () {
+                      Navi.push(context, () => MessageViewPage(message: item));
+                    },
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(BuildContext context, MessageFilterChiplet chiplet) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 2, 0, 2),
+      child: InputChip(
+        avatar: Icon(chiplet.icon()),
+        label: Text(chiplet.label),
+        onDeleted: () => setState(() => _filterChiplets.remove(chiplet)),
+        onPressed: () {/* TODO idk what to do here ? */},
+        visualDensity: VisualDensity(horizontal: -4, vertical: -4),
       ),
     );
   }
@@ -268,5 +302,11 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
     for (var val in allValues.sublist(cfg.messagePageSize)) {
       await cache.delete(val.messageID);
     }
+  }
+
+  void _onAppBarSearch(String str) {
+    setState(() {
+      _filterChiplets = _filterChiplets.where((element) => false).toList() + [MessageFilterChiplet(label: str, value: str, type: MessageFilterChipletType.search)];
+    });
   }
 }

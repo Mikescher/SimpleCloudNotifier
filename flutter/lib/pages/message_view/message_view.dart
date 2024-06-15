@@ -137,6 +137,7 @@ class _MessageViewPageState extends State<MessageViewPage> {
             _buildMetaCard(context, FontAwesomeIcons.solidSnake, 'Channel', [message.channelID, channel?.displayName ?? message.channelInternalName], () => {/*TODO*/}),
             _buildMetaCard(context, FontAwesomeIcons.solidTimer, 'Timestamp', [message.timestamp], null),
             _buildMetaCard(context, FontAwesomeIcons.solidUser, 'User', [if (user != null) user.userID, if (user?.username != null) user!.username!], () => {/*TODO*/}), //TODO
+            _buildMetaCard(context, FontAwesomeIcons.solidBolt, 'Priority', [_prettyPrintPriority(message.priority)], () => {/*TODO*/}), //TODO
             if (message.senderUserID == userAccUserID) UI.button(text: "Delete Message", onPressed: () {/*TODO*/}, color: Colors.red[900]),
           ],
         ),
@@ -251,5 +252,18 @@ class _MessageViewPageState extends State<MessageViewPage> {
 
   String _preformatTitle(SCNMessage message) {
     return message.title.replaceAll('\n', '').replaceAll('\r', '').replaceAll('\t', ' ');
+  }
+
+  String _prettyPrintPriority(int priority) {
+    switch (priority) {
+      case 0:
+        return 'Low (0)';
+      case 1:
+        return 'Normal (1)';
+      case 2:
+        return 'High (2)';
+      default:
+        return 'Unknown ($priority)';
+    }
   }
 }
