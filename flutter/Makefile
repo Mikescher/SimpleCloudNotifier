@@ -16,3 +16,6 @@ gen:
 autoreload:
 	@# run `make run` in another terminal (or another variant of flutter run)
 	@_utils/autoreload.sh
+	
+icons:
+	flutter pub run flutter_launcher_icons -f "flutter_launcher_icons.yaml"

@@ -1,5 +1,5 @@
 name: simplecloudnotifier
-description: "A new Flutter project."
+description: "Receive push messages"
 publish_to: 'none'
 
 version: 2.0.0+100
@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
+  flutter_launcher_icons: "^0.13.1"
 
   font_awesome_flutter: '>= 4.7.0'
   cupertino_icons: ^1.0.2
