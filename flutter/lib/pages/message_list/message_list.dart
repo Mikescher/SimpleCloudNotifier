@@ -113,8 +113,10 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
 
   @override
   void didPopNext() {
-    ApplicationLog.debug('[MessageList::RouteObserver] --> didPopNext (will background-refresh)');
-    _backgroundRefresh(false);
+    if (AppSettings().alwaysBackgroundRefreshMessageListOnPop) {
+      ApplicationLog.debug('[MessageList::RouteObserver] --> didPopNext (will background-refresh)');
+      _backgroundRefresh(false);
+    }
   }
 
   void _onLifecycleResume() {
