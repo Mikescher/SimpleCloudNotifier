@@ -265,10 +265,12 @@ void setFirebaseToken(String fcmToken) async {
   }
 }
 
+@pragma('vm:entry-point')
 Future<void> _onBackgroundMessage(RemoteMessage message) async {
   await _receiveMessage(message, false);
 }
 
+@pragma('vm:entry-point')
 void _onForegroundMessage(RemoteMessage message) {
   _receiveMessage(message, true);
 }
