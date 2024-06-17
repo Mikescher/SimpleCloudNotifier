@@ -12,6 +12,7 @@ import 'package:simplecloudnotifier/models/scn_message.dart';
 import 'package:simplecloudnotifier/nav_layout.dart';
 import 'package:simplecloudnotifier/settings/app_settings.dart';
 import 'package:simplecloudnotifier/state/app_bar_state.dart';
+import 'package:simplecloudnotifier/state/app_events.dart';
 import 'package:simplecloudnotifier/state/app_theme.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/fb_message.dart';
@@ -19,6 +20,7 @@ import 'package:simplecloudnotifier/state/globals.dart';
 import 'package:simplecloudnotifier/state/request_log.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:simplecloudnotifier/state/scn_data_cache.dart';
 import 'package:simplecloudnotifier/utils/navi.dart';
 import 'package:simplecloudnotifier/utils/notifier.dart';
 import 'package:toastification/toastification.dart';
@@ -308,35 +310,18 @@ Future<void> _receiveMessage(RemoteMessage message, bool foreground) async {
 
   ApplicationLog.info('Received FB message (${foreground ? 'foreground' : 'background'}): ${message.messageId ?? 'NULL'}');
 
-  SCNMessage? receivedMessage;
+  String scn_msg_id;
 
   try {
-    final scn_msg_id = message.data['scn_msg_id'] as String;
-    final usr_msg_id = message.data['usr_msg_id'] as String;
+    scn_msg_id = message.data['scn_msg_id'] as String;
+
     final timestamp = DateTime.fromMillisecondsSinceEpoch(int.parse(message.data['timestamp'] as String) * 1000);
-    final priority = int.parse(message.data['priority'] as String);
     final title = message.data['title'] as String;
     final channel = message.data['channel'] as String;
     final channel_id = message.data['channel_id'] as String;
     final body = message.data['body'] as String;
 
     Notifier.showLocalNotification(channel_id, channel, 'Channel: ${channel}', title, body, timestamp);
-
-    receivedMessage = SCNMessage(
-      messageID: scn_msg_id,
-      userMessageID: usr_msg_id,
-      timestamp: timestamp.toIso8601String(),
-      priority: priority,
-      trimmed: true,
-      title: title,
-      channelID: channel_id,
-      channelInternalName: channel,
-      content: body,
-      senderIP: '',
-      senderName: '',
-      senderUserID: '',
-      usedKeyID: '',
-    );
   } catch (exc, trace) {
     ApplicationLog.error('Failed to decode received FB message' + exc.toString(), trace: trace);
     Notifier.showLocalNotification("@ERROR", "@ERROR", 'Error Channel', "Error", "Failed to receive SCN message (decode failed)", null);
@@ -351,8 +336,14 @@ Future<void> _receiveMessage(RemoteMessage message, bool foreground) async {
     return;
   }
 
-  //TODO add to scn-message-cache
-  //TODO refresh message_list view (if shown/initialized)
+  try {
+    final msg = await APIClient.getMessage(AppAuth(), scn_msg_id);
+    SCNDataCache().addToMessageCache([msg]);
+    if (foreground) AppEvents().notifyMessageReceivedListeners(msg);
+  } catch (exc, trace) {
+    ApplicationLog.error('Failed to query+persist message' + exc.toString(), trace: trace);
+    return;
+  }
 }
 
 void _receiveLocalDarwinNotification(int id, String? title, String? body, String? payload) {

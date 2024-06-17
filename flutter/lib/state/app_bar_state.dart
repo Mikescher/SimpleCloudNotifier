@@ -9,8 +9,6 @@ class AppBarState extends ChangeNotifier {
 
   AppBarState._internal() {}
 
-  List<void Function(String)> _searchListeners = [];
-
   bool _loadingIndeterminate = false;
   bool get loadingIndeterminate => _loadingIndeterminate;
 
@@ -27,19 +25,5 @@ class AppBarState extends ChangeNotifier {
     if (_showSearchField == v) return;
     _showSearchField = v;
     notifyListeners();
-  }
-
-  void subscribeSearchListener(void Function(String) listener) {
-    _searchListeners.add(listener);
-  }
-
-  void unsubscribeSearchListener(void Function(String) listener) {
-    _searchListeners.remove(listener);
-  }
-
-  void notifySearchListeners(String query) {
-    for (var listener in _searchListeners) {
-      listener(query);
-    }
   }
 }

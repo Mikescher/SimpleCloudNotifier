@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/components/layout/app_bar_filter_dialog.dart';
@@ -7,9 +6,9 @@ import 'package:simplecloudnotifier/components/layout/app_bar_progress_indicator
 import 'package:simplecloudnotifier/pages/debug/debug_main.dart';
 import 'package:simplecloudnotifier/settings/app_settings.dart';
 import 'package:simplecloudnotifier/state/app_bar_state.dart';
+import 'package:simplecloudnotifier/state/app_events.dart';
 import 'package:simplecloudnotifier/state/app_theme.dart';
 import 'package:simplecloudnotifier/utils/navi.dart';
-import 'package:simplecloudnotifier/utils/toaster.dart';
 
 class SCNAppBar extends StatefulWidget implements PreferredSizeWidget {
   SCNAppBar({
@@ -108,7 +107,7 @@ class _SCNAppBarState extends State<SCNAppBar> {
               icon: const Icon(FontAwesomeIcons.solidMagnifyingGlass),
               onPressed: () {
                 value.setShowSearchField(false);
-                AppBarState().notifySearchListeners(_ctrlSearchField.text);
+                AppEvents().notifySearchListeners(_ctrlSearchField.text);
                 _ctrlSearchField.clear();
               },
             ),
@@ -157,15 +156,13 @@ class _SCNAppBarState extends State<SCNAppBar> {
       ),
       onSubmitted: (value) {
         AppBarState().setShowSearchField(false);
-        AppBarState().notifySearchListeners(_ctrlSearchField.text);
+        AppEvents().notifySearchListeners(_ctrlSearchField.text);
         _ctrlSearchField.clear();
       },
     );
   }
 
   void _showFilterDialog(BuildContext context) {
-    double vpWidth = MediaQuery.sizeOf(context).width;
-
     showDialog<void>(
       context: context,
       barrierDismissible: true,
