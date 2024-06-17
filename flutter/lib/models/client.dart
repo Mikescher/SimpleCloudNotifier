@@ -32,6 +32,19 @@ class Client {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'client_id': clientID,
+      'user_id': userID,
+      'type': type,
+      'fcm_token': fcmToken,
+      'timestamp_created': timestampCreated,
+      'agent_model': agentModel,
+      'agent_version': agentVersion,
+      'name': name,
+    };
+  }
+
   static List<Client> fromJsonArray(List<dynamic> jsonArr) {
     return jsonArr.map<Client>((e) => Client.fromJson(e as Map<String, dynamic>)).toList();
   }

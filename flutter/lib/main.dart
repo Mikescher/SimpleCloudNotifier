@@ -101,20 +101,19 @@ void main() async {
   final appAuth = AppAuth(); // ensure UserAccount is loaded
 
   if (appAuth.isAuth()) {
-    try {
-      print('[INIT] Load User...');
-      await appAuth.loadUser();
-      //TODO fallback to cached user (perhaps event use cached client (if exists) directly and only update/load in background)
-    } catch (exc, trace) {
-      ApplicationLog.error('Failed to load user (on startup): ' + exc.toString(), trace: trace);
-    }
-    try {
-      print('[INIT] Load Client...');
-      await appAuth.loadClient();
-      //TODO fallback to cached client (perhaps event use cached client (if exists) directly and only update/load in background)
-    } catch (exc, trace) {
-      ApplicationLog.error('Failed to load user (on startup): ' + exc.toString(), trace: trace);
-    }
+    // load user+client in background
+    () async {
+      try {
+        await appAuth.loadUser();
+      } catch (exc, trace) {
+        ApplicationLog.error('Failed to load user (background load on startup): ' + exc.toString(), trace: trace);
+      }
+      try {
+        await appAuth.loadClient();
+      } catch (exc, trace) {
+        ApplicationLog.error('Failed to load user (background load on startup): ' + exc.toString(), trace: trace);
+      }
+    }();
   }
 
   if (!Platform.isLinux) {
