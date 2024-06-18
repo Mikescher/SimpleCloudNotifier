@@ -76,7 +76,7 @@ class _ChannelListItemState extends State<ChannelListItem> {
                 children: [
                   Expanded(
                     child: Text(
-                      lastMessage?.title ?? '...',
+                      _preformatTitle(lastMessage),
                       style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color?.withAlpha(160)),
                     ),
                   ),
@@ -88,5 +88,10 @@ class _ChannelListItemState extends State<ChannelListItem> {
         ),
       ),
     );
+  }
+
+  String _preformatTitle(SCNMessage? message) {
+    if (message == null) return '...';
+    return message.title.replaceAll('\n', '').replaceAll('\r', '').replaceAll('\t', ' ');
   }
 }

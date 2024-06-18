@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
@@ -20,9 +19,6 @@ class MessageListPage extends StatefulWidget {
   const MessageListPage({super.key, required this.isVisiblePage});
 
   final bool isVisiblePage;
-
-  //TODO reload on switch to tab
-  //TODO reload on app to foreground
 
   @override
   State<MessageListPage> createState() => _MessageListPageState();
@@ -111,15 +107,17 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
 
   @override
   void didPopNext() {
-    if (AppSettings().alwaysBackgroundRefreshMessageListOnPop) {
+    if (AppSettings().backgroundRefreshMessageListOnPop) {
       ApplicationLog.debug('[MessageList::RouteObserver] --> didPopNext (will background-refresh)');
       _backgroundRefresh(false);
     }
   }
 
   void _onLifecycleResume() {
-    ApplicationLog.debug('[MessageList::_onLifecycleResume] --> (will background-refresh)');
-    _backgroundRefresh(false);
+    if (AppSettings().alwaysBackgroundRefreshMessageListOnLifecycleResume) {
+      ApplicationLog.debug('[MessageList::_onLifecycleResume] --> (will background-refresh)');
+      _backgroundRefresh(false);
+    }
   }
 
   Future<void> _fetchPage(String thisPageToken) async {

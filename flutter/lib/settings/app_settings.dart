@@ -4,7 +4,8 @@ class AppSettings extends ChangeNotifier {
   bool groupNotifications = true;
   int messagePageSize = 128;
   bool showDebugButton = true;
-  bool alwaysBackgroundRefreshMessageListOnPop = false;
+  bool backgroundRefreshMessageListOnPop = false;
+  bool alwaysBackgroundRefreshMessageListOnLifecycleResume = true;
 
   static AppSettings? _singleton = AppSettings._internal();
 
