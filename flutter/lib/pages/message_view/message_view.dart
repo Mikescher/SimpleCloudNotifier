@@ -132,12 +132,58 @@ class _MessageViewPageState extends State<MessageViewPage> {
             if (message.content != null) ..._buildMessageContent(context, message),
             SizedBox(height: 8),
             if (message.senderName != null) _buildMetaCard(context, FontAwesomeIcons.solidSignature, 'Sender', [message.senderName!], () => {/*TODO*/}),
-            _buildMetaCard(context, FontAwesomeIcons.solidGearCode, 'KeyToken', [message.usedKeyID, if (token != null) token.name], () => {/*TODO*/}),
-            _buildMetaCard(context, FontAwesomeIcons.solidIdCardClip, 'MessageID', [message.messageID, if (message.userMessageID != null) message.userMessageID!], null),
-            _buildMetaCard(context, FontAwesomeIcons.solidSnake, 'Channel', [message.channelID, channel?.displayName ?? message.channelInternalName], () => {/*TODO*/}),
-            _buildMetaCard(context, FontAwesomeIcons.solidTimer, 'Timestamp', [message.timestamp], null),
-            _buildMetaCard(context, FontAwesomeIcons.solidUser, 'User', [if (user != null) user.userID, if (user?.username != null) user!.username!], () => {/*TODO*/}), //TODO
-            _buildMetaCard(context, FontAwesomeIcons.solidBolt, 'Priority', [_prettyPrintPriority(message.priority)], () => {/*TODO*/}), //TODO
+            _buildMetaCard(
+                context,
+                FontAwesomeIcons.solidGearCode,
+                'KeyToken',
+                [
+                  message.usedKeyID,
+                  token?.name ?? '...',
+                ],
+                () => {/*TODO*/}),
+            _buildMetaCard(
+                context,
+                FontAwesomeIcons.solidIdCardClip,
+                'MessageID',
+                [
+                  message.messageID,
+                  message.userMessageID ?? '',
+                ],
+                null),
+            _buildMetaCard(
+                context,
+                FontAwesomeIcons.solidSnake,
+                'Channel',
+                [
+                  message.channelID,
+                  channel?.displayName ?? message.channelInternalName,
+                ],
+                () => {/*TODO*/}),
+            _buildMetaCard(
+                context,
+                FontAwesomeIcons.solidTimer,
+                'Timestamp',
+                [
+                  message.timestamp,
+                ],
+                null),
+            _buildMetaCard(
+                context,
+                FontAwesomeIcons.solidUser,
+                'User',
+                [
+                  user?.userID ?? '...',
+                  user?.username ?? '',
+                ],
+                () => {/*TODO*/}), //TODO
+            _buildMetaCard(
+                context,
+                FontAwesomeIcons.solidBolt,
+                'Priority',
+                [
+                  _prettyPrintPriority(message.priority),
+                ],
+                () => {/*TODO*/}), //TODO
             if (message.senderUserID == userAccUserID) UI.button(text: "Delete Message", onPressed: () {/*TODO*/}, color: Colors.red[900]),
           ],
         ),
