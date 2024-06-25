@@ -7,6 +7,7 @@ import 'package:simplecloudnotifier/models/channel.dart';
 import 'package:simplecloudnotifier/models/scn_message.dart';
 import 'package:simplecloudnotifier/models/subscription.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
+import 'package:simplecloudnotifier/state/scn_data_cache.dart';
 
 class ChannelListItem extends StatefulWidget {
   static final _dateFormat = DateFormat('yyyy-MM-dd kk:mm');
@@ -36,6 +37,8 @@ class _ChannelListItemState extends State<ChannelListItem> {
     final acc = Provider.of<AppAuth>(context, listen: false);
 
     if (acc.isAuth()) {
+      lastMessage = SCNDataCache().getMessagesSorted().where((p) => p.channelID == widget.channel.channelID).firstOrNull;
+
       () async {
         final (_, channelMessages) = await APIClient.getMessageList(acc, '@start', pageSize: 1, channelIDs: [widget.channel.channelID]);
         setState(() {
