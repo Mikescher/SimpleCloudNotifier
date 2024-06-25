@@ -3,10 +3,12 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
+import 'package:simplecloudnotifier/pages/channel_view/channel_view.dart';
 import 'package:simplecloudnotifier/state/app_bar_state.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/pages/channel_list/channel_list_item.dart';
+import 'package:simplecloudnotifier/utils/navi.dart';
 
 class ChannelRootPage extends StatefulWidget {
   const ChannelRootPage({super.key, required this.isVisiblePage});
@@ -18,7 +20,7 @@ class ChannelRootPage extends StatefulWidget {
 }
 
 class _ChannelRootPageState extends State<ChannelRootPage> {
-  final PagingController<int, Channel> _pagingController = PagingController.fromValue(PagingState(nextPageKey: null, itemList: [], error: null), firstPageKey: 0);
+  final PagingController<int, ChannelWithSubscription> _pagingController = PagingController.fromValue(PagingState(nextPageKey: null, itemList: [], error: null), firstPageKey: 0);
 
   bool _isInitialized = false;
 
@@ -68,9 +70,9 @@ class _ChannelRootPageState extends State<ChannelRootPage> {
     }
 
     try {
-      final items = (await APIClient.getChannelList(acc, ChannelSelector.all)).map((p) => p.channel).toList();
+      final items = (await APIClient.getChannelList(acc, ChannelSelector.all)).toList();
 
-      items.sort((a, b) => -1 * (a.timestampLastSent ?? '').compareTo(b.timestampLastSent ?? ''));
+      items.sort((a, b) => -1 * (a.channel.timestampLastSent ?? '').compareTo(b.channel.timestampLastSent ?? ''));
 
       _pagingController.value = PagingState(nextPageKey: null, itemList: items, error: null);
     } catch (exc, trace) {
@@ -94,9 +96,9 @@ class _ChannelRootPageState extends State<ChannelRootPage> {
 
       AppBarState().setLoadingIndeterminate(true);
 
-      final items = (await APIClient.getChannelList(acc, ChannelSelector.all)).map((p) => p.channel).toList();
+      final items = (await APIClient.getChannelList(acc, ChannelSelector.all)).toList();
 
-      items.sort((a, b) => -1 * (a.timestampLastSent ?? '').compareTo(b.timestampLastSent ?? ''));
+      items.sort((a, b) => -1 * (a.channel.timestampLastSent ?? '').compareTo(b.channel.timestampLastSent ?? ''));
 
       _pagingController.value = PagingState(nextPageKey: null, itemList: items, error: null);
     } catch (exc, trace) {
@@ -113,12 +115,15 @@ class _ChannelRootPageState extends State<ChannelRootPage> {
       onRefresh: () => Future.sync(
         () => _pagingController.refresh(),
       ),
-      child: PagedListView<int, Channel>(
+      child: PagedListView<int, ChannelWithSubscription>(
         pagingController: _pagingController,
-        builderDelegate: PagedChildBuilderDelegate<Channel>(
+        builderDelegate: PagedChildBuilderDelegate<ChannelWithSubscription>(
           itemBuilder: (context, item, index) => ChannelListItem(
-            channel: item,
-            onPressed: () {/*TODO*/},
+            channel: item.channel,
+            subscription: item.subscription,
+            onPressed: () {
+              Navi.push(context, () => ChannelViewPage(channel: item.channel, subscription: item.subscription));
+            },
           ),
         ),
       ),

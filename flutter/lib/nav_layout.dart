@@ -59,7 +59,7 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
     return Scaffold(
       appBar: SCNAppBar(
         title: null,
-        showSearch: _selectedIndex == 0 || _selectedIndex == 1,
+        showSearch: _selectedIndex == 0,
         showShare: false,
         showThemeSwitch: true,
       ),

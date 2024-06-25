@@ -90,6 +90,7 @@ class _SCNAppBarState extends State<SCNAppBar> {
       ));
     } else {
       actions.add(_buildSpacer());
+      actions.add(_buildSpacer());
     }
 
     return Consumer<AppBarState>(builder: (context, value, child) {

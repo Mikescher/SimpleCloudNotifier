@@ -114,7 +114,7 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
   }
 
   void _onLifecycleResume() {
-    if (AppSettings().alwaysBackgroundRefreshMessageListOnLifecycleResume) {
+    if (AppSettings().alwaysBackgroundRefreshMessageListOnLifecycleResume && widget.isVisiblePage) {
       ApplicationLog.debug('[MessageList::_onLifecycleResume] --> (will background-refresh)');
       _backgroundRefresh(false);
     }

@@ -74,7 +74,7 @@ class Channel extends HiveObject implements FieldDebuggable {
 
 class ChannelWithSubscription {
   final Channel channel;
-  final Subscription subscription;
+  final Subscription? subscription;
 
   ChannelWithSubscription({
     required this.channel,
@@ -84,7 +84,7 @@ class ChannelWithSubscription {
   factory ChannelWithSubscription.fromJson(Map<String, dynamic> json) {
     return ChannelWithSubscription(
       channel: Channel.fromJson(json),
-      subscription: Subscription.fromJson(json['subscription'] as Map<String, dynamic>),
+      subscription: json['subscription'] == null ? null : Subscription.fromJson(json['subscription'] as Map<String, dynamic>),
     );
   }
 
