@@ -110,8 +110,10 @@ class _ChannelListItemState extends State<ChannelListItem> {
   Widget _buildIcon(BuildContext context) {
     if (widget.subscription == null) {
       return Icon(FontAwesomeIcons.solidSquareDashed, color: Theme.of(context).colorScheme.outline, size: 32); // not-subscribed
+    } else if (widget.subscription!.confirmed && widget.channel.ownerUserID == widget.subscription!.subscriberUserID) {
+      return Icon(FontAwesomeIcons.solidSquareRss, color: Theme.of(context).colorScheme.onPrimaryContainer, size: 32); // subscribed (own channel)
     } else if (widget.subscription!.confirmed) {
-      return Icon(FontAwesomeIcons.solidSquareRss, color: Theme.of(context).colorScheme.onPrimaryContainer, size: 32); // subscribed
+      return Icon(FontAwesomeIcons.solidSquareShareNodes, color: Theme.of(context).colorScheme.onPrimaryContainer, size: 32); // subscribed (foreign channel)
     } else {
       return Icon(FontAwesomeIcons.solidSquareEnvelope, color: Theme.of(context).colorScheme.tertiary, size: 32); // requested
     }

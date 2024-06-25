@@ -86,6 +86,10 @@ class User {
       'max_user_message_id_length': maxUserMessageIDLength,
     };
   }
+
+  UserPreview toPreview() {
+    return UserPreview(userID: userID, username: username);
+  }
 }
 
 class UserWithClientsAndKeys {

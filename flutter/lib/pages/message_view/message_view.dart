@@ -131,59 +131,54 @@ class _MessageViewPageState extends State<MessageViewPage> {
             SizedBox(height: 8),
             if (message.content != null) ..._buildMessageContent(context, message),
             SizedBox(height: 8),
-            if (message.senderName != null) _buildMetaCard(context, FontAwesomeIcons.solidSignature, 'Sender', [message.senderName!], () => {/*TODO*/}),
-            _buildMetaCard(
-                context,
-                FontAwesomeIcons.solidGearCode,
-                'KeyToken',
-                [
-                  message.usedKeyID,
-                  token?.name ?? '...',
-                ],
-                () => {/*TODO*/}),
-            _buildMetaCard(
-                context,
-                FontAwesomeIcons.solidIdCardClip,
-                'MessageID',
-                [
-                  message.messageID,
-                  message.userMessageID ?? '',
-                ],
-                null),
-            _buildMetaCard(
-                context,
-                FontAwesomeIcons.solidSnake,
-                'Channel',
-                [
-                  message.channelID,
-                  channel?.displayName ?? message.channelInternalName,
-                ],
-                () => {/*TODO*/}),
-            _buildMetaCard(
-                context,
-                FontAwesomeIcons.solidTimer,
-                'Timestamp',
-                [
-                  message.timestamp,
-                ],
-                null),
-            _buildMetaCard(
-                context,
-                FontAwesomeIcons.solidUser,
-                'User',
-                [
-                  user?.userID ?? '...',
-                  user?.username ?? '',
-                ],
-                () => {/*TODO*/}), //TODO
-            _buildMetaCard(
-                context,
-                FontAwesomeIcons.solidBolt,
-                'Priority',
-                [
-                  _prettyPrintPriority(message.priority),
-                ],
-                () => {/*TODO*/}), //TODO
+            if (message.senderName != null)
+              UI.metaCard(
+                context: context,
+                icon: FontAwesomeIcons.solidSignature,
+                title: 'Sender',
+                values: [message.senderName!],
+                mainAction: () => {/*TODO*/},
+              ),
+            UI.metaCard(
+              context: context,
+              icon: FontAwesomeIcons.solidGearCode,
+              title: 'KeyToken',
+              values: [message.usedKeyID, token?.name ?? '...'],
+              mainAction: () => {/*TODO*/},
+            ),
+            UI.metaCard(
+              context: context,
+              icon: FontAwesomeIcons.solidIdCardClip,
+              title: 'MessageID',
+              values: [message.messageID, message.userMessageID ?? ''],
+            ),
+            UI.metaCard(
+              context: context,
+              icon: FontAwesomeIcons.solidSnake,
+              title: 'Channel',
+              values: [message.channelID, channel?.displayName ?? message.channelInternalName],
+              mainAction: () => {/*TODO*/},
+            ),
+            UI.metaCard(
+              context: context,
+              icon: FontAwesomeIcons.solidTimer,
+              title: 'Timestamp',
+              values: [message.timestamp],
+            ),
+            UI.metaCard(
+              context: context,
+              icon: FontAwesomeIcons.solidUser,
+              title: 'User',
+              values: [user?.userID ?? '...', user?.username ?? ''],
+              mainAction: () => {/*TODO*/},
+            ),
+            UI.metaCard(
+              context: context,
+              icon: FontAwesomeIcons.solidBolt,
+              title: 'Priority',
+              values: [_prettyPrintPriority(message.priority)],
+              mainAction: () => {/*TODO*/},
+            ),
             if (message.senderUserID == userAccUserID) UI.button(text: "Delete Message", onPressed: () {/*TODO*/}, color: Colors.red[900]),
           ],
         ),
@@ -258,42 +253,6 @@ class _MessageViewPageState extends State<MessageViewPage> {
               borderColor: (message.priority == 2) ? Colors.red[900] : null,
             )
     ];
-  }
-
-  Widget _buildMetaCard(BuildContext context, IconData icn, String title, List<String> values, void Function()? action) {
-    final container = UI.box(
-      context: context,
-      padding: EdgeInsets.fromLTRB(16, 2, 4, 2),
-      child: Row(
-        children: [
-          FaIcon(icn, size: 18),
-          SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              for (final val in values) Text(val, style: const TextStyle(fontSize: 14)),
-            ],
-          ),
-        ],
-      ),
-    );
-
-    if (action == null) {
-      return Padding(
-        padding: EdgeInsets.symmetric(vertical: 4, horizontal: 0),
-        child: container,
-      );
-    } else {
-      return Padding(
-        padding: EdgeInsets.symmetric(vertical: 4, horizontal: 0),
-        child: InkWell(
-          splashColor: Theme.of(context).splashColor,
-          onTap: action,
-          child: container,
-        ),
-      );
-    }
   }
 
   String _preformatTitle(SCNMessage message) {

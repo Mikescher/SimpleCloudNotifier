@@ -182,6 +182,10 @@ class AppAuth extends ChangeNotifier implements TokenSource {
     return user;
   }
 
+  User? getUserOrNull() {
+    return _user?.$1;
+  }
+
   Future<Client?> loadClient({bool force = false, Duration? forceIfOlder = null}) async {
     if (forceIfOlder != null && _client != null && _client!.$2.difference(DateTime.now()) > forceIfOlder) {
       force = true;
@@ -210,6 +214,10 @@ class AppAuth extends ChangeNotifier implements TokenSource {
       _client = null;
       rethrow;
     }
+  }
+
+  Client? getClientOrNull() {
+    return _client?.$1;
   }
 
   @override

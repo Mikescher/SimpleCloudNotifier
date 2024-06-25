@@ -247,6 +247,16 @@ class APIClient {
     );
   }
 
+  static Future<List<Subscription>> getChannelSubscriptions(TokenSource auth, String cid) async {
+    return await _request(
+      name: 'getChannelSubscriptions',
+      method: 'GET',
+      relURL: 'users/${auth.getUserID()}/channels/${cid}/subscriptions',
+      fn: (json) => Subscription.fromJsonArray(json['subscriptions'] as List<dynamic>),
+      authToken: auth.getToken(),
+    );
+  }
+
   static Future<List<Client>> getClientList(TokenSource auth) async {
     return await _request(
       name: 'getClientList',
