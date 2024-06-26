@@ -7,6 +7,7 @@ import 'package:simplecloudnotifier/models/client.dart';
 import 'package:simplecloudnotifier/models/keytoken.dart';
 import 'package:simplecloudnotifier/models/subscription.dart';
 import 'package:simplecloudnotifier/models/user.dart';
+import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/globals.dart';
 import 'package:simplecloudnotifier/state/request_log.dart';
@@ -207,6 +208,20 @@ class APIClient {
       method: 'GET',
       relURL: 'preview/channels/${cid}',
       fn: ChannelPreview.fromJson,
+      authToken: auth.getToken(),
+    );
+  }
+
+  static Future<ChannelWithSubscription> updateChannel(AppAuth auth, String cid, {String? displayName, String? descriptionName}) async {
+    return await _request(
+      name: 'updateChannel',
+      method: 'PATCH',
+      relURL: 'users/${auth.getUserID()}/channels/${cid}',
+      jsonBody: {
+        if (displayName != null) 'display_name': displayName,
+        if (descriptionName != null) 'description_name': descriptionName,
+      },
+      fn: ChannelWithSubscription.fromJson,
       authToken: auth.getToken(),
     );
   }

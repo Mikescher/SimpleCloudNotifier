@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
@@ -9,7 +10,9 @@ import 'package:simplecloudnotifier/models/subscription.dart';
 import 'package:simplecloudnotifier/models/user.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/state/app_bar_state.dart';
+import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/types/immediate_future.dart';
+import 'package:simplecloudnotifier/utils/toaster.dart';
 import 'package:simplecloudnotifier/utils/ui.dart';
 import 'package:provider/provider.dart';
 
@@ -17,22 +20,36 @@ class ChannelViewPage extends StatefulWidget {
   const ChannelViewPage({
     required this.channel,
     required this.subscription,
+    required this.needsReload,
     super.key,
   });
 
   final Channel channel;
   final Subscription? subscription;
 
+  final void Function()? needsReload;
+
   @override
   State<ChannelViewPage> createState() => _ChannelViewPageState();
 }
+
+enum EditState { none, editing, saving }
 
 class _ChannelViewPageState extends State<ChannelViewPage> {
   late ImmediateFuture<String?> _futureSubscribeKey;
   late ImmediateFuture<List<Subscription>> _futureSubscriptions;
   late ImmediateFuture<UserPreview> _futureOwner;
 
+  final TextEditingController _ctrlDisplayName = TextEditingController();
+  final TextEditingController _ctrlDescriptionName = TextEditingController();
+
   int _loadingIndeterminateCounter = 0;
+
+  EditState _editDisplayName = EditState.none;
+  String? _displayNameOverride = null;
+
+  EditState _editDescriptionName = EditState.none;
+  String? _descriptionNameOverride = null;
 
   @override
   void initState() {
@@ -66,6 +83,8 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
 
   @override
   void dispose() {
+    _ctrlDisplayName.dispose();
+    _ctrlDescriptionName.dispose();
     super.dispose();
   }
 
@@ -105,13 +124,8 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
               title: 'InternalName',
               values: [widget.channel.internalName],
             ),
-            UI.metaCard(
-              context: context,
-              icon: FontAwesomeIcons.solidInputText,
-              title: 'DisplayName',
-              values: [widget.channel.displayName],
-              iconActions: isOwned ? [(FontAwesomeIcons.penToSquare, _rename)] : [],
-            ),
+            _buildDisplayNameCard(context, isOwned),
+            _buildDescriptionNameCard(context, isOwned),
             UI.metaCard(
               context: context,
               icon: FontAwesomeIcons.solidDiagramSubtask,
@@ -190,7 +204,7 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
           var text = 'TODO' + '\n' + widget.channel.channelID + '\n' + snapshot.data!; //TODO deeplink-y (also perhaps just bas64 everything together?)
           return GestureDetector(
             onTap: () {
-              Share.share(text, subject: widget.channel.displayName);
+              Share.share(text, subject: _displayNameOverride ?? widget.channel.displayName);
             },
             child: Center(
               child: QrImageView(
@@ -225,8 +239,116 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
     );
   }
 
-  void _rename() {
-    //TODO
+  Widget _buildDisplayNameCard(BuildContext context, bool isOwned) {
+    if (_editDisplayName == EditState.editing) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+        child: UI.box(
+          context: context,
+          padding: EdgeInsets.fromLTRB(16, 2, 4, 2),
+          child: Row(
+            children: [
+              Container(child: Center(child: FaIcon(FontAwesomeIcons.solidInputText, size: 18)), height: 43),
+              SizedBox(width: 16),
+              Expanded(
+                child: TextField(
+                  autofocus: true,
+                  controller: _ctrlDisplayName,
+                  decoration: new InputDecoration.collapsed(hintText: 'DisplayName'),
+                ),
+              ),
+              SizedBox(width: 12),
+              SizedBox(width: 4),
+              IconButton(icon: FaIcon(FontAwesomeIcons.solidFloppyDisk), onPressed: _saveDisplayName),
+            ],
+          ),
+        ),
+      );
+    } else if (_editDisplayName == EditState.none) {
+      return UI.metaCard(
+        context: context,
+        icon: FontAwesomeIcons.solidInputText,
+        title: 'DisplayName',
+        values: [_displayNameOverride ?? widget.channel.displayName],
+        iconActions: isOwned ? [(FontAwesomeIcons.penToSquare, _showEditDisplayName)] : [],
+      );
+    } else if (_editDisplayName == EditState.saving) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+        child: UI.box(
+          context: context,
+          padding: EdgeInsets.fromLTRB(16, 2, 4, 2),
+          child: Row(
+            children: [
+              Container(child: Center(child: FaIcon(FontAwesomeIcons.solidInputText, size: 18)), height: 43),
+              SizedBox(width: 16),
+              Expanded(child: SizedBox()),
+              SizedBox(width: 12),
+              SizedBox(width: 4),
+              Padding(padding: const EdgeInsets.all(8.0), child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator())),
+            ],
+          ),
+        ),
+      );
+    } else {
+      throw 'Invalid EditDisplayNameState: $_editDisplayName';
+    }
+  }
+
+  Widget _buildDescriptionNameCard(BuildContext context, bool isOwned) {
+    if (_editDescriptionName == EditState.editing) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+        child: UI.box(
+          context: context,
+          padding: EdgeInsets.fromLTRB(16, 2, 4, 2),
+          child: Row(
+            children: [
+              Container(child: Center(child: FaIcon(FontAwesomeIcons.solidInputPipe, size: 18)), height: 43),
+              SizedBox(width: 16),
+              Expanded(
+                child: TextField(
+                  autofocus: true,
+                  controller: _ctrlDescriptionName,
+                  decoration: new InputDecoration.collapsed(hintText: 'Description'),
+                ),
+              ),
+              SizedBox(width: 12),
+              SizedBox(width: 4),
+              IconButton(icon: FaIcon(FontAwesomeIcons.solidFloppyDisk), onPressed: _saveDescriptionName),
+            ],
+          ),
+        ),
+      );
+    } else if (_editDescriptionName == EditState.none) {
+      return UI.metaCard(
+        context: context,
+        icon: FontAwesomeIcons.solidInputPipe,
+        title: 'Description',
+        values: [_descriptionNameOverride ?? widget.channel.descriptionName ?? ''],
+        iconActions: isOwned ? [(FontAwesomeIcons.penToSquare, _showEditDescriptionName)] : [],
+      );
+    } else if (_editDescriptionName == EditState.saving) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+        child: UI.box(
+          context: context,
+          padding: EdgeInsets.fromLTRB(16, 2, 4, 2),
+          child: Row(
+            children: [
+              Container(child: Center(child: FaIcon(FontAwesomeIcons.solidInputPipe, size: 18)), height: 43),
+              SizedBox(width: 16),
+              Expanded(child: SizedBox()),
+              SizedBox(width: 12),
+              SizedBox(width: 4),
+              Padding(padding: const EdgeInsets.all(8.0), child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator())),
+            ],
+          ),
+        ),
+      );
+    } else {
+      throw 'Invalid EditDescriptionNameState: $_editDescriptionName';
+    }
   }
 
   void _subscribe() {
@@ -235,6 +357,70 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
 
   void _unsubscribe() {
     //TODO
+  }
+
+  void _showEditDisplayName() {
+    setState(() {
+      _ctrlDisplayName.text = _displayNameOverride ?? widget.channel.displayName;
+      _editDisplayName = EditState.editing;
+      if (_editDescriptionName == EditState.editing) _editDescriptionName = EditState.none;
+    });
+  }
+
+  void _saveDisplayName() async {
+    final userAcc = Provider.of<AppAuth>(context, listen: false);
+
+    final newName = _ctrlDisplayName.text;
+
+    try {
+      setState(() {
+        _editDisplayName = EditState.saving;
+      });
+
+      final newChannel = await APIClient.updateChannel(userAcc, widget.channel.channelID, displayName: newName);
+
+      setState(() {
+        _editDisplayName = EditState.none;
+        _displayNameOverride = newChannel.channel.displayName;
+      });
+
+      widget.needsReload?.call();
+    } catch (exc, trace) {
+      ApplicationLog.error('Failed to save DisplayName: ' + exc.toString(), trace: trace);
+      Toaster.error("Error", 'Failed to save DisplayName');
+    }
+  }
+
+  void _showEditDescriptionName() {
+    setState(() {
+      _ctrlDescriptionName.text = _descriptionNameOverride ?? widget.channel.descriptionName ?? '';
+      _editDescriptionName = EditState.editing;
+      if (_editDisplayName == EditState.editing) _editDisplayName = EditState.none;
+    });
+  }
+
+  void _saveDescriptionName() async {
+    final userAcc = Provider.of<AppAuth>(context, listen: false);
+
+    final newName = _ctrlDescriptionName.text;
+
+    try {
+      setState(() {
+        _editDescriptionName = EditState.saving;
+      });
+
+      final newChannel = await APIClient.updateChannel(userAcc, widget.channel.channelID, descriptionName: newName);
+
+      setState(() {
+        _editDescriptionName = EditState.none;
+        _descriptionNameOverride = newChannel.channel.descriptionName ?? '';
+      });
+
+      widget.needsReload?.call();
+    } catch (exc, trace) {
+      ApplicationLog.error('Failed to save DescriptionName: ' + exc.toString(), trace: trace);
+      Toaster.error("Error", 'Failed to save DescriptionName');
+    }
   }
 
   void _cancelForeignSubscription(Subscription sub) {

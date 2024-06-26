@@ -19,10 +19,12 @@ class ChannelRootPage extends StatefulWidget {
   State<ChannelRootPage> createState() => _ChannelRootPageState();
 }
 
-class _ChannelRootPageState extends State<ChannelRootPage> {
+class _ChannelRootPageState extends State<ChannelRootPage> with RouteAware {
   final PagingController<int, ChannelWithSubscription> _pagingController = PagingController.fromValue(PagingState(nextPageKey: null, itemList: [], error: null), firstPageKey: 0);
 
   bool _isInitialized = false;
+
+  bool _reloadEnqueued = false;
 
   @override
   void initState() {
@@ -34,9 +36,16 @@ class _ChannelRootPageState extends State<ChannelRootPage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    Navi.modalRouteObserver.subscribe(this, ModalRoute.of(context)!);
+  }
+
+  @override
   void dispose() {
     ApplicationLog.debug('ChannelRootPage::dispose');
     _pagingController.dispose();
+    Navi.modalRouteObserver.unsubscribe(this);
     super.dispose();
   }
 
@@ -50,6 +59,24 @@ class _ChannelRootPageState extends State<ChannelRootPage> {
       } else {
         _backgroundRefresh();
       }
+    }
+  }
+
+  @override
+  void didPush() {
+    // ...
+  }
+
+  @override
+  void didPopNext() {
+    if (_reloadEnqueued) {
+      ApplicationLog.debug('[ChannelList::RouteObserver] --> didPopNext (will background-refresh) (_reloadEnqueued == true)');
+      () async {
+        _reloadEnqueued = false;
+        AppBarState().setLoadingIndeterminate(true);
+        await Future.delayed(const Duration(milliseconds: 500)); // prevents flutter bug where the whole process crashes ?!?
+        await _backgroundRefresh();
+      }();
     }
   }
 
@@ -100,9 +127,13 @@ class _ChannelRootPageState extends State<ChannelRootPage> {
 
       items.sort((a, b) => -1 * (a.channel.timestampLastSent ?? '').compareTo(b.channel.timestampLastSent ?? ''));
 
-      _pagingController.value = PagingState(nextPageKey: null, itemList: items, error: null);
+      setState(() {
+        _pagingController.value = PagingState(nextPageKey: null, itemList: items, error: null);
+      });
     } catch (exc, trace) {
-      _pagingController.error = exc.toString();
+      setState(() {
+        _pagingController.error = exc.toString();
+      });
       ApplicationLog.error('Failed to list channels: ' + exc.toString(), trace: trace);
     } finally {
       AppBarState().setLoadingIndeterminate(false);
@@ -122,11 +153,15 @@ class _ChannelRootPageState extends State<ChannelRootPage> {
             channel: item.channel,
             subscription: item.subscription,
             onPressed: () {
-              Navi.push(context, () => ChannelViewPage(channel: item.channel, subscription: item.subscription));
+              Navi.push(context, () => ChannelViewPage(channel: item.channel, subscription: item.subscription, needsReload: _enqueueReload));
             },
           ),
         ),
       ),
     );
+  }
+
+  void _enqueueReload() {
+    _reloadEnqueued = true;
   }
 }
