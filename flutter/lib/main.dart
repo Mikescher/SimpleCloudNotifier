@@ -302,6 +302,7 @@ Future<void> _receiveMessage(RemoteMessage message, bool foreground) async {
     await Hive.openBox<SCNLog>('scn-logs');
     await Hive.openBox<FBMessage>('scn-fb-messages');
     await Hive.openBox<SCNMessage>('scn-message-cache');
+    await Hive.openBox<SCNRequest>('scn-requests');
   } catch (exc, trace) {
     ApplicationLog.error('Failed to init hive:' + exc.toString(), trace: trace);
     Notifier.showLocalNotification("@ERROR", "@ERROR", 'Error Channel', "Error", "Failed to receive SCN message (init failed)", null);
