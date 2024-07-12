@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -10,6 +11,8 @@ import 'package:simplecloudnotifier/models/channel.dart';
 import 'package:simplecloudnotifier/models/client.dart';
 import 'package:simplecloudnotifier/models/scn_message.dart';
 import 'package:simplecloudnotifier/nav_layout.dart';
+import 'package:simplecloudnotifier/pages/channel_view/channel_view.dart';
+import 'package:simplecloudnotifier/pages/message_view/message_view.dart';
 import 'package:simplecloudnotifier/settings/app_settings.dart';
 import 'package:simplecloudnotifier/state/app_bar_state.dart';
 import 'package:simplecloudnotifier/state/app_events.dart';
@@ -174,12 +177,20 @@ void main() async {
       iOS: initializationSettingsDarwin,
       linux: initializationSettingsLinux,
     );
-    flutterLocalNotificationsPlugin.initialize(initializationSettings, onDidReceiveNotificationResponse: _receiveLocalNotification);
+    flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: _receiveLocalNotification,
+      onDidReceiveBackgroundNotificationResponse: _notificationTapBackground,
+    );
 
     final appLaunchNotification = await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
     if (appLaunchNotification != null) {
-      //TODO show message (also this only works on android+localnotifications, also handle ios)
+      // Use has launched SCN by clicking on a loca notifiaction, if it was a summary or message notifiaction open the corresponding screen
+      // This is android only
+      //TODO same on iOS, somehow??
       ApplicationLog.info('App launched by notification: ${appLaunchNotification.notificationResponse?.id}');
+
+      _handleNotificationClickAction(appLaunchNotification.notificationResponse?.payload, Duration(milliseconds: 600));
     }
   }
 
@@ -201,6 +212,8 @@ void main() async {
 class SCNApp extends StatelessWidget {
   SCNApp({super.key});
 
+  static var materialKey = GlobalKey<NavigatorState>();
+
   @override
   Widget build(BuildContext context) {
     return ToastificationWrapper(
@@ -211,6 +224,7 @@ class SCNApp extends StatelessWidget {
       ),
       child: Consumer<AppTheme>(
         builder: (context, appTheme, child) => MaterialApp(
+          navigatorKey: SCNApp.materialKey,
           title: 'SimpleCloudNotifier',
           navigatorObservers: [Navi.routeObserver, Navi.modalRouteObserver],
           theme: ThemeData(
@@ -226,7 +240,8 @@ class SCNApp extends StatelessWidget {
 }
 
 @pragma('vm:entry-point')
-void notificationTapBackground(NotificationResponse notificationResponse) {
+void _notificationTapBackground(NotificationResponse notificationResponse) {
+  // I think only iOS triggers this, TODO
   ApplicationLog.info('Received local notification<vm:entry-point>: ${notificationResponse.id}');
 }
 
@@ -268,11 +283,13 @@ void setFirebaseToken(String fcmToken) async {
 
 @pragma('vm:entry-point')
 Future<void> _onBackgroundMessage(RemoteMessage message) async {
+  // a firebase message was received while the app was in the background or terminated
   await _receiveMessage(message, false);
 }
 
 @pragma('vm:entry-point')
 void _onForegroundMessage(RemoteMessage message) {
+  // a firebase message was received while the app was in the foreground
   _receiveMessage(message, true);
 }
 
@@ -305,7 +322,7 @@ Future<void> _receiveMessage(RemoteMessage message, bool foreground) async {
     await Hive.openBox<SCNRequest>('scn-requests');
   } catch (exc, trace) {
     ApplicationLog.error('Failed to init hive:' + exc.toString(), trace: trace);
-    Notifier.showLocalNotification("@ERROR", "@ERROR", 'Error Channel', "Error", "Failed to receive SCN message (init failed)", null);
+    Notifier.showLocalNotification("", "@ERROR", "@ERROR", 'Error Channel', "Error", "Failed to receive SCN message (init failed)", null);
     return;
   }
 
@@ -322,10 +339,10 @@ Future<void> _receiveMessage(RemoteMessage message, bool foreground) async {
     final channel_id = message.data['channel_id'] as String;
     final body = message.data['body'] as String;
 
-    Notifier.showLocalNotification(channel_id, channel, 'Channel: ${channel}', title, body, timestamp);
+    Notifier.showLocalNotification(scn_msg_id, channel_id, channel, 'Channel: ${channel}', title, body, timestamp);
   } catch (exc, trace) {
     ApplicationLog.error('Failed to decode received FB message' + exc.toString(), trace: trace);
-    Notifier.showLocalNotification("@ERROR", "@ERROR", 'Error Channel', "Error", "Failed to receive SCN message (decode failed)", null);
+    Notifier.showLocalNotification("", "@ERROR", "@ERROR", 'Error Channel', "Error", "Failed to receive SCN message (decode failed)", null);
     return;
   }
 
@@ -333,7 +350,7 @@ Future<void> _receiveMessage(RemoteMessage message, bool foreground) async {
     FBMessageLog.insert(message);
   } catch (exc, trace) {
     ApplicationLog.error('Failed to persist received FB message' + exc.toString(), trace: trace);
-    Notifier.showLocalNotification("@ERROR", "@ERROR", 'Error Channel', "Error", "Failed to receive SCN message (persist failed)", null);
+    Notifier.showLocalNotification("", "@ERROR", "@ERROR", 'Error Channel', "Error", "Failed to receive SCN message (persist failed)", null);
     return;
   }
 
@@ -348,11 +365,41 @@ Future<void> _receiveMessage(RemoteMessage message, bool foreground) async {
 }
 
 void _receiveLocalDarwinNotification(int id, String? title, String? body, String? payload) {
+  //TODO iOS?
   ApplicationLog.info('Received local notification<darwin>: $id -> [$title]');
 }
 
 void _receiveLocalNotification(NotificationResponse details) {
-  ApplicationLog.info('Received local notification: ${details.id}');
+  // User has tapped a flutter_local notification, while the app was running
+  ApplicationLog.info('Tapped local notification: [[${details.id} | ${details.actionId} | ${details.input} | ${details.notificationResponseType} | ${details.payload}]]');
+
+  _handleNotificationClickAction(details.payload, Duration.zero);
+}
+
+void _handleNotificationClickAction(String? payload, Duration delay) {
+  final parts = payload?.split('\n') ?? [];
+
+  if (parts.length == 4 && parts[0] == '@SCN_MESSAGE') {
+    final messageID = parts[1];
+    () async {
+      await Future.delayed(delay);
+
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        ApplicationLog.info('Handle notification action @SCN_MESSAGE --> ${messageID}');
+        Navi.push(SCNApp.materialKey.currentContext!, () => MessageViewPage(messageID: messageID, preloadedData: null));
+      });
+    }();
+  } else if (parts.length == 3 && parts[0] == '@SCN_MESSAGE_SUMMARY') {
+    final channelID = parts[1];
+    () async {
+      await Future.delayed(delay);
+
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        ApplicationLog.info('Handle notification action @SCN_MESSAGE_SUMMARY --> ${channelID}');
+        Navi.push(SCNApp.materialKey.currentContext!, () => ChannelViewPage(channelID: channelID, preloadedData: null, needsReload: null));
+      });
+    }();
+  }
 }
 
 List<DarwinNotificationCategory> getDarwinNotificationCategories() {

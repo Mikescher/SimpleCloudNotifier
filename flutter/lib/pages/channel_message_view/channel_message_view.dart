@@ -94,7 +94,7 @@ class _ChannelMessageViewPageState extends State<ChannelMessageViewPage> {
               message: item,
               allChannels: {this.widget.channel.channelID: this.widget.channel},
               onPressed: () {
-                Navi.push(context, () => MessageViewPage(message: item));
+                Navi.push(context, () => MessageViewPage(messageID: item.messageID, preloadedData: (item,)));
               },
             ),
           ),

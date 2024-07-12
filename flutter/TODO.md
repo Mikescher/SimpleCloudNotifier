@@ -23,8 +23,19 @@
  - [ ] Logout
  - [ ] Send-page
 
- 
  -----
+
+# TODO iOS specific
+
+ - [ ] payment / pro
+ - [ ] show notifiactions (foreground/background/etc)
+ - [ ] handle click-on-notifications should open message
+ - [ ] share message
+ - [ ] scan QR
+
+ -----
+
+# TODO Server
 
  - [ ] Switch server to sq style from faby
         - [ ] switch from mattn to go-sqlite

@@ -56,7 +56,7 @@ class _DebugActionsPageState extends State<DebugActionsPage> {
               SizedBox(height: 20),
               UI.button(
                 big: false,
-                onPressed: () => Notifier.showLocalNotification('TEST_CHANNEL', "Test Channel", "Channel for testing", "Hello World", "Local Notification test", null),
+                onPressed: () => Notifier.showLocalNotification('', 'TEST_CHANNEL', "Test Channel", "Channel for testing", "Hello World", "Local Notification test", null),
                 text: 'Show local notification',
               ),
             ],

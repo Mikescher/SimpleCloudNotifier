@@ -249,7 +249,7 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
                     message: item,
                     allChannels: _channels ?? {},
                     onPressed: () {
-                      Navi.push(context, () => MessageViewPage(message: item));
+                      Navi.push(context, () => MessageViewPage(messageID: item.messageID, preloadedData: (item,)));
                     },
                   ),
                 ),

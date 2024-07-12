@@ -18,9 +18,14 @@ import 'package:simplecloudnotifier/utils/toaster.dart';
 import 'package:simplecloudnotifier/utils/ui.dart';
 
 class MessageViewPage extends StatefulWidget {
-  const MessageViewPage({super.key, required this.message});
+  const MessageViewPage({
+    super.key,
+    required this.messageID,
+    required this.preloadedData,
+  });
 
-  final SCNMessage message; // Potentially trimmed
+  final String messageID; // Potentially trimmed
+  final (SCNMessage,)? preloadedData; // Message is potentially trimmed, whole object is potentially null
 
   @override
   State<MessageViewPage> createState() => _MessageViewPageState();
@@ -33,8 +38,14 @@ class _MessageViewPageState extends State<MessageViewPage> {
 
   bool _monospaceMode = false;
 
+  SCNMessage? message = null;
+
   @override
   void initState() {
+    if (widget.preloadedData != null) {
+      message = widget.preloadedData!.$1;
+    }
+
     mainFuture = fetchData();
     super.initState();
   }
@@ -47,7 +58,7 @@ class _MessageViewPageState extends State<MessageViewPage> {
 
       final acc = Provider.of<AppAuth>(context, listen: false);
 
-      final msg = await APIClient.getMessage(acc, widget.message.messageID);
+      final msg = await APIClient.getMessage(acc, widget.messageID);
 
       final fut_chn = APIClient.getChannelPreview(acc, msg.channelID);
       final fut_key = APIClient.getKeyTokenPreview(acc, msg.usedKeyID);
@@ -89,8 +100,8 @@ class _MessageViewPageState extends State<MessageViewPage> {
             return _buildMessageView(context, msg, chn, tok, usr);
           } else if (snapshot.hasError) {
             return Center(child: Text('${snapshot.error}')); //TODO nice error page
-          } else if (!widget.message.trimmed) {
-            return _buildMessageView(context, widget.message, null, null, null);
+          } else if (message != null && !this.message!.trimmed) {
+            return _buildMessageView(context, this.message!, null, null, null);
           } else {
             return const Center(child: CircularProgressIndicator());
           }
@@ -100,7 +111,9 @@ class _MessageViewPageState extends State<MessageViewPage> {
   }
 
   void _share() async {
-    var msg = widget.message;
+    if (this.message == null) return;
+
+    var msg = this.message!;
     if (mainFutureSnapshot != null) {
       (msg, _, _, _) = mainFutureSnapshot!;
     }
