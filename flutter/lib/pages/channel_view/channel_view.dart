@@ -37,7 +37,7 @@ enum EditState { none, editing, saving }
 
 class _ChannelViewPageState extends State<ChannelViewPage> {
   late ImmediateFuture<String?> _futureSubscribeKey;
-  late ImmediateFuture<List<Subscription>> _futureSubscriptions;
+  late ImmediateFuture<List<(Subscription, UserPreview?)>> _futureSubscriptions;
   late ImmediateFuture<UserPreview> _futureOwner;
 
   final TextEditingController _ctrlDisplayName = TextEditingController();
@@ -61,10 +61,10 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
       } else {
         _futureSubscribeKey = ImmediateFuture<String?>.ofFuture(_getSubScribeKey(userAcc));
       }
-      _futureSubscriptions = ImmediateFuture<List<Subscription>>.ofFuture(_listSubscriptions(userAcc));
+      _futureSubscriptions = ImmediateFuture<List<(Subscription, UserPreview?)>>.ofFuture(_listSubscriptions(userAcc));
     } else {
       _futureSubscribeKey = ImmediateFuture<String?>.ofValue(null);
-      _futureSubscriptions = ImmediateFuture<List<Subscription>>.ofValue([]);
+      _futureSubscriptions = ImmediateFuture<List<(Subscription, UserPreview?)>>.ofValue([]);
     }
 
     if (widget.channel.ownerUserID == userAcc.userID) {
@@ -156,13 +156,13 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              for (final sub in snapshot.data!.where((sub) => sub.subscriptionID != widget.subscription?.subscriptionID))
+              for (final (sub, user) in snapshot.data!.where((v) => v.$1.subscriptionID != widget.subscription?.subscriptionID))
                 UI.metaCard(
                   context: context,
                   icon: FontAwesomeIcons.solidDiagramSuccessor,
-                  title: 'Subscription (other)',
+                  title: 'Subscription (' + (user?.username ?? user?.userID ?? 'other') + ')',
                   values: [_formatSubscriptionStatus(sub)],
-                  iconActions: _getForignSubActions(sub),
+                  iconActions: _getForeignSubActions(sub),
                 ),
             ],
           );
@@ -461,7 +461,7 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
     }
   }
 
-  Future<List<Subscription>> _listSubscriptions(AppAuth auth) async {
+  Future<List<(Subscription, UserPreview?)>> _listSubscriptions(AppAuth auth) async {
     try {
       await Future.delayed(const Duration(seconds: 0), () {}); // this is annoyingly important - otherwise we call setLoadingIndeterminate directly in initStat() and get an exception....
 
@@ -469,9 +469,11 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
 
       var subs = await APIClient.getChannelSubscriptions(auth, widget.channel.channelID);
 
+      var userMap = {for (var v in (await Future.wait(subs.map((e) => e.subscriberUserID).toSet().map((e) => APIClient.getUserPreview(auth, e)).toList()))) v.userID: v};
+
       //await Future.delayed(const Duration(seconds: 10), () {});
 
-      return subs;
+      return subs.map((e) => (e, userMap[e.subscriberUserID] ?? null)).toList();
     } finally {
       _incLoadingIndeterminateCounter(-1);
     }
@@ -493,7 +495,7 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
     }
   }
 
-  List<(IconData, void Function())> _getForignSubActions(Subscription sub) {
+  List<(IconData, void Function())> _getForeignSubActions(Subscription sub) {
     if (sub.confirmed) {
       return [(FontAwesomeIcons.solidSquareXmark, () => _cancelForeignSubscription(sub))];
     } else {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
@@ -142,21 +143,30 @@ class _ChannelRootPageState extends State<ChannelRootPage> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: () => Future.sync(
-        () => _pagingController.refresh(),
-      ),
-      child: PagedListView<int, ChannelWithSubscription>(
-        pagingController: _pagingController,
-        builderDelegate: PagedChildBuilderDelegate<ChannelWithSubscription>(
-          itemBuilder: (context, item, index) => ChannelListItem(
-            channel: item.channel,
-            subscription: item.subscription,
-            onPressed: () {
-              Navi.push(context, () => ChannelViewPage(channel: item.channel, subscription: item.subscription, needsReload: _enqueueReload));
-            },
+    return Scaffold(
+      body: RefreshIndicator(
+        onRefresh: () => Future.sync(
+          () => _pagingController.refresh(),
+        ),
+        child: PagedListView<int, ChannelWithSubscription>(
+          pagingController: _pagingController,
+          builderDelegate: PagedChildBuilderDelegate<ChannelWithSubscription>(
+            itemBuilder: (context, item, index) => ChannelListItem(
+              channel: item.channel,
+              subscription: item.subscription,
+              onPressed: () {
+                Navi.push(context, () => ChannelViewPage(channel: item.channel, subscription: item.subscription, needsReload: _enqueueReload));
+              },
+            ),
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          //TODO scan qr code to subscribe channel
+        },
+        backgroundColor: ,
+        child: const Icon(FontAwesomeIcons.qrcode),
       ),
     );
   }
