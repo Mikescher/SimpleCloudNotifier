@@ -155,17 +155,17 @@ class _ChannelRootPageState extends State<ChannelRootPage> with RouteAware {
               channel: item.channel,
               subscription: item.subscription,
               onPressed: () {
-                Navi.push(context, () => ChannelViewPage(channel: item.channel, subscription: item.subscription, needsReload: _enqueueReload));
+                Navi.push(context, () => ChannelViewPage(channelID: item.channel.channelID, preloadedData: (item.channel, item.subscription), needsReload: _enqueueReload));
               },
             ),
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'fab_channel_list_qr',
         onPressed: () {
           //TODO scan qr code to subscribe channel
         },
-        backgroundColor: ,
         child: const Icon(FontAwesomeIcons.qrcode),
       ),
     );

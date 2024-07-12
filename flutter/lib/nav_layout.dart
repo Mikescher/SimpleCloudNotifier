@@ -76,6 +76,7 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
       bottomNavigationBar: _buildNavBar(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: HidableFAB(
+        heroTag: 'fab_main',
         onPressed: _onFABTapped,
         icon: FontAwesomeIcons.solidPaperPlaneTop,
       ),

@@ -10,8 +10,10 @@ import 'package:simplecloudnotifier/models/channel.dart';
 import 'package:simplecloudnotifier/models/keytoken.dart';
 import 'package:simplecloudnotifier/models/scn_message.dart';
 import 'package:simplecloudnotifier/models/user.dart';
+import 'package:simplecloudnotifier/pages/channel_view/channel_view.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/state/app_bar_state.dart';
+import 'package:simplecloudnotifier/utils/navi.dart';
 import 'package:simplecloudnotifier/utils/toaster.dart';
 import 'package:simplecloudnotifier/utils/ui.dart';
 
@@ -157,7 +159,11 @@ class _MessageViewPageState extends State<MessageViewPage> {
               icon: FontAwesomeIcons.solidSnake,
               title: 'Channel',
               values: [message.channelID, channel?.displayName ?? message.channelInternalName],
-              mainAction: () => {/*TODO*/},
+              mainAction: (channel != null)
+                  ? () {
+                      Navi.push(context, () => ChannelViewPage(channelID: channel.channelID, preloadedData: null, needsReload: null));
+                    }
+                  : null,
             ),
             UI.metaCard(
               context: context,

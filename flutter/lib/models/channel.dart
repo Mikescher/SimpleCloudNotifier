@@ -70,6 +70,16 @@ class Channel extends HiveObject implements FieldDebuggable {
       ('messagesSent', '${this.messagesSent}'),
     ];
   }
+
+  ChannelPreview toPreview() {
+    return ChannelPreview(
+      channelID: this.channelID,
+      ownerUserID: this.ownerUserID,
+      internalName: this.internalName,
+      displayName: this.displayName,
+      descriptionName: this.descriptionName,
+    );
+  }
 }
 
 class ChannelWithSubscription {

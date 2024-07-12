@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -6,8 +8,11 @@ import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
 import 'package:simplecloudnotifier/models/scn_message.dart';
 import 'package:simplecloudnotifier/models/subscription.dart';
+import 'package:simplecloudnotifier/pages/channel_message_view/channel_message_view.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/state/scn_data_cache.dart';
+import 'package:simplecloudnotifier/utils/navi.dart';
+import 'package:simplecloudnotifier/utils/toaster.dart';
 
 class ChannelListItem extends StatefulWidget {
   static final _dateFormat = DateFormat('yyyy-MM-dd kk:mm');
@@ -56,7 +61,6 @@ class _ChannelListItemState extends State<ChannelListItem> {
       shape: BeveledRectangleBorder(borderRadius: BorderRadius.circular(0)),
       color: Theme.of(context).cardTheme.color,
       child: InkWell(
-        splashColor: Theme.of(context).splashColor,
         onTap: widget.onPressed,
         child: Padding(
           padding: const EdgeInsets.all(8),
@@ -96,6 +100,16 @@ class _ChannelListItemState extends State<ChannelListItem> {
                       ],
                     ),
                   ],
+                ),
+              ),
+              SizedBox(width: 4),
+              GestureDetector(
+                onTap: () {
+                  Navi.push(context, () => ChannelMessageViewPage(channel: this.widget.channel));
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Icon(FontAwesomeIcons.solidEnvelopes, color: Theme.of(context).colorScheme.onPrimaryContainer.withAlpha(128), size: 24),
                 ),
               ),
             ],
