@@ -9,6 +9,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
+	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
@@ -81,7 +82,7 @@ func (ac *AppContext) RequestURI() string {
 	}
 }
 
-func (ac *AppContext) FinishSuccess(res ginresp.HTTPResponse) ginresp.HTTPResponse {
+func (ac *AppContext) FinishSuccess(res ginext.HTTPResponse) ginext.HTTPResponse {
 	if ac.cancelled {
 		panic("Cannot finish a cancelled request")
 	}

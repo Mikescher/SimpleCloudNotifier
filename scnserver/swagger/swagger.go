@@ -1,10 +1,10 @@
 package swagger
 
 import (
-	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	"embed"
 	_ "embed"
 	"github.com/gin-gonic/gin"
+	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"net/http"
 	"strings"
 )
@@ -46,26 +46,28 @@ func getAsset(fn string) ([]byte, string, bool) {
 	return data, mime, true
 }
 
-func Handle(g *gin.Context) ginresp.HTTPResponse {
+func Handle(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		Filename string `uri:"sub"`
 	}
 
 	var u uri
-	if err := g.ShouldBindUri(&u); err != nil {
-		return ginresp.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	ctx, _, errResp := pctx.URI(&u).Start()
+	if errResp != nil {
+		return *errResp
 	}
+	defer ctx.Cancel()
 
 	u.Filename = strings.TrimLeft(u.Filename, "/")
 
 	if u.Filename == "" {
 		index, _, _ := getAsset("index.html")
-		return ginresp.Data(http.StatusOK, "text/html", index)
+		return ginext.Data(http.StatusOK, "text/html", index)
 	}
 
 	if data, mime, ok := getAsset(u.Filename); ok {
-		return ginresp.Data(http.StatusOK, mime, data)
+		return ginext.Data(http.StatusOK, mime, data)
 	}
 
-	return ginresp.JSON(http.StatusNotFound, gin.H{"error": "AssetNotFound", "filename": u.Filename})
+	return ginext.JSON(http.StatusNotFound, gin.H{"error": "AssetNotFound", "filename": u.Filename})
 }

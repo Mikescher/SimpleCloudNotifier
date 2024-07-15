@@ -6,7 +6,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"errors"
-	"github.com/gin-gonic/gin"
+	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"net/http"
 )
 
@@ -25,13 +25,13 @@ import (
 //	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/preview/users/{uid} [GET]
-func (h APIHandler) GetUserPreview(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) GetUserPreview(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -49,7 +49,7 @@ func (h APIHandler) GetUserPreview(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query user", err)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, user.JSONPreview()))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, user.JSONPreview()))
 }
 
 // GetChannelPreview swaggerdoc
@@ -67,13 +67,13 @@ func (h APIHandler) GetUserPreview(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/preview/channels/{cid} [GET]
-func (h APIHandler) GetChannelPreview(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) GetChannelPreview(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		ChannelID models.ChannelID `uri:"cid" binding:"entityid"`
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -91,7 +91,7 @@ func (h APIHandler) GetChannelPreview(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, channel.JSONPreview()))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, channel.JSONPreview()))
 }
 
 // GetUserKeyPreview swaggerdoc
@@ -109,13 +109,13 @@ func (h APIHandler) GetChannelPreview(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/preview/keys/{kid} [GET]
-func (h APIHandler) GetUserKeyPreview(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) GetUserKeyPreview(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		KeyID models.KeyTokenID `uri:"kid" binding:"entityid"`
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -133,5 +133,5 @@ func (h APIHandler) GetUserKeyPreview(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, keytoken.JSONPreview()))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, keytoken.JSONPreview()))
 }

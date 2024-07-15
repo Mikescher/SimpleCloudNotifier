@@ -11,8 +11,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/dataext"
+	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"net/http"
 )
@@ -47,7 +47,7 @@ func NewCompatHandler(app *logic.Application) CompatHandler {
 //	@Failure		500			{object}	ginresp.apiError
 //
 //	@Router			/send.php [POST]
-func (h CompatHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
+func (h CompatHandler) SendMessage(pctx ginext.PreContext) ginext.HTTPResponse {
 	type combined struct {
 		UserID        *int64   `json:"user_id"   form:"user_id"`
 		UserKey       *string  `json:"user_key"  form:"user_key"`
@@ -92,7 +92,7 @@ func (h CompatHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 	if errResp != nil {
 		return *errResp
 	} else {
-		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
+		return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{
 			Success:        true,
 			ErrorID:        apierr.NO_ERROR,
 			ErrorHighlight: -1,
@@ -127,7 +127,7 @@ func (h CompatHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	default		{object}	ginresp.compatAPIError
 //
 //	@Router		/api/register.php [get]
-func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
+func (h CompatHandler) Register(pctx ginext.PreContext) ginext.HTTPResponse {
 	type query struct {
 		FCMToken *string `json:"fcm_token" form:"fcm_token"`
 		Pro      *string `json:"pro"       form:"pro"`
@@ -216,7 +216,7 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to create userid<old>", err)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{
 		Success:   true,
 		Message:   "New user registered",
 		UserID:    oldid,
@@ -245,7 +245,7 @@ func (h CompatHandler) Register(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	default		{object}	ginresp.compatAPIError
 //
 //	@Router		/api/info.php [get]
-func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
+func (h CompatHandler) Info(pctx ginext.PreContext) ginext.HTTPResponse {
 	type query struct {
 		UserID  *int64  `json:"user_id"  form:"user_id"`
 		UserKey *string `json:"user_key" form:"user_key"`
@@ -321,7 +321,7 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(0, "Failed to query user")
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{
 		Success:    true,
 		Message:    "ok",
 		UserID:     *data.UserID,
@@ -354,7 +354,7 @@ func (h CompatHandler) Info(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	default		{object}	ginresp.compatAPIError
 //
 //	@Router		/api/ack.php [get]
-func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
+func (h CompatHandler) Ack(pctx ginext.PreContext) ginext.HTTPResponse {
 	type query struct {
 		UserID    *int64  `json:"user_id"    form:"user_id"`
 		UserKey   *string `json:"user_key"   form:"user_key"`
@@ -434,7 +434,7 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 		}
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{
 		Success:      true,
 		Message:      "ok",
 		PrevAckValue: langext.Conditional(ackBefore, 1, 0),
@@ -460,7 +460,7 @@ func (h CompatHandler) Ack(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	default		{object}	ginresp.compatAPIError
 //
 //	@Router		/api/requery.php [get]
-func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
+func (h CompatHandler) Requery(pctx ginext.PreContext) ginext.HTTPResponse {
 	type query struct {
 		UserID  *int64  `json:"user_id"  form:"user_id"`
 		UserKey *string `json:"user_key" form:"user_key"`
@@ -545,7 +545,7 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 		})
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{
 		Success: true,
 		Message: "ok",
 		Count:   len(compMsgs),
@@ -573,7 +573,7 @@ func (h CompatHandler) Requery(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	default		{object}	ginresp.compatAPIError
 //
 //	@Router		/api/update.php [get]
-func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
+func (h CompatHandler) Update(pctx ginext.PreContext) ginext.HTTPResponse {
 	type query struct {
 		UserID   *int64  `json:"user_id"   form:"user_id"`
 		UserKey  *string `json:"user_key"  form:"user_key"`
@@ -673,7 +673,7 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(0, "Failed to query user")
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{
 		Success:   true,
 		Message:   "user updated",
 		UserID:    *data.UserID,
@@ -704,7 +704,7 @@ func (h CompatHandler) Update(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	default		{object}	ginresp.compatAPIError
 //
 //	@Router		/api/expand.php [get]
-func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
+func (h CompatHandler) Expand(pctx ginext.PreContext) ginext.HTTPResponse {
 	type query struct {
 		UserID    *int64  `json:"user_id"    form:"user_id"`
 		UserKey   *string `json:"user_key"   form:"user_key"`
@@ -779,7 +779,7 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(0, "Failed to query message")
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{
 		Success: true,
 		Message: "ok",
 		Data: models.CompatMessage{
@@ -816,7 +816,7 @@ func (h CompatHandler) Expand(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	default		{object}	ginresp.compatAPIError
 //
 //	@Router		/api/upgrade.php [get]
-func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
+func (h CompatHandler) Upgrade(pctx ginext.PreContext) ginext.HTTPResponse {
 	type query struct {
 		UserID   *int64  `json:"user_id"   form:"user_id"`
 		UserKey  *string `json:"user_key"  form:"user_key"`
@@ -921,7 +921,7 @@ func (h CompatHandler) Upgrade(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.CompatAPIError(0, "Failed to query user")
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{
 		Success:   true,
 		Message:   "user updated",
 		UserID:    *data.UserID,

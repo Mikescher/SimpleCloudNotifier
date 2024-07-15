@@ -6,10 +6,10 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/db/simplectx"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"bytes"
-	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
-	sqlite3 "github.com/mattn/go-sqlite3"
+	"github.com/mattn/go-sqlite3"
+	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
 	"net/http"
@@ -51,12 +51,18 @@ type pingResponseInfo struct {
 //	@Router		/api/ping [put]
 //	@Router		/api/ping [delete]
 //	@Router		/api/ping [patch]
-func (h CommonHandler) Ping(g *gin.Context) ginresp.HTTPResponse {
+func (h CommonHandler) Ping(pctx ginext.PreContext) ginext.HTTPResponse {
+	ctx, g, errResp := pctx.Start()
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
 	buf := new(bytes.Buffer)
 	_, _ = buf.ReadFrom(g.Request.Body)
 	resuestBody := buf.String()
 
-	return ginresp.JSON(http.StatusOK, pingResponse{
+	return ginext.JSON(http.StatusOK, pingResponse{
 		Message: "Pong",
 		Info: pingResponseInfo{
 			Method:  g.Request.Method,
@@ -78,7 +84,7 @@ func (h CommonHandler) Ping(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	500	{object}	ginresp.apiError
 //
 //	@Router		/api/db-test [post]
-func (h CommonHandler) DatabaseTest(g *gin.Context) ginresp.HTTPResponse {
+func (h CommonHandler) DatabaseTest(pctx ginext.PreContext) ginext.HTTPResponse {
 	type response struct {
 		Success          bool   `json:"success"`
 		LibVersion       string `json:"libVersion"`
@@ -86,8 +92,11 @@ func (h CommonHandler) DatabaseTest(g *gin.Context) ginresp.HTTPResponse {
 		SourceID         string `json:"sourceID"`
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
+	ctx, _, errResp := pctx.Start()
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
 
 	libVersion, libVersionNumber, sourceID := sqlite3.Version()
 
@@ -96,7 +105,7 @@ func (h CommonHandler) DatabaseTest(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.InternalError(err)
 	}
 
-	return ginresp.JSON(http.StatusOK, response{
+	return ginext.JSON(http.StatusOK, response{
 		Success:          true,
 		LibVersion:       libVersion,
 		LibVersionNumber: libVersionNumber,
@@ -114,13 +123,16 @@ func (h CommonHandler) DatabaseTest(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	500	{object}	ginresp.apiError
 //
 //	@Router		/api/health [get]
-func (h CommonHandler) Health(g *gin.Context) ginresp.HTTPResponse {
+func (h CommonHandler) Health(pctx ginext.PreContext) ginext.HTTPResponse {
 	type response struct {
 		Status string `json:"status"`
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
+	ctx, _, errResp := pctx.Start()
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
 
 	_, libVersionNumber, _ := sqlite3.Version()
 
@@ -161,7 +173,7 @@ func (h CommonHandler) Health(g *gin.Context) ginresp.HTTPResponse {
 
 	}
 
-	return ginresp.JSON(http.StatusOK, response{Status: "ok"})
+	return ginext.JSON(http.StatusOK, response{Status: "ok"})
 }
 
 // Sleep swaggerdoc
@@ -177,7 +189,7 @@ func (h CommonHandler) Health(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	500		{object}	ginresp.apiError
 //
 //	@Router		/api/sleep/{secs} [post]
-func (h CommonHandler) Sleep(g *gin.Context) ginresp.HTTPResponse {
+func (h CommonHandler) Sleep(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		Seconds float64 `uri:"secs"`
 	}
@@ -186,6 +198,12 @@ func (h CommonHandler) Sleep(g *gin.Context) ginresp.HTTPResponse {
 		End      string  `json:"end"`
 		Duration float64 `json:"duration"`
 	}
+
+	ctx, g, errResp := pctx.Start()
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
 
 	t0 := time.Now().Format(time.RFC3339Nano)
 
@@ -198,15 +216,21 @@ func (h CommonHandler) Sleep(g *gin.Context) ginresp.HTTPResponse {
 
 	t1 := time.Now().Format(time.RFC3339Nano)
 
-	return ginresp.JSON(http.StatusOK, response{
+	return ginext.JSON(http.StatusOK, response{
 		Start:    t0,
 		End:      t1,
 		Duration: u.Seconds,
 	})
 }
 
-func (h CommonHandler) NoRoute(g *gin.Context) ginresp.HTTPResponse {
-	return ginresp.JSON(http.StatusNotFound, gin.H{
+func (h CommonHandler) NoRoute(pctx ginext.PreContext) ginext.HTTPResponse {
+	ctx, g, errResp := pctx.Start()
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
+	return ginext.JSON(http.StatusNotFound, gin.H{
 		"":           "================ ROUTE NOT FOUND ================",
 		"FullPath":   g.FullPath(),
 		"Method":     g.Request.Method,

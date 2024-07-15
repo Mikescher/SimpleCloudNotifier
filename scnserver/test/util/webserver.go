@@ -3,7 +3,6 @@ package util
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/api"
-	"blackforestbytes.com/simplecloudnotifier/api/ginext"
 	"blackforestbytes.com/simplecloudnotifier/google"
 	"blackforestbytes.com/simplecloudnotifier/jobs"
 	"blackforestbytes.com/simplecloudnotifier/logic"

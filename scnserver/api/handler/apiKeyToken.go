@@ -6,7 +6,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"errors"
-	"github.com/gin-gonic/gin"
+	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"net/http"
 )
@@ -27,7 +27,7 @@ import (
 //	@Failure		500	{object}	ginresp.apiError	"internal server error"
 //
 //	@Router			/api/v2/users/{uid}/keys [GET]
-func (h APIHandler) ListUserKeys(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) ListUserKeys(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
@@ -36,7 +36,7 @@ func (h APIHandler) ListUserKeys(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -53,7 +53,7 @@ func (h APIHandler) ListUserKeys(g *gin.Context) ginresp.HTTPResponse {
 
 	res := langext.ArrMap(toks, func(v models.KeyToken) models.KeyTokenJSON { return v.JSON() })
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{Keys: res}))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{Keys: res}))
 }
 
 // GetCurrentUserKey swaggerdoc
@@ -73,13 +73,13 @@ func (h APIHandler) ListUserKeys(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure		500	{object}	ginresp.apiError	"internal server error"
 //
 //	@Router			/api/v2/users/{uid}/keys/current [GET]
-func (h APIHandler) GetCurrentUserKey(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) GetCurrentUserKey(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -102,7 +102,7 @@ func (h APIHandler) GetCurrentUserKey(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, keytoken.JSON().WithToken(keytoken.Token)))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, keytoken.JSON().WithToken(keytoken.Token)))
 }
 
 // GetUserKey swaggerdoc
@@ -122,14 +122,14 @@ func (h APIHandler) GetCurrentUserKey(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure		500	{object}	ginresp.apiError	"internal server error"
 //
 //	@Router			/api/v2/users/{uid}/keys/{kid} [GET]
-func (h APIHandler) GetUserKey(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) GetUserKey(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID models.UserID     `uri:"uid" binding:"entityid"`
 		KeyID  models.KeyTokenID `uri:"kid" binding:"entityid"`
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -147,7 +147,7 @@ func (h APIHandler) GetUserKey(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, keytoken.JSON()))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, keytoken.JSON()))
 }
 
 // UpdateUserKey swaggerdoc
@@ -168,7 +168,7 @@ func (h APIHandler) GetUserKey(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	500			{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/users/{uid}/keys/{kid} [PATCH]
-func (h APIHandler) UpdateUserKey(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) UpdateUserKey(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID models.UserID     `uri:"uid" binding:"entityid"`
 		KeyID  models.KeyTokenID `uri:"kid" binding:"entityid"`
@@ -182,7 +182,7 @@ func (h APIHandler) UpdateUserKey(g *gin.Context) ginresp.HTTPResponse {
 
 	var u uri
 	var b body
-	ctx, errResp := h.app.StartRequest(g, &u, nil, &b, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Body(&b).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -245,7 +245,7 @@ func (h APIHandler) UpdateUserKey(g *gin.Context) ginresp.HTTPResponse {
 		keytoken.Channels = *b.Channels
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, keytoken.JSON()))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, keytoken.JSON()))
 }
 
 // CreateUserKey swaggerdoc
@@ -265,7 +265,7 @@ func (h APIHandler) UpdateUserKey(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	500			{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/users/{uid}/keys [POST]
-func (h APIHandler) CreateUserKey(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) CreateUserKey(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
@@ -278,7 +278,7 @@ func (h APIHandler) CreateUserKey(g *gin.Context) ginresp.HTTPResponse {
 
 	var u uri
 	var b body
-	ctx, errResp := h.app.StartRequest(g, &u, nil, &b, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Body(&b).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -314,7 +314,7 @@ func (h APIHandler) CreateUserKey(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create keytoken in db", err)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, keytok.JSON().WithToken(token)))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, keytok.JSON().WithToken(token)))
 }
 
 // DeleteUserKey swaggerdoc
@@ -334,14 +334,14 @@ func (h APIHandler) CreateUserKey(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure		500	{object}	ginresp.apiError	"internal server error"
 //
 //	@Router			/api/v2/users/{uid}/keys/{kid} [DELETE]
-func (h APIHandler) DeleteUserKey(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) DeleteUserKey(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID models.UserID     `uri:"uid" binding:"entityid"`
 		KeyID  models.KeyTokenID `uri:"kid" binding:"entityid"`
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -368,5 +368,5 @@ func (h APIHandler) DeleteUserKey(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete client", err)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, client.JSON()))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, client.JSON()))
 }

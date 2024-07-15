@@ -2,12 +2,11 @@ package handler
 
 import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
-	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	primarydb "blackforestbytes.com/simplecloudnotifier/db/impl/primary"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
-	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/dataext"
+	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"net/http"
 )
@@ -49,7 +48,7 @@ func NewMessageHandler(app *logic.Application) MessageHandler {
 //
 //	@Router			/     [POST]
 //	@Router			/send [POST]
-func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
+func (h MessageHandler) SendMessage(pctx ginext.PreContext) ginext.HTTPResponse {
 	type combined struct {
 		UserID        *models.UserID `json:"user_id"     form:"user_id"     example:"7725"                               `
 		KeyToken      *string        `json:"key"         form:"key"         example:"P3TNH8mvv14fm"                      `
@@ -78,7 +77,7 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 	var b combined
 	var q combined
 	var f combined
-	ctx, errResp := h.app.StartRequest(g, nil, &q, &b, &f, logic.RequestOptions{IgnoreWrongContentType: true})
+	ctx, g, errResp := h.app.StartRequest(pctx.Form(&f).Query(&q).Body(&b).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -91,7 +90,7 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 	if errResp != nil {
 		return *errResp
 	} else {
-		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
+		return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{
 			Success:        true,
 			ErrorID:        apierr.NO_ERROR,
 			ErrorHighlight: -1,

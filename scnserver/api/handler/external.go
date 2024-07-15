@@ -7,7 +7,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"fmt"
-	"github.com/gin-gonic/gin"
+	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"net/http"
 	"time"
@@ -41,7 +41,7 @@ func NewExternalHandler(app *logic.Application) ExternalHandler {
 //	@Failure		500			{object}	ginresp.apiError	"An internal server error occurred - try again later"
 //
 //	@Router			/external/v1/uptime-kuma [POST]
-func (h ExternalHandler) UptimeKuma(g *gin.Context) ginresp.HTTPResponse {
+func (h ExternalHandler) UptimeKuma(pctx ginext.PreContext) ginext.HTTPResponse {
 	type query struct {
 		UserID       *models.UserID `form:"user_id"     example:"7725"`
 		KeyToken     *string        `form:"key"         example:"P3TNH8mvv14fm"`
@@ -128,7 +128,7 @@ func (h ExternalHandler) UptimeKuma(g *gin.Context) ginresp.HTTPResponse {
 		return *errResp
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{
 		MessageID: okResp.Message.MessageID,
 	}))
 }

@@ -7,8 +7,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
+	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"net/http"
 )
@@ -26,7 +26,7 @@ import (
 //	@Failure	500			{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/users [POST]
-func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) CreateUser(pctx ginext.PreContext) ginext.HTTPResponse {
 	type body struct {
 		FCMToken     string            `json:"fcm_token"`
 		ProToken     *string           `json:"pro_token"`
@@ -39,7 +39,7 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 	}
 
 	var b body
-	ctx, errResp := h.app.StartRequest(g, nil, nil, &b, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.Body(&b).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -117,7 +117,7 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 	log.Info().Msg(fmt.Sprintf("Sucessfully created new user %s (client: %v)", userobj.UserID, b.NoClient))
 
 	if b.NoClient {
-		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, userobj.JSONWithClients(make([]models.Client, 0), adminKey, sendKey, readKey)))
+		return ctx.FinishSuccess(ginext.JSON(http.StatusOK, userobj.JSONWithClients(make([]models.Client, 0), adminKey, sendKey, readKey)))
 	} else {
 		err := h.database.DeleteClientsByFCM(ctx, b.FCMToken)
 		if err != nil {
@@ -129,7 +129,7 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create client in db", err)
 		}
 
-		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, userobj.JSONWithClients([]models.Client{client}, adminKey, sendKey, readKey)))
+		return ctx.FinishSuccess(ginext.JSON(http.StatusOK, userobj.JSONWithClients([]models.Client{client}, adminKey, sendKey, readKey)))
 	}
 
 }
@@ -149,13 +149,13 @@ func (h APIHandler) CreateUser(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/users/{uid} [GET]
-func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) GetUser(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -173,7 +173,7 @@ func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query user", err)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, user.JSON()))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, user.JSON()))
 }
 
 // UpdateUser swaggerdoc
@@ -195,7 +195,7 @@ func (h APIHandler) GetUser(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure		500			{object}	ginresp.apiError	"internal server error"
 //
 //	@Router			/api/v2/users/{uid} [PATCH]
-func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) UpdateUser(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
@@ -206,7 +206,7 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 
 	var u uri
 	var b body
-	ctx, errResp := h.app.StartRequest(g, &u, nil, &b, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Body(&b).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -261,5 +261,5 @@ func (h APIHandler) UpdateUser(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query (updated) user", err)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, user.JSON()))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, user.JSON()))
 }

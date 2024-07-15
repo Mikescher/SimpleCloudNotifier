@@ -1,33 +1,33 @@
-package ginresp
+package api
 
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
+	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/mattn/go-sqlite3"
+	"github.com/glebarez/go-sqlite"
 	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/dataext"
+	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"math/rand"
 	"runtime/debug"
 	"time"
 )
 
-type WHandlerFunc func(*gin.Context) HTTPResponse
-
 type RequestLogAcceptor interface {
 	InsertRequestLog(data models.RequestLog)
 }
 
-func Wrap(rlacc RequestLogAcceptor, fn WHandlerFunc) gin.HandlerFunc {
+func Wrap(rlacc RequestLogAcceptor, fn ginext.WHandlerFunc) ginext.WHandlerFunc {
 
 	maxRetry := scn.Conf.RequestMaxRetry
 	retrySleep := scn.Conf.RequestRetrySleep
 
-	return func(g *gin.Context) {
+	return func(pctx *ginext.PreContext) {
 
 		reqctx := g.Request.Context()
 
@@ -43,7 +43,7 @@ func Wrap(rlacc RequestLogAcceptor, fn WHandlerFunc) gin.HandlerFunc {
 			if panicObj != nil {
 				log.Error().Interface("panicObj", panicObj).Msg("Panic occured (in gin handler)")
 				log.Error().Msg(stackTrace)
-				wrap = APIError(g, 500, apierr.PANIC, "A panic occured in the HTTP handler", errors.New(fmt.Sprintf("%+v\n\n@:\n%s", panicObj, stackTrace)))
+				wrap = ginresp.APIError(g, 500, apierr.PANIC, "A panic occured in the HTTP handler", errors.New(fmt.Sprintf("%+v\n\n@:\n%s", panicObj, stackTrace)))
 			}
 
 			if g.Writer.Written() {
@@ -70,9 +70,14 @@ func Wrap(rlacc RequestLogAcceptor, fn WHandlerFunc) gin.HandlerFunc {
 					rlacc.InsertRequestLog(createRequestLog(g, t0, ctr, wrap, nil))
 				}
 
-				statuscode := wrap.Statuscode()
-				if statuscode/100 != 2 {
-					log.Warn().Str("url", g.Request.Method+"::"+g.Request.URL.String()).Msg(fmt.Sprintf("Request failed with statuscode %d", statuscode))
+				if scw, ok := wrap.(ginext.InspectableHTTPResponse); ok {
+
+					statuscode := scw.Statuscode()
+					if statuscode/100 != 2 {
+						log.Warn().Str("url", g.Request.Method+"::"+g.Request.URL.String()).Msg(fmt.Sprintf("Request failed with statuscode %d", statuscode))
+					}
+				} else {
+					log.Warn().Str("url", g.Request.Method+"::"+g.Request.URL.String()).Msg(fmt.Sprintf("Request failed with statuscode [unknown]"))
 				}
 
 				wrap.Write(g)
@@ -85,7 +90,7 @@ func Wrap(rlacc RequestLogAcceptor, fn WHandlerFunc) gin.HandlerFunc {
 
 }
 
-func createRequestLog(g *gin.Context, t0 time.Time, ctr int, resp HTTPResponse, panicstr *string) models.RequestLog {
+func createRequestLog(g *gin.Context, t0 time.Time, ctr int, resp ginext.HTTPResponse, panicstr *string) models.RequestLog {
 
 	t1 := time.Now()
 
@@ -109,9 +114,11 @@ func createRequestLog(g *gin.Context, t0 time.Time, ctr int, resp HTTPResponse, 
 
 	var strrespbody *string = nil
 	if resp != nil {
-		respbody = resp.BodyString()
-		if respbody != nil && len(*respbody) < scn.Conf.ReqLogMaxBodySize {
-			strrespbody = respbody
+		if resp2, ok := resp.(ginext.InspectableHTTPResponse); ok {
+			respbody = resp2.BodyString(g)
+			if respbody != nil && len(*respbody) < scn.Conf.ReqLogMaxBodySize {
+				strrespbody = respbody
+			}
 		}
 	}
 
@@ -147,7 +154,7 @@ func createRequestLog(g *gin.Context, t0 time.Time, ctr int, resp HTTPResponse, 
 	}
 }
 
-func callPanicSafe(fn WHandlerFunc, g *gin.Context) (res HTTPResponse, stackTrace string, panicObj any) {
+func callPanicSafe(fn ginext.WHandlerFunc, g ginext.PreContext) (res ginext.HTTPResponse, stackTrace string, panicObj any) {
 	defer func() {
 		if rec := recover(); rec != nil {
 			res = nil
@@ -173,17 +180,14 @@ func resetBody(g *gin.Context) error {
 	return nil
 }
 
-func isSqlite3Busy(r HTTPResponse) bool {
-	if errwrap, ok := r.(*errorHTTPResponse); ok && errwrap != nil {
-
-		if errors.Is(errwrap.error, sqlite3.ErrBusy) {
-			return true
-		}
-
-		var s3err sqlite3.Error
-		if errors.As(errwrap.error, &s3err) {
-			if errors.Is(s3err.Code, sqlite3.ErrBusy) {
-				return true
+func isSqlite3Busy(r ginext.HTTPResponse) bool {
+	if errwrap, ok := r.(interface{ Unwrap() error }); ok && errwrap != nil {
+		{
+			var s3err *sqlite.Error
+			if errors.As(errwrap.Unwrap(), &s3err) {
+				if s3err.Code() == 5 { // [5] == SQLITE_BUSY
+					return true
+				}
 			}
 		}
 	}

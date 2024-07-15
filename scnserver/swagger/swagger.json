@@ -19,61 +19,37 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "example": "test",
-                        "name": "channel",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "This is a message",
                         "name": "content",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "example": "P3TNH8mvv14fm",
-                        "name": "key",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "db8b0e6a-a08c-4646",
                         "name": "msg_id",
                         "in": "query"
                     },
                     {
-                        "enum": [
-                            0,
-                            1,
-                            2
-                        ],
                         "type": "integer",
-                        "example": 1,
                         "name": "priority",
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "example": "example-server",
-                        "name": "sender_name",
-                        "in": "query"
-                    },
-                    {
                         "type": "number",
-                        "example": 1669824037,
                         "name": "timestamp",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "example": "Hello World",
                         "name": "title",
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "example": "7725",
+                        "type": "integer",
                         "name": "user_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "user_key",
                         "in": "query"
                     },
                     {
@@ -86,61 +62,37 @@
                     },
                     {
                         "type": "string",
-                        "example": "test",
-                        "name": "channel",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "example": "This is a message",
                         "name": "content",
                         "in": "formData"
                     },
                     {
                         "type": "string",
-                        "example": "P3TNH8mvv14fm",
-                        "name": "key",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "example": "db8b0e6a-a08c-4646",
                         "name": "msg_id",
                         "in": "formData"
                     },
                     {
-                        "enum": [
-                            0,
-                            1,
-                            2
-                        ],
                         "type": "integer",
-                        "example": 1,
                         "name": "priority",
                         "in": "formData"
                     },
                     {
-                        "type": "string",
-                        "example": "example-server",
-                        "name": "sender_name",
-                        "in": "formData"
-                    },
-                    {
                         "type": "number",
-                        "example": 1669824037,
                         "name": "timestamp",
                         "in": "formData"
                     },
                     {
                         "type": "string",
-                        "example": "Hello World",
                         "name": "title",
                         "in": "formData"
                     },
                     {
-                        "type": "string",
-                        "example": "7725",
+                        "type": "integer",
                         "name": "user_id",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "user_key",
                         "in": "formData"
                     }
                 ],
@@ -2765,61 +2717,37 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "example": "test",
-                        "name": "channel",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "This is a message",
                         "name": "content",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "example": "P3TNH8mvv14fm",
-                        "name": "key",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "db8b0e6a-a08c-4646",
                         "name": "msg_id",
                         "in": "query"
                     },
                     {
-                        "enum": [
-                            0,
-                            1,
-                            2
-                        ],
                         "type": "integer",
-                        "example": 1,
                         "name": "priority",
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "example": "example-server",
-                        "name": "sender_name",
-                        "in": "query"
-                    },
-                    {
                         "type": "number",
-                        "example": 1669824037,
                         "name": "timestamp",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "example": "Hello World",
                         "name": "title",
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "example": "7725",
+                        "type": "integer",
                         "name": "user_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "user_key",
                         "in": "query"
                     },
                     {
@@ -2832,61 +2760,37 @@
                     },
                     {
                         "type": "string",
-                        "example": "test",
-                        "name": "channel",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "example": "This is a message",
                         "name": "content",
                         "in": "formData"
                     },
                     {
                         "type": "string",
-                        "example": "P3TNH8mvv14fm",
-                        "name": "key",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "example": "db8b0e6a-a08c-4646",
                         "name": "msg_id",
                         "in": "formData"
                     },
                     {
-                        "enum": [
-                            0,
-                            1,
-                            2
-                        ],
                         "type": "integer",
-                        "example": 1,
                         "name": "priority",
                         "in": "formData"
                     },
                     {
-                        "type": "string",
-                        "example": "example-server",
-                        "name": "sender_name",
-                        "in": "formData"
-                    },
-                    {
                         "type": "number",
-                        "example": 1669824037,
                         "name": "timestamp",
                         "in": "formData"
                     },
                     {
                         "type": "string",
-                        "example": "Hello World",
                         "name": "title",
                         "in": "formData"
                     },
                     {
-                        "type": "string",
-                        "example": "7725",
+                        "type": "integer",
                         "name": "user_id",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "user_key",
                         "in": "formData"
                     }
                 ],
@@ -2935,120 +2839,72 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "example": "test",
-                        "name": "channel",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "This is a message",
                         "name": "content",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "example": "P3TNH8mvv14fm",
-                        "name": "key",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "db8b0e6a-a08c-4646",
                         "name": "msg_id",
                         "in": "query"
                     },
                     {
-                        "enum": [
-                            0,
-                            1,
-                            2
-                        ],
                         "type": "integer",
-                        "example": 1,
                         "name": "priority",
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "example": "example-server",
-                        "name": "sender_name",
-                        "in": "query"
-                    },
-                    {
                         "type": "number",
-                        "example": 1669824037,
                         "name": "timestamp",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "example": "Hello World",
                         "name": "title",
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "example": "7725",
+                        "type": "integer",
                         "name": "user_id",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "example": "test",
-                        "name": "channel",
-                        "in": "formData"
+                        "name": "user_key",
+                        "in": "query"
                     },
                     {
                         "type": "string",
-                        "example": "This is a message",
                         "name": "content",
                         "in": "formData"
                     },
                     {
                         "type": "string",
-                        "example": "P3TNH8mvv14fm",
-                        "name": "key",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "example": "db8b0e6a-a08c-4646",
                         "name": "msg_id",
                         "in": "formData"
                     },
                     {
-                        "enum": [
-                            0,
-                            1,
-                            2
-                        ],
                         "type": "integer",
-                        "example": 1,
                         "name": "priority",
                         "in": "formData"
                     },
                     {
-                        "type": "string",
-                        "example": "example-server",
-                        "name": "sender_name",
-                        "in": "formData"
-                    },
-                    {
                         "type": "number",
-                        "example": 1669824037,
                         "name": "timestamp",
                         "in": "formData"
                     },
                     {
                         "type": "string",
-                        "example": "Hello World",
                         "name": "title",
                         "in": "formData"
                     },
                     {
-                        "type": "string",
-                        "example": "7725",
+                        "type": "integer",
                         "name": "user_id",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "user_key",
                         "in": "formData"
                     }
                 ],
@@ -3545,46 +3401,26 @@
         "handler.SendMessage.combined": {
             "type": "object",
             "properties": {
-                "channel": {
-                    "type": "string",
-                    "example": "test"
-                },
                 "content": {
-                    "type": "string",
-                    "example": "This is a message"
-                },
-                "key": {
-                    "type": "string",
-                    "example": "P3TNH8mvv14fm"
+                    "type": "string"
                 },
                 "msg_id": {
-                    "type": "string",
-                    "example": "db8b0e6a-a08c-4646"
+                    "type": "string"
                 },
                 "priority": {
-                    "type": "integer",
-                    "enum": [
-                        0,
-                        1,
-                        2
-                    ],
-                    "example": 1
-                },
-                "sender_name": {
-                    "type": "string",
-                    "example": "example-server"
+                    "type": "integer"
                 },
                 "timestamp": {
-                    "type": "number",
-                    "example": 1669824037
+                    "type": "number"
                 },
                 "title": {
-                    "type": "string",
-                    "example": "Hello World"
+                    "type": "string"
                 },
                 "user_id": {
-                    "type": "string",
-                    "example": "7725"
+                    "type": "integer"
+                },
+                "user_key": {
+                    "type": "string"
                 }
             }
         },
@@ -3613,7 +3449,7 @@
                     "type": "integer"
                 },
                 "scn_msg_id": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "success": {
                     "type": "boolean"

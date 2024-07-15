@@ -3,6 +3,7 @@ package handler
 import (
 	"database/sql"
 	"errors"
+	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"net/http"
 	"strings"
 	"time"
@@ -11,7 +12,6 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	ct "blackforestbytes.com/simplecloudnotifier/db/cursortoken"
 	"blackforestbytes.com/simplecloudnotifier/models"
-	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/mathext"
 )
@@ -34,7 +34,7 @@ import (
 //	@Failure		500			{object}	ginresp.apiError	"internal server error"
 //
 //	@Router			/api/v2/messages [GET]
-func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) ListMessages(pctx ginext.PreContext) ginext.HTTPResponse {
 	type query struct {
 		PageSize      *int     `json:"page_size"       form:"page_size"`
 		NextPageToken *string  `json:"next_page_token" form:"next_page_token"`
@@ -155,7 +155,7 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 		res = langext.ArrMap(messages, func(v models.Message) models.MessageJSON { return v.FullJSON() })
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize}))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize}))
 }
 
 // GetMessage swaggerdoc
@@ -176,13 +176,13 @@ func (h APIHandler) ListMessages(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure		500	{object}	ginresp.apiError	"internal server error"
 //
 //	@Router			/api/v2/messages/{mid} [GET]
-func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) GetMessage(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		MessageID models.MessageID `uri:"mid" binding:"entityid"`
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -204,7 +204,7 @@ func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 	// or we subscribe (+confirmed) to the channel and have read/admin key
 
 	if ctx.CheckPermissionMessageRead(msg) {
-		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, msg.FullJSON()))
+		return ctx.FinishSuccess(ginext.JSON(http.StatusOK, msg.FullJSON()))
 	}
 
 	if uid := ctx.GetPermissionUserID(); uid != nil && ctx.CheckPermissionUserRead(*uid) == nil {
@@ -222,7 +222,7 @@ func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 		}
 
 		// => perm okay
-		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, msg.FullJSON()))
+		return ctx.FinishSuccess(ginext.JSON(http.StatusOK, msg.FullJSON()))
 	}
 
 	return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
@@ -244,13 +244,13 @@ func (h APIHandler) GetMessage(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure		500	{object}	ginresp.apiError	"internal server error"
 //
 //	@Router			/api/v2/messages/{mid} [DELETE]
-func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) DeleteMessage(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		MessageID models.MessageID `uri:"mid" binding:"entityid"`
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -282,5 +282,5 @@ func (h APIHandler) DeleteMessage(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to cancel deliveries", err)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, msg.FullJSON()))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, msg.FullJSON()))
 }

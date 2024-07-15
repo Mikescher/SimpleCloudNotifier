@@ -8,7 +8,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
+	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/mathext"
 	"net/http"
@@ -37,7 +37,7 @@ import (
 //	@Failure		500			{object}	ginresp.apiError	"internal server error"
 //
 //	@Router			/api/v2/users/{uid}/channels [GET]
-func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) ListChannels(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
@@ -50,6 +50,12 @@ func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 
 	var u uri
 	var q query
+	ctx, g, errResp := pctx.URI(&u).Query(&q).Start()
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
 	ctx, errResp := h.app.StartRequest(g, &u, &q, nil, nil)
 	if errResp != nil {
 		return *errResp
@@ -110,7 +116,7 @@ func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{Channels: res}))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{Channels: res}))
 }
 
 // GetChannel swaggerdoc
@@ -129,14 +135,14 @@ func (h APIHandler) ListChannels(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/users/{uid}/channels/{cid} [GET]
-func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) GetChannel(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID    models.UserID    `uri:"uid" binding:"entityid"`
 		ChannelID models.ChannelID `uri:"cid" binding:"entityid"`
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -154,7 +160,7 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, channel.JSON(true)))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, channel.JSON(true)))
 }
 
 // CreateChannel swaggerdoc
@@ -173,7 +179,7 @@ func (h APIHandler) GetChannel(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	500			{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/users/{uid}/channels [POST]
-func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) CreateChannel(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
@@ -186,7 +192,7 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 
 	var u uri
 	var b body
-	ctx, errResp := h.app.StartRequest(g, &u, nil, &b, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Body(&b).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -247,11 +253,11 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create subscription", err)
 		}
 
-		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, channel.WithSubscription(langext.Ptr(sub)).JSON(true)))
+		return ctx.FinishSuccess(ginext.JSON(http.StatusOK, channel.WithSubscription(langext.Ptr(sub)).JSON(true)))
 
 	} else {
 
-		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, channel.WithSubscription(nil).JSON(true)))
+		return ctx.FinishSuccess(ginext.JSON(http.StatusOK, channel.WithSubscription(nil).JSON(true)))
 
 	}
 
@@ -277,7 +283,7 @@ func (h APIHandler) CreateChannel(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	500				{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/users/{uid}/channels/{cid} [PATCH]
-func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) UpdateChannel(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID    models.UserID    `uri:"uid" binding:"entityid"`
 		ChannelID models.ChannelID `uri:"cid" binding:"entityid"`
@@ -290,7 +296,7 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 
 	var u uri
 	var b body
-	ctx, errResp := h.app.StartRequest(g, &u, nil, &b, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Body(&b).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -367,7 +373,7 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query (updated) channel", err)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, channel.JSON(true)))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, channel.JSON(true)))
 }
 
 // ListChannelMessages swaggerdoc
@@ -391,7 +397,7 @@ func (h APIHandler) UpdateChannel(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure		500			{object}	ginresp.apiError	"internal server error"
 //
 //	@Router			/api/v2/users/{uid}/channels/{cid}/messages [GET]
-func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) ListChannelMessages(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		ChannelUserID models.UserID    `uri:"uid" binding:"entityid"`
 		ChannelID     models.ChannelID `uri:"cid" binding:"entityid"`
@@ -410,7 +416,7 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 
 	var u uri
 	var q query
-	ctx, errResp := h.app.StartRequest(g, &u, &q, nil, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Query(&q).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -455,5 +461,5 @@ func (h APIHandler) ListChannelMessages(g *gin.Context) ginresp.HTTPResponse {
 		res = langext.ArrMap(messages, func(v models.Message) models.MessageJSON { return v.FullJSON() })
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize}))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize}))
 }

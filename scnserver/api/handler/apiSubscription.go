@@ -6,7 +6,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"errors"
-	"github.com/gin-gonic/gin"
+	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"net/http"
 	"strings"
@@ -47,7 +47,7 @@ import (
 //	@Failure		500			{object}	ginresp.apiError	"internal server error"
 //
 //	@Router			/api/v2/users/{uid}/subscriptions [GET]
-func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) ListUserSubscriptions(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
@@ -64,7 +64,7 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 
 	var u uri
 	var q query
-	ctx, errResp := h.app.StartRequest(g, &u, &q, nil, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Query(&q).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -128,7 +128,7 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 
 	jsonres := langext.ArrMap(res, func(v models.Subscription) models.SubscriptionJSON { return v.JSON() })
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{Subscriptions: jsonres}))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{Subscriptions: jsonres}))
 }
 
 // ListChannelSubscriptions swaggerdoc
@@ -147,7 +147,7 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/users/{uid}/channels/{cid}/subscriptions [GET]
-func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) ListChannelSubscriptions(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID    models.UserID    `uri:"uid" binding:"entityid"`
 		ChannelID models.ChannelID `uri:"cid" binding:"entityid"`
@@ -157,7 +157,7 @@ func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPRespons
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -182,7 +182,7 @@ func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPRespons
 
 	res := langext.ArrMap(clients, func(v models.Subscription) models.SubscriptionJSON { return v.JSON() })
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{Subscriptions: res}))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{Subscriptions: res}))
 }
 
 // GetSubscription swaggerdoc
@@ -201,14 +201,14 @@ func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPRespons
 //	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/users/{uid}/subscriptions/{sid} [GET]
-func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) GetSubscription(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID         models.UserID         `uri:"uid" binding:"entityid"`
 		SubscriptionID models.SubscriptionID `uri:"sid" binding:"entityid"`
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -229,7 +229,7 @@ func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_USER_MISMATCH, "Subscription not found", nil)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, subscription.JSON()))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, subscription.JSON()))
 }
 
 // CancelSubscription swaggerdoc
@@ -248,14 +248,14 @@ func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/users/{uid}/subscriptions/{sid} [DELETE]
-func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) CancelSubscription(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID         models.UserID         `uri:"uid" binding:"entityid"`
 		SubscriptionID models.SubscriptionID `uri:"sid" binding:"entityid"`
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -281,7 +281,7 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete subscription", err)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, subscription.JSON()))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, subscription.JSON()))
 }
 
 // CreateSubscription swaggerdoc
@@ -301,7 +301,7 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure		500			{object}	ginresp.apiError	"internal server error"
 //
 //	@Router			/api/v2/users/{uid}/subscriptions [POST]
-func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) CreateSubscription(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
@@ -317,7 +317,7 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 	var u uri
 	var q query
 	var b body
-	ctx, errResp := h.app.StartRequest(g, &u, &q, &b, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Query(&q).Body(&b).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -378,7 +378,7 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 			existingSub.Confirmed = true
 		}
 
-		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, existingSub.JSON()))
+		return ctx.FinishSuccess(ginext.JSON(http.StatusOK, existingSub.JSON()))
 	}
 
 	sub, err := h.database.CreateSubscription(ctx, u.UserID, channel, channel.OwnerUserID == u.UserID)
@@ -386,7 +386,7 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create subscription", err)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, sub.JSON()))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, sub.JSON()))
 }
 
 // UpdateSubscription swaggerdoc
@@ -406,7 +406,7 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	500			{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/users/{uid}/subscriptions/{sid} [PATCH]
-func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) UpdateSubscription(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID         models.UserID         `uri:"uid" binding:"entityid"`
 		SubscriptionID models.SubscriptionID `uri:"sid" binding:"entityid"`
@@ -417,7 +417,7 @@ func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 
 	var u uri
 	var b body
-	ctx, errResp := h.app.StartRequest(g, &u, nil, &b, nil)
+	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Body(&b).Start())
 	if errResp != nil {
 		return *errResp
 	}
@@ -455,5 +455,5 @@ func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
 	}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, subscription.JSON()))
+	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, subscription.JSON()))
 }

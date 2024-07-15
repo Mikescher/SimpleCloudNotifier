@@ -24,7 +24,7 @@ type SendMessageResponse struct {
 	CompatMessageID int64
 }
 
-func (app *Application) SendMessage(g *gin.Context, ctx *AppContext, UserID *models.UserID, Key *string, Channel *string, Title *string, Content *string, Priority *int, UserMessageID *string, SendTimestamp *float64, SenderName *string) (*SendMessageResponse, *ginresp.HTTPResponse) {
+func (app *Application) SendMessage(g *gin.Context, ctx *AppContext, UserID *models.UserID, Key *string, Channel *string, Title *string, Content *string, Priority *int, UserMessageID *string, SendTimestamp *float64, SenderName *string) (*SendMessageResponse, *ginext.HTTPResponse) {
 	if Title != nil {
 		Title = langext.Ptr(strings.TrimSpace(*Title))
 	}

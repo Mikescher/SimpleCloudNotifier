@@ -3,13 +3,14 @@ package main
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
 	"blackforestbytes.com/simplecloudnotifier/api"
-	"blackforestbytes.com/simplecloudnotifier/api/ginext"
 	"blackforestbytes.com/simplecloudnotifier/google"
 	"blackforestbytes.com/simplecloudnotifier/jobs"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/push"
 	"fmt"
 	"github.com/rs/zerolog/log"
+	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 )
 
 func main() {
@@ -31,7 +32,12 @@ func main() {
 		return
 	}
 
-	ginengine := ginext.NewEngine(conf)
+	ginengine := ginext.NewEngine(ginext.Options{
+		AllowCors:  &conf.Cors,
+		GinDebug:   &conf.GinDebug,
+		BufferBody: langext.PTrue,
+		Timeout:    &conf.RequestTimeout,
+	})
 
 	router := api.NewRouter(app)
 

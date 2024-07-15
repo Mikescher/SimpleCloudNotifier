@@ -7,6 +7,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
+	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"gogs.mikescher.com/BlackForestBytes/goext/rext"
 	"net/http"
 	"regexp"
@@ -27,60 +28,104 @@ func NewWebsiteHandler(app *logic.Application) WebsiteHandler {
 	}
 }
 
-func (h WebsiteHandler) Index(g *gin.Context) ginresp.HTTPResponse {
+func (h WebsiteHandler) Index(pctx ginext.PreContext) ginext.HTTPResponse {
+	ctx, g, errResp := pctx.Start()
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
 	return h.serveAsset(g, "index.html", true)
 }
 
-func (h WebsiteHandler) APIDocs(g *gin.Context) ginresp.HTTPResponse {
+func (h WebsiteHandler) APIDocs(pctx ginext.PreContext) ginext.HTTPResponse {
+	ctx, g, errResp := pctx.Start()
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
 	return h.serveAsset(g, "api.html", true)
 }
 
-func (h WebsiteHandler) APIDocsMore(g *gin.Context) ginresp.HTTPResponse {
+func (h WebsiteHandler) APIDocsMore(pctx ginext.PreContext) ginext.HTTPResponse {
+	ctx, g, errResp := pctx.Start()
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
 	return h.serveAsset(g, "api_more.html", true)
 }
 
-func (h WebsiteHandler) MessageSent(g *gin.Context) ginresp.HTTPResponse {
+func (h WebsiteHandler) MessageSent(pctx ginext.PreContext) ginext.HTTPResponse {
+	ctx, g, errResp := pctx.Start()
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
 	return h.serveAsset(g, "message_sent.html", true)
 }
 
-func (h WebsiteHandler) FaviconIco(g *gin.Context) ginresp.HTTPResponse {
+func (h WebsiteHandler) FaviconIco(pctx ginext.PreContext) ginext.HTTPResponse {
+	ctx, g, errResp := pctx.Start()
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
 	return h.serveAsset(g, "favicon.ico", false)
 }
 
-func (h WebsiteHandler) FaviconPNG(g *gin.Context) ginresp.HTTPResponse {
+func (h WebsiteHandler) FaviconPNG(pctx ginext.PreContext) ginext.HTTPResponse {
+	ctx, g, errResp := pctx.Start()
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
 	return h.serveAsset(g, "favicon.png", false)
 }
 
-func (h WebsiteHandler) Javascript(g *gin.Context) ginresp.HTTPResponse {
+func (h WebsiteHandler) Javascript(pctx ginext.PreContext) ginext.HTTPResponse {
+	ctx, g, errResp := pctx.Start()
+	if errResp != nil {
+		return *errResp
+	}
+	defer ctx.Cancel()
+
 	type uri struct {
 		Filename string `uri:"fn"`
 	}
 
 	var u uri
 	if err := g.ShouldBindUri(&u); err != nil {
-		return ginresp.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return ginext.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
 	return h.serveAsset(g, "js/"+u.Filename, false)
 }
 
-func (h WebsiteHandler) CSS(g *gin.Context) ginresp.HTTPResponse {
+func (h WebsiteHandler) CSS(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		Filename string `uri:"fn"`
 	}
 
 	var u uri
-	if err := g.ShouldBindUri(&u); err != nil {
-		return ginresp.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	ctx, g, errResp := pctx.URI(&u).Start()
+	if errResp != nil {
+		return *errResp
 	}
+	defer ctx.Cancel()
 
 	return h.serveAsset(g, "css/"+u.Filename, false)
 }
 
-func (h WebsiteHandler) serveAsset(g *gin.Context, fn string, repl bool) ginresp.HTTPResponse {
+func (h WebsiteHandler) serveAsset(g *gin.Context, fn string, repl bool) ginext.HTTPResponse {
 	_data, err := website.Assets.ReadFile(fn)
 	if err != nil {
-		return ginresp.Status(http.StatusNotFound)
+		return ginext.Status(http.StatusNotFound)
 	}
 
 	data := string(_data)
@@ -141,7 +186,7 @@ func (h WebsiteHandler) serveAsset(g *gin.Context, fn string, repl bool) ginresp
 		mime = "image/svg+xml"
 	}
 
-	return ginresp.Data(http.StatusOK, mime, []byte(data))
+	return ginext.Data(http.StatusOK, mime, []byte(data))
 }
 
 func (h WebsiteHandler) getReplConfig(key string) (string, bool) {

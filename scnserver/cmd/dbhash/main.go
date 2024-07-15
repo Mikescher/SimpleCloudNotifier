@@ -4,7 +4,6 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/db/schema"
 	"context"
 	"fmt"
-	"github.com/mattn/go-sqlite3"
 	"gogs.mikescher.com/BlackForestBytes/goext/exerr"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
@@ -21,7 +20,7 @@ func main() {
 	fmt.Println()
 
 	for i := 2; i <= schema.PrimarySchemaVersion; i++ {
-		h0, err := sq.HashMattnSqliteSchema(ctx, schema.PrimarySchema[i].SQL)
+		h0, err := sq.HashGoSqliteSchema(ctx, schema.PrimarySchema[i].SQL)
 		if err != nil {
 			h0 = "ERR"
 		}
@@ -29,7 +28,7 @@ func main() {
 	}
 
 	for i := 1; i <= schema.RequestsSchemaVersion; i++ {
-		h0, err := sq.HashMattnSqliteSchema(ctx, schema.RequestsSchema[i].SQL)
+		h0, err := sq.HashGoSqliteSchema(ctx, schema.RequestsSchema[i].SQL)
 		if err != nil {
 			h0 = "ERR"
 		}
@@ -37,7 +36,7 @@ func main() {
 	}
 
 	for i := 1; i <= schema.LogsSchemaVersion; i++ {
-		h0, err := sq.HashMattnSqliteSchema(ctx, schema.LogsSchema[i].SQL)
+		h0, err := sq.HashGoSqliteSchema(ctx, schema.LogsSchema[i].SQL)
 		if err != nil {
 			h0 = "ERR"
 		}

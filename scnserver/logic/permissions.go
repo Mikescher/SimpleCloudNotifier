@@ -9,7 +9,7 @@ import (
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 )
 
-func (ac *AppContext) CheckPermissionUserRead(userid models.UserID) *ginresp.HTTPResponse {
+func (ac *AppContext) CheckPermissionUserRead(userid models.UserID) *ginext.HTTPResponse {
 	p := ac.permissions
 	if p.Token != nil && p.Token.IsUserRead(userid) {
 		return nil
@@ -18,7 +18,7 @@ func (ac *AppContext) CheckPermissionUserRead(userid models.UserID) *ginresp.HTT
 	return langext.Ptr(ginresp.APIError(ac.ginContext, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil))
 }
 
-func (ac *AppContext) CheckPermissionSelfAllMessagesRead() *ginresp.HTTPResponse {
+func (ac *AppContext) CheckPermissionSelfAllMessagesRead() *ginext.HTTPResponse {
 	p := ac.permissions
 	if p.Token != nil && p.Token.IsAllMessagesRead(p.Token.OwnerUserID) {
 		return nil
@@ -27,7 +27,7 @@ func (ac *AppContext) CheckPermissionSelfAllMessagesRead() *ginresp.HTTPResponse
 	return langext.Ptr(ginresp.APIError(ac.ginContext, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil))
 }
 
-func (ac *AppContext) CheckPermissionAllMessagesRead(userid models.UserID) *ginresp.HTTPResponse {
+func (ac *AppContext) CheckPermissionAllMessagesRead(userid models.UserID) *ginext.HTTPResponse {
 	p := ac.permissions
 	if p.Token != nil && p.Token.IsAllMessagesRead(userid) {
 		return nil
@@ -36,7 +36,7 @@ func (ac *AppContext) CheckPermissionAllMessagesRead(userid models.UserID) *ginr
 	return langext.Ptr(ginresp.APIError(ac.ginContext, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil))
 }
 
-func (ac *AppContext) CheckPermissionChanMessagesRead(channel models.Channel) *ginresp.HTTPResponse {
+func (ac *AppContext) CheckPermissionChanMessagesRead(channel models.Channel) *ginext.HTTPResponse {
 	p := ac.permissions
 	if p.Token != nil && p.Token.IsChannelMessagesRead(channel.ChannelID) {
 
@@ -63,7 +63,7 @@ func (ac *AppContext) CheckPermissionChanMessagesRead(channel models.Channel) *g
 	return langext.Ptr(ginresp.APIError(ac.ginContext, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil))
 }
 
-func (ac *AppContext) CheckPermissionUserAdmin(userid models.UserID) *ginresp.HTTPResponse {
+func (ac *AppContext) CheckPermissionUserAdmin(userid models.UserID) *ginext.HTTPResponse {
 	p := ac.permissions
 	if p.Token != nil && p.Token.IsAdmin(userid) {
 		return nil
@@ -72,7 +72,7 @@ func (ac *AppContext) CheckPermissionUserAdmin(userid models.UserID) *ginresp.HT
 	return langext.Ptr(ginresp.APIError(ac.ginContext, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil))
 }
 
-func (ac *AppContext) CheckPermissionSend(channel models.Channel, key string) (*models.KeyToken, *ginresp.HTTPResponse) {
+func (ac *AppContext) CheckPermissionSend(channel models.Channel, key string) (*models.KeyToken, *ginext.HTTPResponse) {
 
 	keytok, err := ac.app.Database.Primary.GetKeyTokenByToken(ac, key)
 	if err != nil {
@@ -107,7 +107,7 @@ func (ac *AppContext) CheckPermissionMessageDelete(msg models.Message) bool {
 	return false
 }
 
-func (ac *AppContext) CheckPermissionAny() *ginresp.HTTPResponse {
+func (ac *AppContext) CheckPermissionAny() *ginext.HTTPResponse {
 	p := ac.permissions
 	if p.Token == nil {
 		return langext.Ptr(ginresp.APIError(ac.ginContext, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil))
