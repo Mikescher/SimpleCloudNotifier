@@ -3,6 +3,7 @@ package handler
 import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
+	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"errors"
@@ -31,25 +32,29 @@ func (h APIHandler) GetUserPreview(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 
 	var u uri
-	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
+	ctx, g, errResp := pctx.URI(&u).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionAny(); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	user, err := h.database.GetUser(ctx, u.UserID)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.USER_NOT_FOUND, "User not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query user", err)
-	}
+		if permResp := ctx.CheckPermissionAny(); permResp != nil {
+			return *permResp
+		}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, user.JSONPreview()))
+		user, err := h.database.GetUser(ctx, u.UserID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.USER_NOT_FOUND, "User not found", err)
+		}
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query user", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, user.JSONPreview()))
+
+	})
 }
 
 // GetChannelPreview swaggerdoc
@@ -73,25 +78,29 @@ func (h APIHandler) GetChannelPreview(pctx ginext.PreContext) ginext.HTTPRespons
 	}
 
 	var u uri
-	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
+	ctx, g, errResp := pctx.URI(&u).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionAny(); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	channel, err := h.database.GetChannelByID(ctx, u.ChannelID)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
-	}
+		if permResp := ctx.CheckPermissionAny(); permResp != nil {
+			return *permResp
+		}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, channel.JSONPreview()))
+		channel, err := h.database.GetChannelByID(ctx, u.ChannelID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
+		}
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, channel.JSONPreview()))
+
+	})
 }
 
 // GetUserKeyPreview swaggerdoc
@@ -115,23 +124,27 @@ func (h APIHandler) GetUserKeyPreview(pctx ginext.PreContext) ginext.HTTPRespons
 	}
 
 	var u uri
-	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
+	ctx, g, errResp := pctx.URI(&u).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionAny(); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	keytoken, err := h.database.GetKeyTokenByID(ctx, u.KeyID)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
-	}
+		if permResp := ctx.CheckPermissionAny(); permResp != nil {
+			return *permResp
+		}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, keytoken.JSONPreview()))
+		keytoken, err := h.database.GetKeyTokenByID(ctx, u.KeyID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
+		}
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, keytoken.JSONPreview()))
+
+	})
 }

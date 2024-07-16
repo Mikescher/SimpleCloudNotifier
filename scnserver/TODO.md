@@ -12,10 +12,6 @@
 
  - (!) use goext.ginWrapper
   
- - (!) use goext.exerr
-
- - use bfcodegen (enums+id)
-
 #### UNSURE
 
  - (?) default-priority for channels

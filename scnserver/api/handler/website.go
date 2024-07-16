@@ -35,7 +35,9 @@ func (h WebsiteHandler) Index(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
-	return h.serveAsset(g, "index.html", true)
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
+		return h.serveAsset(g, "index.html", true)
+	})
 }
 
 func (h WebsiteHandler) APIDocs(pctx ginext.PreContext) ginext.HTTPResponse {
@@ -45,7 +47,9 @@ func (h WebsiteHandler) APIDocs(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
-	return h.serveAsset(g, "api.html", true)
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
+		return h.serveAsset(g, "api.html", true)
+	})
 }
 
 func (h WebsiteHandler) APIDocsMore(pctx ginext.PreContext) ginext.HTTPResponse {
@@ -55,7 +59,9 @@ func (h WebsiteHandler) APIDocsMore(pctx ginext.PreContext) ginext.HTTPResponse 
 	}
 	defer ctx.Cancel()
 
-	return h.serveAsset(g, "api_more.html", true)
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
+		return h.serveAsset(g, "api_more.html", true)
+	})
 }
 
 func (h WebsiteHandler) MessageSent(pctx ginext.PreContext) ginext.HTTPResponse {
@@ -65,7 +71,9 @@ func (h WebsiteHandler) MessageSent(pctx ginext.PreContext) ginext.HTTPResponse 
 	}
 	defer ctx.Cancel()
 
-	return h.serveAsset(g, "message_sent.html", true)
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
+		return h.serveAsset(g, "message_sent.html", true)
+	})
 }
 
 func (h WebsiteHandler) FaviconIco(pctx ginext.PreContext) ginext.HTTPResponse {
@@ -75,7 +83,9 @@ func (h WebsiteHandler) FaviconIco(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
-	return h.serveAsset(g, "favicon.ico", false)
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
+		return h.serveAsset(g, "favicon.ico", false)
+	})
 }
 
 func (h WebsiteHandler) FaviconPNG(pctx ginext.PreContext) ginext.HTTPResponse {
@@ -85,7 +95,9 @@ func (h WebsiteHandler) FaviconPNG(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
-	return h.serveAsset(g, "favicon.png", false)
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
+		return h.serveAsset(g, "favicon.png", false)
+	})
 }
 
 func (h WebsiteHandler) Javascript(pctx ginext.PreContext) ginext.HTTPResponse {
@@ -95,16 +107,19 @@ func (h WebsiteHandler) Javascript(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
-	type uri struct {
-		Filename string `uri:"fn"`
-	}
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	var u uri
-	if err := g.ShouldBindUri(&u); err != nil {
-		return ginext.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	}
+		type uri struct {
+			Filename string `uri:"fn"`
+		}
 
-	return h.serveAsset(g, "js/"+u.Filename, false)
+		var u uri
+		if err := g.ShouldBindUri(&u); err != nil {
+			return ginext.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+
+		return h.serveAsset(g, "js/"+u.Filename, false)
+	})
 }
 
 func (h WebsiteHandler) CSS(pctx ginext.PreContext) ginext.HTTPResponse {
@@ -119,7 +134,9 @@ func (h WebsiteHandler) CSS(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
-	return h.serveAsset(g, "css/"+u.Filename, false)
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
+		return h.serveAsset(g, "css/"+u.Filename, false)
+	})
 }
 
 func (h WebsiteHandler) serveAsset(g *gin.Context, fn string, repl bool) ginext.HTTPResponse {

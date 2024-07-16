@@ -4,6 +4,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	ct "blackforestbytes.com/simplecloudnotifier/db/cursortoken"
+	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"errors"
@@ -56,67 +57,65 @@ func (h APIHandler) ListChannels(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
-	ctx, errResp := h.app.StartRequest(g, &u, &q, nil, nil)
-	if errResp != nil {
-		return *errResp
-	}
-	defer ctx.Cancel()
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	if permResp := ctx.CheckPermissionUserRead(u.UserID); permResp != nil {
-		return *permResp
-	}
-
-	sel := strings.ToLower(langext.Coalesce(q.Selector, "owned"))
-
-	var res []models.ChannelWithSubscriptionJSON
-
-	if sel == "owned" {
-
-		channels, err := h.database.ListChannelsByOwner(ctx, u.UserID, u.UserID)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
+		if permResp := ctx.CheckPermissionUserRead(u.UserID); permResp != nil {
+			return *permResp
 		}
-		res = langext.ArrMap(channels, func(v models.ChannelWithSubscription) models.ChannelWithSubscriptionJSON { return v.JSON(true) })
 
-	} else if sel == "subscribed_any" {
+		sel := strings.ToLower(langext.Coalesce(q.Selector, "owned"))
 
-		channels, err := h.database.ListChannelsBySubscriber(ctx, u.UserID, nil)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
+		var res []models.ChannelWithSubscriptionJSON
+
+		if sel == "owned" {
+
+			channels, err := h.database.ListChannelsByOwner(ctx, u.UserID, u.UserID)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
+			}
+			res = langext.ArrMap(channels, func(v models.ChannelWithSubscription) models.ChannelWithSubscriptionJSON { return v.JSON(true) })
+
+		} else if sel == "subscribed_any" {
+
+			channels, err := h.database.ListChannelsBySubscriber(ctx, u.UserID, nil)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
+			}
+			res = langext.ArrMap(channels, func(v models.ChannelWithSubscription) models.ChannelWithSubscriptionJSON { return v.JSON(false) })
+
+		} else if sel == "all_any" {
+
+			channels, err := h.database.ListChannelsByAccess(ctx, u.UserID, nil)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
+			}
+			res = langext.ArrMap(channels, func(v models.ChannelWithSubscription) models.ChannelWithSubscriptionJSON { return v.JSON(false) })
+
+		} else if sel == "subscribed" {
+
+			channels, err := h.database.ListChannelsBySubscriber(ctx, u.UserID, langext.Ptr(true))
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
+			}
+			res = langext.ArrMap(channels, func(v models.ChannelWithSubscription) models.ChannelWithSubscriptionJSON { return v.JSON(false) })
+
+		} else if sel == "all" {
+
+			channels, err := h.database.ListChannelsByAccess(ctx, u.UserID, langext.Ptr(true))
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
+			}
+			res = langext.ArrMap(channels, func(v models.ChannelWithSubscription) models.ChannelWithSubscriptionJSON { return v.JSON(false) })
+
+		} else {
+
+			return ginresp.APIError(g, 400, apierr.INVALID_ENUM_VALUE, "Invalid value for the [selector] parameter", nil)
+
 		}
-		res = langext.ArrMap(channels, func(v models.ChannelWithSubscription) models.ChannelWithSubscriptionJSON { return v.JSON(false) })
 
-	} else if sel == "all_any" {
+		return finishSuccess(ginext.JSON(http.StatusOK, response{Channels: res}))
 
-		channels, err := h.database.ListChannelsByAccess(ctx, u.UserID, nil)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
-		}
-		res = langext.ArrMap(channels, func(v models.ChannelWithSubscription) models.ChannelWithSubscriptionJSON { return v.JSON(false) })
-
-	} else if sel == "subscribed" {
-
-		channels, err := h.database.ListChannelsBySubscriber(ctx, u.UserID, langext.Ptr(true))
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
-		}
-		res = langext.ArrMap(channels, func(v models.ChannelWithSubscription) models.ChannelWithSubscriptionJSON { return v.JSON(false) })
-
-	} else if sel == "all" {
-
-		channels, err := h.database.ListChannelsByAccess(ctx, u.UserID, langext.Ptr(true))
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
-		}
-		res = langext.ArrMap(channels, func(v models.ChannelWithSubscription) models.ChannelWithSubscriptionJSON { return v.JSON(false) })
-
-	} else {
-
-		return ginresp.APIError(g, 400, apierr.INVALID_ENUM_VALUE, "Invalid value for the [selector] parameter", nil)
-
-	}
-
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{Channels: res}))
+	})
 }
 
 // GetChannel swaggerdoc
@@ -142,25 +141,29 @@ func (h APIHandler) GetChannel(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 
 	var u uri
-	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
+	ctx, g, errResp := pctx.URI(&u).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionUserRead(u.UserID); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	channel, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID, true)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
-	}
+		if permResp := ctx.CheckPermissionUserRead(u.UserID); permResp != nil {
+			return *permResp
+		}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, channel.JSON(true)))
+		channel, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID, true)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
+		}
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, channel.JSON(true)))
+
+	})
 }
 
 // CreateChannel swaggerdoc
@@ -192,75 +195,78 @@ func (h APIHandler) CreateChannel(pctx ginext.PreContext) ginext.HTTPResponse {
 
 	var u uri
 	var b body
-	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Body(&b).Start())
+	ctx, g, errResp := pctx.URI(&u).Body(&b).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	if b.Name == "" {
-		return ginresp.APIError(g, 400, apierr.INVALID_BODY_PARAM, "Missing parameter: name", nil)
-	}
-
-	channelDisplayName := h.app.NormalizeChannelDisplayName(b.Name)
-	channelInternalName := h.app.NormalizeChannelInternalName(b.Name)
-
-	channelExisting, err := h.database.GetChannelByName(ctx, u.UserID, channelInternalName)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
-	}
-
-	user, err := h.database.GetUser(ctx, u.UserID)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 400, apierr.USER_NOT_FOUND, "User not found", nil)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query user", err)
-	}
-
-	if len(channelDisplayName) > user.MaxChannelNameLength() {
-		return ginresp.APIError(g, 400, apierr.CHANNEL_TOO_LONG, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
-	}
-	if len(strings.TrimSpace(channelDisplayName)) == 0 {
-		return ginresp.APIError(g, 400, apierr.CHANNEL_NAME_EMPTY, fmt.Sprintf("Channel displayname cannot be empty"), nil)
-	}
-	if len(channelInternalName) > user.MaxChannelNameLength() {
-		return ginresp.APIError(g, 400, apierr.CHANNEL_TOO_LONG, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
-	}
-	if len(strings.TrimSpace(channelInternalName)) == 0 {
-		return ginresp.APIError(g, 400, apierr.CHANNEL_NAME_EMPTY, fmt.Sprintf("Channel internalname cannot be empty"), nil)
-	}
-
-	if channelExisting != nil {
-		return ginresp.APIError(g, 409, apierr.CHANNEL_ALREADY_EXISTS, "Channel with this name already exists", nil)
-	}
-
-	subscribeKey := h.app.GenerateRandomAuthKey()
-
-	channel, err := h.database.CreateChannel(ctx, u.UserID, channelDisplayName, channelInternalName, subscribeKey, b.Description)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create channel", err)
-	}
-
-	if langext.Coalesce(b.Subscribe, true) {
-
-		sub, err := h.database.CreateSubscription(ctx, u.UserID, channel, true)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create subscription", err)
+		if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+			return *permResp
 		}
 
-		return ctx.FinishSuccess(ginext.JSON(http.StatusOK, channel.WithSubscription(langext.Ptr(sub)).JSON(true)))
+		if b.Name == "" {
+			return ginresp.APIError(g, 400, apierr.INVALID_BODY_PARAM, "Missing parameter: name", nil)
+		}
 
-	} else {
+		channelDisplayName := h.app.NormalizeChannelDisplayName(b.Name)
+		channelInternalName := h.app.NormalizeChannelInternalName(b.Name)
 
-		return ctx.FinishSuccess(ginext.JSON(http.StatusOK, channel.WithSubscription(nil).JSON(true)))
+		channelExisting, err := h.database.GetChannelByName(ctx, u.UserID, channelInternalName)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
+		}
 
-	}
+		user, err := h.database.GetUser(ctx, u.UserID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 400, apierr.USER_NOT_FOUND, "User not found", nil)
+		}
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query user", err)
+		}
 
+		if len(channelDisplayName) > user.MaxChannelNameLength() {
+			return ginresp.APIError(g, 400, apierr.CHANNEL_TOO_LONG, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
+		}
+		if len(strings.TrimSpace(channelDisplayName)) == 0 {
+			return ginresp.APIError(g, 400, apierr.CHANNEL_NAME_EMPTY, fmt.Sprintf("Channel displayname cannot be empty"), nil)
+		}
+		if len(channelInternalName) > user.MaxChannelNameLength() {
+			return ginresp.APIError(g, 400, apierr.CHANNEL_TOO_LONG, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
+		}
+		if len(strings.TrimSpace(channelInternalName)) == 0 {
+			return ginresp.APIError(g, 400, apierr.CHANNEL_NAME_EMPTY, fmt.Sprintf("Channel internalname cannot be empty"), nil)
+		}
+
+		if channelExisting != nil {
+			return ginresp.APIError(g, 409, apierr.CHANNEL_ALREADY_EXISTS, "Channel with this name already exists", nil)
+		}
+
+		subscribeKey := h.app.GenerateRandomAuthKey()
+
+		channel, err := h.database.CreateChannel(ctx, u.UserID, channelDisplayName, channelInternalName, subscribeKey, b.Description)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create channel", err)
+		}
+
+		if langext.Coalesce(b.Subscribe, true) {
+
+			sub, err := h.database.CreateSubscription(ctx, u.UserID, channel, true)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create subscription", err)
+			}
+
+			return finishSuccess(ginext.JSON(http.StatusOK, channel.WithSubscription(langext.Ptr(sub)).JSON(true)))
+
+		} else {
+
+			return finishSuccess(ginext.JSON(http.StatusOK, channel.WithSubscription(nil).JSON(true)))
+
+		}
+
+	})
 }
 
 // UpdateChannel swaggerdoc
@@ -296,84 +302,88 @@ func (h APIHandler) UpdateChannel(pctx ginext.PreContext) ginext.HTTPResponse {
 
 	var u uri
 	var b body
-	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Body(&b).Start())
+	ctx, g, errResp := pctx.URI(&u).Body(&b).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	_, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID, true)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
-	}
+		if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+			return *permResp
+		}
 
-	user, err := h.database.GetUser(ctx, u.UserID)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 400, apierr.USER_NOT_FOUND, "User not found", nil)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query user", err)
-	}
-
-	if langext.Coalesce(b.RefreshSubscribeKey, false) {
-		newkey := h.app.GenerateRandomAuthKey()
-
-		err := h.database.UpdateChannelSubscribeKey(ctx, u.ChannelID, newkey)
+		_, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID, true)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
+		}
 		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update channel", err)
-		}
-	}
-
-	if b.DisplayName != nil {
-
-		newDisplayName := h.app.NormalizeChannelDisplayName(*b.DisplayName)
-
-		if len(newDisplayName) > user.MaxChannelNameLength() {
-			return ginresp.APIError(g, 400, apierr.CHANNEL_TOO_LONG, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
 		}
 
-		if len(strings.TrimSpace(newDisplayName)) == 0 {
-			return ginresp.APIError(g, 400, apierr.CHANNEL_NAME_EMPTY, fmt.Sprintf("Channel displayname cannot be empty"), nil)
+		user, err := h.database.GetUser(ctx, u.UserID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 400, apierr.USER_NOT_FOUND, "User not found", nil)
 		}
-
-		err := h.database.UpdateChannelDisplayName(ctx, u.ChannelID, newDisplayName)
 		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update channel", err)
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query user", err)
 		}
 
-	}
+		if langext.Coalesce(b.RefreshSubscribeKey, false) {
+			newkey := h.app.GenerateRandomAuthKey()
 
-	if b.DescriptionName != nil {
-
-		var descName *string = nil
-		if strings.TrimSpace(*b.DescriptionName) != "" {
-			descName = langext.Ptr(strings.TrimSpace(*b.DescriptionName))
+			err := h.database.UpdateChannelSubscribeKey(ctx, u.ChannelID, newkey)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update channel", err)
+			}
 		}
 
-		if descName != nil && len(*descName) > user.MaxChannelDescriptionLength() {
-			return ginresp.APIError(g, 400, apierr.CHANNEL_DESCRIPTION_TOO_LONG, fmt.Sprintf("Channel-Description too long (max %d characters)", user.MaxChannelDescriptionLength()), nil)
+		if b.DisplayName != nil {
+
+			newDisplayName := h.app.NormalizeChannelDisplayName(*b.DisplayName)
+
+			if len(newDisplayName) > user.MaxChannelNameLength() {
+				return ginresp.APIError(g, 400, apierr.CHANNEL_TOO_LONG, fmt.Sprintf("Channel too long (max %d characters)", user.MaxChannelNameLength()), nil)
+			}
+
+			if len(strings.TrimSpace(newDisplayName)) == 0 {
+				return ginresp.APIError(g, 400, apierr.CHANNEL_NAME_EMPTY, fmt.Sprintf("Channel displayname cannot be empty"), nil)
+			}
+
+			err := h.database.UpdateChannelDisplayName(ctx, u.ChannelID, newDisplayName)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update channel", err)
+			}
+
 		}
 
-		err := h.database.UpdateChannelDescriptionName(ctx, u.ChannelID, descName)
+		if b.DescriptionName != nil {
+
+			var descName *string = nil
+			if strings.TrimSpace(*b.DescriptionName) != "" {
+				descName = langext.Ptr(strings.TrimSpace(*b.DescriptionName))
+			}
+
+			if descName != nil && len(*descName) > user.MaxChannelDescriptionLength() {
+				return ginresp.APIError(g, 400, apierr.CHANNEL_DESCRIPTION_TOO_LONG, fmt.Sprintf("Channel-Description too long (max %d characters)", user.MaxChannelDescriptionLength()), nil)
+			}
+
+			err := h.database.UpdateChannelDescriptionName(ctx, u.ChannelID, descName)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update channel", err)
+			}
+
+		}
+
+		channel, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID, true)
 		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update channel", err)
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query (updated) channel", err)
 		}
 
-	}
+		return finishSuccess(ginext.JSON(http.StatusOK, channel.JSON(true)))
 
-	channel, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID, true)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query (updated) channel", err)
-	}
-
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, channel.JSON(true)))
+	})
 }
 
 // ListChannelMessages swaggerdoc
@@ -416,50 +426,54 @@ func (h APIHandler) ListChannelMessages(pctx ginext.PreContext) ginext.HTTPRespo
 
 	var u uri
 	var q query
-	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Query(&q).Start())
+	ctx, g, errResp := pctx.URI(&u).Query(&q).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	trimmed := langext.Coalesce(q.Trimmed, true)
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	maxPageSize := langext.Conditional(trimmed, 16, 256)
+		trimmed := langext.Coalesce(q.Trimmed, true)
 
-	pageSize := mathext.Clamp(langext.Coalesce(q.PageSize, 64), 1, maxPageSize)
+		maxPageSize := langext.Conditional(trimmed, 16, 256)
 
-	channel, err := h.database.GetChannel(ctx, u.ChannelUserID, u.ChannelID, false)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
-	}
+		pageSize := mathext.Clamp(langext.Coalesce(q.PageSize, 64), 1, maxPageSize)
 
-	if permResp := ctx.CheckPermissionChanMessagesRead(channel.Channel); permResp != nil {
-		return *permResp
-	}
+		channel, err := h.database.GetChannel(ctx, u.ChannelUserID, u.ChannelID, false)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
+		}
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
+		}
 
-	tok, err := ct.Decode(langext.Coalesce(q.NextPageToken, ""))
-	if err != nil {
-		return ginresp.APIError(g, 400, apierr.PAGETOKEN_ERROR, "Failed to decode next_page_token", err)
-	}
+		if permResp := ctx.CheckPermissionChanMessagesRead(channel.Channel); permResp != nil {
+			return *permResp
+		}
 
-	filter := models.MessageFilter{
-		ChannelID: langext.Ptr([]models.ChannelID{channel.ChannelID}),
-	}
+		tok, err := ct.Decode(langext.Coalesce(q.NextPageToken, ""))
+		if err != nil {
+			return ginresp.APIError(g, 400, apierr.PAGETOKEN_ERROR, "Failed to decode next_page_token", err)
+		}
 
-	messages, npt, err := h.database.ListMessages(ctx, filter, &pageSize, tok)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query messages", err)
-	}
+		filter := models.MessageFilter{
+			ChannelID: langext.Ptr([]models.ChannelID{channel.ChannelID}),
+		}
 
-	var res []models.MessageJSON
-	if trimmed {
-		res = langext.ArrMap(messages, func(v models.Message) models.MessageJSON { return v.TrimmedJSON() })
-	} else {
-		res = langext.ArrMap(messages, func(v models.Message) models.MessageJSON { return v.FullJSON() })
-	}
+		messages, npt, err := h.database.ListMessages(ctx, filter, &pageSize, tok)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query messages", err)
+		}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize}))
+		var res []models.MessageJSON
+		if trimmed {
+			res = langext.ArrMap(messages, func(v models.Message) models.MessageJSON { return v.TrimmedJSON() })
+		} else {
+			res = langext.ArrMap(messages, func(v models.Message) models.MessageJSON { return v.FullJSON() })
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize}))
+
+	})
 }

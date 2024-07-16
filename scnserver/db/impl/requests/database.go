@@ -26,7 +26,12 @@ type Database struct {
 func NewRequestsDatabase(cfg server.Config) (*Database, error) {
 	conf := cfg.DBRequests
 
-	url := fmt.Sprintf("file:%s?_journal=%s&_timeout=%d&_fk=%s&_busy_timeout=%d", conf.File, conf.Journal, conf.Timeout.Milliseconds(), langext.FormatBool(conf.CheckForeignKeys, "true", "false"), conf.BusyTimeout.Milliseconds())
+	url := fmt.Sprintf("file:%s?_pragma=journal_mode(%s)&_pragma=timeout(%d)&_pragma=foreign_keys(%s)&_pragma=busy_timeout(%d)",
+		conf.File,
+		conf.Journal,
+		conf.Timeout.Milliseconds(),
+		langext.FormatBool(conf.CheckForeignKeys, "true", "false"),
+		conf.BusyTimeout.Milliseconds())
 
 	if !langext.InArray("sqlite3", sql.Drivers()) {
 		sqlite.RegisterAsSQLITE3()

@@ -3,8 +3,11 @@ package main
 import (
 	"blackforestbytes.com/simplecloudnotifier/db/schema"
 	"context"
+	"database/sql"
 	"fmt"
+	"github.com/glebarez/go-sqlite"
 	"gogs.mikescher.com/BlackForestBytes/goext/exerr"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
@@ -15,7 +18,9 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	sqlite3.Version() // ensure slite3 loaded
+	if !langext.InArray("sqlite3", sql.Drivers()) {
+		sqlite.RegisterAsSQLITE3()
+	}
 
 	fmt.Println()
 

@@ -2,8 +2,6 @@ package logic
 
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
-	"blackforestbytes.com/simplecloudnotifier/api/apierr"
-	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/db/simplectx"
 	"blackforestbytes.com/simplecloudnotifier/google"
@@ -11,10 +9,8 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/push"
 	"context"
 	"errors"
-	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
-	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/rext"
 	"gogs.mikescher.com/BlackForestBytes/goext/syncext"
 	"net"
@@ -206,32 +202,6 @@ func (app *Application) Migrate() error {
 	defer cancel()
 
 	return app.Database.Migrate(ctx)
-}
-
-type RequestOptions struct {
-	IgnoreWrongContentType bool
-}
-
-func (app *Application) StartRequest(gectx *ginext.AppContext, g *gin.Context, r *ginext.HTTPResponse) (*AppContext, *gin.Context, *ginext.HTTPResponse) {
-
-	if r != nil {
-		return nil, g, r
-	}
-
-	actx := CreateAppContext(app, g, gectx, gectx.Cancel)
-
-	authheader := g.GetHeader("Authorization")
-
-	perm, err := app.getPermissions(actx, authheader)
-	if err != nil {
-		gectx.Cancel()
-		return nil, g, langext.Ptr(ginresp.APIError(g, 400, apierr.PERM_QUERY_FAIL, "Failed to determine permissions", err))
-	}
-
-	actx.permissions = perm
-	g.Set("perm", perm)
-
-	return actx, g, nil
 }
 
 func (app *Application) NewSimpleTransactionContext(timeout time.Duration) *simplectx.SimpleContext {

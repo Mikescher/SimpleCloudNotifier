@@ -77,30 +77,34 @@ func (h MessageHandler) SendMessage(pctx ginext.PreContext) ginext.HTTPResponse 
 	var b combined
 	var q combined
 	var f combined
-	ctx, g, errResp := h.app.StartRequest(pctx.Form(&f).Query(&q).Body(&b).Start())
+	ctx, g, errResp := pctx.Form(&f).Query(&q).Body(&b).IgnoreWrongContentType().Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	// query has highest prio, then form, then json
-	data := dataext.ObjectMerge(dataext.ObjectMerge(b, f), q)
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	okResp, errResp := h.app.SendMessage(g, ctx, data.UserID, data.KeyToken, data.Channel, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp, data.SenderName)
-	if errResp != nil {
-		return *errResp
-	} else {
-		return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{
-			Success:        true,
-			ErrorID:        apierr.NO_ERROR,
-			ErrorHighlight: -1,
-			Message:        langext.Conditional(okResp.MessageIsOld, "Message already sent", "Message sent"),
-			SuppressSend:   okResp.MessageIsOld,
-			MessageCount:   okResp.User.MessagesSent,
-			Quota:          okResp.User.QuotaUsedToday(),
-			IsPro:          okResp.User.IsPro,
-			QuotaMax:       okResp.User.QuotaPerDay(),
-			SCNMessageID:   okResp.Message.MessageID,
-		}))
-	}
+		// query has highest prio, then form, then json
+		data := dataext.ObjectMerge(dataext.ObjectMerge(b, f), q)
+
+		okResp, errResp := h.app.SendMessage(g, ctx, data.UserID, data.KeyToken, data.Channel, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp, data.SenderName)
+		if errResp != nil {
+			return *errResp
+		} else {
+			return finishSuccess(ginext.JSON(http.StatusOK, response{
+				Success:        true,
+				ErrorID:        apierr.NO_ERROR,
+				ErrorHighlight: -1,
+				Message:        langext.Conditional(okResp.MessageIsOld, "Message already sent", "Message sent"),
+				SuppressSend:   okResp.MessageIsOld,
+				MessageCount:   okResp.User.MessagesSent,
+				Quota:          okResp.User.QuotaUsedToday(),
+				IsPro:          okResp.User.IsPro,
+				QuotaMax:       okResp.User.QuotaPerDay(),
+				SCNMessageID:   okResp.Message.MessageID,
+			}))
+		}
+
+	})
 }

@@ -71,7 +71,10 @@ func (ac *AppContext) Cancel() {
 		}
 		ac.transaction = nil
 	}
-	ac.cancelFunc()
+
+	if ac.cancelFunc != nil {
+		ac.cancelFunc()
+	}
 }
 
 func (ac *AppContext) RequestURI() string {
@@ -82,7 +85,7 @@ func (ac *AppContext) RequestURI() string {
 	}
 }
 
-func (ac *AppContext) FinishSuccess(res ginext.HTTPResponse) ginext.HTTPResponse {
+func (ac *AppContext) _FinishSuccess(res ginext.HTTPResponse) ginext.HTTPResponse {
 	if ac.cancelled {
 		panic("Cannot finish a cancelled request")
 	}

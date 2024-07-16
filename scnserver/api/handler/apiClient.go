@@ -3,6 +3,7 @@ package handler
 import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
+	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"errors"
@@ -34,24 +35,28 @@ func (h APIHandler) ListClients(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 
 	var u uri
-	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
+	ctx, g, errResp := pctx.URI(&u).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionUserRead(u.UserID); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	clients, err := h.database.ListClients(ctx, u.UserID)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query clients", err)
-	}
+		if permResp := ctx.CheckPermissionUserRead(u.UserID); permResp != nil {
+			return *permResp
+		}
 
-	res := langext.ArrMap(clients, func(v models.Client) models.ClientJSON { return v.JSON() })
+		clients, err := h.database.ListClients(ctx, u.UserID)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query clients", err)
+		}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{Clients: res}))
+		res := langext.ArrMap(clients, func(v models.Client) models.ClientJSON { return v.JSON() })
+
+		return finishSuccess(ginext.JSON(http.StatusOK, response{Clients: res}))
+
+	})
 }
 
 // GetClient swaggerdoc
@@ -77,25 +82,29 @@ func (h APIHandler) GetClient(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 
 	var u uri
-	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
+	ctx, g, errResp := pctx.URI(&u).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionUserRead(u.UserID); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	client, err := h.database.GetClient(ctx, u.UserID, u.ClientID)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.CLIENT_NOT_FOUND, "Client not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
-	}
+		if permResp := ctx.CheckPermissionUserRead(u.UserID); permResp != nil {
+			return *permResp
+		}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, client.JSON()))
+		client, err := h.database.GetClient(ctx, u.UserID, u.ClientID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.CLIENT_NOT_FOUND, "Client not found", err)
+		}
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, client.JSON()))
+
+	})
 }
 
 // AddClient swaggerdoc
@@ -128,32 +137,36 @@ func (h APIHandler) AddClient(pctx ginext.PreContext) ginext.HTTPResponse {
 
 	var u uri
 	var b body
-	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Body(&b).Start())
+	ctx, g, errResp := pctx.URI(&u).Body(&b).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if !b.ClientType.Valid() {
-		return ginresp.APIError(g, 400, apierr.INVALID_CLIENTTYPE, "Invalid ClientType", nil)
-	}
-	clientType := b.ClientType
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
-		return *permResp
-	}
+		if !b.ClientType.Valid() {
+			return ginresp.APIError(g, 400, apierr.INVALID_CLIENTTYPE, "Invalid ClientType", nil)
+		}
+		clientType := b.ClientType
 
-	err := h.database.DeleteClientsByFCM(ctx, b.FCMToken)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete existing clients in db", err)
-	}
+		if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+			return *permResp
+		}
 
-	client, err := h.database.CreateClient(ctx, u.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion, b.Name)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create client in db", err)
-	}
+		err := h.database.DeleteClientsByFCM(ctx, b.FCMToken)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete existing clients in db", err)
+		}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, client.JSON()))
+		client, err := h.database.CreateClient(ctx, u.UserID, clientType, b.FCMToken, b.AgentModel, b.AgentVersion, b.Name)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create client in db", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, client.JSON()))
+
+	})
 }
 
 // DeleteClient swaggerdoc
@@ -179,30 +192,34 @@ func (h APIHandler) DeleteClient(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 
 	var u uri
-	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
+	ctx, g, errResp := pctx.URI(&u).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	client, err := h.database.GetClient(ctx, u.UserID, u.ClientID)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.CLIENT_NOT_FOUND, "Client not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
-	}
+		if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+			return *permResp
+		}
 
-	err = h.database.DeleteClient(ctx, u.ClientID)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete client", err)
-	}
+		client, err := h.database.GetClient(ctx, u.UserID, u.ClientID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.CLIENT_NOT_FOUND, "Client not found", err)
+		}
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
+		}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, client.JSON()))
+		err = h.database.DeleteClient(ctx, u.ClientID)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete client", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, client.JSON()))
+
+	})
 }
 
 // UpdateClient swaggerdoc
@@ -239,69 +256,73 @@ func (h APIHandler) UpdateClient(pctx ginext.PreContext) ginext.HTTPResponse {
 
 	var u uri
 	var b body
-	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Body(&b).Start())
+	ctx, g, errResp := pctx.URI(&u).Body(&b).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	client, err := h.database.GetClient(ctx, u.UserID, u.ClientID)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.CLIENT_NOT_FOUND, "Client not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
-	}
-
-	if b.FCMToken != nil && *b.FCMToken != client.FCMToken {
-
-		err = h.database.DeleteClientsByFCM(ctx, *b.FCMToken)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete existing clients in db", err)
+		if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+			return *permResp
 		}
 
-		err = h.database.UpdateClientFCMToken(ctx, u.ClientID, *b.FCMToken)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update client", err)
+		client, err := h.database.GetClient(ctx, u.UserID, u.ClientID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.CLIENT_NOT_FOUND, "Client not found", err)
 		}
-	}
-
-	if b.AgentModel != nil {
-		err = h.database.UpdateClientAgentModel(ctx, u.ClientID, *b.AgentModel)
 		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update client", err)
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
 		}
-	}
 
-	if b.AgentVersion != nil {
-		err = h.database.UpdateClientAgentVersion(ctx, u.ClientID, *b.AgentVersion)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update client", err)
-		}
-	}
+		if b.FCMToken != nil && *b.FCMToken != client.FCMToken {
 
-	if b.Name != nil {
-		if *b.Name == "" {
-			err = h.database.UpdateClientDescriptionName(ctx, u.ClientID, nil)
+			err = h.database.DeleteClientsByFCM(ctx, *b.FCMToken)
 			if err != nil {
-				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update client", err)
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete existing clients in db", err)
 			}
-		} else {
-			err = h.database.UpdateClientDescriptionName(ctx, u.ClientID, langext.Ptr(*b.Name))
+
+			err = h.database.UpdateClientFCMToken(ctx, u.ClientID, *b.FCMToken)
 			if err != nil {
 				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update client", err)
 			}
 		}
-	}
 
-	client, err = h.database.GetClient(ctx, u.UserID, u.ClientID)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query (updated) client", err)
-	}
+		if b.AgentModel != nil {
+			err = h.database.UpdateClientAgentModel(ctx, u.ClientID, *b.AgentModel)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update client", err)
+			}
+		}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, client.JSON()))
+		if b.AgentVersion != nil {
+			err = h.database.UpdateClientAgentVersion(ctx, u.ClientID, *b.AgentVersion)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update client", err)
+			}
+		}
+
+		if b.Name != nil {
+			if *b.Name == "" {
+				err = h.database.UpdateClientDescriptionName(ctx, u.ClientID, nil)
+				if err != nil {
+					return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update client", err)
+				}
+			} else {
+				err = h.database.UpdateClientDescriptionName(ctx, u.ClientID, langext.Ptr(*b.Name))
+				if err != nil {
+					return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update client", err)
+				}
+			}
+		}
+
+		client, err = h.database.GetClient(ctx, u.UserID, u.ClientID)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query (updated) client", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, client.JSON()))
+
+	})
 }

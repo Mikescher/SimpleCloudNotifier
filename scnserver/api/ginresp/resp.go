@@ -93,10 +93,6 @@ func SendAPIError(g *gin.Context, status int, errorid apierr.APIError, highlight
 	return createApiError(g, "SendAPIError", status, errorid, highlight, msg, e)
 }
 
-func NotImplemented(pctx ginext.PreContext) ginext.HTTPResponse {
-	return createApiError(g, "NotImplemented", 500, apierr.NOT_IMPLEMENTED, 0, "Not Implemented", nil)
-}
-
 func createApiError(g *gin.Context, ident string, status int, errorid apierr.APIError, highlight apihighlight.ErrHighlight, msg string, e error) ginext.HTTPResponse {
 	reqUri := ""
 	if g != nil && g.Request != nil {

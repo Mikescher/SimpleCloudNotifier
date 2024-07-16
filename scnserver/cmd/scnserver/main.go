@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"time"
 )
 
 func main() {
@@ -33,10 +34,11 @@ func main() {
 	}
 
 	ginengine := ginext.NewEngine(ginext.Options{
-		AllowCors:  &conf.Cors,
-		GinDebug:   &conf.GinDebug,
-		BufferBody: langext.PTrue,
-		Timeout:    &conf.RequestTimeout,
+		AllowCors:             &conf.Cors,
+		GinDebug:              &conf.GinDebug,
+		BufferBody:            langext.PTrue,
+		Timeout:               langext.Ptr(time.Duration(int64(conf.RequestTimeout) * int64(conf.RequestMaxRetry))),
+		BuildRequestBindError: logic.BuildGinRequestError,
 	})
 
 	router := api.NewRouter(app)

@@ -15,7 +15,7 @@ import "reflect"
 import "regexp"
 import "strings"
 
-const ChecksumCharsetIDGenerator = "fd2e0463f7720d853f7a3394352c084ac7d086e9e012caa3d3d70a6e83749970" // GoExtVersion: 0.0.482
+const ChecksumCharsetIDGenerator = "ba14f2f5d0b0357f248dcbd12933de102c80f1e61be697a37ebb723609fc0c59" // GoExtVersion: 0.0.485
 
 const idlen = 24
 

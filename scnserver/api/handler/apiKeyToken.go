@@ -3,6 +3,7 @@ package handler
 import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
+	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"errors"
@@ -36,24 +37,28 @@ func (h APIHandler) ListUserKeys(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 
 	var u uri
-	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
+	ctx, g, errResp := pctx.URI(&u).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	toks, err := h.database.ListKeyTokens(ctx, u.UserID)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query keys", err)
-	}
+		if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+			return *permResp
+		}
 
-	res := langext.ArrMap(toks, func(v models.KeyToken) models.KeyTokenJSON { return v.JSON() })
+		toks, err := h.database.ListKeyTokens(ctx, u.UserID)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query keys", err)
+		}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{Keys: res}))
+		res := langext.ArrMap(toks, func(v models.KeyToken) models.KeyTokenJSON { return v.JSON() })
+
+		return finishSuccess(ginext.JSON(http.StatusOK, response{Keys: res}))
+
+	})
 }
 
 // GetCurrentUserKey swaggerdoc
@@ -79,30 +84,34 @@ func (h APIHandler) GetCurrentUserKey(pctx ginext.PreContext) ginext.HTTPRespons
 	}
 
 	var u uri
-	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
+	ctx, g, errResp := pctx.URI(&u).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionAny(); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	tokid := ctx.GetPermissionKeyTokenID()
-	if tokid == nil {
-		return ginresp.APIError(g, 400, apierr.USER_AUTH_FAILED, "Missing KeyTokenID in context", nil)
-	}
+		if permResp := ctx.CheckPermissionAny(); permResp != nil {
+			return *permResp
+		}
 
-	keytoken, err := h.database.GetKeyToken(ctx, u.UserID, *tokid)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
-	}
+		tokid := ctx.GetPermissionKeyTokenID()
+		if tokid == nil {
+			return ginresp.APIError(g, 400, apierr.USER_AUTH_FAILED, "Missing KeyTokenID in context", nil)
+		}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, keytoken.JSON().WithToken(keytoken.Token)))
+		keytoken, err := h.database.GetKeyToken(ctx, u.UserID, *tokid)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
+		}
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, keytoken.JSON().WithToken(keytoken.Token)))
+
+	})
 }
 
 // GetUserKey swaggerdoc
@@ -129,25 +138,29 @@ func (h APIHandler) GetUserKey(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 
 	var u uri
-	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
+	ctx, g, errResp := pctx.URI(&u).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	keytoken, err := h.database.GetKeyToken(ctx, u.UserID, u.KeyID)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
-	}
+		if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+			return *permResp
+		}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, keytoken.JSON()))
+		keytoken, err := h.database.GetKeyToken(ctx, u.UserID, u.KeyID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
+		}
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, keytoken.JSON()))
+
+	})
 }
 
 // UpdateUserKey swaggerdoc
@@ -182,70 +195,74 @@ func (h APIHandler) UpdateUserKey(pctx ginext.PreContext) ginext.HTTPResponse {
 
 	var u uri
 	var b body
-	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Body(&b).Start())
+	ctx, g, errResp := pctx.URI(&u).Body(&b).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	keytoken, err := h.database.GetKeyToken(ctx, u.UserID, u.KeyID)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
-	}
+		if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+			return *permResp
+		}
 
-	if b.Name != nil {
-		err := h.database.UpdateKeyTokenName(ctx, u.KeyID, *b.Name)
+		keytoken, err := h.database.GetKeyToken(ctx, u.UserID, u.KeyID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
+		}
 		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update name", err)
-		}
-		keytoken.Name = *b.Name
-	}
-
-	if b.Permissions != nil {
-		if keytoken.KeyTokenID == *ctx.GetPermissionKeyTokenID() {
-			return ginresp.APIError(g, 400, apierr.CANNOT_SELFUPDATE_KEY, "Cannot update the currently used key", err)
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
 		}
 
-		permlist := models.ParseTokenPermissionList(*b.Permissions)
-		err := h.database.UpdateKeyTokenPermissions(ctx, u.KeyID, permlist)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update permissions", err)
-		}
-		keytoken.Permissions = permlist
-	}
-
-	if b.AllChannels != nil {
-		if keytoken.KeyTokenID == *ctx.GetPermissionKeyTokenID() {
-			return ginresp.APIError(g, 400, apierr.CANNOT_SELFUPDATE_KEY, "Cannot update the currently used key", err)
+		if b.Name != nil {
+			err := h.database.UpdateKeyTokenName(ctx, u.KeyID, *b.Name)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update name", err)
+			}
+			keytoken.Name = *b.Name
 		}
 
-		err := h.database.UpdateKeyTokenAllChannels(ctx, u.KeyID, *b.AllChannels)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update all_channels", err)
-		}
-		keytoken.AllChannels = *b.AllChannels
-	}
+		if b.Permissions != nil {
+			if keytoken.KeyTokenID == *ctx.GetPermissionKeyTokenID() {
+				return ginresp.APIError(g, 400, apierr.CANNOT_SELFUPDATE_KEY, "Cannot update the currently used key", err)
+			}
 
-	if b.Channels != nil {
-		if keytoken.KeyTokenID == *ctx.GetPermissionKeyTokenID() {
-			return ginresp.APIError(g, 400, apierr.CANNOT_SELFUPDATE_KEY, "Cannot update the currently used key", err)
+			permlist := models.ParseTokenPermissionList(*b.Permissions)
+			err := h.database.UpdateKeyTokenPermissions(ctx, u.KeyID, permlist)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update permissions", err)
+			}
+			keytoken.Permissions = permlist
 		}
 
-		err := h.database.UpdateKeyTokenChannels(ctx, u.KeyID, *b.Channels)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update channels", err)
-		}
-		keytoken.Channels = *b.Channels
-	}
+		if b.AllChannels != nil {
+			if keytoken.KeyTokenID == *ctx.GetPermissionKeyTokenID() {
+				return ginresp.APIError(g, 400, apierr.CANNOT_SELFUPDATE_KEY, "Cannot update the currently used key", err)
+			}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, keytoken.JSON()))
+			err := h.database.UpdateKeyTokenAllChannels(ctx, u.KeyID, *b.AllChannels)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update all_channels", err)
+			}
+			keytoken.AllChannels = *b.AllChannels
+		}
+
+		if b.Channels != nil {
+			if keytoken.KeyTokenID == *ctx.GetPermissionKeyTokenID() {
+				return ginresp.APIError(g, 400, apierr.CANNOT_SELFUPDATE_KEY, "Cannot update the currently used key", err)
+			}
+
+			err := h.database.UpdateKeyTokenChannels(ctx, u.KeyID, *b.Channels)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update channels", err)
+			}
+			keytoken.Channels = *b.Channels
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, keytoken.JSON()))
+
+	})
 }
 
 // CreateUserKey swaggerdoc
@@ -278,43 +295,47 @@ func (h APIHandler) CreateUserKey(pctx ginext.PreContext) ginext.HTTPResponse {
 
 	var u uri
 	var b body
-	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Body(&b).Start())
+	ctx, g, errResp := pctx.URI(&u).Body(&b).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	channels := langext.Coalesce(b.Channels, make([]models.ChannelID, 0))
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	var allChan bool
-	if b.AllChannels == nil && b.Channels != nil {
-		allChan = false
-	} else if b.AllChannels == nil && b.Channels == nil {
-		allChan = true
-	} else {
-		allChan = *b.AllChannels
-	}
+		channels := langext.Coalesce(b.Channels, make([]models.ChannelID, 0))
 
-	for _, c := range channels {
-		if err := c.Valid(); err != nil {
-			return ginresp.APIError(g, 400, apierr.INVALID_BODY_PARAM, "Invalid ChannelID", err)
+		var allChan bool
+		if b.AllChannels == nil && b.Channels != nil {
+			allChan = false
+		} else if b.AllChannels == nil && b.Channels == nil {
+			allChan = true
+		} else {
+			allChan = *b.AllChannels
 		}
-	}
 
-	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
-		return *permResp
-	}
+		for _, c := range channels {
+			if err := c.Valid(); err != nil {
+				return ginresp.APIError(g, 400, apierr.INVALID_BODY_PARAM, "Invalid ChannelID", err)
+			}
+		}
 
-	token := h.app.GenerateRandomAuthKey()
+		if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+			return *permResp
+		}
 
-	perms := models.ParseTokenPermissionList(b.Permissions)
+		token := h.app.GenerateRandomAuthKey()
 
-	keytok, err := h.database.CreateKeyToken(ctx, b.Name, *ctx.GetPermissionUserID(), allChan, channels, perms, token)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create keytoken in db", err)
-	}
+		perms := models.ParseTokenPermissionList(b.Permissions)
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, keytok.JSON().WithToken(token)))
+		keytok, err := h.database.CreateKeyToken(ctx, b.Name, *ctx.GetPermissionUserID(), allChan, channels, perms, token)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create keytoken in db", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, keytok.JSON().WithToken(token)))
+
+	})
 }
 
 // DeleteUserKey swaggerdoc
@@ -341,32 +362,36 @@ func (h APIHandler) DeleteUserKey(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 
 	var u uri
-	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
+	ctx, g, errResp := pctx.URI(&u).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	client, err := h.database.GetKeyToken(ctx, u.UserID, u.KeyID)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
-	}
+		if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+			return *permResp
+		}
 
-	if u.KeyID == *ctx.GetPermissionKeyTokenID() {
-		return ginresp.APIError(g, 400, apierr.CANNOT_SELFDELETE_KEY, "Cannot delete the currently used key", err)
-	}
+		client, err := h.database.GetKeyToken(ctx, u.UserID, u.KeyID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
+		}
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
+		}
 
-	err = h.database.DeleteKeyToken(ctx, u.KeyID)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete client", err)
-	}
+		if u.KeyID == *ctx.GetPermissionKeyTokenID() {
+			return ginresp.APIError(g, 400, apierr.CANNOT_SELFDELETE_KEY, "Cannot delete the currently used key", err)
+		}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, client.JSON()))
+		err = h.database.DeleteKeyToken(ctx, u.KeyID)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete client", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, client.JSON()))
+
+	})
 }

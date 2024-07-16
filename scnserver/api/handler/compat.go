@@ -72,39 +72,42 @@ func (h CompatHandler) SendMessage(pctx ginext.PreContext) ginext.HTTPResponse {
 
 	var f combined
 	var q combined
-	ctx, errResp := h.app.StartRequest(g, nil, &q, nil, &f, logic.RequestOptions{IgnoreWrongContentType: true})
+	ctx, g, errResp := pctx.Query(&q).Form(&f).IgnoreWrongContentType().Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	data := dataext.ObjectMerge(f, q)
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	newid, err := h.database.ConvertCompatID(ctx, langext.Coalesce(data.UserID, -1), "userid")
-	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
-	}
-	if newid == nil {
-		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
-	}
+		data := dataext.ObjectMerge(f, q)
 
-	okResp, errResp := h.app.SendMessage(g, ctx, langext.Ptr(models.UserID(*newid)), data.UserKey, nil, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp, nil)
-	if errResp != nil {
-		return *errResp
-	} else {
-		return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{
-			Success:        true,
-			ErrorID:        apierr.NO_ERROR,
-			ErrorHighlight: -1,
-			Message:        langext.Conditional(okResp.MessageIsOld, "Message already sent", "Message sent"),
-			SuppressSend:   okResp.MessageIsOld,
-			MessageCount:   okResp.User.MessagesSent,
-			Quota:          okResp.User.QuotaUsedToday(),
-			IsPro:          okResp.User.IsPro,
-			QuotaMax:       okResp.User.QuotaPerDay(),
-			SCNMessageID:   okResp.CompatMessageID,
-		}))
-	}
+		newid, err := h.database.ConvertCompatID(ctx, langext.Coalesce(data.UserID, -1), "userid")
+		if err != nil {
+			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
+		}
+		if newid == nil {
+			return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
+		}
+
+		okResp, errResp := h.app.SendMessage(g, ctx, langext.Ptr(models.UserID(*newid)), data.UserKey, nil, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp, nil)
+		if errResp != nil {
+			return *errResp
+		} else {
+			return finishSuccess(ginext.JSON(http.StatusOK, response{
+				Success:        true,
+				ErrorID:        apierr.NO_ERROR,
+				ErrorHighlight: -1,
+				Message:        langext.Conditional(okResp.MessageIsOld, "Message already sent", "Message sent"),
+				SuppressSend:   okResp.MessageIsOld,
+				MessageCount:   okResp.User.MessagesSent,
+				Quota:          okResp.User.QuotaUsedToday(),
+				IsPro:          okResp.User.IsPro,
+				QuotaMax:       okResp.User.QuotaPerDay(),
+				SCNMessageID:   okResp.CompatMessageID,
+			}))
+		}
+	})
 }
 
 // Register swaggerdoc
@@ -145,86 +148,90 @@ func (h CompatHandler) Register(pctx ginext.PreContext) ginext.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb, logic.RequestOptions{IgnoreWrongContentType: true})
+	ctx, g, errResp := pctx.Query(&datq).Body(&datb).IgnoreWrongContentType().Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	data := dataext.ObjectMerge(datb, datq)
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	if data.FCMToken == nil {
-		return ginresp.CompatAPIError(0, "Missing parameter [[fcm_token]]")
-	}
-	if data.Pro == nil {
-		return ginresp.CompatAPIError(0, "Missing parameter [[pro]]")
-	}
-	if data.ProToken == nil {
-		return ginresp.CompatAPIError(0, "Missing parameter [[pro_token]]")
-	}
+		data := dataext.ObjectMerge(datb, datq)
 
-	if data.ProToken != nil {
-		data.ProToken = langext.Ptr("ANDROID|v1|" + *data.ProToken)
-	}
+		if data.FCMToken == nil {
+			return ginresp.CompatAPIError(0, "Missing parameter [[fcm_token]]")
+		}
+		if data.Pro == nil {
+			return ginresp.CompatAPIError(0, "Missing parameter [[pro]]")
+		}
+		if data.ProToken == nil {
+			return ginresp.CompatAPIError(0, "Missing parameter [[pro_token]]")
+		}
 
-	if *data.Pro != "true" {
-		data.ProToken = nil
-	}
+		if data.ProToken != nil {
+			data.ProToken = langext.Ptr("ANDROID|v1|" + *data.ProToken)
+		}
 
-	if data.ProToken != nil {
-		ptok, err := h.app.VerifyProToken(ctx, *data.ProToken)
+		if *data.Pro != "true" {
+			data.ProToken = nil
+		}
+
+		if data.ProToken != nil {
+			ptok, err := h.app.VerifyProToken(ctx, *data.ProToken)
+			if err != nil {
+				return ginresp.CompatAPIError(0, "Failed to query purchase status")
+			}
+
+			if !ptok {
+				return ginresp.CompatAPIError(0, "Purchase token could not be verified")
+			}
+		}
+
+		adminKey := h.app.GenerateRandomAuthKey()
+
+		err := h.database.ClearFCMTokens(ctx, *data.FCMToken)
 		if err != nil {
-			return ginresp.CompatAPIError(0, "Failed to query purchase status")
+			return ginresp.CompatAPIError(0, "Failed to clear existing fcm tokens")
 		}
 
-		if !ptok {
-			return ginresp.CompatAPIError(0, "Purchase token could not be verified")
+		if data.ProToken != nil {
+			err := h.database.ClearProTokens(ctx, *data.ProToken)
+			if err != nil {
+				return ginresp.CompatAPIError(0, "Failed to clear existing pro tokens")
+			}
 		}
-	}
 
-	adminKey := h.app.GenerateRandomAuthKey()
-
-	err := h.database.ClearFCMTokens(ctx, *data.FCMToken)
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to clear existing fcm tokens")
-	}
-
-	if data.ProToken != nil {
-		err := h.database.ClearProTokens(ctx, *data.ProToken)
+		user, err := h.database.CreateUser(ctx, data.ProToken, nil)
 		if err != nil {
-			return ginresp.CompatAPIError(0, "Failed to clear existing pro tokens")
+			return ginresp.CompatAPIError(0, "Failed to create user in db")
 		}
-	}
 
-	user, err := h.database.CreateUser(ctx, data.ProToken, nil)
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to create user in db")
-	}
+		_, err = h.database.CreateKeyToken(ctx, "CompatKey", user.UserID, true, make([]models.ChannelID, 0), models.TokenPermissionList{models.PermAdmin}, adminKey)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create admin-key in db", err)
+		}
 
-	_, err = h.database.CreateKeyToken(ctx, "CompatKey", user.UserID, true, make([]models.ChannelID, 0), models.TokenPermissionList{models.PermAdmin}, adminKey)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create admin-key in db", err)
-	}
+		_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, *data.FCMToken, "compat", "compat", nil)
+		if err != nil {
+			return ginresp.CompatAPIError(0, "Failed to create client in db")
+		}
 
-	_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, *data.FCMToken, "compat", "compat", nil)
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to create client in db")
-	}
+		oldid, err := h.database.CreateCompatID(ctx, "userid", user.UserID.String())
+		if err != nil {
+			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to create userid<old>", err)
+		}
 
-	oldid, err := h.database.CreateCompatID(ctx, "userid", user.UserID.String())
-	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to create userid<old>", err)
-	}
+		return finishSuccess(ginext.JSON(http.StatusOK, response{
+			Success:   true,
+			Message:   "New user registered",
+			UserID:    oldid,
+			UserKey:   adminKey,
+			QuotaUsed: user.QuotaUsedToday(),
+			QuotaMax:  user.QuotaPerDay(),
+			IsPro:     user.IsPro,
+		}))
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{
-		Success:   true,
-		Message:   "New user registered",
-		UserID:    oldid,
-		UserKey:   adminKey,
-		QuotaUsed: user.QuotaUsedToday(),
-		QuotaMax:  user.QuotaPerDay(),
-		IsPro:     user.IsPro,
-	}))
+	})
 }
 
 // Info swaggerdoc
@@ -264,74 +271,78 @@ func (h CompatHandler) Info(pctx ginext.PreContext) ginext.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb, logic.RequestOptions{IgnoreWrongContentType: true})
+	ctx, g, errResp := pctx.Query(&datq).Body(&datb).IgnoreWrongContentType().Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	data := dataext.ObjectMerge(datb, datq)
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	if data.UserID == nil {
-		return ginresp.CompatAPIError(101, "Missing parameter [[user_id]]")
-	}
-	if data.UserKey == nil {
-		return ginresp.CompatAPIError(102, "Missing parameter [[user_key]]")
-	}
+		data := dataext.ObjectMerge(datb, datq)
 
-	useridCompNew, err := h.database.ConvertCompatID(ctx, *data.UserID, "userid")
-	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
-	}
-	if useridCompNew == nil {
-		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
-	}
+		if data.UserID == nil {
+			return ginresp.CompatAPIError(101, "Missing parameter [[user_id]]")
+		}
+		if data.UserKey == nil {
+			return ginresp.CompatAPIError(102, "Missing parameter [[user_key]]")
+		}
 
-	user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.CompatAPIError(201, "User not found")
-	}
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to query user")
-	}
+		useridCompNew, err := h.database.ConvertCompatID(ctx, *data.UserID, "userid")
+		if err != nil {
+			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
+		}
+		if useridCompNew == nil {
+			return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
+		}
 
-	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to query token")
-	}
-	if keytok == nil {
-		return ginresp.CompatAPIError(204, "Authentification failed")
-	}
-	if !keytok.IsAdmin(user.UserID) {
-		return ginresp.CompatAPIError(204, "Authentification failed")
-	}
+		user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.CompatAPIError(201, "User not found")
+		}
+		if err != nil {
+			return ginresp.CompatAPIError(0, "Failed to query user")
+		}
 
-	clients, err := h.database.ListClients(ctx, user.UserID)
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to query clients")
-	}
+		keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
+		if err != nil {
+			return ginresp.CompatAPIError(0, "Failed to query token")
+		}
+		if keytok == nil {
+			return ginresp.CompatAPIError(204, "Authentification failed")
+		}
+		if !keytok.IsAdmin(user.UserID) {
+			return ginresp.CompatAPIError(204, "Authentification failed")
+		}
 
-	filter := models.MessageFilter{
-		Sender:             langext.Ptr([]models.UserID{user.UserID}),
-		CompatAcknowledged: langext.Ptr(false),
-	}
+		clients, err := h.database.ListClients(ctx, user.UserID)
+		if err != nil {
+			return ginresp.CompatAPIError(0, "Failed to query clients")
+		}
 
-	unackCount, err := h.database.CountMessages(ctx, filter)
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to query user")
-	}
+		filter := models.MessageFilter{
+			Sender:             langext.Ptr([]models.UserID{user.UserID}),
+			CompatAcknowledged: langext.Ptr(false),
+		}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{
-		Success:    true,
-		Message:    "ok",
-		UserID:     *data.UserID,
-		UserKey:    keytok.Token,
-		QuotaUsed:  user.QuotaUsedToday(),
-		QuotaMax:   user.QuotaPerDay(),
-		IsPro:      langext.Conditional(user.IsPro, 1, 0),
-		FCMSet:     len(clients) > 0,
-		UnackCount: unackCount,
-	}))
+		unackCount, err := h.database.CountMessages(ctx, filter)
+		if err != nil {
+			return ginresp.CompatAPIError(0, "Failed to query user")
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, response{
+			Success:    true,
+			Message:    "ok",
+			UserID:     *data.UserID,
+			UserKey:    keytok.Token,
+			QuotaUsed:  user.QuotaUsedToday(),
+			QuotaMax:   user.QuotaPerDay(),
+			IsPro:      langext.Conditional(user.IsPro, 1, 0),
+			FCMSet:     len(clients) > 0,
+			UnackCount: unackCount,
+		}))
+
+	})
 }
 
 // Ack swaggerdoc
@@ -369,77 +380,81 @@ func (h CompatHandler) Ack(pctx ginext.PreContext) ginext.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb, logic.RequestOptions{IgnoreWrongContentType: true})
+	ctx, g, errResp := pctx.Query(&datq).Body(&datb).IgnoreWrongContentType().Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	data := dataext.ObjectMerge(datb, datq)
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	if data.UserID == nil {
-		return ginresp.CompatAPIError(101, "Missing parameter [[user_id]]")
-	}
-	if data.UserKey == nil {
-		return ginresp.CompatAPIError(102, "Missing parameter [[user_key]]")
-	}
-	if data.MessageID == nil {
-		return ginresp.CompatAPIError(103, "Missing parameter [[scn_msg_id]]")
-	}
+		data := dataext.ObjectMerge(datb, datq)
 
-	useridCompNew, err := h.database.ConvertCompatID(ctx, *data.UserID, "userid")
-	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
-	}
-	if useridCompNew == nil {
-		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, fmt.Sprintf("User %d not found (compat)", *data.UserID), nil)
-	}
-
-	user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.CompatAPIError(201, "User not found")
-	}
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to query user")
-	}
-
-	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to query token")
-	}
-	if keytok == nil {
-		return ginresp.CompatAPIError(204, "Authentification failed")
-	}
-	if !keytok.IsAdmin(user.UserID) {
-		return ginresp.CompatAPIError(204, "Authentification failed")
-	}
-
-	messageIdComp, err := h.database.ConvertCompatID(ctx, *data.MessageID, "messageid")
-	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query messageid<old>", err)
-	}
-	if messageIdComp == nil {
-		return ginresp.SendAPIError(g, 400, apierr.MESSAGE_NOT_FOUND, hl.NONE, fmt.Sprintf("Message %d not found (compat)", *data.MessageID), nil)
-	}
-
-	ackBefore, err := h.database.GetAck(ctx, models.MessageID(*messageIdComp))
-	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query ack", err)
-	}
-
-	if !ackBefore {
-		err = h.database.SetAck(ctx, user.UserID, models.MessageID(*messageIdComp))
-		if err != nil {
-			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to set ack", err)
+		if data.UserID == nil {
+			return ginresp.CompatAPIError(101, "Missing parameter [[user_id]]")
 		}
-	}
+		if data.UserKey == nil {
+			return ginresp.CompatAPIError(102, "Missing parameter [[user_key]]")
+		}
+		if data.MessageID == nil {
+			return ginresp.CompatAPIError(103, "Missing parameter [[scn_msg_id]]")
+		}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{
-		Success:      true,
-		Message:      "ok",
-		PrevAckValue: langext.Conditional(ackBefore, 1, 0),
-		NewAckValue:  1,
-	}))
+		useridCompNew, err := h.database.ConvertCompatID(ctx, *data.UserID, "userid")
+		if err != nil {
+			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
+		}
+		if useridCompNew == nil {
+			return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, fmt.Sprintf("User %d not found (compat)", *data.UserID), nil)
+		}
+
+		user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.CompatAPIError(201, "User not found")
+		}
+		if err != nil {
+			return ginresp.CompatAPIError(0, "Failed to query user")
+		}
+
+		keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
+		if err != nil {
+			return ginresp.CompatAPIError(0, "Failed to query token")
+		}
+		if keytok == nil {
+			return ginresp.CompatAPIError(204, "Authentification failed")
+		}
+		if !keytok.IsAdmin(user.UserID) {
+			return ginresp.CompatAPIError(204, "Authentification failed")
+		}
+
+		messageIdComp, err := h.database.ConvertCompatID(ctx, *data.MessageID, "messageid")
+		if err != nil {
+			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query messageid<old>", err)
+		}
+		if messageIdComp == nil {
+			return ginresp.SendAPIError(g, 400, apierr.MESSAGE_NOT_FOUND, hl.NONE, fmt.Sprintf("Message %d not found (compat)", *data.MessageID), nil)
+		}
+
+		ackBefore, err := h.database.GetAck(ctx, models.MessageID(*messageIdComp))
+		if err != nil {
+			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query ack", err)
+		}
+
+		if !ackBefore {
+			err = h.database.SetAck(ctx, user.UserID, models.MessageID(*messageIdComp))
+			if err != nil {
+				return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to set ack", err)
+			}
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, response{
+			Success:      true,
+			Message:      "ok",
+			PrevAckValue: langext.Conditional(ackBefore, 1, 0),
+			NewAckValue:  1,
+		}))
+
+	})
 }
 
 // Requery swaggerdoc
@@ -474,83 +489,87 @@ func (h CompatHandler) Requery(pctx ginext.PreContext) ginext.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb, logic.RequestOptions{IgnoreWrongContentType: true})
+	ctx, g, errResp := pctx.Query(&datq).Body(&datb).IgnoreWrongContentType().Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	data := dataext.ObjectMerge(datb, datq)
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	if data.UserID == nil {
-		return ginresp.CompatAPIError(101, "Missing parameter [[user_id]]")
-	}
-	if data.UserKey == nil {
-		return ginresp.CompatAPIError(102, "Missing parameter [[user_key]]")
-	}
+		data := dataext.ObjectMerge(datb, datq)
 
-	useridCompNew, err := h.database.ConvertCompatID(ctx, *data.UserID, "userid")
-	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
-	}
-	if useridCompNew == nil {
-		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
-	}
-
-	user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.CompatAPIError(201, "User not found")
-	}
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to query user")
-	}
-
-	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to query token")
-	}
-	if keytok == nil {
-		return ginresp.CompatAPIError(204, "Authentification failed")
-	}
-	if !keytok.IsAdmin(user.UserID) {
-		return ginresp.CompatAPIError(204, "Authentification failed")
-	}
-
-	filter := models.MessageFilter{
-		Sender:             langext.Ptr([]models.UserID{user.UserID}),
-		CompatAcknowledged: langext.Ptr(false),
-	}
-
-	msgs, _, err := h.database.ListMessages(ctx, filter, langext.Ptr(16), ct.Start())
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to query user")
-	}
-
-	compMsgs := make([]models.CompatMessage, 0, len(msgs))
-	for _, v := range msgs {
-
-		messageIdComp, err := h.database.ConvertToCompatIDOrCreate(ctx, "messageid", v.MessageID.String())
-		if err != nil {
-			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query/create messageid<old>", err)
+		if data.UserID == nil {
+			return ginresp.CompatAPIError(101, "Missing parameter [[user_id]]")
+		}
+		if data.UserKey == nil {
+			return ginresp.CompatAPIError(102, "Missing parameter [[user_key]]")
 		}
 
-		compMsgs = append(compMsgs, models.CompatMessage{
-			Title:         v.Title,
-			Body:          v.Content,
-			Priority:      v.Priority,
-			Timestamp:     v.Timestamp().Unix(),
-			UserMessageID: v.UserMessageID,
-			SCNMessageID:  messageIdComp,
-			Trimmed:       nil,
-		})
-	}
+		useridCompNew, err := h.database.ConvertCompatID(ctx, *data.UserID, "userid")
+		if err != nil {
+			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
+		}
+		if useridCompNew == nil {
+			return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
+		}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{
-		Success: true,
-		Message: "ok",
-		Count:   len(compMsgs),
-		Data:    compMsgs,
-	}))
+		user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.CompatAPIError(201, "User not found")
+		}
+		if err != nil {
+			return ginresp.CompatAPIError(0, "Failed to query user")
+		}
+
+		keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
+		if err != nil {
+			return ginresp.CompatAPIError(0, "Failed to query token")
+		}
+		if keytok == nil {
+			return ginresp.CompatAPIError(204, "Authentification failed")
+		}
+		if !keytok.IsAdmin(user.UserID) {
+			return ginresp.CompatAPIError(204, "Authentification failed")
+		}
+
+		filter := models.MessageFilter{
+			Sender:             langext.Ptr([]models.UserID{user.UserID}),
+			CompatAcknowledged: langext.Ptr(false),
+		}
+
+		msgs, _, err := h.database.ListMessages(ctx, filter, langext.Ptr(16), ct.Start())
+		if err != nil {
+			return ginresp.CompatAPIError(0, "Failed to query user")
+		}
+
+		compMsgs := make([]models.CompatMessage, 0, len(msgs))
+		for _, v := range msgs {
+
+			messageIdComp, err := h.database.ConvertToCompatIDOrCreate(ctx, "messageid", v.MessageID.String())
+			if err != nil {
+				return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query/create messageid<old>", err)
+			}
+
+			compMsgs = append(compMsgs, models.CompatMessage{
+				Title:         v.Title,
+				Body:          v.Content,
+				Priority:      v.Priority,
+				Timestamp:     v.Timestamp().Unix(),
+				UserMessageID: v.UserMessageID,
+				SCNMessageID:  messageIdComp,
+				Trimmed:       nil,
+			})
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, response{
+			Success: true,
+			Message: "ok",
+			Count:   len(compMsgs),
+			Data:    compMsgs,
+		}))
+
+	})
 }
 
 // Update swaggerdoc
@@ -591,97 +610,101 @@ func (h CompatHandler) Update(pctx ginext.PreContext) ginext.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb, logic.RequestOptions{IgnoreWrongContentType: true})
+	ctx, g, errResp := pctx.Query(&datq).Body(&datb).IgnoreWrongContentType().Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	data := dataext.ObjectMerge(datb, datq)
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	if data.UserID == nil {
-		return ginresp.CompatAPIError(101, "Missing parameter [[user_id]]")
-	}
-	if data.UserKey == nil {
-		return ginresp.CompatAPIError(102, "Missing parameter [[user_key]]")
-	}
+		data := dataext.ObjectMerge(datb, datq)
 
-	useridCompNew, err := h.database.ConvertCompatID(ctx, *data.UserID, "userid")
-	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
-	}
-	if useridCompNew == nil {
-		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
-	}
+		if data.UserID == nil {
+			return ginresp.CompatAPIError(101, "Missing parameter [[user_id]]")
+		}
+		if data.UserKey == nil {
+			return ginresp.CompatAPIError(102, "Missing parameter [[user_key]]")
+		}
 
-	user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.CompatAPIError(201, "User not found")
-	}
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to query user")
-	}
+		useridCompNew, err := h.database.ConvertCompatID(ctx, *data.UserID, "userid")
+		if err != nil {
+			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
+		}
+		if useridCompNew == nil {
+			return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
+		}
 
-	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to query token")
-	}
-	if keytok == nil {
-		return ginresp.CompatAPIError(204, "Authentification failed")
-	}
-	if !keytok.IsAdmin(user.UserID) {
-		return ginresp.CompatAPIError(204, "Authentification failed")
-	}
+		user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.CompatAPIError(201, "User not found")
+		}
+		if err != nil {
+			return ginresp.CompatAPIError(0, "Failed to query user")
+		}
 
-	clients, err := h.database.ListClients(ctx, user.UserID)
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to list clients")
-	}
+		keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
+		if err != nil {
+			return ginresp.CompatAPIError(0, "Failed to query token")
+		}
+		if keytok == nil {
+			return ginresp.CompatAPIError(204, "Authentification failed")
+		}
+		if !keytok.IsAdmin(user.UserID) {
+			return ginresp.CompatAPIError(204, "Authentification failed")
+		}
 
-	newAdminKey := h.app.GenerateRandomAuthKey()
+		clients, err := h.database.ListClients(ctx, user.UserID)
+		if err != nil {
+			return ginresp.CompatAPIError(0, "Failed to list clients")
+		}
 
-	_, err = h.database.CreateKeyToken(ctx, "CompatKey", user.UserID, true, make([]models.ChannelID, 0), models.TokenPermissionList{models.PermAdmin}, newAdminKey)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create admin-key in db", err)
-	}
+		newAdminKey := h.app.GenerateRandomAuthKey()
 
-	err = h.database.DeleteKeyToken(ctx, keytok.KeyTokenID)
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to update keys")
-	}
+		_, err = h.database.CreateKeyToken(ctx, "CompatKey", user.UserID, true, make([]models.ChannelID, 0), models.TokenPermissionList{models.PermAdmin}, newAdminKey)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create admin-key in db", err)
+		}
 
-	if data.FCMToken != nil {
+		err = h.database.DeleteKeyToken(ctx, keytok.KeyTokenID)
+		if err != nil {
+			return ginresp.CompatAPIError(0, "Failed to update keys")
+		}
 
-		for _, client := range clients {
+		if data.FCMToken != nil {
 
-			err = h.database.DeleteClient(ctx, client.ClientID)
+			for _, client := range clients {
+
+				err = h.database.DeleteClient(ctx, client.ClientID)
+				if err != nil {
+					return ginresp.CompatAPIError(0, "Failed to delete client")
+				}
+
+			}
+
+			_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, *data.FCMToken, "compat", "compat", nil)
 			if err != nil {
-				return ginresp.CompatAPIError(0, "Failed to delete client")
+				return ginresp.CompatAPIError(0, "Failed to create client")
 			}
 
 		}
 
-		_, err = h.database.CreateClient(ctx, user.UserID, models.ClientTypeAndroid, *data.FCMToken, "compat", "compat", nil)
+		user, err = h.database.GetUser(ctx, user.UserID)
 		if err != nil {
-			return ginresp.CompatAPIError(0, "Failed to create client")
+			return ginresp.CompatAPIError(0, "Failed to query user")
 		}
 
-	}
+		return finishSuccess(ginext.JSON(http.StatusOK, response{
+			Success:   true,
+			Message:   "user updated",
+			UserID:    *data.UserID,
+			UserKey:   newAdminKey,
+			QuotaUsed: user.QuotaUsedToday(),
+			QuotaMax:  user.QuotaPerDay(),
+			IsPro:     langext.Conditional(user.IsPro, 1, 0),
+		}))
 
-	user, err = h.database.GetUser(ctx, user.UserID)
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to query user")
-	}
-
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{
-		Success:   true,
-		Message:   "user updated",
-		UserID:    *data.UserID,
-		UserKey:   newAdminKey,
-		QuotaUsed: user.QuotaUsedToday(),
-		QuotaMax:  user.QuotaPerDay(),
-		IsPro:     langext.Conditional(user.IsPro, 1, 0),
-	}))
+	})
 }
 
 // Expand swaggerdoc
@@ -718,80 +741,84 @@ func (h CompatHandler) Expand(pctx ginext.PreContext) ginext.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb, logic.RequestOptions{IgnoreWrongContentType: true})
+	ctx, g, errResp := pctx.Query(&datq).Body(&datb).IgnoreWrongContentType().Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	data := dataext.ObjectMerge(datb, datq)
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	if data.UserID == nil {
-		return ginresp.CompatAPIError(101, "Missing parameter [[user_id]]")
-	}
-	if data.UserKey == nil {
-		return ginresp.CompatAPIError(102, "Missing parameter [[user_key]]")
-	}
-	if data.MessageID == nil {
-		return ginresp.CompatAPIError(103, "Missing parameter [[scn_msg_id]]")
-	}
+		data := dataext.ObjectMerge(datb, datq)
 
-	useridCompNew, err := h.database.ConvertCompatID(ctx, *data.UserID, "userid")
-	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
-	}
-	if useridCompNew == nil {
-		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
-	}
+		if data.UserID == nil {
+			return ginresp.CompatAPIError(101, "Missing parameter [[user_id]]")
+		}
+		if data.UserKey == nil {
+			return ginresp.CompatAPIError(102, "Missing parameter [[user_key]]")
+		}
+		if data.MessageID == nil {
+			return ginresp.CompatAPIError(103, "Missing parameter [[scn_msg_id]]")
+		}
 
-	user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.CompatAPIError(201, "User not found")
-	}
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to query user")
-	}
+		useridCompNew, err := h.database.ConvertCompatID(ctx, *data.UserID, "userid")
+		if err != nil {
+			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
+		}
+		if useridCompNew == nil {
+			return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
+		}
 
-	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to query token")
-	}
-	if keytok == nil {
-		return ginresp.CompatAPIError(204, "Authentification failed")
-	}
-	if !keytok.IsAdmin(user.UserID) {
-		return ginresp.CompatAPIError(204, "Authentification failed")
-	}
+		user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.CompatAPIError(201, "User not found")
+		}
+		if err != nil {
+			return ginresp.CompatAPIError(0, "Failed to query user")
+		}
 
-	messageCompNew, err := h.database.ConvertCompatID(ctx, *data.MessageID, "messageid")
-	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query messagid<old>", err)
-	}
-	if messageCompNew == nil {
-		return ginresp.CompatAPIError(301, "Message not found")
-	}
+		keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
+		if err != nil {
+			return ginresp.CompatAPIError(0, "Failed to query token")
+		}
+		if keytok == nil {
+			return ginresp.CompatAPIError(204, "Authentification failed")
+		}
+		if !keytok.IsAdmin(user.UserID) {
+			return ginresp.CompatAPIError(204, "Authentification failed")
+		}
 
-	msg, err := h.database.GetMessage(ctx, models.MessageID(*messageCompNew), false)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.CompatAPIError(301, "Message not found")
-	}
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to query message")
-	}
+		messageCompNew, err := h.database.ConvertCompatID(ctx, *data.MessageID, "messageid")
+		if err != nil {
+			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query messagid<old>", err)
+		}
+		if messageCompNew == nil {
+			return ginresp.CompatAPIError(301, "Message not found")
+		}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{
-		Success: true,
-		Message: "ok",
-		Data: models.CompatMessage{
-			Title:         msg.Title,
-			Body:          msg.Content,
-			Trimmed:       langext.Ptr(false),
-			Priority:      msg.Priority,
-			Timestamp:     msg.Timestamp().Unix(),
-			UserMessageID: msg.UserMessageID,
-			SCNMessageID:  *data.MessageID,
-		},
-	}))
+		msg, err := h.database.GetMessage(ctx, models.MessageID(*messageCompNew), false)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.CompatAPIError(301, "Message not found")
+		}
+		if err != nil {
+			return ginresp.CompatAPIError(0, "Failed to query message")
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, response{
+			Success: true,
+			Message: "ok",
+			Data: models.CompatMessage{
+				Title:         msg.Title,
+				Body:          msg.Content,
+				Trimmed:       langext.Ptr(false),
+				Priority:      msg.Priority,
+				Timestamp:     msg.Timestamp().Unix(),
+				UserMessageID: msg.UserMessageID,
+				SCNMessageID:  *data.MessageID,
+			},
+		}))
+
+	})
 }
 
 // Upgrade swaggerdoc
@@ -834,99 +861,103 @@ func (h CompatHandler) Upgrade(pctx ginext.PreContext) ginext.HTTPResponse {
 
 	var datq query
 	var datb query
-	ctx, errResp := h.app.StartRequest(g, nil, &datq, nil, &datb, logic.RequestOptions{IgnoreWrongContentType: true})
+	ctx, g, errResp := pctx.Query(&datq).Body(&datb).IgnoreWrongContentType().Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	data := dataext.ObjectMerge(datb, datq)
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	if data.UserID == nil {
-		return ginresp.CompatAPIError(101, "Missing parameter [[user_id]]")
-	}
-	if data.UserKey == nil {
-		return ginresp.CompatAPIError(102, "Missing parameter [[user_key]]")
-	}
-	if data.Pro == nil {
-		return ginresp.CompatAPIError(103, "Missing parameter [[pro]]")
-	}
-	if data.ProToken == nil {
-		return ginresp.CompatAPIError(104, "Missing parameter [[pro_token]]")
-	}
+		data := dataext.ObjectMerge(datb, datq)
 
-	useridCompNew, err := h.database.ConvertCompatID(ctx, *data.UserID, "userid")
-	if err != nil {
-		return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
-	}
-	if useridCompNew == nil {
-		return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
-	}
+		if data.UserID == nil {
+			return ginresp.CompatAPIError(101, "Missing parameter [[user_id]]")
+		}
+		if data.UserKey == nil {
+			return ginresp.CompatAPIError(102, "Missing parameter [[user_key]]")
+		}
+		if data.Pro == nil {
+			return ginresp.CompatAPIError(103, "Missing parameter [[pro]]")
+		}
+		if data.ProToken == nil {
+			return ginresp.CompatAPIError(104, "Missing parameter [[pro_token]]")
+		}
 
-	user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.CompatAPIError(201, "User not found")
-	}
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to query user")
-	}
-
-	keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to query token")
-	}
-	if keytok == nil {
-		return ginresp.CompatAPIError(204, "Authentification failed")
-	}
-	if !keytok.IsAdmin(user.UserID) {
-		return ginresp.CompatAPIError(204, "Authentification failed")
-	}
-
-	if data.ProToken != nil {
-		data.ProToken = langext.Ptr("ANDROID|v1|" + *data.ProToken)
-	}
-
-	if *data.Pro != "true" {
-		data.ProToken = nil
-	}
-
-	if data.ProToken != nil {
-		ptok, err := h.app.VerifyProToken(ctx, *data.ProToken)
+		useridCompNew, err := h.database.ConvertCompatID(ctx, *data.UserID, "userid")
 		if err != nil {
-			return ginresp.CompatAPIError(0, "Failed to query purchase status")
+			return ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to query userid<old>", err)
+		}
+		if useridCompNew == nil {
+			return ginresp.SendAPIError(g, 400, apierr.USER_NOT_FOUND, hl.USER_ID, "User not found (compat)", nil)
 		}
 
-		if !ptok {
-			return ginresp.CompatAPIError(0, "Purchase token could not be verified")
+		user, err := h.database.GetUser(ctx, models.UserID(*useridCompNew))
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.CompatAPIError(201, "User not found")
 		}
-
-		err = h.database.ClearProTokens(ctx, *data.ProToken)
 		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
+			return ginresp.CompatAPIError(0, "Failed to query user")
 		}
 
-		err = h.database.UpdateUserProToken(ctx, user.UserID, langext.Ptr(*data.ProToken))
+		keytok, err := h.database.GetKeyTokenByToken(ctx, *data.UserKey)
 		if err != nil {
-			return ginresp.CompatAPIError(0, "Failed to update user")
+			return ginresp.CompatAPIError(0, "Failed to query token")
 		}
-	} else {
-		err = h.database.UpdateUserProToken(ctx, user.UserID, nil)
+		if keytok == nil {
+			return ginresp.CompatAPIError(204, "Authentification failed")
+		}
+		if !keytok.IsAdmin(user.UserID) {
+			return ginresp.CompatAPIError(204, "Authentification failed")
+		}
+
+		if data.ProToken != nil {
+			data.ProToken = langext.Ptr("ANDROID|v1|" + *data.ProToken)
+		}
+
+		if *data.Pro != "true" {
+			data.ProToken = nil
+		}
+
+		if data.ProToken != nil {
+			ptok, err := h.app.VerifyProToken(ctx, *data.ProToken)
+			if err != nil {
+				return ginresp.CompatAPIError(0, "Failed to query purchase status")
+			}
+
+			if !ptok {
+				return ginresp.CompatAPIError(0, "Purchase token could not be verified")
+			}
+
+			err = h.database.ClearProTokens(ctx, *data.ProToken)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
+			}
+
+			err = h.database.UpdateUserProToken(ctx, user.UserID, langext.Ptr(*data.ProToken))
+			if err != nil {
+				return ginresp.CompatAPIError(0, "Failed to update user")
+			}
+		} else {
+			err = h.database.UpdateUserProToken(ctx, user.UserID, nil)
+			if err != nil {
+				return ginresp.CompatAPIError(0, "Failed to update user")
+			}
+		}
+
+		user, err = h.database.GetUser(ctx, user.UserID)
 		if err != nil {
-			return ginresp.CompatAPIError(0, "Failed to update user")
+			return ginresp.CompatAPIError(0, "Failed to query user")
 		}
-	}
 
-	user, err = h.database.GetUser(ctx, user.UserID)
-	if err != nil {
-		return ginresp.CompatAPIError(0, "Failed to query user")
-	}
+		return finishSuccess(ginext.JSON(http.StatusOK, response{
+			Success:   true,
+			Message:   "user updated",
+			UserID:    *data.UserID,
+			QuotaUsed: user.QuotaUsedToday(),
+			QuotaMax:  user.QuotaPerDay(),
+			IsPro:     user.IsPro,
+		}))
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{
-		Success:   true,
-		Message:   "user updated",
-		UserID:    *data.UserID,
-		QuotaUsed: user.QuotaUsedToday(),
-		QuotaMax:  user.QuotaPerDay(),
-		IsPro:     user.IsPro,
-	}))
+	})
 }

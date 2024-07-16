@@ -7,6 +7,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/jobs"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/push"
+	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"os"
 	"path/filepath"
@@ -87,7 +88,13 @@ func StartSimpleWebserver(t *testing.T) (*logic.Application, string, func()) {
 		TestFailErr(t, err)
 	}
 
-	ginengine := ginext.NewEngine(scn.Conf)
+	ginengine := ginext.NewEngine(ginext.Options{
+		AllowCors:             &scn.Conf.Cors,
+		GinDebug:              &scn.Conf.GinDebug,
+		BufferBody:            langext.PTrue,
+		Timeout:               langext.Ptr(time.Duration(int64(scn.Conf.RequestTimeout) * int64(scn.Conf.RequestMaxRetry))),
+		BuildRequestBindError: logic.BuildGinRequestError,
+	})
 
 	router := api.NewRouter(app)
 

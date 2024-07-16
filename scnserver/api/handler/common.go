@@ -58,19 +58,23 @@ func (h CommonHandler) Ping(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
-	buf := new(bytes.Buffer)
-	_, _ = buf.ReadFrom(g.Request.Body)
-	resuestBody := buf.String()
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	return ginext.JSON(http.StatusOK, pingResponse{
-		Message: "Pong",
-		Info: pingResponseInfo{
-			Method:  g.Request.Method,
-			Request: resuestBody,
-			Headers: g.Request.Header,
-			URI:     g.Request.RequestURI,
-			Address: g.Request.RemoteAddr,
-		},
+		buf := new(bytes.Buffer)
+		_, _ = buf.ReadFrom(g.Request.Body)
+		resuestBody := buf.String()
+
+		return ginext.JSON(http.StatusOK, pingResponse{
+			Message: "Pong",
+			Info: pingResponseInfo{
+				Method:  g.Request.Method,
+				Request: resuestBody,
+				Headers: g.Request.Header,
+				URI:     g.Request.RequestURI,
+				Address: g.Request.RemoteAddr,
+			},
+		})
+
 	})
 }
 
@@ -92,24 +96,28 @@ func (h CommonHandler) DatabaseTest(pctx ginext.PreContext) ginext.HTTPResponse 
 		SourceID         string `json:"sourceID"`
 	}
 
-	ctx, _, errResp := pctx.Start()
+	ctx, g, errResp := pctx.Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	libVersion, libVersionNumber, sourceID := sqlite3.Version()
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	err := h.app.Database.Ping(ctx)
-	if err != nil {
-		return ginresp.InternalError(err)
-	}
+		libVersion, libVersionNumber, sourceID := sqlite3.Version()
 
-	return ginext.JSON(http.StatusOK, response{
-		Success:          true,
-		LibVersion:       libVersion,
-		LibVersionNumber: libVersionNumber,
-		SourceID:         sourceID,
+		err := h.app.Database.Ping(ctx)
+		if err != nil {
+			return ginresp.InternalError(err)
+		}
+
+		return ginext.JSON(http.StatusOK, response{
+			Success:          true,
+			LibVersion:       libVersion,
+			LibVersionNumber: libVersionNumber,
+			SourceID:         sourceID,
+		})
+
 	})
 }
 
@@ -128,52 +136,56 @@ func (h CommonHandler) Health(pctx ginext.PreContext) ginext.HTTPResponse {
 		Status string `json:"status"`
 	}
 
-	ctx, _, errResp := pctx.Start()
+	ctx, g, errResp := pctx.Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	_, libVersionNumber, _ := sqlite3.Version()
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	if libVersionNumber < 3039000 {
-		return ginresp.InternalError(errors.New("sqlite version too low"))
-	}
+		_, libVersionNumber, _ := sqlite3.Version()
 
-	tctx := simplectx.CreateSimpleContext(ctx, nil)
+		if libVersionNumber < 3039000 {
+			return ginresp.InternalError(errors.New("sqlite version too low"))
+		}
 
-	err := h.app.Database.Ping(tctx)
-	if err != nil {
-		return ginresp.InternalError(err)
-	}
+		tctx := simplectx.CreateSimpleContext(ctx, nil)
 
-	for _, subdb := range h.app.Database.List() {
-
-		uuidKey, _ := langext.NewHexUUID()
-		uuidWrite, _ := langext.NewHexUUID()
-
-		err = subdb.WriteMetaString(tctx, uuidKey, uuidWrite)
+		err := h.app.Database.Ping(tctx)
 		if err != nil {
 			return ginresp.InternalError(err)
 		}
 
-		uuidRead, err := subdb.ReadMetaString(tctx, uuidKey)
-		if err != nil {
-			return ginresp.InternalError(err)
+		for _, subdb := range h.app.Database.List() {
+
+			uuidKey, _ := langext.NewHexUUID()
+			uuidWrite, _ := langext.NewHexUUID()
+
+			err = subdb.WriteMetaString(tctx, uuidKey, uuidWrite)
+			if err != nil {
+				return ginresp.InternalError(err)
+			}
+
+			uuidRead, err := subdb.ReadMetaString(tctx, uuidKey)
+			if err != nil {
+				return ginresp.InternalError(err)
+			}
+
+			if uuidRead == nil || uuidWrite != *uuidRead {
+				return ginresp.InternalError(errors.New("writing into DB was not consistent"))
+			}
+
+			err = subdb.DeleteMeta(tctx, uuidKey)
+			if err != nil {
+				return ginresp.InternalError(err)
+			}
+
 		}
 
-		if uuidRead == nil || uuidWrite != *uuidRead {
-			return ginresp.InternalError(errors.New("writing into DB was not consistent"))
-		}
+		return ginext.JSON(http.StatusOK, response{Status: "ok"})
 
-		err = subdb.DeleteMeta(tctx, uuidKey)
-		if err != nil {
-			return ginresp.InternalError(err)
-		}
-
-	}
-
-	return ginext.JSON(http.StatusOK, response{Status: "ok"})
+	})
 }
 
 // Sleep swaggerdoc
@@ -205,21 +217,25 @@ func (h CommonHandler) Sleep(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
-	t0 := time.Now().Format(time.RFC3339Nano)
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	var u uri
-	if err := g.ShouldBindUri(&u); err != nil {
-		return ginresp.APIError(g, 400, apierr.BINDFAIL_URI_PARAM, "Failed to read uri", err)
-	}
+		t0 := time.Now().Format(time.RFC3339Nano)
 
-	time.Sleep(timeext.FromSeconds(u.Seconds))
+		var u uri
+		if err := g.ShouldBindUri(&u); err != nil {
+			return ginresp.APIError(g, 400, apierr.BINDFAIL_URI_PARAM, "Failed to read uri", err)
+		}
 
-	t1 := time.Now().Format(time.RFC3339Nano)
+		time.Sleep(timeext.FromSeconds(u.Seconds))
 
-	return ginext.JSON(http.StatusOK, response{
-		Start:    t0,
-		End:      t1,
-		Duration: u.Seconds,
+		t1 := time.Now().Format(time.RFC3339Nano)
+
+		return ginext.JSON(http.StatusOK, response{
+			Start:    t0,
+			End:      t1,
+			Duration: u.Seconds,
+		})
+
 	})
 }
 
@@ -230,14 +246,18 @@ func (h CommonHandler) NoRoute(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
-	return ginext.JSON(http.StatusNotFound, gin.H{
-		"":           "================ ROUTE NOT FOUND ================",
-		"FullPath":   g.FullPath(),
-		"Method":     g.Request.Method,
-		"URL":        g.Request.URL.String(),
-		"RequestURI": g.Request.RequestURI,
-		"Proto":      g.Request.Proto,
-		"Header":     g.Request.Header,
-		"~":          "================ ROUTE NOT FOUND ================",
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
+
+		return ginext.JSON(http.StatusNotFound, gin.H{
+			"":           "================ ROUTE NOT FOUND ================",
+			"FullPath":   g.FullPath(),
+			"Method":     g.Request.Method,
+			"URL":        g.Request.URL.String(),
+			"RequestURI": g.Request.RequestURI,
+			"Proto":      g.Request.Proto,
+			"Header":     g.Request.Header,
+			"~":          "================ ROUTE NOT FOUND ================",
+		})
+
 	})
 }

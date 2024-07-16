@@ -5,6 +5,8 @@ PORT=9090
 NAMESPACE=$(shell git rev-parse --abbrev-ref HEAD)
 HASH=$(shell git rev-parse HEAD)
 
+TAGS="timetzdata sqlite_fts5 sqlite_foreign_keys"
+
 .PHONY: test swagger pygmentize docker migrate dgi pygmentize lint docker
 
 SWAGGO_VERSION=v1.8.12
@@ -13,7 +15,7 @@ SWAGGO=github.com/swaggo/swag/cmd/swag@$(SWAGGO_VERSION)
 build: ids enums swagger pygmentize fmt
 	mkdir -p _build
 	rm -f ./_build/scn_backend
-	CGO_ENABLED=1 go build -v -o _build/scn_backend -tags "timetzdata sqlite_fts5 sqlite_foreign_keys" ./cmd/scnserver
+	CGO_ENABLED=1 go build -v -o _build/scn_backend -tags $(TAGS) ./cmd/scnserver
 
 enums:
 	go generate models/enums.go
@@ -27,7 +29,7 @@ run: build
 
 gow:
 	which gow || go install github.com/mitranim/gow@latest
-	gow -e "go,mod,html,css,json,yaml,js" run -tags "timetzdata sqlite_fts5 sqlite_foreign_keys" blackforestbytes.com/simplecloudnotifier/cmd/scnserver
+	gow -e "go,mod,html,css,json,yaml,js" run -tags $(TAGS) blackforestbytes.com/simplecloudnotifier/cmd/scnserver
 
 dgi:
 	[ ! -f "DOCKER_GIT_INFO" ] || rm DOCKER_GIT_INFO
@@ -99,10 +101,10 @@ fmt: swagger-setup
 
 test:
 	which gotestsum || go install gotest.tools/gotestsum@latest
-	gotestsum --format "testname" -- -tags="timetzdata sqlite_fts5 sqlite_foreign_keys" "./test"
+	gotestsum --format "testname" -- -tags $(TAGS) "./test"
 
 migrate:
-	CGO_ENABLED=1 go build -v -o _build/scn_migrate -tags "timetzdata sqlite_fts5 sqlite_foreign_keys" ./cmd/migrate
+	CGO_ENABLED=1 go build -v -o _build/scn_migrate -tags $(TAGS) ./cmd/migrate
 	./_build/scn_migrate
 
 lint:

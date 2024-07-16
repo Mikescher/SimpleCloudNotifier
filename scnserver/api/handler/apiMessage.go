@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"blackforestbytes.com/simplecloudnotifier/logic"
 	"database/sql"
 	"errors"
 	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
@@ -55,107 +56,111 @@ func (h APIHandler) ListMessages(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 
 	var q query
-	ctx, errResp := h.app.StartRequest(g, nil, &q, nil, nil)
+	ctx, g, errResp := pctx.Query(&q).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	trimmed := langext.Coalesce(q.Trimmed, true)
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	maxPageSize := langext.Conditional(trimmed, 16, 256)
+		trimmed := langext.Coalesce(q.Trimmed, true)
 
-	pageSize := mathext.Clamp(langext.Coalesce(q.PageSize, 64), 1, maxPageSize)
+		maxPageSize := langext.Conditional(trimmed, 16, 256)
 
-	if permResp := ctx.CheckPermissionSelfAllMessagesRead(); permResp != nil {
-		return *permResp
-	}
+		pageSize := mathext.Clamp(langext.Coalesce(q.PageSize, 64), 1, maxPageSize)
 
-	userid := *ctx.GetPermissionUserID()
-
-	tok, err := ct.Decode(langext.Coalesce(q.NextPageToken, ""))
-	if err != nil {
-		return ginresp.APIError(g, 400, apierr.PAGETOKEN_ERROR, "Failed to decode next_page_token", err)
-	}
-
-	err = h.database.UpdateUserLastRead(ctx, userid)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update last-read", err)
-	}
-
-	filter := models.MessageFilter{
-		ConfirmedSubscriptionBy: langext.Ptr(userid),
-	}
-
-	if q.Filter != nil && strings.TrimSpace(*q.Filter) != "" {
-		filter.SearchString = langext.Ptr([]string{strings.TrimSpace(*q.Filter)})
-	}
-
-	if len(q.Channels) != 0 {
-		filter.ChannelNameCS = langext.Ptr(q.Channels)
-	}
-
-	if len(q.ChannelIDs) != 0 {
-		cids := make([]models.ChannelID, 0, len(q.ChannelIDs))
-		for _, v := range q.ChannelIDs {
-			cid := models.ChannelID(v)
-			if err = cid.Valid(); err != nil {
-				return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid channel-id", err)
-			}
-			cids = append(cids, cid)
+		if permResp := ctx.CheckPermissionSelfAllMessagesRead(); permResp != nil {
+			return *permResp
 		}
-		filter.ChannelID = &cids
-	}
 
-	if len(q.Senders) != 0 {
-		filter.SenderNameCS = langext.Ptr(q.Senders)
-	}
+		userid := *ctx.GetPermissionUserID()
 
-	if q.TimeBefore != nil {
-		t0, err := time.Parse(time.RFC3339, *q.TimeBefore)
+		tok, err := ct.Decode(langext.Coalesce(q.NextPageToken, ""))
 		if err != nil {
-			return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid before-time", err)
+			return ginresp.APIError(g, 400, apierr.PAGETOKEN_ERROR, "Failed to decode next_page_token", err)
 		}
-		filter.TimestampCoalesceBefore = &t0
-	}
 
-	if q.TimeAfter != nil {
-		t0, err := time.Parse(time.RFC3339, *q.TimeAfter)
+		err = h.database.UpdateUserLastRead(ctx, userid)
 		if err != nil {
-			return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid after-time", err)
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update last-read", err)
 		}
-		filter.TimestampCoalesceAfter = &t0
-	}
 
-	if len(q.Priority) != 0 {
-		filter.Priority = langext.Ptr(q.Priority)
-	}
+		filter := models.MessageFilter{
+			ConfirmedSubscriptionBy: langext.Ptr(userid),
+		}
 
-	if len(q.KeyTokens) != 0 {
-		tids := make([]models.KeyTokenID, 0, len(q.KeyTokens))
-		for _, v := range q.KeyTokens {
-			tid := models.KeyTokenID(v)
-			if err = tid.Valid(); err != nil {
-				return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid keytoken-id", err)
+		if q.Filter != nil && strings.TrimSpace(*q.Filter) != "" {
+			filter.SearchString = langext.Ptr([]string{strings.TrimSpace(*q.Filter)})
+		}
+
+		if len(q.Channels) != 0 {
+			filter.ChannelNameCS = langext.Ptr(q.Channels)
+		}
+
+		if len(q.ChannelIDs) != 0 {
+			cids := make([]models.ChannelID, 0, len(q.ChannelIDs))
+			for _, v := range q.ChannelIDs {
+				cid := models.ChannelID(v)
+				if err = cid.Valid(); err != nil {
+					return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid channel-id", err)
+				}
+				cids = append(cids, cid)
 			}
-			tids = append(tids, tid)
+			filter.ChannelID = &cids
 		}
-		filter.UsedKeyID = &tids
-	}
 
-	messages, npt, err := h.database.ListMessages(ctx, filter, &pageSize, tok)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query messages", err)
-	}
+		if len(q.Senders) != 0 {
+			filter.SenderNameCS = langext.Ptr(q.Senders)
+		}
 
-	var res []models.MessageJSON
-	if trimmed {
-		res = langext.ArrMap(messages, func(v models.Message) models.MessageJSON { return v.TrimmedJSON() })
-	} else {
-		res = langext.ArrMap(messages, func(v models.Message) models.MessageJSON { return v.FullJSON() })
-	}
+		if q.TimeBefore != nil {
+			t0, err := time.Parse(time.RFC3339, *q.TimeBefore)
+			if err != nil {
+				return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid before-time", err)
+			}
+			filter.TimestampCoalesceBefore = &t0
+		}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize}))
+		if q.TimeAfter != nil {
+			t0, err := time.Parse(time.RFC3339, *q.TimeAfter)
+			if err != nil {
+				return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid after-time", err)
+			}
+			filter.TimestampCoalesceAfter = &t0
+		}
+
+		if len(q.Priority) != 0 {
+			filter.Priority = langext.Ptr(q.Priority)
+		}
+
+		if len(q.KeyTokens) != 0 {
+			tids := make([]models.KeyTokenID, 0, len(q.KeyTokens))
+			for _, v := range q.KeyTokens {
+				tid := models.KeyTokenID(v)
+				if err = tid.Valid(); err != nil {
+					return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid keytoken-id", err)
+				}
+				tids = append(tids, tid)
+			}
+			filter.UsedKeyID = &tids
+		}
+
+		messages, npt, err := h.database.ListMessages(ctx, filter, &pageSize, tok)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query messages", err)
+		}
+
+		var res []models.MessageJSON
+		if trimmed {
+			res = langext.ArrMap(messages, func(v models.Message) models.MessageJSON { return v.TrimmedJSON() })
+		} else {
+			res = langext.ArrMap(messages, func(v models.Message) models.MessageJSON { return v.FullJSON() })
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize}))
+
+	})
 }
 
 // GetMessage swaggerdoc
@@ -182,50 +187,54 @@ func (h APIHandler) GetMessage(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 
 	var u uri
-	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
+	ctx, g, errResp := pctx.URI(&u).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionAny(); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	msg, err := h.database.GetMessage(ctx, u.MessageID, false)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.MESSAGE_NOT_FOUND, "message not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query message", err)
-	}
+		if permResp := ctx.CheckPermissionAny(); permResp != nil {
+			return *permResp
+		}
 
-	// either we have direct read permissions (it is our message + read/admin key)
-	// or we subscribe (+confirmed) to the channel and have read/admin key
-
-	if ctx.CheckPermissionMessageRead(msg) {
-		return ctx.FinishSuccess(ginext.JSON(http.StatusOK, msg.FullJSON()))
-	}
-
-	if uid := ctx.GetPermissionUserID(); uid != nil && ctx.CheckPermissionUserRead(*uid) == nil {
-		sub, err := h.database.GetSubscriptionBySubscriber(ctx, *uid, msg.ChannelID)
+		msg, err := h.database.GetMessage(ctx, u.MessageID, false)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.MESSAGE_NOT_FOUND, "message not found", err)
+		}
 		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
-		}
-		if sub == nil {
-			// not subbed
-			return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
-		}
-		if !sub.Confirmed {
-			// sub not confirmed
-			return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query message", err)
 		}
 
-		// => perm okay
-		return ctx.FinishSuccess(ginext.JSON(http.StatusOK, msg.FullJSON()))
-	}
+		// either we have direct read permissions (it is our message + read/admin key)
+		// or we subscribe (+confirmed) to the channel and have read/admin key
 
-	return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+		if ctx.CheckPermissionMessageRead(msg) {
+			return finishSuccess(ginext.JSON(http.StatusOK, msg.FullJSON()))
+		}
+
+		if uid := ctx.GetPermissionUserID(); uid != nil && ctx.CheckPermissionUserRead(*uid) == nil {
+			sub, err := h.database.GetSubscriptionBySubscriber(ctx, *uid, msg.ChannelID)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
+			}
+			if sub == nil {
+				// not subbed
+				return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+			}
+			if !sub.Confirmed {
+				// sub not confirmed
+				return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+			}
+
+			// => perm okay
+			return finishSuccess(ginext.JSON(http.StatusOK, msg.FullJSON()))
+		}
+
+		return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+
+	})
 }
 
 // DeleteMessage swaggerdoc
@@ -250,37 +259,41 @@ func (h APIHandler) DeleteMessage(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 
 	var u uri
-	ctx, g, errResp := h.app.StartRequest(pctx.URI(&u).Start())
+	ctx, g, errResp := pctx.URI(&u).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionAny(); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	msg, err := h.database.GetMessage(ctx, u.MessageID, false)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.MESSAGE_NOT_FOUND, "message not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query message", err)
-	}
+		if permResp := ctx.CheckPermissionAny(); permResp != nil {
+			return *permResp
+		}
 
-	if !ctx.CheckPermissionMessageDelete(msg) {
-		return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
-	}
+		msg, err := h.database.GetMessage(ctx, u.MessageID, false)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.MESSAGE_NOT_FOUND, "message not found", err)
+		}
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query message", err)
+		}
 
-	err = h.database.DeleteMessage(ctx, msg.MessageID)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete message", err)
-	}
+		if !ctx.CheckPermissionMessageDelete(msg) {
+			return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+		}
 
-	err = h.database.CancelPendingDeliveries(ctx, msg.MessageID)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to cancel deliveries", err)
-	}
+		err = h.database.DeleteMessage(ctx, msg.MessageID)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete message", err)
+		}
 
-	return ctx.FinishSuccess(ginext.JSON(http.StatusOK, msg.FullJSON()))
+		err = h.database.CancelPendingDeliveries(ctx, msg.MessageID)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to cancel deliveries", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, msg.FullJSON()))
+
+	})
 }
