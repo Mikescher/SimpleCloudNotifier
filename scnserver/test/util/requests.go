@@ -26,6 +26,10 @@ func RequestAuthGet[TResult any](t *testing.T, akey string, baseURL string, urlS
 	return RequestAny[TResult](t, akey, "GET", baseURL, urlSuffix, nil, true)
 }
 
+func RequestAuthGetRaw(t *testing.T, akey string, baseURL string, urlSuffix string) string {
+	return RequestAny[string](t, akey, "GET", baseURL, urlSuffix, nil, false)
+}
+
 func RequestPost[TResult any](t *testing.T, baseURL string, urlSuffix string, body any) TResult {
 	return RequestAny[TResult](t, "", "POST", baseURL, urlSuffix, body, true)
 }
@@ -166,14 +170,22 @@ func RequestAny[TResult any](t *testing.T, akey string, method string, baseURL s
 		TestFailFmt(t, "Statuscode != 200 (actual = %d)", resp.StatusCode)
 	}
 
-	var data TResult
 	if deserialize {
+		var data TResult
 		if err := json.Unmarshal(respBodyBin, &data); err != nil {
 			TestFailErr(t, err)
+			return data
+		}
+		return data
+	} else {
+		if _, ok := (any(*new(TResult))).([]byte); ok {
+			return any(respBodyBin).(TResult)
+		} else if _, ok := (any(*new(TResult))).(string); ok {
+			return any(string(respBodyBin)).(TResult)
+		} else {
+			return *new(TResult)
 		}
 	}
-
-	return data
 }
 
 func RequestAuthAnyShouldFail(t *testing.T, akey string, method string, baseURL string, urlSuffix string, body any, expectedStatusCode int, errcode apierr.APIError) {

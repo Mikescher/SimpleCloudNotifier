@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
 	"gopkg.in/loremipsum.v1"
 	"testing"
@@ -59,10 +60,15 @@ type clientex struct {
 }
 
 type Userdat struct {
-	UID      string
-	SendKey  string
-	AdminKey string
-	ReadKey  string
+	UID           string
+	SendKey       string
+	AdminKey      string
+	ReadKey       string
+	Clients       []string
+	Channels      []string
+	Messages      []string
+	Keys          []string
+	Subscriptions []string
 }
 
 const PX = -1
@@ -367,7 +373,8 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 		body["agent_version"] = cex.AgentVersion
 		body["client_type"] = cex.ClientType
 		body["fcm_token"] = cex.FCMTok
-		RequestAuthPost[gin.H](t, users[cex.User].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/clients", users[cex.User].UID), body)
+		r0 := RequestAuthPost[gin.H](t, users[cex.User].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/clients", users[cex.User].UID), body)
+		users[cex.User].Clients = append(users[cex.User].Clients, r0["client_id"].(string))
 	}
 
 	// Create Messages
@@ -398,13 +405,53 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 			body["timestamp"] = (time.Now().Add(mex.TSOffset)).Unix()
 		}
 
-		RequestPost[gin.H](t, baseUrl, "/", body)
+		r0 := RequestPost[gin.H](t, baseUrl, "/", body)
+		users[mex.User].Messages = append(users[mex.User].Messages, r0["scn_msg_id"].(string))
 	}
 
 	// create manual channels
 
 	{
 		RequestAuthPost[Void](t, users[9].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", users[9].UID), gin.H{"name": "manual@chan"})
+	}
+
+	// list channels
+
+	for i, usr := range users {
+		type schan struct {
+			ID string `json:"channel_id"`
+		}
+		type chanlist struct {
+			Channels []schan `json:"channels"`
+		}
+		r0 := RequestAuthGet[chanlist](t, usr.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels?selector=%s", usr.UID, "owned"))
+		users[i].Channels = langext.ArrMap(r0.Channels, func(v schan) string { return v.ID })
+	}
+
+	// list keys
+
+	for i, usr := range users {
+		type skey struct {
+			ID string `json:"keytoken_id"`
+		}
+		type keylist struct {
+			Keys []skey `json:"channels"`
+		}
+		r0 := RequestAuthGet[keylist](t, usr.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", usr.UID))
+		users[i].Keys = langext.ArrMap(r0.Keys, func(v skey) string { return v.ID })
+	}
+
+	// list subscriptions
+
+	for i, usr := range users {
+		type ssub struct {
+			ID string `json:"subscription_id"`
+		}
+		type sublist struct {
+			Subs []ssub `json:"channels"`
+		}
+		r0 := RequestAuthGet[sublist](t, usr.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=%s&confirmation=%s", usr.UID, "outgoing", "confirmed"))
+		users[i].Keys = langext.ArrMap(r0.Subs, func(v ssub) string { return v.ID })
 	}
 
 	// Sub/Unsub for Users 12+13
@@ -474,7 +521,7 @@ func InitSingleData(t *testing.T, ws *logic.Application) SingleData {
 
 func doSubscribe(t *testing.T, baseUrl string, user Userdat, chanOwner Userdat, chanInternalName string) {
 
-	if user == chanOwner {
+	if user.UID == chanOwner.UID {
 
 		RequestAuthPost[Void](t, user.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", user.UID), gin.H{
 			"channel_owner_user_id": chanOwner.UID,
