@@ -130,20 +130,19 @@ func TestRequestLogAPI(t *testing.T) {
 	defer stop()
 
 	data := tt.InitDefaultData(t, ws)
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(900 * time.Millisecond)
 
 	ctx := ws.NewSimpleTransactionContext(5 * time.Second)
 	defer ctx.Cancel()
 
 	rl1, _, err := ws.Database.Requests.ListRequestLogs(ctx, models.RequestLogFilter{}, nil, ct.Start())
 	tt.TestFailIfErr(t, err)
-	time.Sleep(100 * time.Millisecond)
 
 	tt.RequestAuthGet[gin.H](t, data.User[0].ReadKey, baseUrl, "/api/v2/users/"+data.User[0].UID)
+	time.Sleep(900 * time.Millisecond)
 
 	rl2, _, err := ws.Database.Requests.ListRequestLogs(ctx, models.RequestLogFilter{}, nil, ct.Start())
 	tt.TestFailIfErr(t, err)
-	time.Sleep(100 * time.Millisecond)
 
 	tt.AssertEqual(t, "requestlog.count", len(rl1)+1, len(rl2))
 }

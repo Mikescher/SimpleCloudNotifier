@@ -42,7 +42,7 @@ func TestResponseClient(t *testing.T) {
 
 	data := tt.InitDefaultData(t, ws)
 
-	response := tt.RequestAuthGetRaw(t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/clients/%s", data.User[0].UID, data.User[0].Clients[0]))
+	response := tt.RequestAuthGetRaw(t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/clients/%s", data.User[2].UID, data.User[2].Clients[2]))
 
 	tt.AssertJsonStructureMatch(t, "json[client]", response, map[string]any{})
 }
