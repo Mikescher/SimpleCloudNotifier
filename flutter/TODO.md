@@ -23,12 +23,26 @@
  - [ ] Logout
  - [ ] Send-page
 
- 
+ - [ ] Still @ERROR on scn-init, but no logs? - better persist error (write in SharedPrefs at error_$date=txt ?), also perhaps print first error line in scn-init notification?
+
  -----
+
+# TODO iOS specific
+
+ - [ ] payment / pro
+ - [ ] show notifiactions (foreground/background/etc)
+ - [ ] handle click-on-notifications should open message
+ - [ ] share message
+ - [ ] scan QR
+
+ -----
+
+# TODO Server
 
  - [ ] Switch server to sq style from faby
         - [ ] switch from mattn to go-sqlite
         - [ ] Single struct for model/db/json
+        - [ ] use ginext
         - [ ] use sq.Query | sq.Update | sq.InsertAndQuery | ....
         - [ ] sq.DBOptions - enable CommentTrimmer and DefaultConverter
         - [ ] run unit-tests...
