@@ -435,7 +435,7 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 			ID string `json:"keytoken_id"`
 		}
 		type keylist struct {
-			Keys []skey `json:"channels"`
+			Keys []skey `json:"keys"`
 		}
 		r0 := RequestAuthGet[keylist](t, usr.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", usr.UID))
 		users[i].Keys = langext.ArrMap(r0.Keys, func(v skey) string { return v.ID })
@@ -448,10 +448,10 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 			ID string `json:"subscription_id"`
 		}
 		type sublist struct {
-			Subs []ssub `json:"channels"`
+			Subs []ssub `json:"subscriptions"`
 		}
 		r0 := RequestAuthGet[sublist](t, usr.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=%s&confirmation=%s", usr.UID, "outgoing", "confirmed"))
-		users[i].Keys = langext.ArrMap(r0.Subs, func(v ssub) string { return v.ID })
+		users[i].Subscriptions = langext.ArrMap(r0.Subs, func(v ssub) string { return v.ID })
 	}
 
 	// Sub/Unsub for Users 12+13
@@ -510,13 +510,15 @@ func InitSingleData(t *testing.T, ws *logic.Application) SingleData {
 
 	success = true
 
-	return SingleData{
+	sd := SingleData{
 		UID:      r0.UserId,
 		AdminKey: r0.AdminKey,
 		SendKey:  r0.SendKey,
 		ReadKey:  r0.ReadKey,
 		ClientID: r0.Clients[0].ClientId,
 	}
+
+	return sd
 }
 
 func doSubscribe(t *testing.T, baseUrl string, user Userdat, chanOwner Userdat, chanInternalName string) {

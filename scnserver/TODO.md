@@ -11,6 +11,8 @@
  - ios purchase verification
 
  - (!) use goext.ginWrapper
+
+ - (!!!) local lock to prevent database-locked errors (there are a lot when one client malfunctions and starts sending a lot of notifications)
   
 #### UNSURE
 
