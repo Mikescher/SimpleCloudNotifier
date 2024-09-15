@@ -33,7 +33,7 @@ func (h APIHandler) ListUserKeys(pctx ginext.PreContext) ginext.HTTPResponse {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 	type response struct {
-		Keys []models.KeyTokenJSON `json:"keys"`
+		Keys []models.KeyToken `json:"keys"`
 	}
 
 	var u uri
@@ -54,9 +54,7 @@ func (h APIHandler) ListUserKeys(pctx ginext.PreContext) ginext.HTTPResponse {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query keys", err)
 		}
 
-		res := langext.ArrMap(toks, func(v models.KeyToken) models.KeyTokenJSON { return v.JSON() })
-
-		return finishSuccess(ginext.JSON(http.StatusOK, response{Keys: res}))
+		return finishSuccess(ginext.JSON(http.StatusOK, response{Keys: toks}))
 
 	})
 }
@@ -71,7 +69,7 @@ func (h APIHandler) ListUserKeys(pctx ginext.PreContext) ginext.HTTPResponse {
 //	@Param			uid	path		string	true	"UserID"
 //	@Param			kid	path		string	true	"TokenKeyID"
 //
-//	@Success		200	{object}	models.KeyTokenWithTokenJSON
+//	@Success		200	{object}	models.KeyToken
 //	@Failure		400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure		401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure		404	{object}	ginresp.apiError	"message not found"
@@ -109,7 +107,7 @@ func (h APIHandler) GetCurrentUserKey(pctx ginext.PreContext) ginext.HTTPRespons
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
 		}
 
-		return finishSuccess(ginext.JSON(http.StatusOK, keytoken.JSON().WithToken(keytoken.Token)))
+		return finishSuccess(ginext.JSONWithFilter(http.StatusOK, keytoken, "INCLUDE_TOKEN"))
 
 	})
 }
@@ -124,7 +122,7 @@ func (h APIHandler) GetCurrentUserKey(pctx ginext.PreContext) ginext.HTTPRespons
 //	@Param			uid	path		string	true	"UserID"
 //	@Param			kid	path		string	true	"TokenKeyID"
 //
-//	@Success		200	{object}	models.KeyTokenJSON
+//	@Success		200	{object}	models.KeyToken
 //	@Failure		400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure		401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure		404	{object}	ginresp.apiError	"message not found"
@@ -158,7 +156,7 @@ func (h APIHandler) GetUserKey(pctx ginext.PreContext) ginext.HTTPResponse {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
 		}
 
-		return finishSuccess(ginext.JSON(http.StatusOK, keytoken.JSON()))
+		return finishSuccess(ginext.JSON(http.StatusOK, keytoken))
 
 	})
 }
@@ -174,7 +172,7 @@ func (h APIHandler) GetUserKey(pctx ginext.PreContext) ginext.HTTPResponse {
 //
 //	@Param		post_body	body		handler.UpdateUserKey.body	false	" "
 //
-//	@Success	200			{object}	models.KeyTokenJSON
+//	@Success	200			{object}	models.KeyToken
 //	@Failure	400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401			{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	404			{object}	ginresp.apiError	"message not found"
@@ -260,7 +258,7 @@ func (h APIHandler) UpdateUserKey(pctx ginext.PreContext) ginext.HTTPResponse {
 			keytoken.Channels = *b.Channels
 		}
 
-		return finishSuccess(ginext.JSON(http.StatusOK, keytoken.JSON()))
+		return finishSuccess(ginext.JSON(http.StatusOK, keytoken))
 
 	})
 }
@@ -275,7 +273,7 @@ func (h APIHandler) UpdateUserKey(pctx ginext.PreContext) ginext.HTTPResponse {
 //
 //	@Param		post_body	body		handler.CreateUserKey.body	false	" "
 //
-//	@Success	200			{object}	models.KeyTokenJSON
+//	@Success	200			{object}	models.KeyToken
 //	@Failure	400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401			{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	404			{object}	ginresp.apiError	"message not found"
@@ -333,7 +331,7 @@ func (h APIHandler) CreateUserKey(pctx ginext.PreContext) ginext.HTTPResponse {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create keytoken in db", err)
 		}
 
-		return finishSuccess(ginext.JSON(http.StatusOK, keytok.JSON().WithToken(token)))
+		return finishSuccess(ginext.JSONWithFilter(http.StatusOK, keytok, "INCLUDE_TOKEN"))
 
 	})
 }
@@ -348,7 +346,7 @@ func (h APIHandler) CreateUserKey(pctx ginext.PreContext) ginext.HTTPResponse {
 //	@Param			uid	path		string	true	"UserID"
 //	@Param			kid	path		string	true	"TokenKeyID"
 //
-//	@Success		200	{object}	models.KeyTokenJSON
+//	@Success		200	{object}	models.KeyToken
 //	@Failure		400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure		401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure		404	{object}	ginresp.apiError	"message not found"
@@ -391,7 +389,7 @@ func (h APIHandler) DeleteUserKey(pctx ginext.PreContext) ginext.HTTPResponse {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete client", err)
 		}
 
-		return finishSuccess(ginext.JSON(http.StatusOK, client.JSON()))
+		return finishSuccess(ginext.JSON(http.StatusOK, client))
 
 	})
 }

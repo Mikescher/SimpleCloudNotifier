@@ -5,6 +5,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/db/dbtools"
 	"blackforestbytes.com/simplecloudnotifier/db/schema"
 	"blackforestbytes.com/simplecloudnotifier/db/simplectx"
+	"blackforestbytes.com/simplecloudnotifier/models"
 	"context"
 	"database/sql"
 	"errors"
@@ -51,7 +52,8 @@ func NewRequestsDatabase(cfg server.Config) (*Database, error) {
 		xdb.SetConnMaxIdleTime(60 * time.Minute)
 	}
 
-	qqdb := sq.NewDB(xdb, sq.DBOptions{})
+	qqdb := sq.NewDB(xdb, sq.DBOptions{RegisterDefaultConverter: langext.PTrue, RegisterCommentTrimmer: langext.PTrue})
+	models.RegisterConverter(qqdb)
 
 	if conf.EnableLogger {
 		qqdb.AddListener(dbtools.DBLogger{})

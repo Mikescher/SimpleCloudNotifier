@@ -113,6 +113,59 @@ func TestResponseKeyToken2(t *testing.T) {
 	})
 }
 
+func TestResponseKeyToken3(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitSingleData(t, ws)
+
+	response := tt.RequestAuthGetRaw(t, data.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys/current", data.UID))
+
+	tt.AssertJsonStructureMatch(t, "json[key]", response, map[string]any{
+		"keytoken_id":        "id",
+		"name":               "string",
+		"timestamp_created":  "rfc3339",
+		"timestamp_lastused": "rfc3339|null",
+		"owner_user_id":      "id",
+		"all_channels":       "bool",
+		"channels":           []any{"string"},
+		"permissions":        "string",
+		"messages_sent":      "int",
+		"token":              "string",
+	})
+}
+
+func TestResponseKeyToken4(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitSingleData(t, ws)
+
+	chan1 := tt.RequestAuthPost[gin.H](t, data.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data.UID), gin.H{
+		"name": "TestChan1asdf",
+	})
+
+	response := tt.RequestAuthPostRaw(t, data.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", data.UID), gin.H{
+		"all_channels": false,
+		"channels":     []string{chan1["channel_id"].(string)},
+		"name":         "TKey1",
+		"permissions":  "CS",
+	})
+
+	tt.AssertJsonStructureMatch(t, "json[key]", response, map[string]any{
+		"keytoken_id":        "id",
+		"name":               "string",
+		"timestamp_created":  "rfc3339",
+		"timestamp_lastused": "rfc3339|null",
+		"owner_user_id":      "id",
+		"all_channels":       "bool",
+		"channels":           []any{"string"},
+		"permissions":        "string",
+		"messages_sent":      "int",
+		"token":              "string",
+	})
+}
+
 func TestResponseMessage(t *testing.T) {
 	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()

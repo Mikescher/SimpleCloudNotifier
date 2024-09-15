@@ -46,7 +46,7 @@ func (h APIHandler) ListChannels(pctx ginext.PreContext) ginext.HTTPResponse {
 		Selector *string `json:"selector" form:"selector"  enums:"owned,subscribed_any,all_any,subscribed,all"`
 	}
 	type response struct {
-		Channels []models.ChannelWithSubscriptionJSON `json:"channels"`
+		Channels []models.ChannelWithSubscription `json:"channels"`
 	}
 
 	var u uri
@@ -65,15 +65,13 @@ func (h APIHandler) ListChannels(pctx ginext.PreContext) ginext.HTTPResponse {
 
 		sel := strings.ToLower(langext.Coalesce(q.Selector, "owned"))
 
-		var res []models.ChannelWithSubscriptionJSON
-
 		if sel == "owned" {
 
 			channels, err := h.database.ListChannelsByOwner(ctx, u.UserID, u.UserID)
 			if err != nil {
 				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
 			}
-			res = langext.ArrMap(channels, func(v models.ChannelWithSubscription) models.ChannelWithSubscriptionJSON { return v.JSON(true) })
+			return finishSuccess(ginext.JSONWithFilter(http.StatusOK, response{Channels: channels}, "INCLUDE_KEY"))
 
 		} else if sel == "subscribed_any" {
 
@@ -81,7 +79,7 @@ func (h APIHandler) ListChannels(pctx ginext.PreContext) ginext.HTTPResponse {
 			if err != nil {
 				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
 			}
-			res = langext.ArrMap(channels, func(v models.ChannelWithSubscription) models.ChannelWithSubscriptionJSON { return v.JSON(false) })
+			return finishSuccess(ginext.JSON(http.StatusOK, response{Channels: channels}))
 
 		} else if sel == "all_any" {
 
@@ -89,7 +87,7 @@ func (h APIHandler) ListChannels(pctx ginext.PreContext) ginext.HTTPResponse {
 			if err != nil {
 				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
 			}
-			res = langext.ArrMap(channels, func(v models.ChannelWithSubscription) models.ChannelWithSubscriptionJSON { return v.JSON(false) })
+			return finishSuccess(ginext.JSON(http.StatusOK, response{Channels: channels}))
 
 		} else if sel == "subscribed" {
 
@@ -97,7 +95,7 @@ func (h APIHandler) ListChannels(pctx ginext.PreContext) ginext.HTTPResponse {
 			if err != nil {
 				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
 			}
-			res = langext.ArrMap(channels, func(v models.ChannelWithSubscription) models.ChannelWithSubscriptionJSON { return v.JSON(false) })
+			return finishSuccess(ginext.JSON(http.StatusOK, response{Channels: channels}))
 
 		} else if sel == "all" {
 
@@ -105,15 +103,13 @@ func (h APIHandler) ListChannels(pctx ginext.PreContext) ginext.HTTPResponse {
 			if err != nil {
 				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channels", err)
 			}
-			res = langext.ArrMap(channels, func(v models.ChannelWithSubscription) models.ChannelWithSubscriptionJSON { return v.JSON(false) })
+			return finishSuccess(ginext.JSON(http.StatusOK, response{Channels: channels}))
 
 		} else {
 
 			return ginresp.APIError(g, 400, apierr.INVALID_ENUM_VALUE, "Invalid value for the [selector] parameter", nil)
 
 		}
-
-		return finishSuccess(ginext.JSON(http.StatusOK, response{Channels: res}))
 
 	})
 }
@@ -127,7 +123,7 @@ func (h APIHandler) ListChannels(pctx ginext.PreContext) ginext.HTTPResponse {
 //	@Param		uid	path		string	true	"UserID"
 //	@Param		cid	path		string	true	"ChannelID"
 //
-//	@Success	200	{object}	models.ChannelWithSubscriptionJSON
+//	@Success	200	{object}	models.ChannelWithSubscription
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	404	{object}	ginresp.apiError	"channel not found"
@@ -161,7 +157,7 @@ func (h APIHandler) GetChannel(pctx ginext.PreContext) ginext.HTTPResponse {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
 		}
 
-		return finishSuccess(ginext.JSON(http.StatusOK, channel.JSON(true)))
+		return finishSuccess(ginext.JSONWithFilter(http.StatusOK, channel, "INCLUDE_KEY"))
 
 	})
 }
@@ -175,7 +171,7 @@ func (h APIHandler) GetChannel(pctx ginext.PreContext) ginext.HTTPResponse {
 //	@Param		uid			path		string						true	"UserID"
 //	@Param		post_body	body		handler.CreateChannel.body	false	" "
 //
-//	@Success	200			{object}	models.ChannelWithSubscriptionJSON
+//	@Success	200			{object}	models.ChannelWithSubscription
 //	@Failure	400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401			{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	409			{object}	ginresp.apiError	"channel already exists"
@@ -258,11 +254,11 @@ func (h APIHandler) CreateChannel(pctx ginext.PreContext) ginext.HTTPResponse {
 				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create subscription", err)
 			}
 
-			return finishSuccess(ginext.JSON(http.StatusOK, channel.WithSubscription(langext.Ptr(sub)).JSON(true)))
+			return finishSuccess(ginext.JSONWithFilter(http.StatusOK, channel.WithSubscription(langext.Ptr(sub)), "INCLUDE_KEY"))
 
 		} else {
 
-			return finishSuccess(ginext.JSON(http.StatusOK, channel.WithSubscription(nil).JSON(true)))
+			return finishSuccess(ginext.JSONWithFilter(http.StatusOK, channel.WithSubscription(nil), "INCLUDE_KEY"))
 
 		}
 
@@ -282,7 +278,7 @@ func (h APIHandler) CreateChannel(pctx ginext.PreContext) ginext.HTTPResponse {
 //	@Param		send_key		body		string	false	"Send `true` to create a new send_key"
 //	@Param		display_name	body		string	false	"Change the cahnnel display-name (only chnages to lowercase/uppercase are allowed - internal_name must stay the same)"
 //
-//	@Success	200				{object}	models.ChannelWithSubscriptionJSON
+//	@Success	200				{object}	models.ChannelWithSubscription
 //	@Failure	400				{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401				{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	404				{object}	ginresp.apiError	"channel not found"
@@ -381,7 +377,7 @@ func (h APIHandler) UpdateChannel(pctx ginext.PreContext) ginext.HTTPResponse {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query (updated) channel", err)
 		}
 
-		return finishSuccess(ginext.JSON(http.StatusOK, channel.JSON(true)))
+		return finishSuccess(ginext.JSONWithFilter(http.StatusOK, channel, "INCLUDE_KEY"))
 
 	})
 }
@@ -419,9 +415,9 @@ func (h APIHandler) ListChannelMessages(pctx ginext.PreContext) ginext.HTTPRespo
 		Trimmed       *bool   `json:"trimmed"         form:"trimmed"`
 	}
 	type response struct {
-		Messages      []models.MessageJSON `json:"messages"`
-		NextPageToken string               `json:"next_page_token"`
-		PageSize      int                  `json:"page_size"`
+		Messages      []models.Message `json:"messages"`
+		NextPageToken string           `json:"next_page_token"`
+		PageSize      int              `json:"page_size"`
 	}
 
 	var u uri
@@ -466,14 +462,12 @@ func (h APIHandler) ListChannelMessages(pctx ginext.PreContext) ginext.HTTPRespo
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query messages", err)
 		}
 
-		var res []models.MessageJSON
 		if trimmed {
-			res = langext.ArrMap(messages, func(v models.Message) models.MessageJSON { return v.TrimmedJSON() })
+			res := langext.ArrMap(messages, func(v models.Message) models.Message { return v.Trim() })
+			return finishSuccess(ginext.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize}))
 		} else {
-			res = langext.ArrMap(messages, func(v models.Message) models.MessageJSON { return v.FullJSON() })
+			return finishSuccess(ginext.JSON(http.StatusOK, response{Messages: messages, NextPageToken: npt.Token(), PageSize: pageSize}))
 		}
-
-		return finishSuccess(ginext.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize}))
 
 	})
 }

@@ -31,7 +31,7 @@ func (h APIHandler) ListClients(pctx ginext.PreContext) ginext.HTTPResponse {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 	type response struct {
-		Clients []models.ClientJSON `json:"clients"`
+		Clients []models.Client `json:"clients"`
 	}
 
 	var u uri
@@ -52,9 +52,7 @@ func (h APIHandler) ListClients(pctx ginext.PreContext) ginext.HTTPResponse {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query clients", err)
 		}
 
-		res := langext.ArrMap(clients, func(v models.Client) models.ClientJSON { return v.JSON() })
-
-		return finishSuccess(ginext.JSON(http.StatusOK, response{Clients: res}))
+		return finishSuccess(ginext.JSON(http.StatusOK, response{Clients: clients}))
 
 	})
 }
@@ -68,7 +66,7 @@ func (h APIHandler) ListClients(pctx ginext.PreContext) ginext.HTTPResponse {
 //	@Param		uid	path		string	true	"UserID"
 //	@Param		cid	path		string	true	"ClientID"
 //
-//	@Success	200	{object}	models.ClientJSON
+//	@Success	200	{object}	models.Client
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	404	{object}	ginresp.apiError	"client not found"
@@ -102,7 +100,7 @@ func (h APIHandler) GetClient(pctx ginext.PreContext) ginext.HTTPResponse {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
 		}
 
-		return finishSuccess(ginext.JSON(http.StatusOK, client.JSON()))
+		return finishSuccess(ginext.JSON(http.StatusOK, client))
 
 	})
 }
@@ -117,7 +115,7 @@ func (h APIHandler) GetClient(pctx ginext.PreContext) ginext.HTTPResponse {
 //
 //	@Param		post_body	body		handler.AddClient.body	false	" "
 //
-//	@Success	200			{object}	models.ClientJSON
+//	@Success	200			{object}	models.Client
 //	@Failure	400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401			{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	500			{object}	ginresp.apiError	"internal server error"
@@ -164,7 +162,7 @@ func (h APIHandler) AddClient(pctx ginext.PreContext) ginext.HTTPResponse {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create client in db", err)
 		}
 
-		return finishSuccess(ginext.JSON(http.StatusOK, client.JSON()))
+		return finishSuccess(ginext.JSON(http.StatusOK, client))
 
 	})
 }
@@ -178,7 +176,7 @@ func (h APIHandler) AddClient(pctx ginext.PreContext) ginext.HTTPResponse {
 //	@Param		uid	path		string	true	"UserID"
 //	@Param		cid	path		string	true	"ClientID"
 //
-//	@Success	200	{object}	models.ClientJSON
+//	@Success	200	{object}	models.Client
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	404	{object}	ginresp.apiError	"client not found"
@@ -217,7 +215,7 @@ func (h APIHandler) DeleteClient(pctx ginext.PreContext) ginext.HTTPResponse {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete client", err)
 		}
 
-		return finishSuccess(ginext.JSON(http.StatusOK, client.JSON()))
+		return finishSuccess(ginext.JSON(http.StatusOK, client))
 
 	})
 }
@@ -235,7 +233,7 @@ func (h APIHandler) DeleteClient(pctx ginext.PreContext) ginext.HTTPResponse {
 //	@Param			clientname	body		string	false	"Change the clientname (send an empty string to clear it)"
 //	@Param			pro_token	body		string	false	"Send a verification of premium purchase"
 //
-//	@Success		200			{object}	models.ClientJSON
+//	@Success		200			{object}	models.Client
 //	@Failure		400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure		401			{object}	ginresp.apiError	"client is not authorized / has missing permissions"
 //	@Failure		404			{object}	ginresp.apiError	"client not found"
@@ -322,7 +320,7 @@ func (h APIHandler) UpdateClient(pctx ginext.PreContext) ginext.HTTPResponse {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query (updated) client", err)
 		}
 
-		return finishSuccess(ginext.JSON(http.StatusOK, client.JSON()))
+		return finishSuccess(ginext.JSON(http.StatusOK, client))
 
 	})
 }

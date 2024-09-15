@@ -22,7 +22,7 @@ import (
 //
 //	@Param		post_body	body		handler.CreateUser.body	false	" "
 //
-//	@Success	200			{object}	models.UserJSONWithClientsAndKeys
+//	@Success	200			{object}	models.UserWithClientsAndKeys
 //	@Failure	400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	500			{object}	ginresp.apiError	"internal server error"
 //
@@ -120,7 +120,7 @@ func (h APIHandler) CreateUser(pctx ginext.PreContext) ginext.HTTPResponse {
 		log.Info().Msg(fmt.Sprintf("Sucessfully created new user %s (client: %v)", userobj.UserID, b.NoClient))
 
 		if b.NoClient {
-			return finishSuccess(ginext.JSON(http.StatusOK, userobj.JSONWithClients(make([]models.Client, 0), adminKey, sendKey, readKey)))
+			return finishSuccess(ginext.JSON(http.StatusOK, userobj.PreMarshal().WithClients(make([]models.Client, 0), adminKey, sendKey, readKey)))
 		} else {
 			err := h.database.DeleteClientsByFCM(ctx, b.FCMToken)
 			if err != nil {
@@ -132,7 +132,7 @@ func (h APIHandler) CreateUser(pctx ginext.PreContext) ginext.HTTPResponse {
 				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create client in db", err)
 			}
 
-			return finishSuccess(ginext.JSON(http.StatusOK, userobj.JSONWithClients([]models.Client{client}, adminKey, sendKey, readKey)))
+			return finishSuccess(ginext.JSON(http.StatusOK, userobj.PreMarshal().WithClients([]models.Client{client}, adminKey, sendKey, readKey)))
 		}
 	})
 }
@@ -145,7 +145,7 @@ func (h APIHandler) CreateUser(pctx ginext.PreContext) ginext.HTTPResponse {
 //
 //	@Param		uid	path		string	true	"UserID"
 //
-//	@Success	200	{object}	models.UserJSON
+//	@Success	200	{object}	models.User
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	404	{object}	ginresp.apiError	"user not found"
@@ -178,7 +178,7 @@ func (h APIHandler) GetUser(pctx ginext.PreContext) ginext.HTTPResponse {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query user", err)
 		}
 
-		return finishSuccess(ginext.JSON(http.StatusOK, user.JSON()))
+		return finishSuccess(ginext.JSON(http.StatusOK, user.PreMarshal()))
 
 	})
 
@@ -196,7 +196,7 @@ func (h APIHandler) GetUser(pctx ginext.PreContext) ginext.HTTPResponse {
 //	@Param			username	body		string	false	"Change the username (send an empty string to clear it)"
 //	@Param			pro_token	body		string	false	"Send a verification of premium purchase"
 //
-//	@Success		200			{object}	models.UserJSON
+//	@Success		200			{object}	models.User
 //	@Failure		400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure		401			{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure		404			{object}	ginresp.apiError	"user not found"
@@ -271,6 +271,6 @@ func (h APIHandler) UpdateUser(pctx ginext.PreContext) ginext.HTTPResponse {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query (updated) user", err)
 		}
 
-		return finishSuccess(ginext.JSON(http.StatusOK, user.JSON()))
+		return finishSuccess(ginext.JSON(http.StatusOK, user.PreMarshal()))
 	})
 }

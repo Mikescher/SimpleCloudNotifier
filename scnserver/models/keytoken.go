@@ -1,12 +1,9 @@
 package models
 
 import (
-	"context"
-	"github.com/jmoiron/sqlx"
+	"encoding/json"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
-	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"strings"
-	"time"
 )
 
 type TokenPerm string //@enum:type
@@ -45,17 +42,53 @@ func ParseTokenPermissionList(input string) TokenPermissionList {
 	return r
 }
 
+func (e TokenPermissionList) MarshalToDB(v TokenPermissionList) (string, error) {
+	return v.String(), nil
+}
+
+func (e TokenPermissionList) UnmarshalToModel(v string) (TokenPermissionList, error) {
+	return ParseTokenPermissionList(v), nil
+}
+
+func (t TokenPermissionList) MarshalJSON() ([]byte, error) {
+	return json.Marshal(t.String())
+}
+
+type ChannelIDArr []ChannelID
+
+func (t ChannelIDArr) MarshalToDB(v ChannelIDArr) (string, error) {
+	return strings.Join(langext.ArrMap(v, func(v ChannelID) string { return v.String() }), ";"), nil
+}
+
+func (t ChannelIDArr) UnmarshalToModel(v string) (ChannelIDArr, error) {
+	channels := make([]ChannelID, 0)
+	if strings.TrimSpace(v) != "" {
+		channels = langext.ArrMap(strings.Split(v, ";"), func(v string) ChannelID { return ChannelID(v) })
+	}
+
+	return channels, nil
+}
+
 type KeyToken struct {
-	KeyTokenID        KeyTokenID
-	Name              string
-	TimestampCreated  time.Time
-	TimestampLastUsed *time.Time
-	OwnerUserID       UserID
-	AllChannels       bool
-	Channels          []ChannelID // can also be owned by other user (needs active subscription)
-	Token             string
-	Permissions       TokenPermissionList
-	MessagesSent      int
+	KeyTokenID        KeyTokenID          `db:"keytoken_id"          json:"keytoken_id"`
+	Name              string              `db:"name"                 json:"name"`
+	TimestampCreated  SCNTime             `db:"timestamp_created"    json:"timestamp_created"`
+	TimestampLastUsed *SCNTime            `db:"timestamp_lastused"   json:"timestamp_lastused"`
+	OwnerUserID       UserID              `db:"owner_user_id"        json:"owner_user_id"`
+	AllChannels       bool                `db:"all_channels"         json:"all_channels"`
+	Channels          ChannelIDArr        `db:"channels"             json:"channels"`
+	Token             string              `db:"token"                json:"token"               jsonfilter:"INCLUDE_TOKEN"`
+	Permissions       TokenPermissionList `db:"permissions"          json:"permissions"`
+	MessagesSent      int                 `db:"messages_sent"        json:"messages_sent"`
+}
+
+type KeyTokenPreview struct {
+	KeyTokenID  KeyTokenID  `json:"keytoken_id"`
+	Name        string      `json:"name"`
+	OwnerUserID UserID      `json:"owner_user_id"`
+	AllChannels bool        `json:"all_channels"`
+	Channels    []ChannelID `json:"channels"`
+	Permissions string      `json:"permissions"`
 }
 
 func (k KeyToken) IsUserRead(uid UserID) bool {
@@ -78,22 +111,8 @@ func (k KeyToken) IsChannelMessagesSend(c Channel) bool {
 	return (k.AllChannels == true || langext.InArray(c.ChannelID, k.Channels)) && k.OwnerUserID == c.OwnerUserID && k.Permissions.Any(PermAdmin, PermChannelSend)
 }
 
-func (k KeyToken) JSON() KeyTokenJSON {
-	return KeyTokenJSON{
-		KeyTokenID:        k.KeyTokenID,
-		Name:              k.Name,
-		TimestampCreated:  k.TimestampCreated,
-		TimestampLastUsed: k.TimestampLastUsed,
-		OwnerUserID:       k.OwnerUserID,
-		AllChannels:       k.AllChannels,
-		Channels:          k.Channels,
-		Permissions:       k.Permissions.String(),
-		MessagesSent:      k.MessagesSent,
-	}
-}
-
-func (k KeyToken) JSONPreview() KeyTokenPreviewJSON {
-	return KeyTokenPreviewJSON{
+func (k KeyToken) Preview() KeyTokenPreview {
+	return KeyTokenPreview{
 		KeyTokenID:  k.KeyTokenID,
 		Name:        k.Name,
 		OwnerUserID: k.OwnerUserID,
@@ -101,87 +120,4 @@ func (k KeyToken) JSONPreview() KeyTokenPreviewJSON {
 		Channels:    k.Channels,
 		Permissions: k.Permissions.String(),
 	}
-}
-
-type KeyTokenJSON struct {
-	KeyTokenID        KeyTokenID  `json:"keytoken_id"`
-	Name              string      `json:"name"`
-	TimestampCreated  time.Time   `json:"timestamp_created"`
-	TimestampLastUsed *time.Time  `json:"timestamp_lastused"`
-	OwnerUserID       UserID      `json:"owner_user_id"`
-	AllChannels       bool        `json:"all_channels"`
-	Channels          []ChannelID `json:"channels"`
-	Permissions       string      `json:"permissions"`
-	MessagesSent      int         `json:"messages_sent"`
-}
-
-type KeyTokenWithTokenJSON struct {
-	KeyTokenJSON
-	Token string `json:"token"`
-}
-
-type KeyTokenPreviewJSON struct {
-	KeyTokenID  KeyTokenID  `json:"keytoken_id"`
-	Name        string      `json:"name"`
-	OwnerUserID UserID      `json:"owner_user_id"`
-	AllChannels bool        `json:"all_channels"`
-	Channels    []ChannelID `json:"channels"`
-	Permissions string      `json:"permissions"`
-}
-
-func (j KeyTokenJSON) WithToken(tok string) KeyTokenWithTokenJSON {
-	return KeyTokenWithTokenJSON{
-		KeyTokenJSON: j,
-		Token:        tok,
-	}
-}
-
-type KeyTokenDB struct {
-	KeyTokenID        KeyTokenID `db:"keytoken_id"`
-	Name              string     `db:"name"`
-	TimestampCreated  int64      `db:"timestamp_created"`
-	TimestampLastUsed *int64     `db:"timestamp_lastused"`
-	OwnerUserID       UserID     `db:"owner_user_id"`
-	AllChannels       bool       `db:"all_channels"`
-	Channels          string     `db:"channels"`
-	Token             string     `db:"token"`
-	Permissions       string     `db:"permissions"`
-	MessagesSent      int        `db:"messages_sent"`
-}
-
-func (k KeyTokenDB) Model() KeyToken {
-
-	channels := make([]ChannelID, 0)
-	if strings.TrimSpace(k.Channels) != "" {
-		channels = langext.ArrMap(strings.Split(k.Channels, ";"), func(v string) ChannelID { return ChannelID(v) })
-	}
-
-	return KeyToken{
-		KeyTokenID:        k.KeyTokenID,
-		Name:              k.Name,
-		TimestampCreated:  timeFromMilli(k.TimestampCreated),
-		TimestampLastUsed: timeOptFromMilli(k.TimestampLastUsed),
-		OwnerUserID:       k.OwnerUserID,
-		AllChannels:       k.AllChannels,
-		Channels:          channels,
-		Token:             k.Token,
-		Permissions:       ParseTokenPermissionList(k.Permissions),
-		MessagesSent:      k.MessagesSent,
-	}
-}
-
-func DecodeKeyToken(ctx context.Context, q sq.Queryable, r *sqlx.Rows) (KeyToken, error) {
-	data, err := sq.ScanSingle[KeyTokenDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
-	if err != nil {
-		return KeyToken{}, err
-	}
-	return data.Model(), nil
-}
-
-func DecodeKeyTokens(ctx context.Context, q sq.Queryable, r *sqlx.Rows) ([]KeyToken, error) {
-	data, err := sq.ScanAll[KeyTokenDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
-	if err != nil {
-		return nil, err
-	}
-	return langext.ArrMap(data, func(v KeyTokenDB) KeyToken { return v.Model() }), nil
 }

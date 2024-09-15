@@ -50,9 +50,9 @@ func (h APIHandler) ListMessages(pctx ginext.PreContext) ginext.HTTPResponse {
 		KeyTokens     []string `json:"used_key"        form:"used_key"`
 	}
 	type response struct {
-		Messages      []models.MessageJSON `json:"messages"`
-		NextPageToken string               `json:"next_page_token"`
-		PageSize      int                  `json:"page_size"`
+		Messages      []models.Message `json:"messages"`
+		NextPageToken string           `json:"next_page_token"`
+		PageSize      int              `json:"page_size"`
 	}
 
 	var q query
@@ -151,15 +151,13 @@ func (h APIHandler) ListMessages(pctx ginext.PreContext) ginext.HTTPResponse {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query messages", err)
 		}
 
-		var res []models.MessageJSON
 		if trimmed {
-			res = langext.ArrMap(messages, func(v models.Message) models.MessageJSON { return v.TrimmedJSON() })
+			res := langext.ArrMap(messages, func(v models.Message) models.Message { return v.PreMarshal().Trim() })
+			return finishSuccess(ginext.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize}))
 		} else {
-			res = langext.ArrMap(messages, func(v models.Message) models.MessageJSON { return v.FullJSON() })
+			res := langext.ArrMap(messages, func(v models.Message) models.Message { return v.PreMarshal() })
+			return finishSuccess(ginext.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize}))
 		}
-
-		return finishSuccess(ginext.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize}))
-
 	})
 }
 
@@ -174,7 +172,7 @@ func (h APIHandler) ListMessages(pctx ginext.PreContext) ginext.HTTPResponse {
 //
 //	@Param			mid	path		string	true	"MessageID"
 //
-//	@Success		200	{object}	models.MessageJSON
+//	@Success		200	{object}	models.Message
 //	@Failure		400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure		401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure		404	{object}	ginresp.apiError	"message not found"
@@ -211,7 +209,7 @@ func (h APIHandler) GetMessage(pctx ginext.PreContext) ginext.HTTPResponse {
 		// or we subscribe (+confirmed) to the channel and have read/admin key
 
 		if ctx.CheckPermissionMessageRead(msg) {
-			return finishSuccess(ginext.JSON(http.StatusOK, msg.FullJSON()))
+			return finishSuccess(ginext.JSON(http.StatusOK, msg.PreMarshal()))
 		}
 
 		if uid := ctx.GetPermissionUserID(); uid != nil && ctx.CheckPermissionUserRead(*uid) == nil {
@@ -229,7 +227,7 @@ func (h APIHandler) GetMessage(pctx ginext.PreContext) ginext.HTTPResponse {
 			}
 
 			// => perm okay
-			return finishSuccess(ginext.JSON(http.StatusOK, msg.FullJSON()))
+			return finishSuccess(ginext.JSON(http.StatusOK, msg.PreMarshal()))
 		}
 
 		return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
@@ -246,7 +244,7 @@ func (h APIHandler) GetMessage(pctx ginext.PreContext) ginext.HTTPResponse {
 //
 //	@Param			mid	path		string	true	"MessageID"
 //
-//	@Success		200	{object}	models.MessageJSON
+//	@Success		200	{object}	models.Message
 //	@Failure		400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure		401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure		404	{object}	ginresp.apiError	"message not found"
@@ -293,7 +291,7 @@ func (h APIHandler) DeleteMessage(pctx ginext.PreContext) ginext.HTTPResponse {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to cancel deliveries", err)
 		}
 
-		return finishSuccess(ginext.JSON(http.StatusOK, msg.FullJSON()))
+		return finishSuccess(ginext.JSON(http.StatusOK, msg.PreMarshal()))
 
 	})
 }

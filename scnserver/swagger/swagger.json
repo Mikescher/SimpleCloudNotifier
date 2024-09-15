@@ -978,7 +978,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.MessageJSON"
+                            "$ref": "#/definitions/models.Message"
                         }
                     },
                     "400": {
@@ -1027,7 +1027,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.MessageJSON"
+                            "$ref": "#/definitions/models.Message"
                         }
                     },
                     "400": {
@@ -1077,7 +1077,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.ChannelPreviewJSON"
+                            "$ref": "#/definitions/models.ChannelPreview"
                         }
                     },
                     "400": {
@@ -1127,7 +1127,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.KeyTokenPreviewJSON"
+                            "$ref": "#/definitions/models.KeyTokenPreview"
                         }
                     },
                     "400": {
@@ -1177,7 +1177,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.UserPreviewJSON"
+                            "$ref": "#/definitions/models.UserPreview"
                         }
                     },
                     "400": {
@@ -1228,7 +1228,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.UserJSONWithClientsAndKeys"
+                            "$ref": "#/definitions/models.UserWithClientsAndKeys"
                         }
                     },
                     "400": {
@@ -1266,7 +1266,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.UserJSON"
+                            "$ref": "#/definitions/models.User"
                         }
                     },
                     "400": {
@@ -1331,7 +1331,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.UserJSON"
+                            "$ref": "#/definitions/models.User"
                         }
                     },
                     "400": {
@@ -1445,7 +1445,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.ChannelWithSubscriptionJSON"
+                            "$ref": "#/definitions/models.ChannelWithSubscription"
                         }
                     },
                     "400": {
@@ -1502,7 +1502,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.ChannelWithSubscriptionJSON"
+                            "$ref": "#/definitions/models.ChannelWithSubscription"
                         }
                     },
                     "400": {
@@ -1581,7 +1581,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.ChannelWithSubscriptionJSON"
+                            "$ref": "#/definitions/models.ChannelWithSubscription"
                         }
                     },
                     "400": {
@@ -1816,7 +1816,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.ClientJSON"
+                            "$ref": "#/definitions/models.Client"
                         }
                     },
                     "400": {
@@ -1867,7 +1867,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.ClientJSON"
+                            "$ref": "#/definitions/models.Client"
                         }
                     },
                     "400": {
@@ -1922,7 +1922,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.ClientJSON"
+                            "$ref": "#/definitions/models.Client"
                         }
                     },
                     "400": {
@@ -1994,7 +1994,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.ClientJSON"
+                            "$ref": "#/definitions/models.Client"
                         }
                     },
                     "400": {
@@ -2101,7 +2101,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.KeyTokenJSON"
+                            "$ref": "#/definitions/models.KeyToken"
                         }
                     },
                     "400": {
@@ -2159,7 +2159,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.KeyTokenWithTokenJSON"
+                            "$ref": "#/definitions/models.KeyToken"
                         }
                     },
                     "400": {
@@ -2217,7 +2217,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.KeyTokenJSON"
+                            "$ref": "#/definitions/models.KeyToken"
                         }
                     },
                     "400": {
@@ -2273,7 +2273,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.KeyTokenJSON"
+                            "$ref": "#/definitions/models.KeyToken"
                         }
                     },
                     "400": {
@@ -2336,7 +2336,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.KeyTokenJSON"
+                            "$ref": "#/definitions/models.KeyToken"
                         }
                     },
                     "400": {
@@ -2458,7 +2458,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.SubscriptionJSON"
+                            "$ref": "#/definitions/models.Subscription"
                         }
                     },
                     "400": {
@@ -2509,7 +2509,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.SubscriptionJSON"
+                            "$ref": "#/definitions/models.Subscription"
                         }
                     },
                     "400": {
@@ -2564,7 +2564,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.SubscriptionJSON"
+                            "$ref": "#/definitions/models.Subscription"
                         }
                     },
                     "400": {
@@ -2627,7 +2627,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.SubscriptionJSON"
+                            "$ref": "#/definitions/models.Subscription"
                         }
                     },
                     "400": {
@@ -3415,7 +3415,7 @@
                 "messages": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.MessageJSON"
+                        "$ref": "#/definitions/models.Message"
                     }
                 },
                 "next_page_token": {
@@ -3432,7 +3432,7 @@
                 "subscriptions": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.SubscriptionJSON"
+                        "$ref": "#/definitions/models.Subscription"
                     }
                 }
             }
@@ -3443,7 +3443,7 @@
                 "channels": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.ChannelWithSubscriptionJSON"
+                        "$ref": "#/definitions/models.ChannelWithSubscription"
                     }
                 }
             }
@@ -3454,7 +3454,7 @@
                 "clients": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.ClientJSON"
+                        "$ref": "#/definitions/models.Client"
                     }
                 }
             }
@@ -3465,7 +3465,7 @@
                 "messages": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.MessageJSON"
+                        "$ref": "#/definitions/models.Message"
                     }
                 },
                 "next_page_token": {
@@ -3482,7 +3482,7 @@
                 "keys": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.KeyTokenJSON"
+                        "$ref": "#/definitions/models.KeyToken"
                     }
                 }
             }
@@ -3493,7 +3493,7 @@
                 "subscriptions": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.SubscriptionJSON"
+                        "$ref": "#/definitions/models.Subscription"
                     }
                 }
             }
@@ -3803,7 +3803,7 @@
                 }
             }
         },
-        "models.ChannelPreviewJSON": {
+        "models.ChannelPreview": {
             "type": "object",
             "properties": {
                 "channel_id": {
@@ -3823,7 +3823,7 @@
                 }
             }
         },
-        "models.ChannelWithSubscriptionJSON": {
+        "models.ChannelWithSubscription": {
             "type": "object",
             "properties": {
                 "channel_id": {
@@ -3849,7 +3849,7 @@
                     "type": "string"
                 },
                 "subscription": {
-                    "$ref": "#/definitions/models.SubscriptionJSON"
+                    "$ref": "#/definitions/models.Subscription"
                 },
                 "timestamp_created": {
                     "type": "string"
@@ -3859,7 +3859,7 @@
                 }
             }
         },
-        "models.ClientJSON": {
+        "models.Client": {
             "type": "object",
             "properties": {
                 "agent_model": {
@@ -3931,7 +3931,7 @@
                 }
             }
         },
-        "models.KeyTokenJSON": {
+        "models.KeyToken": {
             "type": "object",
             "properties": {
                 "all_channels": {
@@ -3956,68 +3956,10 @@
                     "type": "string"
                 },
                 "permissions": {
-                    "type": "string"
-                },
-                "timestamp_created": {
-                    "type": "string"
-                },
-                "timestamp_lastused": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.KeyTokenPreviewJSON": {
-            "type": "object",
-            "properties": {
-                "all_channels": {
-                    "type": "boolean"
-                },
-                "channels": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/models.TokenPerm"
                     }
-                },
-                "keytoken_id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "owner_user_id": {
-                    "type": "string"
-                },
-                "permissions": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.KeyTokenWithTokenJSON": {
-            "type": "object",
-            "properties": {
-                "all_channels": {
-                    "type": "boolean"
-                },
-                "channels": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "keytoken_id": {
-                    "type": "string"
-                },
-                "messages_sent": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "owner_user_id": {
-                    "type": "string"
-                },
-                "permissions": {
-                    "type": "string"
                 },
                 "timestamp_created": {
                     "type": "string"
@@ -4030,7 +3972,33 @@
                 }
             }
         },
-        "models.MessageJSON": {
+        "models.KeyTokenPreview": {
+            "type": "object",
+            "properties": {
+                "all_channels": {
+                    "type": "boolean"
+                },
+                "channels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "keytoken_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_user_id": {
+                    "type": "string"
+                },
+                "permissions": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Message": {
             "type": "object",
             "properties": {
                 "channel_id": {
@@ -4055,6 +4023,7 @@
                     "type": "string"
                 },
                 "sender_user_id": {
+                    "description": "user that sent the message (this is also the owner of the channel that contains it)",
                     "type": "string"
                 },
                 "timestamp": {
@@ -4066,15 +4035,12 @@
                 "trimmed": {
                     "type": "boolean"
                 },
-                "used_key_id": {
-                    "type": "string"
-                },
                 "usr_message_id": {
                     "type": "string"
                 }
             }
         },
-        "models.SubscriptionJSON": {
+        "models.Subscription": {
             "type": "object",
             "properties": {
                 "channel_id": {
@@ -4100,7 +4066,28 @@
                 }
             }
         },
-        "models.UserJSON": {
+        "models.TokenPerm": {
+            "type": "string",
+            "enum": [
+                "A",
+                "CR",
+                "CS",
+                "UR"
+            ],
+            "x-enum-comments": {
+                "PermAdmin": "Edit userdata (+ includes all other permissions)",
+                "PermChannelRead": "Read messages",
+                "PermChannelSend": "Send messages",
+                "PermUserRead": "Read userdata"
+            },
+            "x-enum-varnames": [
+                "PermAdmin",
+                "PermChannelRead",
+                "PermChannelSend",
+                "PermUserRead"
+            ]
+        },
+        "models.User": {
             "type": "object",
             "properties": {
                 "default_channel": {
@@ -4159,7 +4146,18 @@
                 }
             }
         },
-        "models.UserJSONWithClientsAndKeys": {
+        "models.UserPreview": {
+            "type": "object",
+            "properties": {
+                "user_id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UserWithClientsAndKeys": {
             "type": "object",
             "properties": {
                 "admin_key": {
@@ -4168,7 +4166,7 @@
                 "clients": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.ClientJSON"
+                        "$ref": "#/definitions/models.Client"
                     }
                 },
                 "default_channel": {
@@ -4225,17 +4223,6 @@
                 "timestamp_lastsent": {
                     "type": "string"
                 },
-                "user_id": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.UserPreviewJSON": {
-            "type": "object",
-            "properties": {
                 "user_id": {
                     "type": "string"
                 },

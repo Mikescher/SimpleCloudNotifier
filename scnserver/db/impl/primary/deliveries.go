@@ -18,16 +18,16 @@ func (db *Database) CreateRetryDelivery(ctx db.TxContext, client models.Client, 
 	now := time.Now()
 	next := scn.NextDeliveryTimestamp(now)
 
-	entity := models.DeliveryDB{
+	entity := models.Delivery{
 		DeliveryID:         models.NewDeliveryID(),
 		MessageID:          msg.MessageID,
 		ReceiverUserID:     client.UserID,
 		ReceiverClientID:   client.ClientID,
-		TimestampCreated:   time2DB(now),
+		TimestampCreated:   models.NewSCNTime(now),
 		TimestampFinalized: nil,
 		Status:             models.DeliveryStatusRetry,
 		RetryCount:         0,
-		NextDelivery:       langext.Ptr(time2DB(next)),
+		NextDelivery:       models.NewSCNTimePtr(&next),
 		FCMMessageID:       nil,
 	}
 
@@ -36,7 +36,7 @@ func (db *Database) CreateRetryDelivery(ctx db.TxContext, client models.Client, 
 		return models.Delivery{}, err
 	}
 
-	return entity.Model(), nil
+	return entity, nil
 }
 
 func (db *Database) CreateSuccessDelivery(ctx db.TxContext, client models.Client, msg models.Message, fcmDelivID string) (models.Delivery, error) {
@@ -47,13 +47,13 @@ func (db *Database) CreateSuccessDelivery(ctx db.TxContext, client models.Client
 
 	now := time.Now()
 
-	entity := models.DeliveryDB{
+	entity := models.Delivery{
 		DeliveryID:         models.NewDeliveryID(),
 		MessageID:          msg.MessageID,
 		ReceiverUserID:     client.UserID,
 		ReceiverClientID:   client.ClientID,
-		TimestampCreated:   time2DB(now),
-		TimestampFinalized: langext.Ptr(time2DB(now)),
+		TimestampCreated:   models.NewSCNTime(now),
+		TimestampFinalized: models.NewSCNTimePtr(&now),
 		Status:             models.DeliveryStatusSuccess,
 		RetryCount:         0,
 		NextDelivery:       nil,
@@ -65,7 +65,7 @@ func (db *Database) CreateSuccessDelivery(ctx db.TxContext, client models.Client
 		return models.Delivery{}, err
 	}
 
-	return entity.Model(), nil
+	return entity, nil
 }
 
 func (db *Database) ListRetrieableDeliveries(ctx db.TxContext, pageSize int) ([]models.Delivery, error) {
@@ -74,20 +74,10 @@ func (db *Database) ListRetrieableDeliveries(ctx db.TxContext, pageSize int) ([]
 		return nil, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM deliveries WHERE status = 'RETRY' AND next_delivery < :next ORDER BY next_delivery ASC LIMIT :lim", sq.PP{
+	return sq.QueryAll[models.Delivery](ctx, tx, "SELECT * FROM deliveries WHERE status = 'RETRY' AND next_delivery < :next ORDER BY next_delivery ASC LIMIT :lim", sq.PP{
 		"next": time2DB(time.Now()),
 		"lim":  pageSize,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := models.DecodeDeliveries(ctx, tx, rows)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	}, sq.SModeExtended, sq.Safe)
 }
 
 func (db *Database) SetDeliverySuccess(ctx db.TxContext, delivery models.Delivery, fcmDelivID string) error {

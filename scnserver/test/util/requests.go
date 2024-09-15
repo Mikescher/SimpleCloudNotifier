@@ -34,6 +34,10 @@ func RequestPost[TResult any](t *testing.T, baseURL string, urlSuffix string, bo
 	return RequestAny[TResult](t, "", "POST", baseURL, urlSuffix, body, true)
 }
 
+func RequestAuthPostRaw(t *testing.T, akey string, baseURL string, urlSuffix string, body any) string {
+	return RequestAny[string](t, akey, "POST", baseURL, urlSuffix, body, false)
+}
+
 func RequestAuthPost[TResult any](t *testing.T, akey string, baseURL string, urlSuffix string, body any) TResult {
 	return RequestAny[TResult](t, akey, "POST", baseURL, urlSuffix, body, true)
 }

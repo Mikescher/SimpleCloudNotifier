@@ -60,7 +60,7 @@ func (h APIHandler) ListUserSubscriptions(pctx ginext.PreContext) ginext.HTTPRes
 		ChannelOwnerUserID *models.UserID `json:"channel_owner_user_id" form:"channel_owner_user_id"`
 	}
 	type response struct {
-		Subscriptions []models.SubscriptionJSON `json:"subscriptions"`
+		Subscriptions []models.Subscription `json:"subscriptions"`
 	}
 
 	var u uri
@@ -129,9 +129,7 @@ func (h APIHandler) ListUserSubscriptions(pctx ginext.PreContext) ginext.HTTPRes
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
 		}
 
-		jsonres := langext.ArrMap(res, func(v models.Subscription) models.SubscriptionJSON { return v.JSON() })
-
-		return finishSuccess(ginext.JSON(http.StatusOK, response{Subscriptions: jsonres}))
+		return finishSuccess(ginext.JSON(http.StatusOK, response{Subscriptions: res}))
 
 	})
 }
@@ -158,7 +156,7 @@ func (h APIHandler) ListChannelSubscriptions(pctx ginext.PreContext) ginext.HTTP
 		ChannelID models.ChannelID `uri:"cid" binding:"entityid"`
 	}
 	type response struct {
-		Subscriptions []models.SubscriptionJSON `json:"subscriptions"`
+		Subscriptions []models.Subscription `json:"subscriptions"`
 	}
 
 	var u uri
@@ -182,14 +180,12 @@ func (h APIHandler) ListChannelSubscriptions(pctx ginext.PreContext) ginext.HTTP
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
 		}
 
-		clients, err := h.database.ListSubscriptions(ctx, models.SubscriptionFilter{AnyUserID: langext.Ptr(u.UserID), ChannelID: langext.Ptr([]models.ChannelID{u.ChannelID})})
+		subs, err := h.database.ListSubscriptions(ctx, models.SubscriptionFilter{AnyUserID: langext.Ptr(u.UserID), ChannelID: langext.Ptr([]models.ChannelID{u.ChannelID})})
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
 		}
 
-		res := langext.ArrMap(clients, func(v models.Subscription) models.SubscriptionJSON { return v.JSON() })
-
-		return finishSuccess(ginext.JSON(http.StatusOK, response{Subscriptions: res}))
+		return finishSuccess(ginext.JSON(http.StatusOK, response{Subscriptions: subs}))
 
 	})
 }
@@ -203,7 +199,7 @@ func (h APIHandler) ListChannelSubscriptions(pctx ginext.PreContext) ginext.HTTP
 //	@Param		uid	path		string	true	"UserID"
 //	@Param		sid	path		string	true	"SubscriptionID"
 //
-//	@Success	200	{object}	models.SubscriptionJSON
+//	@Success	200	{object}	models.Subscription
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	404	{object}	ginresp.apiError	"subscription not found"
@@ -240,7 +236,7 @@ func (h APIHandler) GetSubscription(pctx ginext.PreContext) ginext.HTTPResponse 
 			return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_USER_MISMATCH, "Subscription not found", nil)
 		}
 
-		return finishSuccess(ginext.JSON(http.StatusOK, subscription.JSON()))
+		return finishSuccess(ginext.JSON(http.StatusOK, subscription))
 
 	})
 }
@@ -254,7 +250,7 @@ func (h APIHandler) GetSubscription(pctx ginext.PreContext) ginext.HTTPResponse 
 //	@Param		uid	path		string	true	"UserID"
 //	@Param		sid	path		string	true	"SubscriptionID"
 //
-//	@Success	200	{object}	models.SubscriptionJSON
+//	@Success	200	{object}	models.Subscription
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	404	{object}	ginresp.apiError	"subscription not found"
@@ -296,7 +292,7 @@ func (h APIHandler) CancelSubscription(pctx ginext.PreContext) ginext.HTTPRespon
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete subscription", err)
 		}
 
-		return finishSuccess(ginext.JSON(http.StatusOK, subscription.JSON()))
+		return finishSuccess(ginext.JSON(http.StatusOK, subscription))
 
 	})
 }
@@ -312,7 +308,7 @@ func (h APIHandler) CancelSubscription(pctx ginext.PreContext) ginext.HTTPRespon
 //	@Param			query_data	query		handler.CreateSubscription.query	false	" "
 //	@Param			post_data	body		handler.CreateSubscription.body		false	" "
 //
-//	@Success		200			{object}	models.SubscriptionJSON
+//	@Success		200			{object}	models.Subscription
 //	@Failure		400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure		401			{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure		500			{object}	ginresp.apiError	"internal server error"
@@ -397,7 +393,7 @@ func (h APIHandler) CreateSubscription(pctx ginext.PreContext) ginext.HTTPRespon
 				existingSub.Confirmed = true
 			}
 
-			return finishSuccess(ginext.JSON(http.StatusOK, existingSub.JSON()))
+			return finishSuccess(ginext.JSON(http.StatusOK, existingSub))
 		}
 
 		sub, err := h.database.CreateSubscription(ctx, u.UserID, channel, channel.OwnerUserID == u.UserID)
@@ -405,7 +401,7 @@ func (h APIHandler) CreateSubscription(pctx ginext.PreContext) ginext.HTTPRespon
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create subscription", err)
 		}
 
-		return finishSuccess(ginext.JSON(http.StatusOK, sub.JSON()))
+		return finishSuccess(ginext.JSON(http.StatusOK, sub))
 
 	})
 }
@@ -420,7 +416,7 @@ func (h APIHandler) CreateSubscription(pctx ginext.PreContext) ginext.HTTPRespon
 //	@Param		sid			path		string							true	"SubscriptionID"
 //	@Param		post_data	body		handler.UpdateSubscription.body	false	" "
 //
-//	@Success	200			{object}	models.SubscriptionJSON
+//	@Success	200			{object}	models.Subscription
 //	@Failure	400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401			{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	404			{object}	ginresp.apiError	"subscription not found"
@@ -478,7 +474,7 @@ func (h APIHandler) UpdateSubscription(pctx ginext.PreContext) ginext.HTTPRespon
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
 		}
 
-		return finishSuccess(ginext.JSON(http.StatusOK, subscription.JSON()))
+		return finishSuccess(ginext.JSON(http.StatusOK, subscription))
 
 	})
 }

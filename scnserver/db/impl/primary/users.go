@@ -15,10 +15,10 @@ func (db *Database) CreateUser(ctx db.TxContext, protoken *string, username *str
 		return models.User{}, err
 	}
 
-	entity := models.UserDB{
+	entity := models.User{
 		UserID:            models.NewUserID(),
 		Username:          username,
-		TimestampCreated:  time2DB(time.Now()),
+		TimestampCreated:  models.NowSCNTime(),
 		TimestampLastRead: nil,
 		TimestampLastSent: nil,
 		MessagesSent:      0,
@@ -26,14 +26,17 @@ func (db *Database) CreateUser(ctx db.TxContext, protoken *string, username *str
 		QuotaUsedDay:      nil,
 		IsPro:             protoken != nil,
 		ProToken:          protoken,
+		UserExtra:         models.UserExtra{},
 	}
+
+	entity.PreMarshal()
 
 	_, err = sq.InsertSingle(ctx, tx, "users", entity)
 	if err != nil {
 		return models.User{}, err
 	}
 
-	return entity.Model(), nil
+	return entity, nil
 }
 
 func (db *Database) ClearProTokens(ctx db.TxContext, protoken string) error {
@@ -56,17 +59,7 @@ func (db *Database) GetUser(ctx db.TxContext, userid models.UserID) (models.User
 		return models.User{}, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM users WHERE user_id = :uid LIMIT 1", sq.PP{"uid": userid})
-	if err != nil {
-		return models.User{}, err
-	}
-
-	user, err := models.DecodeUser(ctx, tx, rows)
-	if err != nil {
-		return models.User{}, err
-	}
-
-	return user, nil
+	return sq.QuerySingle[models.User](ctx, tx, "SELECT * FROM users WHERE user_id = :uid LIMIT 1", sq.PP{"uid": userid}, sq.SModeExtended, sq.Safe)
 }
 
 func (db *Database) UpdateUserUsername(ctx db.TxContext, userid models.UserID, username *string) error {
@@ -127,7 +120,7 @@ func (db *Database) IncUserMessageCounter(ctx db.TxContext, user *models.User) e
 		return err
 	}
 
-	user.TimestampLastSent = &now
+	user.TimestampLastSent = models.NewSCNTimePtr(&now)
 	user.MessagesSent = user.MessagesSent + 1
 
 	return nil

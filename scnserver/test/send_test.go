@@ -836,7 +836,7 @@ func TestSendWithTimestamp(t *testing.T) {
 
 	tt.AssertEqual(t, "messageCount", 1, len(pusher.Data))
 	tt.AssertStrRepEqual(t, "msg.title", "TTT", pusher.Last().Message.Title)
-	tt.AssertStrRepEqual(t, "msg.TimestampClient", ts, pusher.Last().Message.TimestampClient.Unix())
+	tt.AssertStrRepEqual(t, "msg.TimestampClient", ts, pusher.Last().Message.TimestampClient.Time().Unix())
 	tt.AssertStrRepEqual(t, "msg.Timestamp", ts, pusher.Last().Message.Timestamp().Unix())
 	tt.AssertNotStrRepEqual(t, "msg.ts", pusher.Last().Message.TimestampClient, pusher.Last().Message.TimestampReal)
 	tt.AssertStrRepEqual(t, "msg.scn_msg_id", msg1["scn_msg_id"], pusher.Last().Message.MessageID)

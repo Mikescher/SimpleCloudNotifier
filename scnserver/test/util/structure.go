@@ -135,13 +135,13 @@ func assertjsonStructureMatchMapObject(t *testing.T, mapschema map[string]any, r
 
 	for k := range mapschema {
 		if _, ok := realValue[k]; !ok {
-			t.Errorf("Missing Key: < %s >", keyPath)
+			t.Errorf("Missing Key: < %s >", keyPath+"."+k)
 		}
 	}
 
 	for k := range realValue {
 		if _, ok := mapschema[k]; !ok {
-			t.Errorf("Additional key: < %s >", keyPath)
+			t.Errorf("Additional key: < %s >", keyPath+"."+k)
 		}
 	}
 

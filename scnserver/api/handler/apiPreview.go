@@ -19,7 +19,7 @@ import (
 //
 //	@Param		uid	path		string	true	"UserID"
 //
-//	@Success	200	{object}	models.UserPreviewJSON
+//	@Success	200	{object}	models.UserPreview
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	404	{object}	ginresp.apiError	"user not found"
@@ -65,7 +65,7 @@ func (h APIHandler) GetUserPreview(pctx ginext.PreContext) ginext.HTTPResponse {
 //
 //	@Param		cid	path		string	true	"ChannelID"
 //
-//	@Success	200	{object}	models.ChannelPreviewJSON
+//	@Success	200	{object}	models.ChannelPreview
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	404	{object}	ginresp.apiError	"channel not found"
@@ -98,7 +98,7 @@ func (h APIHandler) GetChannelPreview(pctx ginext.PreContext) ginext.HTTPRespons
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
 		}
 
-		return finishSuccess(ginext.JSON(http.StatusOK, channel.JSONPreview()))
+		return finishSuccess(ginext.JSON(http.StatusOK, channel.Preview()))
 
 	})
 }
@@ -111,7 +111,7 @@ func (h APIHandler) GetChannelPreview(pctx ginext.PreContext) ginext.HTTPRespons
 //
 //	@Param		kid	path		string	true	"TokenKeyID"
 //
-//	@Success	200	{object}	models.KeyTokenPreviewJSON
+//	@Success	200	{object}	models.KeyTokenPreview
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	404	{object}	ginresp.apiError	"message not found"
@@ -144,7 +144,7 @@ func (h APIHandler) GetUserKeyPreview(pctx ginext.PreContext) ginext.HTTPRespons
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
 		}
 
-		return finishSuccess(ginext.JSON(http.StatusOK, keytoken.JSONPreview()))
+		return finishSuccess(ginext.JSON(http.StatusOK, keytoken.Preview()))
 
 	})
 }

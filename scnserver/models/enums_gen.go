@@ -5,7 +5,7 @@ package models
 import "gogs.mikescher.com/BlackForestBytes/goext/langext"
 import "gogs.mikescher.com/BlackForestBytes/goext/enums"
 
-const ChecksumEnumGenerator = "ba14f2f5d0b0357f248dcbd12933de102c80f1e61be697a37ebb723609fc0c59" // GoExtVersion: 0.0.485
+const ChecksumEnumGenerator = "8ffad0d7406eb7f17cbbfeff6fee6e6fa7156470203934ebd220c824e6e15e09" // GoExtVersion: 0.0.511
 
 // ================================ ClientType ================================
 //

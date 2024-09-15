@@ -185,9 +185,9 @@ func createRequestLog(g *gin.Context, t0 time.Time, ctr int, resp ginext.HTTPRes
 		RetryCount:          int64(ctr),
 		Panicked:            panicstr != nil,
 		PanicStr:            panicstr,
-		ProcessingTime:      t1.Sub(t0),
-		TimestampStart:      t0,
-		TimestampFinish:     t1,
+		ProcessingTime:      models.SCNDuration(t1.Sub(t0)),
+		TimestampStart:      models.NewSCNTime(t0),
+		TimestampFinish:     models.NewSCNTime(t1),
 	}
 }
 

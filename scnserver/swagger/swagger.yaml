@@ -244,7 +244,7 @@ definitions:
     properties:
       messages:
         items:
-          $ref: '#/definitions/models.MessageJSON'
+          $ref: '#/definitions/models.Message'
         type: array
       next_page_token:
         type: string
@@ -255,28 +255,28 @@ definitions:
     properties:
       subscriptions:
         items:
-          $ref: '#/definitions/models.SubscriptionJSON'
+          $ref: '#/definitions/models.Subscription'
         type: array
     type: object
   handler.ListChannels.response:
     properties:
       channels:
         items:
-          $ref: '#/definitions/models.ChannelWithSubscriptionJSON'
+          $ref: '#/definitions/models.ChannelWithSubscription'
         type: array
     type: object
   handler.ListClients.response:
     properties:
       clients:
         items:
-          $ref: '#/definitions/models.ClientJSON'
+          $ref: '#/definitions/models.Client'
         type: array
     type: object
   handler.ListMessages.response:
     properties:
       messages:
         items:
-          $ref: '#/definitions/models.MessageJSON'
+          $ref: '#/definitions/models.Message'
         type: array
       next_page_token:
         type: string
@@ -287,14 +287,14 @@ definitions:
     properties:
       keys:
         items:
-          $ref: '#/definitions/models.KeyTokenJSON'
+          $ref: '#/definitions/models.KeyToken'
         type: array
     type: object
   handler.ListUserSubscriptions.response:
     properties:
       subscriptions:
         items:
-          $ref: '#/definitions/models.SubscriptionJSON'
+          $ref: '#/definitions/models.Subscription'
         type: array
     type: object
   handler.Register.response:
@@ -499,7 +499,7 @@ definitions:
       uri:
         type: string
     type: object
-  models.ChannelPreviewJSON:
+  models.ChannelPreview:
     properties:
       channel_id:
         type: string
@@ -512,7 +512,7 @@ definitions:
       owner_user_id:
         type: string
     type: object
-  models.ChannelWithSubscriptionJSON:
+  models.ChannelWithSubscription:
     properties:
       channel_id:
         type: string
@@ -530,13 +530,13 @@ definitions:
         description: can be nil, depending on endpoint
         type: string
       subscription:
-        $ref: '#/definitions/models.SubscriptionJSON'
+        $ref: '#/definitions/models.Subscription'
       timestamp_created:
         type: string
       timestamp_lastsent:
         type: string
     type: object
-  models.ClientJSON:
+  models.Client:
     properties:
       agent_model:
         type: string
@@ -586,7 +586,7 @@ definitions:
       usr_msg_id:
         type: string
     type: object
-  models.KeyTokenJSON:
+  models.KeyToken:
     properties:
       all_channels:
         type: boolean
@@ -603,47 +603,9 @@ definitions:
       owner_user_id:
         type: string
       permissions:
-        type: string
-      timestamp_created:
-        type: string
-      timestamp_lastused:
-        type: string
-    type: object
-  models.KeyTokenPreviewJSON:
-    properties:
-      all_channels:
-        type: boolean
-      channels:
         items:
-          type: string
+          $ref: '#/definitions/models.TokenPerm'
         type: array
-      keytoken_id:
-        type: string
-      name:
-        type: string
-      owner_user_id:
-        type: string
-      permissions:
-        type: string
-    type: object
-  models.KeyTokenWithTokenJSON:
-    properties:
-      all_channels:
-        type: boolean
-      channels:
-        items:
-          type: string
-        type: array
-      keytoken_id:
-        type: string
-      messages_sent:
-        type: integer
-      name:
-        type: string
-      owner_user_id:
-        type: string
-      permissions:
-        type: string
       timestamp_created:
         type: string
       timestamp_lastused:
@@ -651,7 +613,24 @@ definitions:
       token:
         type: string
     type: object
-  models.MessageJSON:
+  models.KeyTokenPreview:
+    properties:
+      all_channels:
+        type: boolean
+      channels:
+        items:
+          type: string
+        type: array
+      keytoken_id:
+        type: string
+      name:
+        type: string
+      owner_user_id:
+        type: string
+      permissions:
+        type: string
+    type: object
+  models.Message:
     properties:
       channel_id:
         type: string
@@ -668,6 +647,8 @@ definitions:
       sender_name:
         type: string
       sender_user_id:
+        description: user that sent the message (this is also the owner of the channel
+          that contains it)
         type: string
       timestamp:
         type: string
@@ -675,12 +656,10 @@ definitions:
         type: string
       trimmed:
         type: boolean
-      used_key_id:
-        type: string
       usr_message_id:
         type: string
     type: object
-  models.SubscriptionJSON:
+  models.Subscription:
     properties:
       channel_id:
         type: string
@@ -697,7 +676,24 @@ definitions:
       timestamp_created:
         type: string
     type: object
-  models.UserJSON:
+  models.TokenPerm:
+    enum:
+    - A
+    - CR
+    - CS
+    - UR
+    type: string
+    x-enum-comments:
+      PermAdmin: Edit userdata (+ includes all other permissions)
+      PermChannelRead: Read messages
+      PermChannelSend: Send messages
+      PermUserRead: Read userdata
+    x-enum-varnames:
+    - PermAdmin
+    - PermChannelRead
+    - PermChannelSend
+    - PermUserRead
+  models.User:
     properties:
       default_channel:
         type: string
@@ -736,13 +732,20 @@ definitions:
       username:
         type: string
     type: object
-  models.UserJSONWithClientsAndKeys:
+  models.UserPreview:
+    properties:
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  models.UserWithClientsAndKeys:
     properties:
       admin_key:
         type: string
       clients:
         items:
-          $ref: '#/definitions/models.ClientJSON'
+          $ref: '#/definitions/models.Client'
         type: array
       default_channel:
         type: string
@@ -780,13 +783,6 @@ definitions:
         type: string
       timestamp_lastsent:
         type: string
-      user_id:
-        type: string
-      username:
-        type: string
-    type: object
-  models.UserPreviewJSON:
-    properties:
       user_id:
         type: string
       username:
@@ -1460,7 +1456,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.MessageJSON'
+            $ref: '#/definitions/models.Message'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1496,7 +1492,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.MessageJSON'
+            $ref: '#/definitions/models.Message'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1529,7 +1525,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ChannelPreviewJSON'
+            $ref: '#/definitions/models.ChannelPreview'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1563,7 +1559,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.KeyTokenPreviewJSON'
+            $ref: '#/definitions/models.KeyTokenPreview'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1597,7 +1593,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.UserPreviewJSON'
+            $ref: '#/definitions/models.UserPreview'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1631,7 +1627,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.UserJSONWithClientsAndKeys'
+            $ref: '#/definitions/models.UserWithClientsAndKeys'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1656,7 +1652,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.UserJSON'
+            $ref: '#/definitions/models.User'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1699,7 +1695,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.UserJSON'
+            $ref: '#/definitions/models.User'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1782,7 +1778,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ChannelWithSubscriptionJSON'
+            $ref: '#/definitions/models.ChannelWithSubscription'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1820,7 +1816,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ChannelWithSubscriptionJSON'
+            $ref: '#/definitions/models.ChannelWithSubscription'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1873,7 +1869,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ChannelWithSubscriptionJSON'
+            $ref: '#/definitions/models.ChannelWithSubscription'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2032,7 +2028,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ClientJSON'
+            $ref: '#/definitions/models.Client'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2066,7 +2062,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ClientJSON'
+            $ref: '#/definitions/models.Client'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2103,7 +2099,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ClientJSON'
+            $ref: '#/definitions/models.Client'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2151,7 +2147,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ClientJSON'
+            $ref: '#/definitions/models.Client'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2223,7 +2219,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.KeyTokenJSON'
+            $ref: '#/definitions/models.KeyToken'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2262,7 +2258,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.KeyTokenJSON'
+            $ref: '#/definitions/models.KeyToken'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2301,7 +2297,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.KeyTokenJSON'
+            $ref: '#/definitions/models.KeyToken'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2343,7 +2339,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.KeyTokenJSON'
+            $ref: '#/definitions/models.KeyToken'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2383,7 +2379,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.KeyTokenWithTokenJSON'
+            $ref: '#/definitions/models.KeyToken'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2485,7 +2481,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.SubscriptionJSON'
+            $ref: '#/definitions/models.Subscription'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2519,7 +2515,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.SubscriptionJSON'
+            $ref: '#/definitions/models.Subscription'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2556,7 +2552,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.SubscriptionJSON'
+            $ref: '#/definitions/models.Subscription'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2598,7 +2594,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.SubscriptionJSON'
+            $ref: '#/definitions/models.Subscription'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:

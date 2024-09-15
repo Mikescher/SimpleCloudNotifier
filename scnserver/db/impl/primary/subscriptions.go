@@ -3,10 +3,7 @@ package primary
 import (
 	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/models"
-	"database/sql"
-	"errors"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
-	"time"
 )
 
 func (db *Database) CreateSubscription(ctx db.TxContext, subscriberUID models.UserID, channel models.Channel, confirmed bool) (models.Subscription, error) {
@@ -15,14 +12,14 @@ func (db *Database) CreateSubscription(ctx db.TxContext, subscriberUID models.Us
 		return models.Subscription{}, err
 	}
 
-	entity := models.SubscriptionDB{
+	entity := models.Subscription{
 		SubscriptionID:      models.NewSubscriptionID(),
 		SubscriberUserID:    subscriberUID,
 		ChannelOwnerUserID:  channel.OwnerUserID,
 		ChannelID:           channel.ChannelID,
 		ChannelInternalName: channel.InternalName,
-		TimestampCreated:    time2DB(time.Now()),
-		Confirmed:           bool2DB(confirmed),
+		TimestampCreated:    models.NowSCNTime(),
+		Confirmed:           confirmed,
 	}
 
 	_, err = sq.InsertSingle(ctx, tx, "subscriptions", entity)
@@ -30,7 +27,7 @@ func (db *Database) CreateSubscription(ctx db.TxContext, subscriberUID models.Us
 		return models.Subscription{}, err
 	}
 
-	return entity.Model(), nil
+	return entity, nil
 }
 
 func (db *Database) ListSubscriptions(ctx db.TxContext, filter models.SubscriptionFilter) ([]models.Subscription, error) {
@@ -45,17 +42,7 @@ func (db *Database) ListSubscriptions(ctx db.TxContext, filter models.Subscripti
 
 	sqlQuery := "SELECT " + "subscriptions.*" + " FROM subscriptions " + filterJoin + " WHERE ( " + filterCond + " ) " + orderClause
 
-	rows, err := tx.Query(ctx, sqlQuery, prepParams)
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := models.DecodeSubscriptions(ctx, tx, rows)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return sq.QueryAll[models.Subscription](ctx, tx, sqlQuery, prepParams, sq.SModeExtended, sq.Safe)
 }
 
 func (db *Database) GetSubscription(ctx db.TxContext, subid models.SubscriptionID) (models.Subscription, error) {
@@ -64,17 +51,7 @@ func (db *Database) GetSubscription(ctx db.TxContext, subid models.SubscriptionI
 		return models.Subscription{}, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM subscriptions WHERE subscription_id = :sid LIMIT 1", sq.PP{"sid": subid})
-	if err != nil {
-		return models.Subscription{}, err
-	}
-
-	sub, err := models.DecodeSubscription(ctx, tx, rows)
-	if err != nil {
-		return models.Subscription{}, err
-	}
-
-	return sub, nil
+	return sq.QuerySingle[models.Subscription](ctx, tx, "SELECT * FROM subscriptions WHERE subscription_id = :sid LIMIT 1", sq.PP{"sid": subid}, sq.SModeExtended, sq.Safe)
 }
 
 func (db *Database) GetSubscriptionBySubscriber(ctx db.TxContext, subscriberId models.UserID, channelId models.ChannelID) (*models.Subscription, error) {
@@ -83,23 +60,10 @@ func (db *Database) GetSubscriptionBySubscriber(ctx db.TxContext, subscriberId m
 		return nil, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM subscriptions WHERE subscriber_user_id = :suid AND channel_id = :cid LIMIT 1", sq.PP{
+	return sq.QuerySingleOpt[models.Subscription](ctx, tx, "SELECT * FROM subscriptions WHERE subscriber_user_id = :suid AND channel_id = :cid LIMIT 1", sq.PP{
 		"suid": subscriberId,
 		"cid":  channelId,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	user, err := models.DecodeSubscription(ctx, tx, rows)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	return &user, nil
+	}, sq.SModeExtended, sq.Safe)
 }
 
 func (db *Database) DeleteSubscription(ctx db.TxContext, subid models.SubscriptionID) error {
