@@ -5,6 +5,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	"gogs.mikescher.com/BlackForestBytes/goext/rfctime"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
@@ -27,7 +28,7 @@ func (db *Database) CreateRetryDelivery(ctx db.TxContext, client models.Client, 
 		TimestampFinalized: nil,
 		Status:             models.DeliveryStatusRetry,
 		RetryCount:         0,
-		NextDelivery:       models.NewSCNTimePtr(&next),
+		NextDelivery:       rfctime.NewRFC3339NanoPtr(&next),
 		FCMMessageID:       nil,
 	}
 
@@ -75,7 +76,7 @@ func (db *Database) ListRetrieableDeliveries(ctx db.TxContext, pageSize int) ([]
 	}
 
 	return sq.QueryAll[models.Delivery](ctx, tx, "SELECT * FROM deliveries WHERE status = 'RETRY' AND next_delivery < :next ORDER BY next_delivery ASC LIMIT :lim", sq.PP{
-		"next": time2DB(time.Now()),
+		"next": time.Now().Format(time.RFC3339Nano),
 		"lim":  pageSize,
 	}, sq.SModeExtended, sq.Safe)
 }
@@ -125,7 +126,7 @@ func (db *Database) SetDeliveryRetry(ctx db.TxContext, delivery models.Delivery)
 	}
 
 	_, err = tx.Exec(ctx, "UPDATE deliveries SET status = 'RETRY', next_delivery = :next, retry_count = :rc WHERE delivery_id = :did", sq.PP{
-		"next": scn.NextDeliveryTimestamp(time.Now()),
+		"next": scn.NextDeliveryTimestamp(time.Now()).Format(time.RFC3339Nano),
 		"rc":   delivery.RetryCount + 1,
 		"did":  delivery.DeliveryID,
 	})
