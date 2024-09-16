@@ -241,6 +241,51 @@ func (db *Database) Migrate(outerctx context.Context) error {
 		} else {
 			log.Debug().Str("schemHash", schemHashDB).Msg("Verified Schema consistency (primary db)")
 		}
+
+		log.Info().Int("currschema", currschema).Msg("Upgrade schema from 5 -> 6")
+
+		_, err = tx.Exec(tctx, schema.PrimaryMigration_5_6, sq.PP{})
+		if err != nil {
+			return err
+		}
+
+		currschema = 6
+
+		err = db.WriteMetaInt(tctx, "schema", int64(currschema))
+		if err != nil {
+			return err
+		}
+
+		err = db.WriteMetaString(tctx, "schema_hash", schema.PrimarySchema[currschema].Hash)
+		if err != nil {
+			return err
+		}
+
+		log.Info().Int("currschema", currschema).Msg("Upgrade schema from 5 -> 6 succesfully")
+
+		ppReInit = true
+	}
+
+	if currschema == 6 {
+
+		schemaHashMeta, err := db.ReadMetaString(tctx, "schema_hash")
+		if err != nil {
+			return err
+		}
+
+		schemHashDB, err := sq.HashSqliteDatabase(tctx, tx)
+		if err != nil {
+			return err
+		}
+
+		if schemHashDB != langext.Coalesce(schemaHashMeta, "") || langext.Coalesce(schemaHashMeta, "") != schema.PrimarySchema[currschema].Hash {
+			log.Debug().Str("schemHashDB", schemHashDB).Msg("Schema (primary db)")
+			log.Debug().Str("schemaHashMeta", langext.Coalesce(schemaHashMeta, "")).Msg("Schema (primary db)")
+			log.Debug().Str("schemaHashAsset", schema.PrimarySchema[currschema].Hash).Msg("Schema (primary db)")
+			return errors.New("database schema does not match (primary db)")
+		} else {
+			log.Debug().Str("schemHash", schemHashDB).Msg("Verified Schema consistency (primary db)")
+		}
 	}
 
 	if currschema != schema.PrimarySchemaVersion {
