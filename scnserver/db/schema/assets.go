@@ -25,6 +25,9 @@ var primarySchema5 string
 //go:embed primary_6.ddl
 var primarySchema6 string
 
+//go:embed primary_7.ddl
+var primarySchema7 string
+
 //go:embed primary_migration_3_4.ddl
 var PrimaryMigration_3_4 string
 
@@ -33,6 +36,9 @@ var PrimaryMigration_4_5 string
 
 //go:embed primary_migration_5_6.ddl
 var PrimaryMigration_5_6 string
+
+//go:embed primary_migration_6_7.ddl
+var PrimaryMigration_6_7 string
 
 //go:embed requests_1.ddl
 var requestsSchema1 string
@@ -48,9 +54,10 @@ var PrimarySchema = map[int]Def{
 	4: {primarySchema4, "cb022156ab0e7aea39dd0c985428c43cae7d60e41ca8e9e5a84c774b3019d2ca"},
 	5: {primarySchema5, "9d6217ba4a3503cfe090f72569367f95a413bb14e9effe49ffeabbf255bce8dd"},
 	6: {primarySchema6, "8e83d20bcd008082713f248ae8cd558335a37a37ce90bd8c86e782da640ee160"},
+	7: {primarySchema7, "90d8dbc460afe025f9b74cda5c16bb8e58b178df275223bd2531907a8d8c36c3"},
 }
 
-var PrimarySchemaVersion = 6
+var PrimarySchemaVersion = 7
 
 var RequestsSchema = map[int]Def{
 	0: {"", ""},

@@ -12,11 +12,6 @@
 
  - exerr.New | exerr.Wrap
 
- - Properly handle UNREGISTERED firebase error (remove token from client?)
-   WRN logic/application.go:284 > FCM Delivery failed error="FCM-Request returned 404: 
-   {  \"error\": {\n    \"code\": 404,\n    \"message\": \"Requested entity was not found.\",\n    \"status\": \"NOT_FOUND\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.firebase.fcm.v1.FcmError\",\n        \"errorCode\": \"UNREGISTERED\"\n      }\n    ]\n  }\n}\n" 
-   ClientID=CLNGOSVIaCnm5cQmCI0pC5kR MessageID=MSG8w7NvVRm0OtJERnJlEe3C
-
 #### UNSURE
 
  - (?) default-priority for channels

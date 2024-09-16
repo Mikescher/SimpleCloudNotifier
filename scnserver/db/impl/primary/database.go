@@ -13,15 +13,21 @@ import (
 	"github.com/glebarez/go-sqlite"
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
+	"gogs.mikescher.com/BlackForestBytes/goext/exerr"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
+	"os"
+	"path/filepath"
 	"time"
 )
 
 type Database struct {
-	db  sq.DB
-	pp  *dbtools.DBPreprocessor
-	wal bool
+	db            sq.DB
+	pp            *dbtools.DBPreprocessor
+	wal           bool
+	name          string
+	schemaVersion int
+	schema        map[int]schema.Def
 }
 
 func NewPrimaryDatabase(cfg server.Config) (*Database, error) {
@@ -66,7 +72,14 @@ func NewPrimaryDatabase(cfg server.Config) (*Database, error) {
 
 	qqdb.AddListener(pp)
 
-	scndb := &Database{db: qqdb, pp: pp, wal: conf.Journal == "WAL"}
+	scndb := &Database{
+		db:            qqdb,
+		pp:            pp,
+		wal:           conf.Journal == "WAL",
+		schemaVersion: schema.PrimarySchemaVersion,
+		schema:        schema.PrimarySchema,
+		name:          "primary",
+	}
 
 	return scndb, nil
 }
@@ -99,196 +112,49 @@ func (db *Database) Migrate(outerctx context.Context) error {
 		return err
 	}
 
-	if currschema == 0 {
-		schemastr := schema.PrimarySchema[schema.PrimarySchemaVersion].SQL
-		schemahash := schema.PrimarySchema[schema.PrimarySchemaVersion].Hash
-
-		_, err = tx.Exec(tctx, schemastr, sq.PP{})
-		if err != nil {
-			return err
-		}
-
-		err = db.WriteMetaInt(tctx, "schema", int64(schema.PrimarySchemaVersion))
-		if err != nil {
-			return err
-		}
-
-		err = db.WriteMetaString(tctx, "schema_hash", schemahash)
-		if err != nil {
-			return err
-		}
-
-		ppReInit = true
-
-		currschema = schema.PrimarySchemaVersion
+	if currschema == db.schemaVersion {
+		log.Info().Msgf("Database [%s] is up-to-date (%d == %d)", db.name, currschema, db.schemaVersion)
 	}
 
-	if currschema == 1 {
-		return errors.New("cannot autom. upgrade schema 1")
-	}
+	for currschema < db.schemaVersion {
 
-	if currschema == 2 {
-		return errors.New("cannot autom. upgrade schema 2")
-	}
+		if currschema == 0 {
+			log.Info().Msgf("Migrate database (initialize) [%s] %d -> %d", db.name, currschema, db.schemaVersion)
 
-	if currschema == 3 {
+			schemastr := db.schema[1].SQL
+			schemahash := db.schema[1].Hash
 
-		schemaHashMeta, err := db.ReadMetaString(tctx, "schema_hash")
-		if err != nil {
-			return err
-		}
+			_, err = tx.Exec(tctx, schemastr, sq.PP{})
+			if err != nil {
+				return err
+			}
 
-		schemHashDB, err := sq.HashSqliteDatabase(tctx, tx)
-		if err != nil {
-			return err
-		}
+			err = db.WriteMetaInt(tctx, "schema", int64(db.schemaVersion))
+			if err != nil {
+				return err
+			}
 
-		if schemHashDB != langext.Coalesce(schemaHashMeta, "") || langext.Coalesce(schemaHashMeta, "") != schema.PrimarySchema[currschema].Hash {
-			log.Debug().Str("schemHashDB", schemHashDB).Msg("Schema (primary db)")
-			log.Debug().Str("schemaHashMeta", langext.Coalesce(schemaHashMeta, "")).Msg("Schema (primary db)")
-			log.Debug().Str("schemaHashAsset", schema.PrimarySchema[currschema].Hash).Msg("Schema (primary db)")
-			return errors.New("database schema does not match (primary db)")
+			err = db.WriteMetaString(tctx, "schema_hash", schemahash)
+			if err != nil {
+				return err
+			}
+
+			ppReInit = true
+
+			currschema = db.schemaVersion
 		} else {
-			log.Debug().Str("schemHash", schemHashDB).Msg("Verified Schema consistency (primary db)")
-		}
+			log.Info().Msgf("Migrate database [%s] %d -> %d", db.name, currschema, currschema+1)
 
-		log.Info().Int("currschema", currschema).Msg("Upgrade schema from 3 -> 4")
+			err = db.migrateSingle(tctx, tx, currschema, currschema+1)
+			if err != nil {
+				return err
+			}
 
-		_, err = tx.Exec(tctx, schema.PrimaryMigration_3_4, sq.PP{})
-		if err != nil {
-			return err
-		}
-
-		currschema = 4
-
-		err = db.WriteMetaInt(tctx, "schema", int64(currschema))
-		if err != nil {
-			return err
-		}
-
-		err = db.WriteMetaString(tctx, "schema_hash", schema.PrimarySchema[currschema].Hash)
-		if err != nil {
-			return err
-		}
-
-		log.Info().Int("currschema", currschema).Msg("Upgrade schema from 3 -> 4 succesfully")
-
-		ppReInit = true
-	}
-
-	if currschema == 4 {
-
-		schemaHashMeta, err := db.ReadMetaString(tctx, "schema_hash")
-		if err != nil {
-			return err
-		}
-
-		schemHashDB, err := sq.HashSqliteDatabase(tctx, tx)
-		if err != nil {
-			return err
-		}
-
-		if schemHashDB != langext.Coalesce(schemaHashMeta, "") || langext.Coalesce(schemaHashMeta, "") != schema.PrimarySchema[currschema].Hash {
-			log.Debug().Str("schemHashDB", schemHashDB).Msg("Schema (primary db)")
-			log.Debug().Str("schemaHashMeta", langext.Coalesce(schemaHashMeta, "")).Msg("Schema (primary db)")
-			log.Debug().Str("schemaHashAsset", schema.PrimarySchema[currschema].Hash).Msg("Schema (primary db)")
-			return errors.New("database schema does not match (primary db)")
-		} else {
-			log.Debug().Str("schemHash", schemHashDB).Msg("Verified Schema consistency (primary db)")
-		}
-
-		log.Info().Int("currschema", currschema).Msg("Upgrade schema from 4 -> 5")
-
-		_, err = tx.Exec(tctx, schema.PrimaryMigration_4_5, sq.PP{})
-		if err != nil {
-			return err
-		}
-
-		currschema = 5
-
-		err = db.WriteMetaInt(tctx, "schema", int64(currschema))
-		if err != nil {
-			return err
-		}
-
-		err = db.WriteMetaString(tctx, "schema_hash", schema.PrimarySchema[currschema].Hash)
-		if err != nil {
-			return err
-		}
-
-		log.Info().Int("currschema", currschema).Msg("Upgrade schema from 4 -> 5 succesfully")
-
-		ppReInit = true
-	}
-
-	if currschema == 5 {
-
-		schemaHashMeta, err := db.ReadMetaString(tctx, "schema_hash")
-		if err != nil {
-			return err
-		}
-
-		schemHashDB, err := sq.HashSqliteDatabase(tctx, tx)
-		if err != nil {
-			return err
-		}
-
-		if schemHashDB != langext.Coalesce(schemaHashMeta, "") || langext.Coalesce(schemaHashMeta, "") != schema.PrimarySchema[currschema].Hash {
-			log.Debug().Str("schemHashDB", schemHashDB).Msg("Schema (primary db)")
-			log.Debug().Str("schemaHashMeta", langext.Coalesce(schemaHashMeta, "")).Msg("Schema (primary db)")
-			log.Debug().Str("schemaHashAsset", schema.PrimarySchema[currschema].Hash).Msg("Schema (primary db)")
-			return errors.New("database schema does not match (primary db)")
-		} else {
-			log.Debug().Str("schemHash", schemHashDB).Msg("Verified Schema consistency (primary db)")
-		}
-
-		log.Info().Int("currschema", currschema).Msg("Upgrade schema from 5 -> 6")
-
-		_, err = tx.Exec(tctx, schema.PrimaryMigration_5_6, sq.PP{})
-		if err != nil {
-			return err
-		}
-
-		currschema = 6
-
-		err = db.WriteMetaInt(tctx, "schema", int64(currschema))
-		if err != nil {
-			return err
-		}
-
-		err = db.WriteMetaString(tctx, "schema_hash", schema.PrimarySchema[currschema].Hash)
-		if err != nil {
-			return err
-		}
-
-		log.Info().Int("currschema", currschema).Msg("Upgrade schema from 5 -> 6 succesfully")
-
-		ppReInit = true
-	}
-
-	if currschema == 6 {
-
-		schemaHashMeta, err := db.ReadMetaString(tctx, "schema_hash")
-		if err != nil {
-			return err
-		}
-
-		schemHashDB, err := sq.HashSqliteDatabase(tctx, tx)
-		if err != nil {
-			return err
-		}
-
-		if schemHashDB != langext.Coalesce(schemaHashMeta, "") || langext.Coalesce(schemaHashMeta, "") != schema.PrimarySchema[currschema].Hash {
-			log.Debug().Str("schemHashDB", schemHashDB).Msg("Schema (primary db)")
-			log.Debug().Str("schemaHashMeta", langext.Coalesce(schemaHashMeta, "")).Msg("Schema (primary db)")
-			log.Debug().Str("schemaHashAsset", schema.PrimarySchema[currschema].Hash).Msg("Schema (primary db)")
-			return errors.New("database schema does not match (primary db)")
-		} else {
-			log.Debug().Str("schemHash", schemHashDB).Msg("Verified Schema consistency (primary db)")
+			currschema = currschema + 1
 		}
 	}
 
-	if currschema != schema.PrimarySchemaVersion {
+	if currschema != db.schemaVersion {
 		return errors.New(fmt.Sprintf("Unknown DB schema: %d", currschema))
 	}
 
@@ -306,6 +172,114 @@ func (db *Database) Migrate(outerctx context.Context) error {
 	}
 
 	return nil
+}
+
+//goland:noinspection SqlConstantCondition,SqlWithoutWhere
+func (db *Database) migrateSingle(tctx *simplectx.SimpleContext, tx sq.Tx, schemaFrom int, schemaTo int) error {
+
+	if schemaFrom == 3 && schemaTo == 4 {
+		return db.migrateBySQL(tctx, tx, schema.PrimaryMigration_3_4, schemaFrom, schemaTo, db.schema[schemaTo].Hash, nil)
+	}
+
+	if schemaFrom == 4 && schemaTo == 5 {
+		return db.migrateBySQL(tctx, tx, schema.PrimaryMigration_4_5, schemaFrom, schemaTo, db.schema[schemaTo].Hash, nil)
+	}
+
+	if schemaFrom == 5 && schemaTo == 6 {
+		return db.migrateBySQL(tctx, tx, schema.PrimaryMigration_5_6, schemaFrom, schemaTo, db.schema[schemaTo].Hash, nil)
+	}
+
+	if schemaFrom == 6 && schemaTo == 7 {
+		return db.migrateBySQL(tctx, tx, schema.PrimaryMigration_6_7, schemaFrom, schemaTo, db.schema[schemaTo].Hash, nil)
+	}
+
+	return exerr.New(exerr.TypeInternal, fmt.Sprintf("missing %s migration from %d to %d", db.name, schemaFrom, schemaTo)).Build()
+}
+
+func (db *Database) migrateBySQL(tctx *simplectx.SimpleContext, tx sq.Tx, stmts string, currSchemaVers int, resultSchemVers int, resultHash string, post func(tctx *simplectx.SimpleContext, tx sq.Tx) error) error {
+
+	schemaHashMeta, err := db.ReadMetaString(tctx, "schema_hash")
+	if err != nil {
+		return err
+	}
+
+	schemHashDBBefore, err := sq.HashSqliteDatabase(tctx, tx)
+	if err != nil {
+		return err
+	}
+
+	if schemHashDBBefore != langext.Coalesce(schemaHashMeta, "") || langext.Coalesce(schemaHashMeta, "") != db.schema[currSchemaVers].Hash {
+		log.Debug().Str("schemHashDB", schemHashDBBefore).Msg("Schema (primary db)")
+		log.Debug().Str("schemaHashMeta", langext.Coalesce(schemaHashMeta, "")).Msg("Schema (primary db)")
+		log.Debug().Str("schemaHashAsset", db.schema[currSchemaVers].Hash).Msg("Schema (primary db)")
+		return errors.New("database schema does not match (primary db)")
+	} else {
+		log.Debug().Str("schemHash", schemHashDBBefore).Msg("Verified Schema consistency (primary db)")
+	}
+
+	log.Info().Msgf("Upgrade schema from %d -> %d", currSchemaVers, resultSchemVers)
+
+	_, err = tx.Exec(tctx, stmts, sq.PP{})
+	if err != nil {
+		return err
+	}
+
+	schemHashDBAfter, err := sq.HashSqliteDatabase(tctx, tx)
+	if err != nil {
+		return err
+	}
+
+	if schemHashDBAfter != resultHash {
+
+		schemaDBStr := langext.Must(createSqliteDatabaseSchemaStringFromSQL(tctx, db.schema[resultSchemVers].SQL))
+		resultDBStr := langext.Must(sq.CreateSqliteDatabaseSchemaString(tctx, tx))
+
+		fmt.Printf("========================================= SQL SCHEMA-DUMP STR (CORRECT | FROM COMPILED SCHEMA):%s\n=========================================\n\n", schemaDBStr)
+		fmt.Printf("========================================= SQL SCHEMA-DUMP STR (CURRNET | AFTER MIGRATION):%s\n=========================================\n\n", resultDBStr)
+
+		return fmt.Errorf("database [%s] schema does not match after [%d -> %d] migration (expected: %s | actual: %s)", db.name, currSchemaVers, resultSchemVers, resultHash, schemHashDBBefore)
+	}
+
+	err = db.WriteMetaInt(tctx, "schema", int64(resultSchemVers))
+	if err != nil {
+		return err
+	}
+
+	err = db.WriteMetaString(tctx, "schema_hash", resultHash)
+	if err != nil {
+		return err
+	}
+
+	log.Info().Msgf("Upgrade schema from %d -> %d succesfully", currSchemaVers, resultSchemVers)
+
+	return nil
+}
+
+func createSqliteDatabaseSchemaStringFromSQL(ctx context.Context, schemaStr string) (string, error) {
+	dbdir := os.TempDir()
+	dbfile1 := filepath.Join(dbdir, langext.MustHexUUID()+".sqlite3")
+	defer func() { _ = os.Remove(dbfile1) }()
+
+	err := os.MkdirAll(dbdir, os.ModePerm)
+	if err != nil {
+		return "", err
+	}
+
+	url := fmt.Sprintf("file:%s?_pragma=journal_mode(%s)&_pragma=timeout(%d)&_pragma=foreign_keys(%s)&_pragma=busy_timeout(%d)", dbfile1, "DELETE", 1000, "true", 1000)
+
+	xdb, err := sqlx.Open("sqlite", url)
+	if err != nil {
+		return "", err
+	}
+
+	db := sq.NewDB(xdb, sq.DBOptions{})
+
+	_, err = db.Exec(ctx, schemaStr, sq.PP{})
+	if err != nil {
+		return "", err
+	}
+
+	return sq.CreateSqliteDatabaseSchemaString(ctx, db)
 }
 
 func (db *Database) Ping(ctx context.Context) error {

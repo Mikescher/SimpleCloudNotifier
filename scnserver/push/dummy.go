@@ -12,6 +12,6 @@ func NewDummy() NotificationClient {
 	return &DummyConnector{}
 }
 
-func (d DummyConnector) SendNotification(ctx context.Context, user models.User, client models.Client, channel models.Channel, msg models.Message) (string, error) {
-	return "%DUMMY%", nil
+func (d DummyConnector) SendNotification(ctx context.Context, user models.User, client models.Client, channel models.Channel, msg models.Message) (string, string, error) {
+	return "%DUMMY%", "", nil
 }

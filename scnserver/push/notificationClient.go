@@ -6,5 +6,5 @@ import (
 )
 
 type NotificationClient interface {
-	SendNotification(ctx context.Context, user models.User, client models.Client, channel models.Channel, msg models.Message) (string, error)
+	SendNotification(ctx context.Context, user models.User, client models.Client, channel models.Channel, msg models.Message) (string, string, error)
 }

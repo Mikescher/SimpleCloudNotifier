@@ -189,7 +189,7 @@ func (h CompatHandler) Register(pctx ginext.PreContext) ginext.HTTPResponse {
 
 		adminKey := h.app.GenerateRandomAuthKey()
 
-		err := h.database.ClearFCMTokens(ctx, *data.FCMToken)
+		err := h.database.DeleteClientsByFCM(ctx, *data.FCMToken)
 		if err != nil {
 			return ginresp.CompatAPIError(0, "Failed to clear existing fcm tokens")
 		}

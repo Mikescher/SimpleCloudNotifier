@@ -9,24 +9,18 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/push"
 	"context"
 	"errors"
+	"fmt"
 	"github.com/rs/zerolog/log"
 	golock "github.com/viney-shih/go-lock"
 	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
-	"gogs.mikescher.com/BlackForestBytes/goext/rext"
 	"gogs.mikescher.com/BlackForestBytes/goext/syncext"
 	"net"
 	"os"
 	"os/signal"
-	"regexp"
 	"strings"
 	"syscall"
 	"time"
 )
-
-var rexWhitespaceStart = rext.W(regexp.MustCompile("^\\s+"))
-var rexWhitespaceEnd = rext.W(regexp.MustCompile("\\s+$"))
-var rexNormalizeUsername = rext.W(regexp.MustCompile("[^[:alnum:]\\-_ ]"))
-var rexCompatTitleChannel = rext.W(regexp.MustCompile("^\\[(?P<channel>[A-Za-z\\-0-9_ ]+)] (?P<title>(.|\\r|\\n)+)$"))
 
 type Application struct {
 	Config           scn.Config
@@ -279,9 +273,24 @@ func (app *Application) NormalizeUsername(v string) string {
 }
 
 func (app *Application) DeliverMessage(ctx context.Context, user models.User, client models.Client, channel models.Channel, msg models.Message) (string, error) {
-	fcmDelivID, err := app.Pusher.SendNotification(ctx, user, client, channel, msg)
+	fcmDelivID, errCode, err := app.Pusher.SendNotification(ctx, user, client, channel, msg)
 	if err != nil {
 		log.Warn().Str("MessageID", msg.MessageID.String()).Str("ClientID", client.ClientID.String()).Err(err).Msg("FCM Delivery failed")
+
+		if errCode == "UNREGISTERED" {
+
+			log.Warn().Msg(fmt.Sprintf("Auto-Delete client %s of user %s (FCM is UNREGISTERED)", client.ClientID, user.UserID))
+
+			_, _ = simplectx.Run(ctx, func(ctx db.TxContext) (any, error) {
+				err = app.Database.Primary.DeleteClient(ctx, client.ClientID)
+				if err != nil {
+					log.Err(err).Str("ClientID", client.ClientID.String()).Msg("Failed to delete client")
+				}
+				return nil, nil
+			})
+
+		}
+
 		return "", err
 	}
 	return fcmDelivID, nil

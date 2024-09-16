@@ -95,3 +95,20 @@ func (sc *SimpleContext) RollbackTransaction() {
 	sc.transaction = nil
 	return
 }
+
+func Run[TResp any](outctx context.Context, f func(ctx db.TxContext) (TResp, error)) (TResp, error) {
+	sctx := CreateSimpleContext(outctx, nil)
+	defer sctx.Cancel()
+
+	res, err := f(sctx)
+	if err != nil {
+		return *new(TResp), err
+	}
+
+	err = sctx.CommitTransaction()
+	if err != nil {
+		return *new(TResp), err
+	}
+
+	return res, nil
+}

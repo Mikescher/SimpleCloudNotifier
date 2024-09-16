@@ -24,10 +24,10 @@ func (d *TestSink) Last() SinkData {
 	return d.Data[len(d.Data)-1]
 }
 
-func (d *TestSink) SendNotification(ctx context.Context, user models.User, client models.Client, channel models.Channel, msg models.Message) (string, error) {
+func (d *TestSink) SendNotification(ctx context.Context, user models.User, client models.Client, channel models.Channel, msg models.Message) (string, string, error) {
 	id, err := langext.NewHexUUID()
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	key := "TestSink[" + id + "]"
@@ -37,5 +37,5 @@ func (d *TestSink) SendNotification(ctx context.Context, user models.User, clien
 		Client:  client,
 	})
 
-	return key, nil
+	return key, "", nil
 }

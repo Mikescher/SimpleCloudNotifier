@@ -31,27 +31,13 @@ func (db *Database) CreateClient(ctx db.TxContext, userid models.UserID, ctype m
 	return entity, nil
 }
 
-func (db *Database) ClearFCMTokens(ctx db.TxContext, fcmtoken string) error {
-	tx, err := ctx.GetOrCreateTransaction(db)
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Exec(ctx, "DELETE FROM clients WHERE fcm_token = :fcm", sq.PP{"fcm": fcmtoken})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (db *Database) ListClients(ctx db.TxContext, userid models.UserID) ([]models.Client, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
 		return nil, err
 	}
 
-	return sq.QueryAll[models.Client](ctx, tx, "SELECT * FROM clients WHERE user_id = :uid ORDER BY clients.timestamp_created DESC, clients.client_id ASC", sq.PP{"uid": userid}, sq.SModeExtended, sq.Safe)
+	return sq.QueryAll[models.Client](ctx, tx, "SELECT * FROM clients WHERE deleted=0 AND user_id = :uid ORDER BY clients.timestamp_created DESC, clients.client_id ASC", sq.PP{"uid": userid}, sq.SModeExtended, sq.Safe)
 }
 
 func (db *Database) GetClient(ctx db.TxContext, userid models.UserID, clientid models.ClientID) (models.Client, error) {
@@ -60,7 +46,7 @@ func (db *Database) GetClient(ctx db.TxContext, userid models.UserID, clientid m
 		return models.Client{}, err
 	}
 
-	return sq.QuerySingle[models.Client](ctx, tx, "SELECT * FROM clients WHERE user_id = :uid AND client_id = :cid LIMIT 1", sq.PP{
+	return sq.QuerySingle[models.Client](ctx, tx, "SELECT * FROM clients WHERE deleted=0 AND user_id = :uid AND client_id = :cid LIMIT 1", sq.PP{
 		"uid": userid,
 		"cid": clientid,
 	}, sq.SModeExtended, sq.Safe)
@@ -72,7 +58,7 @@ func (db *Database) DeleteClient(ctx db.TxContext, clientid models.ClientID) err
 		return err
 	}
 
-	_, err = tx.Exec(ctx, "DELETE FROM clients WHERE client_id = :cid", sq.PP{"cid": clientid})
+	_, err = tx.Exec(ctx, "UPDATE clients SET deleted=1 WHERE deleted=0 AND client_id = :cid", sq.PP{"cid": clientid})
 	if err != nil {
 		return err
 	}
@@ -86,7 +72,7 @@ func (db *Database) DeleteClientsByFCM(ctx db.TxContext, fcmtoken string) error 
 		return err
 	}
 
-	_, err = tx.Exec(ctx, "DELETE FROM clients WHERE fcm_token = :fcm", sq.PP{"fcm": fcmtoken})
+	_, err = tx.Exec(ctx, "UPDATE clients SET deleted=1 WHERE deleted=0 AND fcm_token = :fcm", sq.PP{"fcm": fcmtoken})
 	if err != nil {
 		return err
 	}
@@ -100,7 +86,7 @@ func (db *Database) UpdateClientFCMToken(ctx db.TxContext, clientid models.Clien
 		return err
 	}
 
-	_, err = tx.Exec(ctx, "UPDATE clients SET fcm_token = :vvv WHERE client_id = :cid", sq.PP{
+	_, err = tx.Exec(ctx, "UPDATE clients SET fcm_token = :vvv WHERE deleted=0 AND client_id = :cid", sq.PP{
 		"vvv": fcmtoken,
 		"cid": clientid,
 	})
@@ -117,7 +103,7 @@ func (db *Database) UpdateClientAgentModel(ctx db.TxContext, clientid models.Cli
 		return err
 	}
 
-	_, err = tx.Exec(ctx, "UPDATE clients SET agent_model = :vvv WHERE client_id = :cid", sq.PP{
+	_, err = tx.Exec(ctx, "UPDATE clients SET agent_model = :vvv WHERE deleted=0 AND client_id = :cid", sq.PP{
 		"vvv": agentModel,
 		"cid": clientid,
 	})
@@ -134,7 +120,7 @@ func (db *Database) UpdateClientAgentVersion(ctx db.TxContext, clientid models.C
 		return err
 	}
 
-	_, err = tx.Exec(ctx, "UPDATE clients SET agent_version = :vvv WHERE client_id = :cid", sq.PP{
+	_, err = tx.Exec(ctx, "UPDATE clients SET agent_version = :vvv WHERE deleted=0 AND client_id = :cid", sq.PP{
 		"vvv": agentVersion,
 		"cid": clientid,
 	})
@@ -151,7 +137,7 @@ func (db *Database) UpdateClientDescriptionName(ctx db.TxContext, clientid model
 		return err
 	}
 
-	_, err = tx.Exec(ctx, "UPDATE clients SET name = :vvv WHERE client_id = :cid", sq.PP{
+	_, err = tx.Exec(ctx, "UPDATE clients SET name = :vvv WHERE deleted=0 AND client_id = :cid", sq.PP{
 		"vvv": descriptionName,
 		"cid": clientid,
 	})

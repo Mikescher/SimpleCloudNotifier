@@ -80,7 +80,7 @@ func (h APIHandler) CreateUser(pctx ginext.PreContext) ginext.HTTPResponse {
 		sendKey := h.app.GenerateRandomAuthKey()
 		adminKey := h.app.GenerateRandomAuthKey()
 
-		err := h.database.ClearFCMTokens(ctx, b.FCMToken)
+		err := h.database.DeleteClientsByFCM(ctx, b.FCMToken)
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to clear existing fcm tokens", err)
 		}

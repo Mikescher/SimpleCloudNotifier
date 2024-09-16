@@ -53,7 +53,7 @@ type Notification struct {
 	Priority int
 }
 
-func (fb FirebaseConnector) SendNotification(ctx context.Context, user models.User, client models.Client, channel models.Channel, msg models.Message) (string, error) {
+func (fb FirebaseConnector) SendNotification(ctx context.Context, user models.User, client models.Client, channel models.Channel, msg models.Message) (string, string, error) {
 
 	uri := "https://fcm.googleapis.com/v1/projects/" + fb.fbProject + "/messages:send"
 
@@ -100,18 +100,18 @@ func (fb FirebaseConnector) SendNotification(ctx context.Context, user models.Us
 
 	bytesBody, err := json.Marshal(gin.H{"message": jsonBody})
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	request, err := http.NewRequestWithContext(ctx, "POST", uri, bytes.NewBuffer(bytesBody))
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	tok, err := fb.auth.Token(ctx)
 	if err != nil {
 		log.Err(err).Msg("Refreshing FB token failed")
-		return "", err
+		return "", "", err
 	}
 
 	request.Header.Set("Authorization", "Bearer "+tok)
@@ -120,31 +120,53 @@ func (fb FirebaseConnector) SendNotification(ctx context.Context, user models.Us
 
 	response, err := fb.client.Do(request)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	defer func() { _ = response.Body.Close() }()
 
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		if bstr, err := io.ReadAll(response.Body); err == nil {
-			return "", errors.New(fmt.Sprintf("FCM-Request returned %d: %s", response.StatusCode, string(bstr)))
+
+			var errRespBody struct {
+				Error struct {
+					Code    int    `json:"code"`
+					Message string `json:"message"`
+					Status  string `json:"status"`
+					Details []struct {
+						AtType string `json:"@type"`
+						ECode  string `json:"errorCode"`
+					} `json:"details"`
+				} `json:"error"`
+			}
+
+			if err := json.Unmarshal(bstr, &errRespBody); err == nil {
+				for _, v := range errRespBody.Error.Details {
+					return "", v.ECode, errors.New(fmt.Sprintf("FCM-Request returned %d [UNREGISTERED]: %s", response.StatusCode, string(bstr)))
+				}
+			}
+
+			return "", "", errors.New(fmt.Sprintf("FCM-Request returned %d: %s", response.StatusCode, string(bstr)))
+
 		} else {
-			return "", errors.New(fmt.Sprintf("FCM-Request returned %d", response.StatusCode))
+
+			return "", "", errors.New(fmt.Sprintf("FCM-Request returned %d", response.StatusCode))
+
 		}
 	}
 
 	respBodyBin, err := io.ReadAll(response.Body)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	var respBody struct {
 		Name string `json:"name"`
 	}
 	if err := json.Unmarshal(respBodyBin, &respBody); err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	log.Info().Msg(fmt.Sprintf("Sucessfully pushed notification %s", msg.MessageID))
 
-	return respBody.Name, nil
+	return respBody.Name, "", nil
 }
