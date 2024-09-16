@@ -4,7 +4,6 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
-	"time"
 )
 
 func (db *Database) CreateClient(ctx db.TxContext, userid models.UserID, ctype models.ClientType, fcmToken string, agentModel string, agentVersion string, name *string) (models.Client, error) {
@@ -13,12 +12,12 @@ func (db *Database) CreateClient(ctx db.TxContext, userid models.UserID, ctype m
 		return models.Client{}, err
 	}
 
-	entity := models.ClientDB{
+	entity := models.Client{
 		ClientID:         models.NewClientID(),
 		UserID:           userid,
 		Type:             ctype,
 		FCMToken:         fcmToken,
-		TimestampCreated: time2DB(time.Now()),
+		TimestampCreated: models.NowSCNTime(),
 		AgentModel:       agentModel,
 		AgentVersion:     agentVersion,
 		Name:             name,
@@ -29,7 +28,7 @@ func (db *Database) CreateClient(ctx db.TxContext, userid models.UserID, ctype m
 		return models.Client{}, err
 	}
 
-	return entity.Model(), nil
+	return entity, nil
 }
 
 func (db *Database) ClearFCMTokens(ctx db.TxContext, fcmtoken string) error {
@@ -52,17 +51,7 @@ func (db *Database) ListClients(ctx db.TxContext, userid models.UserID) ([]model
 		return nil, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM clients WHERE user_id = :uid ORDER BY clients.timestamp_created DESC, clients.client_id ASC", sq.PP{"uid": userid})
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := models.DecodeClients(ctx, tx, rows)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return sq.QueryAll[models.Client](ctx, tx, "SELECT * FROM clients WHERE user_id = :uid ORDER BY clients.timestamp_created DESC, clients.client_id ASC", sq.PP{"uid": userid}, sq.SModeExtended, sq.Safe)
 }
 
 func (db *Database) GetClient(ctx db.TxContext, userid models.UserID, clientid models.ClientID) (models.Client, error) {
@@ -71,20 +60,10 @@ func (db *Database) GetClient(ctx db.TxContext, userid models.UserID, clientid m
 		return models.Client{}, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM clients WHERE user_id = :uid AND client_id = :cid LIMIT 1", sq.PP{
+	return sq.QuerySingle[models.Client](ctx, tx, "SELECT * FROM clients WHERE user_id = :uid AND client_id = :cid LIMIT 1", sq.PP{
 		"uid": userid,
 		"cid": clientid,
-	})
-	if err != nil {
-		return models.Client{}, err
-	}
-
-	client, err := models.DecodeClient(ctx, tx, rows)
-	if err != nil {
-		return models.Client{}, err
-	}
-
-	return client, nil
+	}, sq.SModeExtended, sq.Safe)
 }
 
 func (db *Database) DeleteClient(ctx db.TxContext, clientid models.ClientID) error {

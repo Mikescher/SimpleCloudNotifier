@@ -1,7 +1,6 @@
 package util
 
 import (
-	"blackforestbytes.com/simplecloudnotifier/api/ginext"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -13,7 +12,6 @@ func SetBufLogger() {
 	buflogger = &BufferWriter{cw: createConsoleWriter()}
 	log.Logger = createLogger(buflogger)
 	gin.SetMode(gin.ReleaseMode)
-	ginext.SuppressGinLogs = true
 }
 
 func ClearBufLogger(dump bool) {
@@ -24,7 +22,6 @@ func ClearBufLogger(dump bool) {
 	log.Logger = createLogger(createConsoleWriter())
 	buflogger = nil
 	gin.SetMode(gin.TestMode)
-	ginext.SuppressGinLogs = false
 	if !dump {
 		log.Info().Msgf("Suppressed %d logmessages / printf-statements", size)
 	}

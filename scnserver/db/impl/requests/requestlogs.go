@@ -8,18 +8,17 @@ import (
 	"time"
 )
 
-func (db *Database) InsertRequestLog(ctx context.Context, requestid models.RequestID, data models.RequestLog) (models.RequestLog, error) {
+func (db *Database) InsertRequestLog(ctx context.Context, requestid models.RequestID, entity models.RequestLog) (models.RequestLog, error) {
 
-	entity := data.DB()
 	entity.RequestID = requestid
-	entity.TimestampCreated = time2DB(time.Now())
+	entity.TimestampCreated = models.NowSCNTime()
 
 	_, err := sq.InsertSingle(ctx, db.db, "requests", entity)
 	if err != nil {
 		return models.RequestLog{}, err
 	}
 
-	return entity.Model(), nil
+	return entity, nil
 }
 
 func (db *Database) Cleanup(ctx context.Context, count int, duration time.Duration) (int64, error) {
@@ -73,12 +72,7 @@ func (db *Database) ListRequestLogs(ctx context.Context, filter models.RequestLo
 	prepParams["tokts"] = inTok.Timestamp
 	prepParams["tokid"] = inTok.Id
 
-	rows, err := db.db.Query(ctx, sqlQuery, prepParams)
-	if err != nil {
-		return nil, ct.CursorToken{}, err
-	}
-
-	data, err := models.DecodeRequestLogs(ctx, db.db, rows)
+	data, err := sq.QueryAll[models.RequestLog](ctx, db.db, sqlQuery, prepParams, sq.SModeExtended, sq.Safe)
 	if err != nil {
 		return nil, ct.CursorToken{}, err
 	}
@@ -86,7 +80,7 @@ func (db *Database) ListRequestLogs(ctx context.Context, filter models.RequestLo
 	if pageSize == nil || len(data) <= *pageSize {
 		return data, ct.End(), nil
 	} else {
-		outToken := ct.Normal(data[*pageSize-1].TimestampCreated, data[*pageSize-1].RequestID.String(), "DESC", filter.Hash())
+		outToken := ct.Normal(data[*pageSize-1].TimestampCreated.Time(), data[*pageSize-1].RequestID.String(), "DESC", filter.Hash())
 		return data[0:*pageSize], outToken, nil
 	}
 }

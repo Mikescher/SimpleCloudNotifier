@@ -3,10 +3,11 @@ package handler
 import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
+	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"errors"
-	"github.com/gin-gonic/gin"
+	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"net/http"
 )
 
@@ -18,38 +19,42 @@ import (
 //
 //	@Param		uid	path		string	true	"UserID"
 //
-//	@Success	200	{object}	models.UserPreviewJSON
+//	@Success	200	{object}	models.UserPreview
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	404	{object}	ginresp.apiError	"user not found"
 //	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/preview/users/{uid} [GET]
-func (h APIHandler) GetUserPreview(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) GetUserPreview(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	ctx, g, errResp := pctx.URI(&u).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionAny(); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, models.TLockRead, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	user, err := h.database.GetUser(ctx, u.UserID)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.USER_NOT_FOUND, "User not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query user", err)
-	}
+		if permResp := ctx.CheckPermissionAny(); permResp != nil {
+			return *permResp
+		}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, user.JSONPreview()))
+		user, err := h.database.GetUser(ctx, u.UserID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.USER_NOT_FOUND, "User not found", err)
+		}
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query user", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, user.JSONPreview()))
+
+	})
 }
 
 // GetChannelPreview swaggerdoc
@@ -60,38 +65,42 @@ func (h APIHandler) GetUserPreview(g *gin.Context) ginresp.HTTPResponse {
 //
 //	@Param		cid	path		string	true	"ChannelID"
 //
-//	@Success	200	{object}	models.ChannelPreviewJSON
+//	@Success	200	{object}	models.ChannelPreview
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	404	{object}	ginresp.apiError	"channel not found"
 //	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/preview/channels/{cid} [GET]
-func (h APIHandler) GetChannelPreview(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) GetChannelPreview(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		ChannelID models.ChannelID `uri:"cid" binding:"entityid"`
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	ctx, g, errResp := pctx.URI(&u).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionAny(); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, models.TLockRead, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	channel, err := h.database.GetChannelByID(ctx, u.ChannelID)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
-	}
+		if permResp := ctx.CheckPermissionAny(); permResp != nil {
+			return *permResp
+		}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, channel.JSONPreview()))
+		channel, err := h.database.GetChannelByID(ctx, u.ChannelID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
+		}
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, channel.Preview()))
+
+	})
 }
 
 // GetUserKeyPreview swaggerdoc
@@ -102,36 +111,40 @@ func (h APIHandler) GetChannelPreview(g *gin.Context) ginresp.HTTPResponse {
 //
 //	@Param		kid	path		string	true	"TokenKeyID"
 //
-//	@Success	200	{object}	models.KeyTokenPreviewJSON
+//	@Success	200	{object}	models.KeyTokenPreview
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	404	{object}	ginresp.apiError	"message not found"
 //	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/preview/keys/{kid} [GET]
-func (h APIHandler) GetUserKeyPreview(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) GetUserKeyPreview(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		KeyID models.KeyTokenID `uri:"kid" binding:"entityid"`
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	ctx, g, errResp := pctx.URI(&u).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionAny(); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, models.TLockRead, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	keytoken, err := h.database.GetKeyTokenByID(ctx, u.KeyID)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
-	}
+		if permResp := ctx.CheckPermissionAny(); permResp != nil {
+			return *permResp
+		}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, keytoken.JSONPreview()))
+		keytoken, err := h.database.GetKeyTokenByID(ctx, u.KeyID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.KEY_NOT_FOUND, "Key not found", err)
+		}
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query client", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, keytoken.Preview()))
+
+	})
 }

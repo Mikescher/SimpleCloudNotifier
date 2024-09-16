@@ -2,22 +2,19 @@ package logic
 
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
-	"blackforestbytes.com/simplecloudnotifier/api/apierr"
-	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
+	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/db/simplectx"
 	"blackforestbytes.com/simplecloudnotifier/google"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"blackforestbytes.com/simplecloudnotifier/push"
 	"context"
 	"errors"
-	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
 	"github.com/rs/zerolog/log"
-	"gogs.mikescher.com/BlackForestBytes/goext/langext"
+	golock "github.com/viney-shih/go-lock"
+	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"gogs.mikescher.com/BlackForestBytes/goext/rext"
 	"gogs.mikescher.com/BlackForestBytes/goext/syncext"
 	"net"
-	"net/http"
 	"os"
 	"os/signal"
 	"regexp"
@@ -33,7 +30,7 @@ var rexCompatTitleChannel = rext.W(regexp.MustCompile("^\\[(?P<channel>[A-Za-z\\
 
 type Application struct {
 	Config           scn.Config
-	Gin              *gin.Engine
+	Gin              *ginext.GinWrapper
 	Database         *DBPool
 	Pusher           push.NotificationClient
 	AndroidPublisher google.AndroidPublisherClient
@@ -42,18 +39,20 @@ type Application struct {
 	Port             string
 	IsRunning        *syncext.AtomicBool
 	RequestLogQueue  chan models.RequestLog
+	MainDatabaseLock golock.RWMutex
 }
 
 func NewApp(db *DBPool) *Application {
 	return &Application{
-		Database:        db,
-		stopChan:        make(chan bool),
-		IsRunning:       syncext.NewAtomicBool(false),
-		RequestLogQueue: make(chan models.RequestLog, 1024),
+		Database:         db,
+		stopChan:         make(chan bool),
+		IsRunning:        syncext.NewAtomicBool(false),
+		RequestLogQueue:  make(chan models.RequestLog, 1024),
+		MainDatabaseLock: golock.NewCASMutex(),
 	}
 }
 
-func (app *Application) Init(cfg scn.Config, g *gin.Engine, fb push.NotificationClient, apc google.AndroidPublisherClient, jobs []Job) {
+func (app *Application) Init(cfg scn.Config, g *ginext.GinWrapper, fb push.NotificationClient, apc google.AndroidPublisherClient, jobs []Job) {
 	app.Config = cfg
 	app.Gin = g
 	app.Pusher = fb
@@ -69,38 +68,17 @@ func (app *Application) Stop() {
 }
 
 func (app *Application) Run() {
-	httpserver := &http.Server{
-		Addr:    net.JoinHostPort(app.Config.ServerIP, app.Config.ServerPort),
-		Handler: app.Gin,
-	}
 
-	errChan := make(chan error)
+	// ================== START HTTP ==================
 
-	go func() {
+	addr := net.JoinHostPort(app.Config.ServerIP, app.Config.ServerPort)
 
-		ln, err := net.Listen("tcp", httpserver.Addr)
-		if err != nil {
-			errChan <- err
-			return
-		}
-
-		_, port, err := net.SplitHostPort(ln.Addr().String())
-		if err != nil {
-			errChan <- err
-			return
-		}
-
-		log.Info().Str("address", httpserver.Addr).Msg("HTTP-Server started on http://localhost:" + port)
-
+	errChan, httpserver := app.Gin.ListenAndServeHTTP(addr, func(port string) {
 		app.Port = port
+		app.IsRunning.Set(true)
+	})
 
-		app.IsRunning.Set(true) // the net.Listener a few lines above is at this point actually already buffering requests
-
-		errChan <- httpserver.Serve(ln)
-	}()
-
-	sigstop := make(chan os.Signal, 1)
-	signal.Notify(sigstop, os.Interrupt, syscall.SIGTERM)
+	// ================== START JOBS ==================
 
 	for _, job := range app.Jobs {
 		err := job.Start()
@@ -108,6 +86,11 @@ func (app *Application) Run() {
 			log.Fatal().Err(err).Msg("Failed to start job")
 		}
 	}
+
+	// ================== LISTEN FOR SIGNALS ==================
+
+	sigstop := make(chan os.Signal, 1)
+	signal.Notify(sigstop, os.Interrupt, syscall.SIGTERM)
 
 	select {
 	case <-sigstop:
@@ -127,7 +110,7 @@ func (app *Application) Run() {
 	case err := <-errChan:
 		log.Error().Err(err).Msg("HTTP-Server failed")
 
-	case _ = <-app.stopChan:
+	case <-app.stopChan:
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
@@ -142,20 +125,25 @@ func (app *Application) Run() {
 		}
 	}
 
+	// ================== STOP JOBS ==================
+
 	for _, job := range app.Jobs {
 		job.Stop()
 	}
 
-	log.Info().Msg("Manually stopped Jobs")
+	// ================== STOP DB ==================
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	err := app.Database.Stop(ctx)
-	if err != nil {
-		log.Info().Err(err).Msg("Error while stopping the database")
+	{
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		err := app.Database.Stop(ctx)
+		if err != nil {
+			log.Err(err).Msg("Failed to stop database")
+		}
 	}
+	log.Info().Msg("Stopped Databases")
 
-	log.Info().Msg("Manually closed database connection")
+	// ================== FINISH ==================
 
 	app.IsRunning.Set(false)
 }
@@ -219,77 +207,12 @@ func (app *Application) Migrate() error {
 	return app.Database.Migrate(ctx)
 }
 
-type RequestOptions struct {
-	IgnoreWrongContentType bool
-}
-
-func (app *Application) StartRequest(g *gin.Context, uri any, query any, body any, form any, opts ...RequestOptions) (*AppContext, *ginresp.HTTPResponse) {
-
-	ignoreWrongContentType := langext.ArrAny(opts, func(o RequestOptions) bool { return o.IgnoreWrongContentType })
-
-	if uri != nil {
-		if err := g.ShouldBindUri(uri); err != nil {
-			return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_URI_PARAM, "Failed to read uri", err))
-		}
-	}
-
-	if query != nil {
-		if err := g.ShouldBindQuery(query); err != nil {
-			return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Failed to read query", err))
-		}
-	}
-
-	if body != nil {
-		if g.ContentType() == "application/json" {
-			if err := g.ShouldBindJSON(body); err != nil {
-				return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Failed to read body", err))
-			}
-		} else {
-			if !ignoreWrongContentType {
-				return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "missing JSON body", nil))
-			}
-		}
-	}
-
-	if form != nil {
-		if g.ContentType() == "multipart/form-data" {
-			if err := g.ShouldBindWith(form, binding.Form); err != nil {
-				return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Failed to read multipart-form", err))
-			}
-		} else if g.ContentType() == "application/x-www-form-urlencoded" {
-			if err := g.ShouldBindWith(form, binding.Form); err != nil {
-				return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "Failed to read urlencoded-form", err))
-			}
-		} else {
-			if !ignoreWrongContentType {
-				return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "missing form body", nil))
-			}
-		}
-	}
-
-	ictx, cancel := context.WithTimeout(context.Background(), app.Config.RequestTimeout)
-	actx := CreateAppContext(app, g, ictx, cancel)
-
-	authheader := g.GetHeader("Authorization")
-
-	perm, err := app.getPermissions(actx, authheader)
-	if err != nil {
-		cancel()
-		return nil, langext.Ptr(ginresp.APIError(g, 400, apierr.PERM_QUERY_FAIL, "Failed to determine permissions", err))
-	}
-
-	actx.permissions = perm
-	g.Set("perm", perm)
-
-	return actx, nil
-}
-
 func (app *Application) NewSimpleTransactionContext(timeout time.Duration) *simplectx.SimpleContext {
 	ictx, cancel := context.WithTimeout(context.Background(), timeout)
 	return simplectx.CreateSimpleContext(ictx, cancel)
 }
 
-func (app *Application) getPermissions(ctx *AppContext, hdr string) (models.PermissionSet, error) {
+func (app *Application) getPermissions(ctx db.TxContext, hdr string) (models.PermissionSet, error) {
 	if hdr == "" {
 		return models.NewEmptyPermissions(), nil
 	}

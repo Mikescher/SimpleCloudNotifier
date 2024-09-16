@@ -2,12 +2,11 @@ package handler
 
 import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
-	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	primarydb "blackforestbytes.com/simplecloudnotifier/db/impl/primary"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
-	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/dataext"
+	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"net/http"
 )
@@ -49,7 +48,7 @@ func NewMessageHandler(app *logic.Application) MessageHandler {
 //
 //	@Router			/     [POST]
 //	@Router			/send [POST]
-func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
+func (h MessageHandler) SendMessage(pctx ginext.PreContext) ginext.HTTPResponse {
 	type combined struct {
 		UserID        *models.UserID `json:"user_id"     form:"user_id"     example:"7725"                               `
 		KeyToken      *string        `json:"key"         form:"key"         example:"P3TNH8mvv14fm"                      `
@@ -78,30 +77,34 @@ func (h MessageHandler) SendMessage(g *gin.Context) ginresp.HTTPResponse {
 	var b combined
 	var q combined
 	var f combined
-	ctx, errResp := h.app.StartRequest(g, nil, &q, &b, &f, logic.RequestOptions{IgnoreWrongContentType: true})
+	ctx, g, errResp := pctx.Form(&f).Query(&q).Body(&b).IgnoreWrongContentType().Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	// query has highest prio, then form, then json
-	data := dataext.ObjectMerge(dataext.ObjectMerge(b, f), q)
+	return h.app.DoRequest(ctx, g, models.TLockReadWrite, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	okResp, errResp := h.app.SendMessage(g, ctx, data.UserID, data.KeyToken, data.Channel, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp, data.SenderName)
-	if errResp != nil {
-		return *errResp
-	} else {
-		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{
-			Success:        true,
-			ErrorID:        apierr.NO_ERROR,
-			ErrorHighlight: -1,
-			Message:        langext.Conditional(okResp.MessageIsOld, "Message already sent", "Message sent"),
-			SuppressSend:   okResp.MessageIsOld,
-			MessageCount:   okResp.User.MessagesSent,
-			Quota:          okResp.User.QuotaUsedToday(),
-			IsPro:          okResp.User.IsPro,
-			QuotaMax:       okResp.User.QuotaPerDay(),
-			SCNMessageID:   okResp.Message.MessageID,
-		}))
-	}
+		// query has highest prio, then form, then json
+		data := dataext.ObjectMerge(dataext.ObjectMerge(b, f), q)
+
+		okResp, errResp := h.app.SendMessage(g, ctx, data.UserID, data.KeyToken, data.Channel, data.Title, data.Content, data.Priority, data.UserMessageID, data.SendTimestamp, data.SenderName)
+		if errResp != nil {
+			return *errResp
+		} else {
+			return finishSuccess(ginext.JSON(http.StatusOK, response{
+				Success:        true,
+				ErrorID:        apierr.NO_ERROR,
+				ErrorHighlight: -1,
+				Message:        langext.Conditional(okResp.MessageIsOld, "Message already sent", "Message sent"),
+				SuppressSend:   okResp.MessageIsOld,
+				MessageCount:   okResp.User.MessagesSent,
+				Quota:          okResp.User.QuotaUsedToday(),
+				IsPro:          okResp.User.IsPro,
+				QuotaMax:       okResp.User.QuotaPerDay(),
+				SCNMessageID:   okResp.Message.MessageID,
+			}))
+		}
+
+	})
 }

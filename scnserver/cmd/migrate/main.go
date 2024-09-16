@@ -135,7 +135,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	dbold := sq.NewDB(_dbold)
+	dbold := sq.NewDB(_dbold, sq.DBOptions{})
 
 	rowsUser, err := dbold.Query(ctx, "SELECT * FROM users", sq.PP{})
 	if err != nil {

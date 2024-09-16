@@ -5,12 +5,13 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/db/dbtools"
 	"blackforestbytes.com/simplecloudnotifier/db/schema"
 	"blackforestbytes.com/simplecloudnotifier/db/simplectx"
+	"blackforestbytes.com/simplecloudnotifier/models"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/glebarez/go-sqlite"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
@@ -26,7 +27,16 @@ type Database struct {
 func NewPrimaryDatabase(cfg server.Config) (*Database, error) {
 	conf := cfg.DBMain
 
-	url := fmt.Sprintf("file:%s?_journal=%s&_timeout=%d&_fk=%s&_busy_timeout=%d", conf.File, conf.Journal, conf.Timeout.Milliseconds(), langext.FormatBool(conf.CheckForeignKeys, "true", "false"), conf.BusyTimeout.Milliseconds())
+	url := fmt.Sprintf("file:%s?_pragma=journal_mode(%s)&_pragma=timeout(%d)&_pragma=foreign_keys(%s)&_pragma=busy_timeout(%d)",
+		conf.File,
+		conf.Journal,
+		conf.Timeout.Milliseconds(),
+		langext.FormatBool(conf.CheckForeignKeys, "true", "false"),
+		conf.BusyTimeout.Milliseconds())
+
+	if !langext.InArray("sqlite3", sql.Drivers()) {
+		sqlite.RegisterAsSQLITE3()
+	}
 
 	xdb, err := sqlx.Open("sqlite3", url)
 	if err != nil {
@@ -42,7 +52,8 @@ func NewPrimaryDatabase(cfg server.Config) (*Database, error) {
 		xdb.SetConnMaxIdleTime(60 * time.Minute)
 	}
 
-	qqdb := sq.NewDB(xdb, sq.DBOptions{})
+	qqdb := sq.NewDB(xdb, sq.DBOptions{RegisterDefaultConverter: langext.PTrue, RegisterCommentTrimmer: langext.PTrue})
+	models.RegisterConverter(qqdb)
 
 	if conf.EnableLogger {
 		qqdb.AddListener(dbtools.DBLogger{})

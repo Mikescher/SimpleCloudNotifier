@@ -3,9 +3,11 @@ package main
 import (
 	"blackforestbytes.com/simplecloudnotifier/db/schema"
 	"context"
+	"database/sql"
 	"fmt"
-	"github.com/mattn/go-sqlite3"
+	"github.com/glebarez/go-sqlite"
 	"gogs.mikescher.com/BlackForestBytes/goext/exerr"
+	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
@@ -16,12 +18,14 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	sqlite3.Version() // ensure slite3 loaded
+	if !langext.InArray("sqlite3", sql.Drivers()) {
+		sqlite.RegisterAsSQLITE3()
+	}
 
 	fmt.Println()
 
 	for i := 2; i <= schema.PrimarySchemaVersion; i++ {
-		h0, err := sq.HashMattnSqliteSchema(ctx, schema.PrimarySchema[i].SQL)
+		h0, err := sq.HashGoSqliteSchema(ctx, schema.PrimarySchema[i].SQL)
 		if err != nil {
 			h0 = "ERR"
 		}
@@ -29,7 +33,7 @@ func main() {
 	}
 
 	for i := 1; i <= schema.RequestsSchemaVersion; i++ {
-		h0, err := sq.HashMattnSqliteSchema(ctx, schema.RequestsSchema[i].SQL)
+		h0, err := sq.HashGoSqliteSchema(ctx, schema.RequestsSchema[i].SQL)
 		if err != nil {
 			h0 = "ERR"
 		}
@@ -37,7 +41,7 @@ func main() {
 	}
 
 	for i := 1; i <= schema.LogsSchemaVersion; i++ {
-		h0, err := sq.HashMattnSqliteSchema(ctx, schema.LogsSchema[i].SQL)
+		h0, err := sq.HashGoSqliteSchema(ctx, schema.LogsSchema[i].SQL)
 		if err != nil {
 			h0 = "ERR"
 		}

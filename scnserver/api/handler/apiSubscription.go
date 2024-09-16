@@ -3,10 +3,11 @@ package handler
 import (
 	"blackforestbytes.com/simplecloudnotifier/api/apierr"
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
+	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"database/sql"
 	"errors"
-	"github.com/gin-gonic/gin"
+	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"net/http"
 	"strings"
@@ -47,7 +48,7 @@ import (
 //	@Failure		500			{object}	ginresp.apiError	"internal server error"
 //
 //	@Router			/api/v2/users/{uid}/subscriptions [GET]
-func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) ListUserSubscriptions(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
@@ -59,76 +60,78 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 		ChannelOwnerUserID *models.UserID `json:"channel_owner_user_id" form:"channel_owner_user_id"`
 	}
 	type response struct {
-		Subscriptions []models.SubscriptionJSON `json:"subscriptions"`
+		Subscriptions []models.Subscription `json:"subscriptions"`
 	}
 
 	var u uri
 	var q query
-	ctx, errResp := h.app.StartRequest(g, &u, &q, nil, nil)
+	ctx, g, errResp := pctx.URI(&u).Query(&q).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionUserRead(u.UserID); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, models.TLockRead, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	filter := models.SubscriptionFilter{}
-	filter.AnyUserID = langext.Ptr(u.UserID)
-
-	if q.Direction != nil {
-		if strings.EqualFold(*q.Direction, "incoming") {
-			filter.ChannelOwnerUserID = langext.Ptr([]models.UserID{u.UserID})
-		} else if strings.EqualFold(*q.Direction, "outgoing") {
-			filter.SubscriberUserID = langext.Ptr([]models.UserID{u.UserID})
-		} else if strings.EqualFold(*q.Direction, "both") {
-			// both
-		} else {
-			return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid value for param 'direction'", nil)
+		if permResp := ctx.CheckPermissionUserRead(u.UserID); permResp != nil {
+			return *permResp
 		}
-	}
 
-	if q.Confirmation != nil {
-		if strings.EqualFold(*q.Confirmation, "confirmed") {
-			filter.Confirmed = langext.PTrue
-		} else if strings.EqualFold(*q.Confirmation, "unconfirmed") {
-			filter.Confirmed = langext.PFalse
-		} else if strings.EqualFold(*q.Confirmation, "all") {
-			// both
-		} else {
-			return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid value for param 'confirmation'", nil)
+		filter := models.SubscriptionFilter{}
+		filter.AnyUserID = langext.Ptr(u.UserID)
+
+		if q.Direction != nil {
+			if strings.EqualFold(*q.Direction, "incoming") {
+				filter.ChannelOwnerUserID = langext.Ptr([]models.UserID{u.UserID})
+			} else if strings.EqualFold(*q.Direction, "outgoing") {
+				filter.SubscriberUserID = langext.Ptr([]models.UserID{u.UserID})
+			} else if strings.EqualFold(*q.Direction, "both") {
+				// both
+			} else {
+				return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid value for param 'direction'", nil)
+			}
 		}
-	}
 
-	if q.External != nil {
-		if strings.EqualFold(*q.External, "true") {
-			filter.SubscriberIsChannelOwner = langext.PFalse
-		} else if strings.EqualFold(*q.External, "false") {
-			filter.SubscriberIsChannelOwner = langext.PTrue
-		} else if strings.EqualFold(*q.External, "all") {
-			// both
-		} else {
-			return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid value for param 'external'", nil)
+		if q.Confirmation != nil {
+			if strings.EqualFold(*q.Confirmation, "confirmed") {
+				filter.Confirmed = langext.PTrue
+			} else if strings.EqualFold(*q.Confirmation, "unconfirmed") {
+				filter.Confirmed = langext.PFalse
+			} else if strings.EqualFold(*q.Confirmation, "all") {
+				// both
+			} else {
+				return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid value for param 'confirmation'", nil)
+			}
 		}
-	}
 
-	if q.SubscriberUserID != nil {
-		filter.SubscriberUserID2 = langext.Ptr([]models.UserID{*q.SubscriberUserID})
-	}
+		if q.External != nil {
+			if strings.EqualFold(*q.External, "true") {
+				filter.SubscriberIsChannelOwner = langext.PFalse
+			} else if strings.EqualFold(*q.External, "false") {
+				filter.SubscriberIsChannelOwner = langext.PTrue
+			} else if strings.EqualFold(*q.External, "all") {
+				// both
+			} else {
+				return ginresp.APIError(g, 400, apierr.BINDFAIL_QUERY_PARAM, "Invalid value for param 'external'", nil)
+			}
+		}
 
-	if q.ChannelOwnerUserID != nil {
-		filter.ChannelOwnerUserID2 = langext.Ptr([]models.UserID{*q.ChannelOwnerUserID})
-	}
+		if q.SubscriberUserID != nil {
+			filter.SubscriberUserID2 = langext.Ptr([]models.UserID{*q.SubscriberUserID})
+		}
 
-	res, err := h.database.ListSubscriptions(ctx, filter)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
-	}
+		if q.ChannelOwnerUserID != nil {
+			filter.ChannelOwnerUserID2 = langext.Ptr([]models.UserID{*q.ChannelOwnerUserID})
+		}
 
-	jsonres := langext.ArrMap(res, func(v models.Subscription) models.SubscriptionJSON { return v.JSON() })
+		res, err := h.database.ListSubscriptions(ctx, filter)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
+		}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{Subscriptions: jsonres}))
+		return finishSuccess(ginext.JSON(http.StatusOK, response{Subscriptions: res}))
+
+	})
 }
 
 // ListChannelSubscriptions swaggerdoc
@@ -147,42 +150,44 @@ func (h APIHandler) ListUserSubscriptions(g *gin.Context) ginresp.HTTPResponse {
 //	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/users/{uid}/channels/{cid}/subscriptions [GET]
-func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) ListChannelSubscriptions(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID    models.UserID    `uri:"uid" binding:"entityid"`
 		ChannelID models.ChannelID `uri:"cid" binding:"entityid"`
 	}
 	type response struct {
-		Subscriptions []models.SubscriptionJSON `json:"subscriptions"`
+		Subscriptions []models.Subscription `json:"subscriptions"`
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	ctx, g, errResp := pctx.URI(&u).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionUserRead(u.UserID); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, models.TLockRead, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	_, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID, true)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
-	}
+		if permResp := ctx.CheckPermissionUserRead(u.UserID); permResp != nil {
+			return *permResp
+		}
 
-	clients, err := h.database.ListSubscriptions(ctx, models.SubscriptionFilter{AnyUserID: langext.Ptr(u.UserID), ChannelID: langext.Ptr([]models.ChannelID{u.ChannelID})})
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
-	}
+		_, err := h.database.GetChannel(ctx, u.UserID, u.ChannelID, true)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
+		}
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
+		}
 
-	res := langext.ArrMap(clients, func(v models.Subscription) models.SubscriptionJSON { return v.JSON() })
+		subs, err := h.database.ListSubscriptions(ctx, models.SubscriptionFilter{AnyUserID: langext.Ptr(u.UserID), ChannelID: langext.Ptr([]models.ChannelID{u.ChannelID})})
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscriptions", err)
+		}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, response{Subscriptions: res}))
+		return finishSuccess(ginext.JSON(http.StatusOK, response{Subscriptions: subs}))
+
+	})
 }
 
 // GetSubscription swaggerdoc
@@ -194,42 +199,46 @@ func (h APIHandler) ListChannelSubscriptions(g *gin.Context) ginresp.HTTPRespons
 //	@Param		uid	path		string	true	"UserID"
 //	@Param		sid	path		string	true	"SubscriptionID"
 //
-//	@Success	200	{object}	models.SubscriptionJSON
+//	@Success	200	{object}	models.Subscription
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	404	{object}	ginresp.apiError	"subscription not found"
 //	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/users/{uid}/subscriptions/{sid} [GET]
-func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) GetSubscription(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID         models.UserID         `uri:"uid" binding:"entityid"`
 		SubscriptionID models.SubscriptionID `uri:"sid" binding:"entityid"`
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	ctx, g, errResp := pctx.URI(&u).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionUserRead(u.UserID); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, models.TLockRead, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	subscription, err := h.database.GetSubscription(ctx, u.SubscriptionID)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_NOT_FOUND, "Subscription not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
-	}
-	if subscription.SubscriberUserID != u.UserID && subscription.ChannelOwnerUserID != u.UserID {
-		return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_USER_MISMATCH, "Subscription not found", nil)
-	}
+		if permResp := ctx.CheckPermissionUserRead(u.UserID); permResp != nil {
+			return *permResp
+		}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, subscription.JSON()))
+		subscription, err := h.database.GetSubscription(ctx, u.SubscriptionID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_NOT_FOUND, "Subscription not found", err)
+		}
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
+		}
+		if subscription.SubscriberUserID != u.UserID && subscription.ChannelOwnerUserID != u.UserID {
+			return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_USER_MISMATCH, "Subscription not found", nil)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, subscription))
+
+	})
 }
 
 // CancelSubscription swaggerdoc
@@ -241,47 +250,51 @@ func (h APIHandler) GetSubscription(g *gin.Context) ginresp.HTTPResponse {
 //	@Param		uid	path		string	true	"UserID"
 //	@Param		sid	path		string	true	"SubscriptionID"
 //
-//	@Success	200	{object}	models.SubscriptionJSON
+//	@Success	200	{object}	models.Subscription
 //	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	404	{object}	ginresp.apiError	"subscription not found"
 //	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/users/{uid}/subscriptions/{sid} [DELETE]
-func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) CancelSubscription(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID         models.UserID         `uri:"uid" binding:"entityid"`
 		SubscriptionID models.SubscriptionID `uri:"sid" binding:"entityid"`
 	}
 
 	var u uri
-	ctx, errResp := h.app.StartRequest(g, &u, nil, nil, nil)
+	ctx, g, errResp := pctx.URI(&u).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, models.TLockReadWrite, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	subscription, err := h.database.GetSubscription(ctx, u.SubscriptionID)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_NOT_FOUND, "Subscription not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
-	}
-	if subscription.SubscriberUserID != u.UserID && subscription.ChannelOwnerUserID != u.UserID {
-		return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_USER_MISMATCH, "Subscription not found", nil)
-	}
+		if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+			return *permResp
+		}
 
-	err = h.database.DeleteSubscription(ctx, u.SubscriptionID)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete subscription", err)
-	}
+		subscription, err := h.database.GetSubscription(ctx, u.SubscriptionID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_NOT_FOUND, "Subscription not found", err)
+		}
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
+		}
+		if subscription.SubscriberUserID != u.UserID && subscription.ChannelOwnerUserID != u.UserID {
+			return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_USER_MISMATCH, "Subscription not found", nil)
+		}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, subscription.JSON()))
+		err = h.database.DeleteSubscription(ctx, u.SubscriptionID)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to delete subscription", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, subscription))
+
+	})
 }
 
 // CreateSubscription swaggerdoc
@@ -295,13 +308,13 @@ func (h APIHandler) CancelSubscription(g *gin.Context) ginresp.HTTPResponse {
 //	@Param			query_data	query		handler.CreateSubscription.query	false	" "
 //	@Param			post_data	body		handler.CreateSubscription.body		false	" "
 //
-//	@Success		200			{object}	models.SubscriptionJSON
+//	@Success		200			{object}	models.Subscription
 //	@Failure		400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure		401			{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure		500			{object}	ginresp.apiError	"internal server error"
 //
 //	@Router			/api/v2/users/{uid}/subscriptions [POST]
-func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) CreateSubscription(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
@@ -317,76 +330,80 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 	var u uri
 	var q query
 	var b body
-	ctx, errResp := h.app.StartRequest(g, &u, &q, &b, nil)
+	ctx, g, errResp := pctx.URI(&u).Query(&q).Body(&b).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, models.TLockReadWrite, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	var channel models.Channel
-
-	if b.ChannelOwnerUserID != nil && b.ChannelInternalName != nil && b.ChannelID == nil {
-
-		channelInternalName := h.app.NormalizeChannelInternalName(*b.ChannelInternalName)
-
-		outchannel, err := h.database.GetChannelByName(ctx, *b.ChannelOwnerUserID, channelInternalName)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
-		}
-		if outchannel == nil {
-			return ginresp.APIError(g, 400, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
+		if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+			return *permResp
 		}
 
-		channel = *outchannel
+		var channel models.Channel
 
-	} else if b.ChannelOwnerUserID == nil && b.ChannelInternalName == nil && b.ChannelID != nil {
+		if b.ChannelOwnerUserID != nil && b.ChannelInternalName != nil && b.ChannelID == nil {
 
-		outchannel, err := h.database.GetChannelByID(ctx, *b.ChannelID)
-		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
-		}
-		if outchannel == nil {
-			return ginresp.APIError(g, 400, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
-		}
+			channelInternalName := h.app.NormalizeChannelInternalName(*b.ChannelInternalName)
 
-		channel = *outchannel
-
-	} else {
-
-		return ginresp.APIError(g, 400, apierr.INVALID_BODY_PARAM, "Must either supply [channel_owner_user_id, channel_internal_name] or [channel_id]", nil)
-
-	}
-
-	if channel.OwnerUserID != u.UserID && (q.ChanSubscribeKey == nil || *q.ChanSubscribeKey != channel.SubscribeKey) {
-		return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
-	}
-
-	existingSub, err := h.database.GetSubscriptionBySubscriber(ctx, u.UserID, channel.ChannelID)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query existing subscription", err)
-	}
-	if existingSub != nil {
-		if !existingSub.Confirmed && channel.OwnerUserID == u.UserID {
-			err = h.database.UpdateSubscriptionConfirmed(ctx, existingSub.SubscriptionID, true)
+			outchannel, err := h.database.GetChannelByName(ctx, *b.ChannelOwnerUserID, channelInternalName)
 			if err != nil {
-				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update subscription", err)
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
 			}
-			existingSub.Confirmed = true
+			if outchannel == nil {
+				return ginresp.APIError(g, 400, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
+			}
+
+			channel = *outchannel
+
+		} else if b.ChannelOwnerUserID == nil && b.ChannelInternalName == nil && b.ChannelID != nil {
+
+			outchannel, err := h.database.GetChannelByID(ctx, *b.ChannelID)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query channel", err)
+			}
+			if outchannel == nil {
+				return ginresp.APIError(g, 400, apierr.CHANNEL_NOT_FOUND, "Channel not found", err)
+			}
+
+			channel = *outchannel
+
+		} else {
+
+			return ginresp.APIError(g, 400, apierr.INVALID_BODY_PARAM, "Must either supply [channel_owner_user_id, channel_internal_name] or [channel_id]", nil)
+
 		}
 
-		return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, existingSub.JSON()))
-	}
+		if channel.OwnerUserID != u.UserID && (q.ChanSubscribeKey == nil || *q.ChanSubscribeKey != channel.SubscribeKey) {
+			return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+		}
 
-	sub, err := h.database.CreateSubscription(ctx, u.UserID, channel, channel.OwnerUserID == u.UserID)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create subscription", err)
-	}
+		existingSub, err := h.database.GetSubscriptionBySubscriber(ctx, u.UserID, channel.ChannelID)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query existing subscription", err)
+		}
+		if existingSub != nil {
+			if !existingSub.Confirmed && channel.OwnerUserID == u.UserID {
+				err = h.database.UpdateSubscriptionConfirmed(ctx, existingSub.SubscriptionID, true)
+				if err != nil {
+					return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update subscription", err)
+				}
+				existingSub.Confirmed = true
+			}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, sub.JSON()))
+			return finishSuccess(ginext.JSON(http.StatusOK, existingSub))
+		}
+
+		sub, err := h.database.CreateSubscription(ctx, u.UserID, channel, channel.OwnerUserID == u.UserID)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to create subscription", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, sub))
+
+	})
 }
 
 // UpdateSubscription swaggerdoc
@@ -399,14 +416,14 @@ func (h APIHandler) CreateSubscription(g *gin.Context) ginresp.HTTPResponse {
 //	@Param		sid			path		string							true	"SubscriptionID"
 //	@Param		post_data	body		handler.UpdateSubscription.body	false	" "
 //
-//	@Success	200			{object}	models.SubscriptionJSON
+//	@Success	200			{object}	models.Subscription
 //	@Failure	400			{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
 //	@Failure	401			{object}	ginresp.apiError	"user is not authorized / has missing permissions"
 //	@Failure	404			{object}	ginresp.apiError	"subscription not found"
 //	@Failure	500			{object}	ginresp.apiError	"internal server error"
 //
 //	@Router		/api/v2/users/{uid}/subscriptions/{sid} [PATCH]
-func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
+func (h APIHandler) UpdateSubscription(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID         models.UserID         `uri:"uid" binding:"entityid"`
 		SubscriptionID models.SubscriptionID `uri:"sid" binding:"entityid"`
@@ -417,43 +434,47 @@ func (h APIHandler) UpdateSubscription(g *gin.Context) ginresp.HTTPResponse {
 
 	var u uri
 	var b body
-	ctx, errResp := h.app.StartRequest(g, &u, nil, &b, nil)
+	ctx, g, errResp := pctx.URI(&u).Body(&b).Start()
 	if errResp != nil {
 		return *errResp
 	}
 	defer ctx.Cancel()
 
-	if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
-		return *permResp
-	}
+	return h.app.DoRequest(ctx, g, models.TLockReadWrite, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-	userid := *ctx.GetPermissionUserID()
-
-	subscription, err := h.database.GetSubscription(ctx, u.SubscriptionID)
-	if errors.Is(err, sql.ErrNoRows) {
-		return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_NOT_FOUND, "Subscription not found", err)
-	}
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
-	}
-	if subscription.SubscriberUserID != u.UserID && subscription.ChannelOwnerUserID != u.UserID {
-		return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_USER_MISMATCH, "Subscription not found", nil)
-	}
-
-	if b.Confirmed != nil {
-		if subscription.ChannelOwnerUserID != userid {
-			return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+		if permResp := ctx.CheckPermissionUserAdmin(u.UserID); permResp != nil {
+			return *permResp
 		}
-		err = h.database.UpdateSubscriptionConfirmed(ctx, u.SubscriptionID, *b.Confirmed)
+
+		userid := *ctx.GetPermissionUserID()
+
+		subscription, err := h.database.GetSubscription(ctx, u.SubscriptionID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_NOT_FOUND, "Subscription not found", err)
+		}
 		if err != nil {
-			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update subscription", err)
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
 		}
-	}
+		if subscription.SubscriberUserID != u.UserID && subscription.ChannelOwnerUserID != u.UserID {
+			return ginresp.APIError(g, 404, apierr.SUBSCRIPTION_USER_MISMATCH, "Subscription not found", nil)
+		}
 
-	subscription, err = h.database.GetSubscription(ctx, u.SubscriptionID)
-	if err != nil {
-		return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
-	}
+		if b.Confirmed != nil {
+			if subscription.ChannelOwnerUserID != userid {
+				return ginresp.APIError(g, 401, apierr.USER_AUTH_FAILED, "You are not authorized for this action", nil)
+			}
+			err = h.database.UpdateSubscriptionConfirmed(ctx, u.SubscriptionID, *b.Confirmed)
+			if err != nil {
+				return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to update subscription", err)
+			}
+		}
 
-	return ctx.FinishSuccess(ginresp.JSON(http.StatusOK, subscription.JSON()))
+		subscription, err = h.database.GetSubscription(ctx, u.SubscriptionID)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query subscription", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, subscription))
+
+	})
 }

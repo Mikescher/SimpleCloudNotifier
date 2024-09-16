@@ -14,6 +14,7 @@ definitions:
     - 1151
     - 1152
     - 1153
+    - 1152
     - 1161
     - 1171
     - 1201
@@ -59,6 +60,7 @@ definitions:
     - BINDFAIL_QUERY_PARAM
     - BINDFAIL_BODY_PARAM
     - BINDFAIL_URI_PARAM
+    - BINDFAIL_HEADER_PARAM
     - INVALID_BODY_PARAM
     - INVALID_ENUM_VALUE
     - NO_TITLE
@@ -242,7 +244,7 @@ definitions:
     properties:
       messages:
         items:
-          $ref: '#/definitions/models.MessageJSON'
+          $ref: '#/definitions/models.Message'
         type: array
       next_page_token:
         type: string
@@ -253,28 +255,28 @@ definitions:
     properties:
       subscriptions:
         items:
-          $ref: '#/definitions/models.SubscriptionJSON'
+          $ref: '#/definitions/models.Subscription'
         type: array
     type: object
   handler.ListChannels.response:
     properties:
       channels:
         items:
-          $ref: '#/definitions/models.ChannelWithSubscriptionJSON'
+          $ref: '#/definitions/models.ChannelWithSubscription'
         type: array
     type: object
   handler.ListClients.response:
     properties:
       clients:
         items:
-          $ref: '#/definitions/models.ClientJSON'
+          $ref: '#/definitions/models.Client'
         type: array
     type: object
   handler.ListMessages.response:
     properties:
       messages:
         items:
-          $ref: '#/definitions/models.MessageJSON'
+          $ref: '#/definitions/models.Message'
         type: array
       next_page_token:
         type: string
@@ -285,14 +287,14 @@ definitions:
     properties:
       keys:
         items:
-          $ref: '#/definitions/models.KeyTokenJSON'
+          $ref: '#/definitions/models.KeyToken'
         type: array
     type: object
   handler.ListUserSubscriptions.response:
     properties:
       subscriptions:
         items:
-          $ref: '#/definitions/models.SubscriptionJSON'
+          $ref: '#/definitions/models.Subscription'
         type: array
     type: object
   handler.Register.response:
@@ -327,36 +329,19 @@ definitions:
     type: object
   handler.SendMessage.combined:
     properties:
-      channel:
-        example: test
-        type: string
       content:
-        example: This is a message
-        type: string
-      key:
-        example: P3TNH8mvv14fm
         type: string
       msg_id:
-        example: db8b0e6a-a08c-4646
         type: string
       priority:
-        enum:
-        - 0
-        - 1
-        - 2
-        example: 1
         type: integer
-      sender_name:
-        example: example-server
-        type: string
       timestamp:
-        example: 1669824037
         type: number
       title:
-        example: Hello World
         type: string
       user_id:
-        example: "7725"
+        type: integer
+      user_key:
         type: string
     type: object
   handler.SendMessage.response:
@@ -376,7 +361,7 @@ definitions:
       quota_max:
         type: integer
       scn_msg_id:
-        type: string
+        type: integer
       success:
         type: boolean
       suppress_send:
@@ -497,7 +482,7 @@ definitions:
       uri:
         type: string
     type: object
-  models.ChannelPreviewJSON:
+  models.ChannelPreview:
     properties:
       channel_id:
         type: string
@@ -510,7 +495,7 @@ definitions:
       owner_user_id:
         type: string
     type: object
-  models.ChannelWithSubscriptionJSON:
+  models.ChannelWithSubscription:
     properties:
       channel_id:
         type: string
@@ -528,13 +513,13 @@ definitions:
         description: can be nil, depending on endpoint
         type: string
       subscription:
-        $ref: '#/definitions/models.SubscriptionJSON'
+        $ref: '#/definitions/models.Subscription'
       timestamp_created:
         type: string
       timestamp_lastsent:
         type: string
     type: object
-  models.ClientJSON:
+  models.Client:
     properties:
       agent_model:
         type: string
@@ -584,7 +569,7 @@ definitions:
       usr_msg_id:
         type: string
     type: object
-  models.KeyTokenJSON:
+  models.KeyToken:
     properties:
       all_channels:
         type: boolean
@@ -601,47 +586,9 @@ definitions:
       owner_user_id:
         type: string
       permissions:
-        type: string
-      timestamp_created:
-        type: string
-      timestamp_lastused:
-        type: string
-    type: object
-  models.KeyTokenPreviewJSON:
-    properties:
-      all_channels:
-        type: boolean
-      channels:
         items:
-          type: string
+          $ref: '#/definitions/models.TokenPerm'
         type: array
-      keytoken_id:
-        type: string
-      name:
-        type: string
-      owner_user_id:
-        type: string
-      permissions:
-        type: string
-    type: object
-  models.KeyTokenWithTokenJSON:
-    properties:
-      all_channels:
-        type: boolean
-      channels:
-        items:
-          type: string
-        type: array
-      keytoken_id:
-        type: string
-      messages_sent:
-        type: integer
-      name:
-        type: string
-      owner_user_id:
-        type: string
-      permissions:
-        type: string
       timestamp_created:
         type: string
       timestamp_lastused:
@@ -649,7 +596,24 @@ definitions:
       token:
         type: string
     type: object
-  models.MessageJSON:
+  models.KeyTokenPreview:
+    properties:
+      all_channels:
+        type: boolean
+      channels:
+        items:
+          type: string
+        type: array
+      keytoken_id:
+        type: string
+      name:
+        type: string
+      owner_user_id:
+        type: string
+      permissions:
+        type: string
+    type: object
+  models.Message:
     properties:
       channel_id:
         type: string
@@ -666,6 +630,8 @@ definitions:
       sender_name:
         type: string
       sender_user_id:
+        description: user that sent the message (this is also the owner of the channel
+          that contains it)
         type: string
       timestamp:
         type: string
@@ -678,7 +644,7 @@ definitions:
       usr_message_id:
         type: string
     type: object
-  models.SubscriptionJSON:
+  models.Subscription:
     properties:
       channel_id:
         type: string
@@ -695,7 +661,24 @@ definitions:
       timestamp_created:
         type: string
     type: object
-  models.UserJSON:
+  models.TokenPerm:
+    enum:
+    - A
+    - CR
+    - CS
+    - UR
+    type: string
+    x-enum-comments:
+      PermAdmin: Edit userdata (+ includes all other permissions)
+      PermChannelRead: Read messages
+      PermChannelSend: Send messages
+      PermUserRead: Read userdata
+    x-enum-varnames:
+    - PermAdmin
+    - PermChannelRead
+    - PermChannelSend
+    - PermUserRead
+  models.User:
     properties:
       default_channel:
         type: string
@@ -734,13 +717,20 @@ definitions:
       username:
         type: string
     type: object
-  models.UserJSONWithClientsAndKeys:
+  models.UserPreview:
+    properties:
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  models.UserWithClientsAndKeys:
     properties:
       admin_key:
         type: string
       clients:
         items:
-          $ref: '#/definitions/models.ClientJSON'
+          $ref: '#/definitions/models.Client'
         type: array
       default_channel:
         type: string
@@ -783,13 +773,6 @@ definitions:
       username:
         type: string
     type: object
-  models.UserPreviewJSON:
-    properties:
-      user_id:
-        type: string
-      username:
-        type: string
-    type: object
 host: simplecloudnotifier.de
 info:
   contact: {}
@@ -802,90 +785,52 @@ paths:
       description: All parameter can be set via query-parameter or the json body.
         Only UserID, UserKey and Title are required
       parameters:
-      - example: test
-        in: query
-        name: channel
-        type: string
-      - example: This is a message
-        in: query
+      - in: query
         name: content
         type: string
-      - example: P3TNH8mvv14fm
-        in: query
-        name: key
-        type: string
-      - example: db8b0e6a-a08c-4646
-        in: query
+      - in: query
         name: msg_id
         type: string
-      - enum:
-        - 0
-        - 1
-        - 2
-        example: 1
-        in: query
+      - in: query
         name: priority
         type: integer
-      - example: example-server
-        in: query
-        name: sender_name
-        type: string
-      - example: 1669824037
-        in: query
+      - in: query
         name: timestamp
         type: number
-      - example: Hello World
-        in: query
+      - in: query
         name: title
         type: string
-      - example: "7725"
-        in: query
+      - in: query
         name: user_id
+        type: integer
+      - in: query
+        name: user_key
         type: string
       - description: ' '
         in: body
         name: post_body
         schema:
           $ref: '#/definitions/handler.SendMessage.combined'
-      - example: test
-        in: formData
-        name: channel
-        type: string
-      - example: This is a message
-        in: formData
+      - in: formData
         name: content
         type: string
-      - example: P3TNH8mvv14fm
-        in: formData
-        name: key
-        type: string
-      - example: db8b0e6a-a08c-4646
-        in: formData
+      - in: formData
         name: msg_id
         type: string
-      - enum:
-        - 0
-        - 1
-        - 2
-        example: 1
-        in: formData
+      - in: formData
         name: priority
         type: integer
-      - example: example-server
-        in: formData
-        name: sender_name
-        type: string
-      - example: 1669824037
-        in: formData
+      - in: formData
         name: timestamp
         type: number
-      - example: Hello World
-        in: formData
+      - in: formData
         name: title
         type: string
-      - example: "7725"
-        in: formData
+      - in: formData
         name: user_id
+        type: integer
+      - in: formData
+        name: user_key
         type: string
       responses:
         "200":
@@ -1458,7 +1403,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.MessageJSON'
+            $ref: '#/definitions/models.Message'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1494,7 +1439,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.MessageJSON'
+            $ref: '#/definitions/models.Message'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1527,7 +1472,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ChannelPreviewJSON'
+            $ref: '#/definitions/models.ChannelPreview'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1561,7 +1506,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.KeyTokenPreviewJSON'
+            $ref: '#/definitions/models.KeyTokenPreview'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1595,7 +1540,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.UserPreviewJSON'
+            $ref: '#/definitions/models.UserPreview'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1629,7 +1574,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.UserJSONWithClientsAndKeys'
+            $ref: '#/definitions/models.UserWithClientsAndKeys'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1654,7 +1599,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.UserJSON'
+            $ref: '#/definitions/models.User'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1697,7 +1642,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.UserJSON'
+            $ref: '#/definitions/models.User'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1780,7 +1725,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ChannelWithSubscriptionJSON'
+            $ref: '#/definitions/models.ChannelWithSubscription'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1818,7 +1763,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ChannelWithSubscriptionJSON'
+            $ref: '#/definitions/models.ChannelWithSubscription'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -1871,7 +1816,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ChannelWithSubscriptionJSON'
+            $ref: '#/definitions/models.ChannelWithSubscription'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2030,7 +1975,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ClientJSON'
+            $ref: '#/definitions/models.Client'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2064,7 +2009,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ClientJSON'
+            $ref: '#/definitions/models.Client'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2101,7 +2046,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ClientJSON'
+            $ref: '#/definitions/models.Client'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2149,7 +2094,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ClientJSON'
+            $ref: '#/definitions/models.Client'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2221,7 +2166,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.KeyTokenJSON'
+            $ref: '#/definitions/models.KeyToken'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2260,7 +2205,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.KeyTokenJSON'
+            $ref: '#/definitions/models.KeyToken'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2299,7 +2244,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.KeyTokenJSON'
+            $ref: '#/definitions/models.KeyToken'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2341,7 +2286,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.KeyTokenJSON'
+            $ref: '#/definitions/models.KeyToken'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2381,7 +2326,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.KeyTokenWithTokenJSON'
+            $ref: '#/definitions/models.KeyToken'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2483,7 +2428,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.SubscriptionJSON'
+            $ref: '#/definitions/models.Subscription'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2517,7 +2462,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.SubscriptionJSON'
+            $ref: '#/definitions/models.Subscription'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2554,7 +2499,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.SubscriptionJSON'
+            $ref: '#/definitions/models.Subscription'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2596,7 +2541,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.SubscriptionJSON'
+            $ref: '#/definitions/models.Subscription'
         "400":
           description: supplied values/parameters cannot be parsed / are invalid
           schema:
@@ -2685,90 +2630,52 @@ paths:
       description: All parameter can be set via query-parameter or the json body.
         Only UserID, UserKey and Title are required
       parameters:
-      - example: test
-        in: query
-        name: channel
-        type: string
-      - example: This is a message
-        in: query
+      - in: query
         name: content
         type: string
-      - example: P3TNH8mvv14fm
-        in: query
-        name: key
-        type: string
-      - example: db8b0e6a-a08c-4646
-        in: query
+      - in: query
         name: msg_id
         type: string
-      - enum:
-        - 0
-        - 1
-        - 2
-        example: 1
-        in: query
+      - in: query
         name: priority
         type: integer
-      - example: example-server
-        in: query
-        name: sender_name
-        type: string
-      - example: 1669824037
-        in: query
+      - in: query
         name: timestamp
         type: number
-      - example: Hello World
-        in: query
+      - in: query
         name: title
         type: string
-      - example: "7725"
-        in: query
+      - in: query
         name: user_id
+        type: integer
+      - in: query
+        name: user_key
         type: string
       - description: ' '
         in: body
         name: post_body
         schema:
           $ref: '#/definitions/handler.SendMessage.combined'
-      - example: test
-        in: formData
-        name: channel
-        type: string
-      - example: This is a message
-        in: formData
+      - in: formData
         name: content
         type: string
-      - example: P3TNH8mvv14fm
-        in: formData
-        name: key
-        type: string
-      - example: db8b0e6a-a08c-4646
-        in: formData
+      - in: formData
         name: msg_id
         type: string
-      - enum:
-        - 0
-        - 1
-        - 2
-        example: 1
-        in: formData
+      - in: formData
         name: priority
         type: integer
-      - example: example-server
-        in: formData
-        name: sender_name
-        type: string
-      - example: 1669824037
-        in: formData
+      - in: formData
         name: timestamp
         type: number
-      - example: Hello World
-        in: formData
+      - in: formData
         name: title
         type: string
-      - example: "7725"
-        in: formData
+      - in: formData
         name: user_id
+        type: integer
+      - in: formData
+        name: user_key
         type: string
       responses:
         "200":
@@ -2801,85 +2708,47 @@ paths:
       description: All parameter can be set via query-parameter or form-data body.
         Only UserID, UserKey and Title are required
       parameters:
-      - example: test
-        in: query
-        name: channel
-        type: string
-      - example: This is a message
-        in: query
+      - in: query
         name: content
         type: string
-      - example: P3TNH8mvv14fm
-        in: query
-        name: key
-        type: string
-      - example: db8b0e6a-a08c-4646
-        in: query
+      - in: query
         name: msg_id
         type: string
-      - enum:
-        - 0
-        - 1
-        - 2
-        example: 1
-        in: query
+      - in: query
         name: priority
         type: integer
-      - example: example-server
-        in: query
-        name: sender_name
-        type: string
-      - example: 1669824037
-        in: query
+      - in: query
         name: timestamp
         type: number
-      - example: Hello World
-        in: query
+      - in: query
         name: title
         type: string
-      - example: "7725"
-        in: query
+      - in: query
         name: user_id
+        type: integer
+      - in: query
+        name: user_key
         type: string
-      - example: test
-        in: formData
-        name: channel
-        type: string
-      - example: This is a message
-        in: formData
+      - in: formData
         name: content
         type: string
-      - example: P3TNH8mvv14fm
-        in: formData
-        name: key
-        type: string
-      - example: db8b0e6a-a08c-4646
-        in: formData
+      - in: formData
         name: msg_id
         type: string
-      - enum:
-        - 0
-        - 1
-        - 2
-        example: 1
-        in: formData
+      - in: formData
         name: priority
         type: integer
-      - example: example-server
-        in: formData
-        name: sender_name
-        type: string
-      - example: 1669824037
-        in: formData
+      - in: formData
         name: timestamp
         type: number
-      - example: Hello World
-        in: formData
+      - in: formData
         name: title
         type: string
-      - example: "7725"
-        in: formData
+      - in: formData
         name: user_id
+        type: integer
+      - in: formData
+        name: user_key
         type: string
       responses:
         "200":

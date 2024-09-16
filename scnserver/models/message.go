@@ -1,11 +1,8 @@
 package models
 
 import (
-	"context"
 	"fmt"
-	"github.com/jmoiron/sqlx"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
-	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
 
@@ -15,60 +12,45 @@ const (
 )
 
 type Message struct {
-	MessageID           MessageID
-	SenderUserID        UserID // user that sent the message (this is also the owner of the channel that contains it)
-	ChannelInternalName string
-	ChannelID           ChannelID
-	SenderName          *string
-	SenderIP            string
-	TimestampReal       time.Time
-	TimestampClient     *time.Time
-	Title               string
-	Content             *string
-	Priority            int
-	UserMessageID       *string
-	UsedKeyID           KeyTokenID
-	Deleted             bool
+	MessageID           MessageID  `db:"message_id"              json:"message_id"`
+	SenderUserID        UserID     `db:"sender_user_id"          json:"sender_user_id"` // user that sent the message (this is also the owner of the channel that contains it)
+	ChannelInternalName string     `db:"channel_internal_name"   json:"channel_internal_name"`
+	ChannelID           ChannelID  `db:"channel_id"              json:"channel_id"`
+	SenderName          *string    `db:"sender_name"             json:"sender_name"`
+	SenderIP            string     `db:"sender_ip"               json:"sender_ip"`
+	TimestampReal       SCNTime    `db:"timestamp_real"          json:"-"`
+	TimestampClient     *SCNTime   `db:"timestamp_client"        json:"-"`
+	Title               string     `db:"title"                   json:"title"`
+	Content             *string    `db:"content"                 json:"content"`
+	Priority            int        `db:"priority"                json:"priority"`
+	UserMessageID       *string    `db:"usr_message_id"          json:"usr_message_id"`
+	UsedKeyID           KeyTokenID `db:"used_key_id"             json:"used_key_id"`
+	Deleted             bool       `db:"deleted"                 json:"-"`
+
+	MessageExtra `db:"-"` // fields that are not in DB and are set on PreMarshal
 }
 
-func (m Message) FullJSON() MessageJSON {
-	return MessageJSON{
-		MessageID:           m.MessageID,
-		SenderUserID:        m.SenderUserID,
-		ChannelInternalName: m.ChannelInternalName,
-		ChannelID:           m.ChannelID,
-		SenderName:          m.SenderName,
-		SenderIP:            m.SenderIP,
-		Timestamp:           m.Timestamp().Format(time.RFC3339Nano),
-		Title:               m.Title,
-		Content:             m.Content,
-		Priority:            m.Priority,
-		UserMessageID:       m.UserMessageID,
-		UsedKeyID:           m.UsedKeyID,
-		Trimmed:             false,
-	}
+type MessageExtra struct {
+	Timestamp SCNTime `db:"-" json:"timestamp"`
+	Trimmed   bool    `db:"-" json:"trimmed"`
 }
 
-func (m Message) TrimmedJSON() MessageJSON {
-	return MessageJSON{
-		MessageID:           m.MessageID,
-		SenderUserID:        m.SenderUserID,
-		ChannelInternalName: m.ChannelInternalName,
-		ChannelID:           m.ChannelID,
-		SenderName:          m.SenderName,
-		SenderIP:            m.SenderIP,
-		Timestamp:           m.Timestamp().Format(time.RFC3339Nano),
-		Title:               m.Title,
-		Content:             m.TrimmedContent(),
-		Priority:            m.Priority,
-		UserMessageID:       m.UserMessageID,
-		UsedKeyID:           m.UsedKeyID,
-		Trimmed:             m.NeedsTrim(),
+func (u *Message) PreMarshal() Message {
+	u.MessageExtra.Timestamp = NewSCNTime(u.Timestamp())
+	return *u
+}
+
+func (m Message) Trim() Message {
+	r := m
+	if !r.Trimmed && r.NeedsTrim() {
+		r.Content = r.TrimmedContent()
+		r.MessageExtra.Trimmed = true
 	}
+	return r.PreMarshal()
 }
 
 func (m Message) Timestamp() time.Time {
-	return langext.Coalesce(m.TimestampClient, m.TimestampReal)
+	return langext.Coalesce(m.TimestampClient, m.TimestampReal).Time()
 }
 
 func (m Message) NeedsTrim() bool {
@@ -101,72 +83,4 @@ func (m Message) FormatNotificationTitle(user User, channel Channel) string {
 	}
 
 	return fmt.Sprintf("[%s] %s", channel.DisplayName, m.Title)
-}
-
-type MessageJSON struct {
-	MessageID           MessageID  `json:"message_id"`
-	SenderUserID        UserID     `json:"sender_user_id"`
-	ChannelInternalName string     `json:"channel_internal_name"`
-	ChannelID           ChannelID  `json:"channel_id"`
-	SenderName          *string    `json:"sender_name"`
-	SenderIP            string     `json:"sender_ip"`
-	Timestamp           string     `json:"timestamp"`
-	Title               string     `json:"title"`
-	Content             *string    `json:"content"`
-	Priority            int        `json:"priority"`
-	UserMessageID       *string    `json:"usr_message_id"`
-	UsedKeyID           KeyTokenID `json:"used_key_id"`
-	Trimmed             bool       `json:"trimmed"`
-}
-
-type MessageDB struct {
-	MessageID           MessageID  `db:"message_id"`
-	SenderUserID        UserID     `db:"sender_user_id"`
-	ChannelInternalName string     `db:"channel_internal_name"`
-	ChannelID           ChannelID  `db:"channel_id"`
-	SenderName          *string    `db:"sender_name"`
-	SenderIP            string     `db:"sender_ip"`
-	TimestampReal       int64      `db:"timestamp_real"`
-	TimestampClient     *int64     `db:"timestamp_client"`
-	Title               string     `db:"title"`
-	Content             *string    `db:"content"`
-	Priority            int        `db:"priority"`
-	UserMessageID       *string    `db:"usr_message_id"`
-	UsedKeyID           KeyTokenID `db:"used_key_id"`
-	Deleted             int        `db:"deleted"`
-}
-
-func (m MessageDB) Model() Message {
-	return Message{
-		MessageID:           m.MessageID,
-		SenderUserID:        m.SenderUserID,
-		ChannelInternalName: m.ChannelInternalName,
-		ChannelID:           m.ChannelID,
-		SenderName:          m.SenderName,
-		SenderIP:            m.SenderIP,
-		TimestampReal:       timeFromMilli(m.TimestampReal),
-		TimestampClient:     timeOptFromMilli(m.TimestampClient),
-		Title:               m.Title,
-		Content:             m.Content,
-		Priority:            m.Priority,
-		UserMessageID:       m.UserMessageID,
-		UsedKeyID:           m.UsedKeyID,
-		Deleted:             m.Deleted != 0,
-	}
-}
-
-func DecodeMessage(ctx context.Context, q sq.Queryable, r *sqlx.Rows) (Message, error) {
-	data, err := sq.ScanSingle[MessageDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
-	if err != nil {
-		return Message{}, err
-	}
-	return data.Model(), nil
-}
-
-func DecodeMessages(ctx context.Context, q sq.Queryable, r *sqlx.Rows) ([]Message, error) {
-	data, err := sq.ScanAll[MessageDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
-	if err != nil {
-		return nil, err
-	}
-	return langext.ArrMap(data, func(v MessageDB) Message { return v.Model() }), nil
 }

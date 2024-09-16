@@ -3,8 +3,6 @@ package primary
 import (
 	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/models"
-	"database/sql"
-	"errors"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"strings"
@@ -17,16 +15,16 @@ func (db *Database) CreateKeyToken(ctx db.TxContext, name string, owner models.U
 		return models.KeyToken{}, err
 	}
 
-	entity := models.KeyTokenDB{
+	entity := models.KeyToken{
 		KeyTokenID:        models.NewKeyTokenID(),
 		Name:              name,
-		TimestampCreated:  time2DB(time.Now()),
+		TimestampCreated:  models.NowSCNTime(),
 		TimestampLastUsed: nil,
 		OwnerUserID:       owner,
 		AllChannels:       allChannels,
-		Channels:          strings.Join(langext.ArrMap(channels, func(v models.ChannelID) string { return v.String() }), ";"),
+		Channels:          channels,
 		Token:             token,
-		Permissions:       permissions.String(),
+		Permissions:       permissions,
 		MessagesSent:      0,
 	}
 
@@ -35,7 +33,7 @@ func (db *Database) CreateKeyToken(ctx db.TxContext, name string, owner models.U
 		return models.KeyToken{}, err
 	}
 
-	return entity.Model(), nil
+	return entity, nil
 }
 
 func (db *Database) ListKeyTokens(ctx db.TxContext, ownerID models.UserID) ([]models.KeyToken, error) {
@@ -44,17 +42,7 @@ func (db *Database) ListKeyTokens(ctx db.TxContext, ownerID models.UserID) ([]mo
 		return nil, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM keytokens WHERE owner_user_id = :uid ORDER BY keytokens.timestamp_created DESC, keytokens.keytoken_id ASC", sq.PP{"uid": ownerID})
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := models.DecodeKeyTokens(ctx, tx, rows)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return sq.QueryAll[models.KeyToken](ctx, tx, "SELECT * FROM keytokens WHERE owner_user_id = :uid ORDER BY keytokens.timestamp_created DESC, keytokens.keytoken_id ASC", sq.PP{"uid": ownerID}, sq.SModeExtended, sq.Safe)
 }
 
 func (db *Database) GetKeyToken(ctx db.TxContext, userid models.UserID, keyTokenid models.KeyTokenID) (models.KeyToken, error) {
@@ -63,20 +51,10 @@ func (db *Database) GetKeyToken(ctx db.TxContext, userid models.UserID, keyToken
 		return models.KeyToken{}, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM keytokens WHERE owner_user_id = :uid AND keytoken_id = :cid LIMIT 1", sq.PP{
+	return sq.QuerySingle[models.KeyToken](ctx, tx, "SELECT * FROM keytokens WHERE owner_user_id = :uid AND keytoken_id = :cid LIMIT 1", sq.PP{
 		"uid": userid,
 		"cid": keyTokenid,
-	})
-	if err != nil {
-		return models.KeyToken{}, err
-	}
-
-	keyToken, err := models.DecodeKeyToken(ctx, tx, rows)
-	if err != nil {
-		return models.KeyToken{}, err
-	}
-
-	return keyToken, nil
+	}, sq.SModeExtended, sq.Safe)
 }
 
 func (db *Database) GetKeyTokenByID(ctx db.TxContext, keyTokenid models.KeyTokenID) (models.KeyToken, error) {
@@ -85,19 +63,7 @@ func (db *Database) GetKeyTokenByID(ctx db.TxContext, keyTokenid models.KeyToken
 		return models.KeyToken{}, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM keytokens WHERE keytoken_id = :cid LIMIT 1", sq.PP{
-		"cid": keyTokenid,
-	})
-	if err != nil {
-		return models.KeyToken{}, err
-	}
-
-	keyToken, err := models.DecodeKeyToken(ctx, tx, rows)
-	if err != nil {
-		return models.KeyToken{}, err
-	}
-
-	return keyToken, nil
+	return sq.QuerySingle[models.KeyToken](ctx, tx, "SELECT * FROM keytokens WHERE keytoken_id = :cid LIMIT 1", sq.PP{"cid": keyTokenid}, sq.SModeExtended, sq.Safe)
 }
 
 func (db *Database) GetKeyTokenByToken(ctx db.TxContext, key string) (*models.KeyToken, error) {
@@ -106,20 +72,7 @@ func (db *Database) GetKeyTokenByToken(ctx db.TxContext, key string) (*models.Ke
 		return nil, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM keytokens WHERE token = :key LIMIT 1", sq.PP{"key": key})
-	if err != nil {
-		return nil, err
-	}
-
-	user, err := models.DecodeKeyToken(ctx, tx, rows)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	return &user, nil
+	return sq.QuerySingleOpt[models.KeyToken](ctx, tx, "SELECT * FROM keytokens WHERE token = :key LIMIT 1", sq.PP{"key": key}, sq.SModeExtended, sq.Safe)
 }
 
 func (db *Database) DeleteKeyToken(ctx db.TxContext, keyTokenid models.KeyTokenID) error {
@@ -220,7 +173,7 @@ func (db *Database) IncKeyTokenMessageCounter(ctx db.TxContext, keyToken *models
 		return err
 	}
 
-	keyToken.TimestampLastUsed = &now
+	keyToken.TimestampLastUsed = models.NewSCNTimePtr(&now)
 	keyToken.MessagesSent += 1
 
 	return nil

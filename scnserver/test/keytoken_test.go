@@ -131,7 +131,7 @@ func TestTokenKeys(t *testing.T) {
 
 	msg1 := tt.RequestAuthGet[gin.H](t, data.AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages/%s", msg1s["scn_msg_id"]))
 
-	tt.AssertEqual(t, "AllChannels", key7.KeytokenId, msg1["used_key_id"])
+	tt.AssertEqual(t, "used_key_id", key7.KeytokenId, msg1["used_key_id"])
 
 	tt.RequestPostShouldFail(t, baseUrl, "/", gin.H{
 		"key":     key7.Token,

@@ -3,8 +3,6 @@ package primary
 import (
 	"blackforestbytes.com/simplecloudnotifier/db"
 	"blackforestbytes.com/simplecloudnotifier/models"
-	"database/sql"
-	"errors"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
 )
@@ -15,23 +13,7 @@ func (db *Database) GetChannelByName(ctx db.TxContext, userid models.UserID, cha
 		return nil, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM channels WHERE owner_user_id = :uid AND internal_name = :nam LIMIT 1", sq.PP{
-		"uid": userid,
-		"nam": chanName,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	channel, err := models.DecodeChannel(ctx, tx, rows)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	return &channel, nil
+	return sq.QuerySingleOpt[models.Channel](ctx, tx, "SELECT * FROM channels WHERE owner_user_id = :uid AND internal_name = :nam LIMIT 1", sq.PP{"uid": userid, "nam": chanName}, sq.SModeExtended, sq.Safe)
 }
 
 func (db *Database) GetChannelByID(ctx db.TxContext, chanid models.ChannelID) (*models.Channel, error) {
@@ -40,22 +22,7 @@ func (db *Database) GetChannelByID(ctx db.TxContext, chanid models.ChannelID) (*
 		return nil, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM channels WHERE channel_id = :cid LIMIT 1", sq.PP{
-		"cid": chanid,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	channel, err := models.DecodeChannel(ctx, tx, rows)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	return &channel, nil
+	return sq.QuerySingleOpt[models.Channel](ctx, tx, "SELECT * FROM channels WHERE channel_id = :cid LIMIT 1", sq.PP{"cid": chanid}, sq.SModeExtended, sq.Safe)
 }
 
 type CreateChanel struct {
@@ -72,14 +39,14 @@ func (db *Database) CreateChannel(ctx db.TxContext, userid models.UserID, dispNa
 		return models.Channel{}, err
 	}
 
-	entity := models.ChannelDB{
+	entity := models.Channel{
 		ChannelID:         models.NewChannelID(),
 		OwnerUserID:       userid,
 		DisplayName:       dispName,
 		InternalName:      intName,
 		SubscribeKey:      subscribeKey,
 		DescriptionName:   description,
-		TimestampCreated:  time2DB(time.Now()),
+		TimestampCreated:  models.NowSCNTime(),
 		TimestampLastSent: nil,
 		MessagesSent:      0,
 	}
@@ -89,7 +56,7 @@ func (db *Database) CreateChannel(ctx db.TxContext, userid models.UserID, dispNa
 		return models.Channel{}, err
 	}
 
-	return entity.Model(), nil
+	return entity, nil
 }
 
 func (db *Database) ListChannelsByOwner(ctx db.TxContext, userid models.UserID, subUserID models.UserID) ([]models.ChannelWithSubscription, error) {
@@ -100,20 +67,14 @@ func (db *Database) ListChannelsByOwner(ctx db.TxContext, userid models.UserID, 
 
 	order := " ORDER BY channels.timestamp_created ASC, channels.channel_id ASC "
 
-	rows, err := tx.Query(ctx, "SELECT channels.*, sub.* FROM channels LEFT JOIN subscriptions AS sub ON channels.channel_id = sub.channel_id AND sub.subscriber_user_id = :subuid WHERE owner_user_id = :ouid"+order, sq.PP{
+	sql := "SELECT channels.*, sub.* FROM channels LEFT JOIN subscriptions AS sub ON channels.channel_id = sub.channel_id AND sub.subscriber_user_id = :subuid WHERE owner_user_id = :ouid" + order
+
+	pp := sq.PP{
 		"ouid":   userid,
 		"subuid": subUserID,
-	})
-	if err != nil {
-		return nil, err
 	}
 
-	data, err := models.DecodeChannelsWithSubscription(ctx, tx, rows)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return sq.QueryAll[models.ChannelWithSubscription](ctx, tx, sql, pp, sq.SModeExtended, sq.Safe)
 }
 
 func (db *Database) ListChannelsBySubscriber(ctx db.TxContext, userid models.UserID, confirmed *bool) ([]models.ChannelWithSubscription, error) {
@@ -131,19 +92,13 @@ func (db *Database) ListChannelsBySubscriber(ctx db.TxContext, userid models.Use
 
 	order := " ORDER BY channels.timestamp_created ASC, channels.channel_id ASC "
 
-	rows, err := tx.Query(ctx, "SELECT channels.*, sub.* FROM channels LEFT JOIN subscriptions AS sub on channels.channel_id = sub.channel_id AND sub.subscriber_user_id = :subuid WHERE sub.subscription_id IS NOT NULL "+confCond+order, sq.PP{
+	sql := "SELECT channels.*, sub.* FROM channels LEFT JOIN subscriptions AS sub on channels.channel_id = sub.channel_id AND sub.subscriber_user_id = :subuid WHERE sub.subscription_id IS NOT NULL " + confCond + order
+
+	pp := sq.PP{
 		"subuid": userid,
-	})
-	if err != nil {
-		return nil, err
 	}
 
-	data, err := models.DecodeChannelsWithSubscription(ctx, tx, rows)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return sq.QueryAll[models.ChannelWithSubscription](ctx, tx, sql, pp, sq.SModeExtended, sq.Safe)
 }
 
 func (db *Database) ListChannelsByAccess(ctx db.TxContext, userid models.UserID, confirmed *bool) ([]models.ChannelWithSubscription, error) {
@@ -161,20 +116,14 @@ func (db *Database) ListChannelsByAccess(ctx db.TxContext, userid models.UserID,
 
 	order := " ORDER BY channels.timestamp_created ASC, channels.channel_id ASC "
 
-	rows, err := tx.Query(ctx, "SELECT channels.*, sub.* FROM channels LEFT JOIN subscriptions AS sub on channels.channel_id = sub.channel_id AND sub.subscriber_user_id = :subuid WHERE owner_user_id = :ouid "+confCond+order, sq.PP{
+	sql := "SELECT channels.*, sub.* FROM channels LEFT JOIN subscriptions AS sub on channels.channel_id = sub.channel_id AND sub.subscriber_user_id = :subuid WHERE owner_user_id = :ouid " + confCond + order
+
+	pp := sq.PP{
 		"ouid":   userid,
 		"subuid": userid,
-	})
-	if err != nil {
-		return nil, err
 	}
 
-	data, err := models.DecodeChannelsWithSubscription(ctx, tx, rows)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return sq.QueryAll[models.ChannelWithSubscription](ctx, tx, sql, pp, sq.SModeExtended, sq.Safe)
 }
 
 func (db *Database) GetChannel(ctx db.TxContext, userid models.UserID, channelid models.ChannelID, enforceOwner bool) (models.ChannelWithSubscription, error) {
@@ -198,17 +147,9 @@ func (db *Database) GetChannel(ctx db.TxContext, userid models.UserID, channelid
 		params["ouid"] = userid
 	}
 
-	rows, err := tx.Query(ctx, "SELECT "+selectors+" FROM channels "+join+" WHERE "+cond+" LIMIT 1", params)
-	if err != nil {
-		return models.ChannelWithSubscription{}, err
-	}
+	sql := "SELECT " + selectors + " FROM channels " + join + " WHERE " + cond + " LIMIT 1"
 
-	channel, err := models.DecodeChannelWithSubscription(ctx, tx, rows)
-	if err != nil {
-		return models.ChannelWithSubscription{}, err
-	}
-
-	return channel, nil
+	return sq.QuerySingle[models.ChannelWithSubscription](ctx, tx, sql, params, sq.SModeExtended, sq.Safe)
 }
 
 func (db *Database) IncChannelMessageCounter(ctx db.TxContext, channel *models.Channel) error {
@@ -228,7 +169,7 @@ func (db *Database) IncChannelMessageCounter(ctx db.TxContext, channel *models.C
 	}
 
 	channel.MessagesSent += 1
-	channel.TimestampLastSent = &now
+	channel.TimestampLastSent = models.NewSCNTimePtr(&now)
 
 	return nil
 }

@@ -4,7 +4,6 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/db"
 	ct "blackforestbytes.com/simplecloudnotifier/db/cursortoken"
 	"blackforestbytes.com/simplecloudnotifier/models"
-	"database/sql"
 	"errors"
 	"gogs.mikescher.com/BlackForestBytes/goext/sq"
 	"time"
@@ -16,20 +15,7 @@ func (db *Database) GetMessageByUserMessageID(ctx db.TxContext, usrMsgId string)
 		return nil, err
 	}
 
-	rows, err := tx.Query(ctx, "SELECT * FROM messages WHERE usr_message_id = :umid LIMIT 1", sq.PP{"umid": usrMsgId})
-	if err != nil {
-		return nil, err
-	}
-
-	msg, err := models.DecodeMessage(ctx, tx, rows)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	return &msg, nil
+	return sq.QuerySingleOpt[models.Message](ctx, tx, "SELECT * FROM messages WHERE usr_message_id = :umid LIMIT 1", sq.PP{"umid": usrMsgId}, sq.SModeExtended, sq.Safe)
 }
 
 func (db *Database) GetMessage(ctx db.TxContext, scnMessageID models.MessageID, allowDeleted bool) (models.Message, error) {
@@ -45,17 +31,7 @@ func (db *Database) GetMessage(ctx db.TxContext, scnMessageID models.MessageID, 
 		sqlcmd = "SELECT * FROM messages WHERE message_id = :mid AND deleted=0 LIMIT 1"
 	}
 
-	rows, err := tx.Query(ctx, sqlcmd, sq.PP{"mid": scnMessageID})
-	if err != nil {
-		return models.Message{}, err
-	}
-
-	msg, err := models.DecodeMessage(ctx, tx, rows)
-	if err != nil {
-		return models.Message{}, err
-	}
-
-	return msg, nil
+	return sq.QuerySingle[models.Message](ctx, tx, sqlcmd, sq.PP{"mid": scnMessageID}, sq.SModeExtended, sq.Safe)
 }
 
 func (db *Database) CreateMessage(ctx db.TxContext, senderUserID models.UserID, channel models.Channel, timestampSend *time.Time, title string, content *string, priority int, userMsgId *string, senderIP string, senderName *string, usedKeyID models.KeyTokenID) (models.Message, error) {
@@ -64,21 +40,22 @@ func (db *Database) CreateMessage(ctx db.TxContext, senderUserID models.UserID, 
 		return models.Message{}, err
 	}
 
-	entity := models.MessageDB{
+	entity := models.Message{
 		MessageID:           models.NewMessageID(),
 		SenderUserID:        senderUserID,
 		ChannelInternalName: channel.InternalName,
 		ChannelID:           channel.ChannelID,
 		SenderIP:            senderIP,
 		SenderName:          senderName,
-		TimestampReal:       time2DB(time.Now()),
-		TimestampClient:     time2DBOpt(timestampSend),
+		TimestampReal:       models.NowSCNTime(),
+		TimestampClient:     models.NewSCNTimePtr(timestampSend),
 		Title:               title,
 		Content:             content,
 		Priority:            priority,
 		UserMessageID:       userMsgId,
 		UsedKeyID:           usedKeyID,
-		Deleted:             bool2DB(false),
+		Deleted:             false,
+		MessageExtra:        models.MessageExtra{},
 	}
 
 	_, err = sq.InsertSingle(ctx, tx, "messages", entity)
@@ -86,7 +63,7 @@ func (db *Database) CreateMessage(ctx db.TxContext, senderUserID models.UserID, 
 		return models.Message{}, err
 	}
 
-	return entity.Model(), nil
+	return entity, nil
 }
 
 func (db *Database) DeleteMessage(ctx db.TxContext, messageID models.MessageID) error {
@@ -133,12 +110,7 @@ func (db *Database) ListMessages(ctx db.TxContext, filter models.MessageFilter, 
 	prepParams["tokts"] = inTok.Timestamp
 	prepParams["tokid"] = inTok.Id
 
-	rows, err := tx.Query(ctx, sqlQuery, prepParams)
-	if err != nil {
-		return nil, ct.CursorToken{}, err
-	}
-
-	data, err := models.DecodeMessages(ctx, tx, rows)
+	data, err := sq.QueryAll[models.Message](ctx, tx, sqlQuery, prepParams, sq.SModeExtended, sq.Safe)
 	if err != nil {
 		return nil, ct.CursorToken{}, err
 	}

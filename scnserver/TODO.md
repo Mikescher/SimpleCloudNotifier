@@ -10,11 +10,7 @@
 
  - ios purchase verification
 
- - (!) use goext.ginWrapper
-  
- - (!) use goext.exerr
-
- - use bfcodegen (enums+id)
+ - exerr.New | exerr.Wrap
 
 #### UNSURE
 
@@ -57,18 +53,11 @@
 
  - Pagination for ListChannels / ListSubscriptions / ListClients / ListChannelSubscriptions / ListUserSubscriptions
 
- - Use only single struct for DB|Model|JSON
-     * needs sq.Converter implementation
-     * needs to handle joined data
-     * rfctime.Time...
-
  - use job superclass (copy from isi/bnet/?), reduce duplicate code
 
  - admin panel (especially errors and requests)
 
  - cli app (?)
-
- - Use "github.com/glebarez/go-sqlite" instead of mattn3 (see ai-sig alarmserver)
 
 #### FUTURE
 

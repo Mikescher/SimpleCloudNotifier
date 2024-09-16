@@ -2,38 +2,63 @@ package models
 
 import (
 	scn "blackforestbytes.com/simplecloudnotifier"
-	"context"
-	"github.com/jmoiron/sqlx"
-	"gogs.mikescher.com/BlackForestBytes/goext/langext"
-	"gogs.mikescher.com/BlackForestBytes/goext/sq"
-	"time"
 )
 
 type User struct {
-	UserID            UserID
-	Username          *string
-	TimestampCreated  time.Time
-	TimestampLastRead *time.Time
-	TimestampLastSent *time.Time
-	MessagesSent      int
-	QuotaUsed         int
-	QuotaUsedDay      *string
-	IsPro             bool
-	ProToken          *string
+	UserID            UserID   `db:"user_id"              json:"user_id"`
+	Username          *string  `db:"username"             json:"username"`
+	TimestampCreated  SCNTime  `db:"timestamp_created"    json:"timestamp_created"`
+	TimestampLastRead *SCNTime `db:"timestamp_lastread"   json:"timestamp_lastread"`
+	TimestampLastSent *SCNTime `db:"timestamp_lastsent"   json:"timestamp_lastsent"`
+	MessagesSent      int      `db:"messages_sent"        json:"messages_sent"`
+	QuotaUsed         int      `db:"quota_used"           json:"quota_used"`
+	QuotaUsedDay      *string  `db:"quota_used_day"       json:"-"`
+	IsPro             bool     `db:"is_pro"               json:"is_pro"`
+	ProToken          *string  `db:"pro_token"            json:"-"`
+
+	UserExtra `db:"-"` // fields that are not in DB and are set on PreMarshal
 }
 
-func (u User) JSON() UserJSON {
-	return UserJSON{
-		UserID:                      u.UserID,
-		Username:                    u.Username,
-		TimestampCreated:            u.TimestampCreated.Format(time.RFC3339Nano),
-		TimestampLastRead:           timeOptFmt(u.TimestampLastRead, time.RFC3339Nano),
-		TimestampLastSent:           timeOptFmt(u.TimestampLastSent, time.RFC3339Nano),
-		MessagesSent:                u.MessagesSent,
-		QuotaUsed:                   u.QuotaUsedToday(),
+type UserExtra struct {
+	QuotaRemaining              int    `json:"quota_remaining"`
+	QuotaPerDay                 int    `json:"quota_max"`
+	DefaultChannel              string `json:"default_channel"`
+	MaxBodySize                 int    `json:"max_body_size"`
+	MaxTitleLength              int    `json:"max_title_length"`
+	DefaultPriority             int    `json:"default_priority"`
+	MaxChannelNameLength        int    `json:"max_channel_name_length"`
+	MaxChannelDescriptionLength int    `json:"max_channel_description_length"`
+	MaxSenderNameLength         int    `json:"max_sender_name_length"`
+	MaxUserMessageIDLength      int    `json:"max_user_message_id_length"`
+}
+
+type UserPreview struct {
+	UserID   UserID  `json:"user_id"`
+	Username *string `json:"username"`
+}
+
+type UserWithClientsAndKeys struct {
+	User
+	Clients  []Client `json:"clients"`
+	SendKey  string   `json:"send_key"`
+	ReadKey  string   `json:"read_key"`
+	AdminKey string   `json:"admin_key"`
+}
+
+func (u User) WithClients(clients []Client, ak string, sk string, rk string) UserWithClientsAndKeys {
+	return UserWithClientsAndKeys{
+		User:     u.PreMarshal(),
+		Clients:  clients,
+		SendKey:  sk,
+		ReadKey:  rk,
+		AdminKey: ak,
+	}
+}
+
+func (u *User) PreMarshal() User {
+	u.UserExtra = UserExtra{
 		QuotaPerDay:                 u.QuotaPerDay(),
 		QuotaRemaining:              u.QuotaRemainingToday(),
-		IsPro:                       u.IsPro,
 		DefaultChannel:              u.DefaultChannel(),
 		MaxBodySize:                 u.MaxContentLength(),
 		MaxTitleLength:              u.MaxTitleLength(),
@@ -43,16 +68,7 @@ func (u User) JSON() UserJSON {
 		MaxSenderNameLength:         u.MaxSenderNameLength(),
 		MaxUserMessageIDLength:      u.MaxUserMessageIDLength(),
 	}
-}
-
-func (u User) JSONWithClients(clients []Client, ak string, sk string, rk string) UserJSONWithClientsAndKeys {
-	return UserJSONWithClientsAndKeys{
-		UserJSON: u.JSON(),
-		Clients:  langext.ArrMap(clients, func(v Client) ClientJSON { return v.JSON() }),
-		SendKey:  sk,
-		ReadKey:  rk,
-		AdminKey: ak,
-	}
+	return *u
 }
 
 func (u User) MaxContentLength() int {
@@ -116,86 +132,9 @@ func (u User) MaxTimestampDiffHours() int {
 	return 24
 }
 
-func (u User) JSONPreview() UserPreviewJSON {
-	return UserPreviewJSON{
+func (u User) JSONPreview() UserPreview {
+	return UserPreview{
 		UserID:   u.UserID,
 		Username: u.Username,
 	}
-}
-
-type UserJSON struct {
-	UserID                      UserID  `json:"user_id"`
-	Username                    *string `json:"username"`
-	TimestampCreated            string  `json:"timestamp_created"`
-	TimestampLastRead           *string `json:"timestamp_lastread"`
-	TimestampLastSent           *string `json:"timestamp_lastsent"`
-	MessagesSent                int     `json:"messages_sent"`
-	QuotaUsed                   int     `json:"quota_used"`
-	QuotaRemaining              int     `json:"quota_remaining"`
-	QuotaPerDay                 int     `json:"quota_max"`
-	IsPro                       bool    `json:"is_pro"`
-	DefaultChannel              string  `json:"default_channel"`
-	MaxBodySize                 int     `json:"max_body_size"`
-	MaxTitleLength              int     `json:"max_title_length"`
-	DefaultPriority             int     `json:"default_priority"`
-	MaxChannelNameLength        int     `json:"max_channel_name_length"`
-	MaxChannelDescriptionLength int     `json:"max_channel_description_length"`
-	MaxSenderNameLength         int     `json:"max_sender_name_length"`
-	MaxUserMessageIDLength      int     `json:"max_user_message_id_length"`
-}
-
-type UserPreviewJSON struct {
-	UserID   UserID  `json:"user_id"`
-	Username *string `json:"username"`
-}
-
-type UserJSONWithClientsAndKeys struct {
-	UserJSON
-	Clients  []ClientJSON `json:"clients"`
-	SendKey  string       `json:"send_key"`
-	ReadKey  string       `json:"read_key"`
-	AdminKey string       `json:"admin_key"`
-}
-
-type UserDB struct {
-	UserID            UserID  `db:"user_id"`
-	Username          *string `db:"username"`
-	TimestampCreated  int64   `db:"timestamp_created"`
-	TimestampLastRead *int64  `db:"timestamp_lastread"`
-	TimestampLastSent *int64  `db:"timestamp_lastsent"`
-	MessagesSent      int     `db:"messages_sent"`
-	QuotaUsed         int     `db:"quota_used"`
-	QuotaUsedDay      *string `db:"quota_used_day"`
-	IsPro             bool    `db:"is_pro"`
-	ProToken          *string `db:"pro_token"`
-}
-
-func (u UserDB) Model() User {
-	return User{
-		UserID:            u.UserID,
-		Username:          u.Username,
-		TimestampCreated:  timeFromMilli(u.TimestampCreated),
-		TimestampLastRead: timeOptFromMilli(u.TimestampLastRead),
-		TimestampLastSent: timeOptFromMilli(u.TimestampLastSent),
-		MessagesSent:      u.MessagesSent,
-		QuotaUsed:         u.QuotaUsed,
-		QuotaUsedDay:      u.QuotaUsedDay,
-		IsPro:             u.IsPro,
-	}
-}
-
-func DecodeUser(ctx context.Context, q sq.Queryable, r *sqlx.Rows) (User, error) {
-	data, err := sq.ScanSingle[UserDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
-	if err != nil {
-		return User{}, err
-	}
-	return data.Model(), nil
-}
-
-func DecodeUsers(ctx context.Context, q sq.Queryable, r *sqlx.Rows) ([]User, error) {
-	data, err := sq.ScanAll[UserDB](ctx, q, r, sq.SModeFast, sq.Safe, true)
-	if err != nil {
-		return nil, err
-	}
-	return langext.ArrMap(data, func(v UserDB) User { return v.Model() }), nil
 }
