@@ -23,7 +23,7 @@ type RequestOptions struct {
 	IgnoreWrongContentType bool
 }
 
-func (app *Application) DoRequest(gectx *ginext.AppContext, g *gin.Context, fn func(ctx *AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
+func (app *Application) DoRequest(gectx *ginext.AppContext, g *gin.Context, lockmode models.TransactionLockMode, fn func(ctx *AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
 	maxRetry := scn.Conf.RequestMaxRetry
 	retrySleep := scn.Conf.RequestRetrySleep
@@ -39,6 +39,29 @@ func (app *Application) DoRequest(gectx *ginext.AppContext, g *gin.Context, fn f
 		actx := CreateAppContext(app, g, ictx, cancel)
 
 		wrap, stackTrace, panicObj := callPanicSafe(func(ctx *AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
+
+			dl, ok := ctx.Deadline()
+			if !ok {
+				dl = time.Now().Add(time.Second * 5)
+			}
+
+			if lockmode == models.TLockRead {
+
+				islock := app.MainDatabaseLock.RTryLockWithTimeout(dl.Sub(time.Now()))
+				if !islock {
+					return ginresp.APIError(g, 500, apierr.INTERNAL_EXCEPTION, "Failed to lock {MainDatabaseLock} [ro]", nil)
+				}
+				defer app.MainDatabaseLock.RUnlock()
+
+			} else if lockmode == models.TLockReadWrite {
+
+				islock := app.MainDatabaseLock.TryLockWithTimeout(dl.Sub(time.Now()))
+				if !islock {
+					return ginresp.APIError(g, 500, apierr.INTERNAL_EXCEPTION, "Failed to lock {MainDatabaseLock} [rw]", nil)
+				}
+				defer app.MainDatabaseLock.Unlock()
+
+			}
 
 			authheader := g.GetHeader("Authorization")
 

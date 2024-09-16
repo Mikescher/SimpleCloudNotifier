@@ -80,7 +80,7 @@ func (h ExternalHandler) UptimeKuma(pctx ginext.PreContext) ginext.HTTPResponse 
 	}
 	defer ctx.Cancel()
 
-	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
+	return h.app.DoRequest(ctx, g, models.TLockReadWrite, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
 		if b.Heartbeat == nil {
 			return ginresp.APIError(g, 400, apierr.BINDFAIL_BODY_PARAM, "missing field 'heartbeat' in request body", nil)

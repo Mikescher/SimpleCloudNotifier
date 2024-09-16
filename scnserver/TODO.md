@@ -10,10 +10,8 @@
 
  - ios purchase verification
 
- - (!) use goext.ginWrapper
+ - exerr.New | exerr.Wrap
 
- - (!!!) local lock to prevent database-locked errors (there are a lot when one client malfunctions and starts sending a lot of notifications)
-  
 #### UNSURE
 
  - (?) default-priority for channels
@@ -54,11 +52,6 @@
  - weblogin, webapp, ...
 
  - Pagination for ListChannels / ListSubscriptions / ListClients / ListChannelSubscriptions / ListUserSubscriptions
-
- - Use only single struct for DB|Model|JSON
-     * needs sq.Converter implementation
-     * needs to handle joined data
-     * rfctime.Time...
 
  - use job superclass (copy from isi/bnet/?), reduce duplicate code
 

@@ -5,6 +5,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/db/simplectx"
 	"blackforestbytes.com/simplecloudnotifier/logic"
+	"blackforestbytes.com/simplecloudnotifier/models"
 	"bytes"
 	"errors"
 	"github.com/gin-gonic/gin"
@@ -58,7 +59,7 @@ func (h CommonHandler) Ping(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
-	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
+	return h.app.DoRequest(ctx, g, models.TLockRead, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
 		buf := new(bytes.Buffer)
 		_, _ = buf.ReadFrom(g.Request.Body)
@@ -102,7 +103,7 @@ func (h CommonHandler) DatabaseTest(pctx ginext.PreContext) ginext.HTTPResponse 
 	}
 	defer ctx.Cancel()
 
-	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
+	return h.app.DoRequest(ctx, g, models.TLockRead, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
 		libVersion, libVersionNumber, sourceID := sqlite3.Version()
 
@@ -142,7 +143,7 @@ func (h CommonHandler) Health(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
-	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
+	return h.app.DoRequest(ctx, g, models.TLockReadWrite, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
 		_, libVersionNumber, _ := sqlite3.Version()
 
@@ -217,7 +218,7 @@ func (h CommonHandler) Sleep(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
-	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
+	return h.app.DoRequest(ctx, g, models.TLockRead, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
 		t0 := time.Now().Format(time.RFC3339Nano)
 
@@ -246,7 +247,7 @@ func (h CommonHandler) NoRoute(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
-	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
+	return h.app.DoRequest(ctx, g, models.TLockRead, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
 		return ginext.JSON(http.StatusNotFound, gin.H{
 			"":           "================ ROUTE NOT FOUND ================",

@@ -329,36 +329,19 @@ definitions:
     type: object
   handler.SendMessage.combined:
     properties:
-      channel:
-        example: test
-        type: string
       content:
-        example: This is a message
-        type: string
-      key:
-        example: P3TNH8mvv14fm
         type: string
       msg_id:
-        example: db8b0e6a-a08c-4646
         type: string
       priority:
-        enum:
-        - 0
-        - 1
-        - 2
-        example: 1
         type: integer
-      sender_name:
-        example: example-server
-        type: string
       timestamp:
-        example: 1669824037
         type: number
       title:
-        example: Hello World
         type: string
       user_id:
-        example: "7725"
+        type: integer
+      user_key:
         type: string
     type: object
   handler.SendMessage.response:
@@ -378,7 +361,7 @@ definitions:
       quota_max:
         type: integer
       scn_msg_id:
-        type: string
+        type: integer
       success:
         type: boolean
       suppress_send:
@@ -656,6 +639,8 @@ definitions:
         type: string
       trimmed:
         type: boolean
+      used_key_id:
+        type: string
       usr_message_id:
         type: string
     type: object
@@ -800,90 +785,52 @@ paths:
       description: All parameter can be set via query-parameter or the json body.
         Only UserID, UserKey and Title are required
       parameters:
-      - example: test
-        in: query
-        name: channel
-        type: string
-      - example: This is a message
-        in: query
+      - in: query
         name: content
         type: string
-      - example: P3TNH8mvv14fm
-        in: query
-        name: key
-        type: string
-      - example: db8b0e6a-a08c-4646
-        in: query
+      - in: query
         name: msg_id
         type: string
-      - enum:
-        - 0
-        - 1
-        - 2
-        example: 1
-        in: query
+      - in: query
         name: priority
         type: integer
-      - example: example-server
-        in: query
-        name: sender_name
-        type: string
-      - example: 1669824037
-        in: query
+      - in: query
         name: timestamp
         type: number
-      - example: Hello World
-        in: query
+      - in: query
         name: title
         type: string
-      - example: "7725"
-        in: query
+      - in: query
         name: user_id
+        type: integer
+      - in: query
+        name: user_key
         type: string
       - description: ' '
         in: body
         name: post_body
         schema:
           $ref: '#/definitions/handler.SendMessage.combined'
-      - example: test
-        in: formData
-        name: channel
-        type: string
-      - example: This is a message
-        in: formData
+      - in: formData
         name: content
         type: string
-      - example: P3TNH8mvv14fm
-        in: formData
-        name: key
-        type: string
-      - example: db8b0e6a-a08c-4646
-        in: formData
+      - in: formData
         name: msg_id
         type: string
-      - enum:
-        - 0
-        - 1
-        - 2
-        example: 1
-        in: formData
+      - in: formData
         name: priority
         type: integer
-      - example: example-server
-        in: formData
-        name: sender_name
-        type: string
-      - example: 1669824037
-        in: formData
+      - in: formData
         name: timestamp
         type: number
-      - example: Hello World
-        in: formData
+      - in: formData
         name: title
         type: string
-      - example: "7725"
-        in: formData
+      - in: formData
         name: user_id
+        type: integer
+      - in: formData
+        name: user_key
         type: string
       responses:
         "200":
@@ -2683,90 +2630,52 @@ paths:
       description: All parameter can be set via query-parameter or the json body.
         Only UserID, UserKey and Title are required
       parameters:
-      - example: test
-        in: query
-        name: channel
-        type: string
-      - example: This is a message
-        in: query
+      - in: query
         name: content
         type: string
-      - example: P3TNH8mvv14fm
-        in: query
-        name: key
-        type: string
-      - example: db8b0e6a-a08c-4646
-        in: query
+      - in: query
         name: msg_id
         type: string
-      - enum:
-        - 0
-        - 1
-        - 2
-        example: 1
-        in: query
+      - in: query
         name: priority
         type: integer
-      - example: example-server
-        in: query
-        name: sender_name
-        type: string
-      - example: 1669824037
-        in: query
+      - in: query
         name: timestamp
         type: number
-      - example: Hello World
-        in: query
+      - in: query
         name: title
         type: string
-      - example: "7725"
-        in: query
+      - in: query
         name: user_id
+        type: integer
+      - in: query
+        name: user_key
         type: string
       - description: ' '
         in: body
         name: post_body
         schema:
           $ref: '#/definitions/handler.SendMessage.combined'
-      - example: test
-        in: formData
-        name: channel
-        type: string
-      - example: This is a message
-        in: formData
+      - in: formData
         name: content
         type: string
-      - example: P3TNH8mvv14fm
-        in: formData
-        name: key
-        type: string
-      - example: db8b0e6a-a08c-4646
-        in: formData
+      - in: formData
         name: msg_id
         type: string
-      - enum:
-        - 0
-        - 1
-        - 2
-        example: 1
-        in: formData
+      - in: formData
         name: priority
         type: integer
-      - example: example-server
-        in: formData
-        name: sender_name
-        type: string
-      - example: 1669824037
-        in: formData
+      - in: formData
         name: timestamp
         type: number
-      - example: Hello World
-        in: formData
+      - in: formData
         name: title
         type: string
-      - example: "7725"
-        in: formData
+      - in: formData
         name: user_id
+        type: integer
+      - in: formData
+        name: user_key
         type: string
       responses:
         "200":
@@ -2799,85 +2708,47 @@ paths:
       description: All parameter can be set via query-parameter or form-data body.
         Only UserID, UserKey and Title are required
       parameters:
-      - example: test
-        in: query
-        name: channel
-        type: string
-      - example: This is a message
-        in: query
+      - in: query
         name: content
         type: string
-      - example: P3TNH8mvv14fm
-        in: query
-        name: key
-        type: string
-      - example: db8b0e6a-a08c-4646
-        in: query
+      - in: query
         name: msg_id
         type: string
-      - enum:
-        - 0
-        - 1
-        - 2
-        example: 1
-        in: query
+      - in: query
         name: priority
         type: integer
-      - example: example-server
-        in: query
-        name: sender_name
-        type: string
-      - example: 1669824037
-        in: query
+      - in: query
         name: timestamp
         type: number
-      - example: Hello World
-        in: query
+      - in: query
         name: title
         type: string
-      - example: "7725"
-        in: query
+      - in: query
         name: user_id
+        type: integer
+      - in: query
+        name: user_key
         type: string
-      - example: test
-        in: formData
-        name: channel
-        type: string
-      - example: This is a message
-        in: formData
+      - in: formData
         name: content
         type: string
-      - example: P3TNH8mvv14fm
-        in: formData
-        name: key
-        type: string
-      - example: db8b0e6a-a08c-4646
-        in: formData
+      - in: formData
         name: msg_id
         type: string
-      - enum:
-        - 0
-        - 1
-        - 2
-        example: 1
-        in: formData
+      - in: formData
         name: priority
         type: integer
-      - example: example-server
-        in: formData
-        name: sender_name
-        type: string
-      - example: 1669824037
-        in: formData
+      - in: formData
         name: timestamp
         type: number
-      - example: Hello World
-        in: formData
+      - in: formData
         name: title
         type: string
-      - example: "7725"
-        in: formData
+      - in: formData
         name: user_id
+        type: integer
+      - in: formData
+        name: user_key
         type: string
       responses:
         "200":

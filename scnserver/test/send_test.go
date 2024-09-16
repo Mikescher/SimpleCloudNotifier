@@ -7,6 +7,7 @@ import (
 	tt "blackforestbytes.com/simplecloudnotifier/test/util"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"math/rand/v2"
 	"net/url"
 	"strings"
 	"testing"
@@ -1341,8 +1342,14 @@ func TestSendParallel(t *testing.T) {
 
 	uid := r0["user_id"].(string)
 	sendtok := r0["send_key"].(string)
+	admintok := r0["admin_key"].(string)
 
-	count := 128
+	count := 512
+
+	chanNames := make([]string, 0)
+	for i := 0; i < count/50; i++ {
+		chanNames = append(chanNames, tt.ShortLipsum0(1))
+	}
 
 	sem := make(chan tt.Void, count) // semaphore pattern
 	for i := 0; i < count; i++ {
@@ -1350,11 +1357,31 @@ func TestSendParallel(t *testing.T) {
 			defer func() {
 				sem <- tt.Void{}
 			}()
-			tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
-				"key":     sendtok,
-				"user_id": uid,
-				"title":   tt.ShortLipsum0(2),
-			})
+
+			if rand.Int()%2 == 0 {
+				tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+					"key":     sendtok,
+					"user_id": uid,
+					"title":   tt.ShortLipsum0(2),
+				})
+			} else {
+				tt.RequestPost[gin.H](t, baseUrl, "/", gin.H{
+					"key":     sendtok,
+					"user_id": uid,
+					"title":   tt.ShortLipsum0(2),
+					"channel": chanNames[rand.IntN(len(chanNames))],
+				})
+			}
+
+			tt.RequestGet[tt.Void](t, baseUrl, fmt.Sprintf("/api/ping"))
+
+			tt.RequestAuthGet[gin.H](t, admintok, baseUrl, fmt.Sprintf("/api/v2/messages"))
+
+			tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid)
+
+			tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid+"/channels")
+
+			tt.RequestAuthGet[gin.H](t, admintok, baseUrl, "/api/v2/users/"+uid+"/clients")
 		}()
 	}
 	// wait for goroutines to finish

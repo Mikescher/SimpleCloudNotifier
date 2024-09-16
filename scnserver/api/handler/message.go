@@ -83,7 +83,7 @@ func (h MessageHandler) SendMessage(pctx ginext.PreContext) ginext.HTTPResponse 
 	}
 	defer ctx.Cancel()
 
-	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
+	return h.app.DoRequest(ctx, g, models.TLockReadWrite, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
 		// query has highest prio, then form, then json
 		data := dataext.ObjectMerge(dataext.ObjectMerge(b, f), q)

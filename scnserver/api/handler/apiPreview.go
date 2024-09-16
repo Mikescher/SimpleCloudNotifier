@@ -38,7 +38,7 @@ func (h APIHandler) GetUserPreview(pctx ginext.PreContext) ginext.HTTPResponse {
 	}
 	defer ctx.Cancel()
 
-	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
+	return h.app.DoRequest(ctx, g, models.TLockRead, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
 		if permResp := ctx.CheckPermissionAny(); permResp != nil {
 			return *permResp
@@ -84,7 +84,7 @@ func (h APIHandler) GetChannelPreview(pctx ginext.PreContext) ginext.HTTPRespons
 	}
 	defer ctx.Cancel()
 
-	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
+	return h.app.DoRequest(ctx, g, models.TLockRead, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
 		if permResp := ctx.CheckPermissionAny(); permResp != nil {
 			return *permResp
@@ -130,7 +130,7 @@ func (h APIHandler) GetUserKeyPreview(pctx ginext.PreContext) ginext.HTTPRespons
 	}
 	defer ctx.Cancel()
 
-	return h.app.DoRequest(ctx, g, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
+	return h.app.DoRequest(ctx, g, models.TLockRead, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
 		if permResp := ctx.CheckPermissionAny(); permResp != nil {
 			return *permResp

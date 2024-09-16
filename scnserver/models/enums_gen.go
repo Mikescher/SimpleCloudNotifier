@@ -5,7 +5,7 @@ package models
 import "gogs.mikescher.com/BlackForestBytes/goext/langext"
 import "gogs.mikescher.com/BlackForestBytes/goext/enums"
 
-const ChecksumEnumGenerator = "8ffad0d7406eb7f17cbbfeff6fee6e6fa7156470203934ebd220c824e6e15e09" // GoExtVersion: 0.0.511
+const ChecksumEnumGenerator = "902919af7c6d46bd6701b33e47308bad93d50cd10cdacaac739e5242819c4d7b" // GoExtVersion: 0.0.512
 
 // ================================ ClientType ================================
 //
@@ -283,6 +283,86 @@ func TokenPermValuesDescriptionMeta() []enums.EnumDescriptionMetaValue {
 	}
 }
 
+// ================================ TransactionLockMode ================================
+//
+// File:       lock.go
+// StringEnum: true
+// DescrEnum:  false
+// DataEnum:   false
+//
+
+var __TransactionLockModeValues = []TransactionLockMode{
+	TLockNone,
+	TLockRead,
+	TLockReadWrite,
+}
+
+var __TransactionLockModeVarnames = map[TransactionLockMode]string{
+	TLockNone:      "TLockNone",
+	TLockRead:      "TLockRead",
+	TLockReadWrite: "TLockReadWrite",
+}
+
+func (e TransactionLockMode) Valid() bool {
+	return langext.InArray(e, __TransactionLockModeValues)
+}
+
+func (e TransactionLockMode) Values() []TransactionLockMode {
+	return __TransactionLockModeValues
+}
+
+func (e TransactionLockMode) ValuesAny() []any {
+	return langext.ArrCastToAny(__TransactionLockModeValues)
+}
+
+func (e TransactionLockMode) ValuesMeta() []enums.EnumMetaValue {
+	return TransactionLockModeValuesMeta()
+}
+
+func (e TransactionLockMode) String() string {
+	return string(e)
+}
+
+func (e TransactionLockMode) VarName() string {
+	if d, ok := __TransactionLockModeVarnames[e]; ok {
+		return d
+	}
+	return ""
+}
+
+func (e TransactionLockMode) TypeName() string {
+	return "TransactionLockMode"
+}
+
+func (e TransactionLockMode) PackageName() string {
+	return "models"
+}
+
+func (e TransactionLockMode) Meta() enums.EnumMetaValue {
+	return enums.EnumMetaValue{VarName: e.VarName(), Value: e, Description: nil}
+}
+
+func ParseTransactionLockMode(vv string) (TransactionLockMode, bool) {
+	for _, ev := range __TransactionLockModeValues {
+		if string(ev) == vv {
+			return ev, true
+		}
+	}
+	return "", false
+}
+
+func TransactionLockModeValues() []TransactionLockMode {
+	return __TransactionLockModeValues
+}
+
+func TransactionLockModeValuesMeta() []enums.EnumMetaValue {
+	return []enums.EnumMetaValue{
+		TLockNone.Meta(),
+		TLockRead.Meta(),
+		TLockReadWrite.Meta(),
+	}
+}
+
 // ================================ ================= ================================
 
 func AllPackageEnums() []enums.Enum {
@@ -290,5 +370,6 @@ func AllPackageEnums() []enums.Enum {
 		ClientTypeAndroid,   // ClientType
 		DeliveryStatusRetry, // DeliveryStatus
 		PermAdmin,           // TokenPerm
+		TLockNone,           // TransactionLockMode
 	}
 }

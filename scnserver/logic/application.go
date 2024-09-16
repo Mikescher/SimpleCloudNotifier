@@ -10,6 +10,7 @@ import (
 	"context"
 	"errors"
 	"github.com/rs/zerolog/log"
+	golock "github.com/viney-shih/go-lock"
 	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"gogs.mikescher.com/BlackForestBytes/goext/rext"
 	"gogs.mikescher.com/BlackForestBytes/goext/syncext"
@@ -38,14 +39,16 @@ type Application struct {
 	Port             string
 	IsRunning        *syncext.AtomicBool
 	RequestLogQueue  chan models.RequestLog
+	MainDatabaseLock golock.RWMutex
 }
 
 func NewApp(db *DBPool) *Application {
 	return &Application{
-		Database:        db,
-		stopChan:        make(chan bool),
-		IsRunning:       syncext.NewAtomicBool(false),
-		RequestLogQueue: make(chan models.RequestLog, 1024),
+		Database:         db,
+		stopChan:         make(chan bool),
+		IsRunning:        syncext.NewAtomicBool(false),
+		RequestLogQueue:  make(chan models.RequestLog, 1024),
+		MainDatabaseLock: golock.NewCASMutex(),
 	}
 }
 
