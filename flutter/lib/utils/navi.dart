@@ -8,14 +8,20 @@ class Navi {
 
   static void push<T extends Widget>(BuildContext context, T Function() builder) {
     Provider.of<AppBarState>(context, listen: false).setLoadingIndeterminate(false);
+    Provider.of<AppBarState>(context, listen: false).setShowSearchField(false);
 
     Navigator.push(context, MaterialPageRoute<T>(builder: (context) => builder()));
   }
 
   static void popToRoot(BuildContext context) {
     Provider.of<AppBarState>(context, listen: false).setLoadingIndeterminate(false);
+    Provider.of<AppBarState>(context, listen: false).setShowSearchField(false);
 
     Navigator.popUntil(context, (route) => route.isFirst);
+  }
+
+  static void popDialog(BuildContext dialogContext) {
+    Navigator.pop(dialogContext);
   }
 }
 
@@ -25,6 +31,7 @@ class SCNRouteObserver extends RouteObserver<PageRoute<dynamic>> {
     super.didPush(route, previousRoute);
     if (route is PageRoute) {
       AppBarState().setLoadingIndeterminate(false);
+      AppBarState().setShowSearchField(false);
 
       print('[SCNRouteObserver] .didPush()');
     }
@@ -35,6 +42,7 @@ class SCNRouteObserver extends RouteObserver<PageRoute<dynamic>> {
     super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
     if (newRoute is PageRoute) {
       AppBarState().setLoadingIndeterminate(false);
+      AppBarState().setShowSearchField(false);
 
       print('[SCNRouteObserver] .didReplace()');
     }
@@ -45,6 +53,7 @@ class SCNRouteObserver extends RouteObserver<PageRoute<dynamic>> {
     super.didPop(route, previousRoute);
     if (previousRoute is PageRoute && route is PageRoute) {
       AppBarState().setLoadingIndeterminate(false);
+      AppBarState().setShowSearchField(false);
 
       print('[SCNRouteObserver] .didPop()');
     }

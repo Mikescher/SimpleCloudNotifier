@@ -106,4 +106,49 @@ class UI {
       child: child,
     );
   }
+
+  static Widget metaCard({required BuildContext context, required IconData icon, required String title, required List<String> values, void Function()? mainAction, List<(IconData, void Function())>? iconActions}) {
+    final container = UI.box(
+      context: context,
+      padding: EdgeInsets.fromLTRB(16, 2, 4, 2),
+      child: Row(
+        children: [
+          FaIcon(icon, size: 18),
+          SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                for (final val in values) Text(val, style: const TextStyle(fontSize: 14)),
+              ],
+            ),
+          ),
+          if (iconActions != null) ...[
+            SizedBox(width: 12),
+            for (final iconAction in iconActions) ...[
+              SizedBox(width: 4),
+              IconButton(icon: FaIcon(iconAction.$1), onPressed: iconAction.$2),
+            ],
+          ],
+        ],
+      ),
+    );
+
+    if (mainAction == null) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+        child: container,
+      );
+    } else {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+        child: InkWell(
+          splashColor: Theme.of(context).splashColor,
+          onTap: mainAction,
+          child: container,
+        ),
+      );
+    }
+  }
 }

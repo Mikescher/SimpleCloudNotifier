@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
-import 'package:simplecloudnotifier/models/message.dart';
+import 'package:simplecloudnotifier/models/scn_message.dart';
 import 'package:simplecloudnotifier/pages/debug/debug_persistence_hive.dart';
 import 'package:simplecloudnotifier/pages/debug/debug_persistence_sharedprefs.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
@@ -36,7 +36,7 @@ class _DebugPersistencePageState extends State<DebugPersistencePage> {
           _buildSharedPrefCard(context),
           _buildHiveCard(context, () => Hive.box<SCNRequest>('scn-requests'), 'scn-requests'),
           _buildHiveCard(context, () => Hive.box<SCNLog>('scn-logs'), 'scn-logs'),
-          _buildHiveCard(context, () => Hive.box<Message>('scn-message-cache'), 'scn-message-cache'),
+          _buildHiveCard(context, () => Hive.box<SCNMessage>('scn-message-cache'), 'scn-message-cache'),
           _buildHiveCard(context, () => Hive.box<Channel>('scn-channel-cache'), 'scn-channel-cache'),
           _buildHiveCard(context, () => Hive.box<FBMessage>('scn-fb-messages'), 'scn-fb-messages'),
         ],
@@ -71,7 +71,7 @@ class _DebugPersistencePageState extends State<DebugPersistencePage> {
         padding: const EdgeInsets.all(8.0),
         child: GestureDetector(
           onTap: () {
-            Navi.push(context, () => DebugHiveBoxPage(boxName: boxname, box: Hive.box<FBMessage>(boxname)));
+            Navi.push(context, () => DebugHiveBoxPage(boxName: boxname, box: boxFunc()));
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

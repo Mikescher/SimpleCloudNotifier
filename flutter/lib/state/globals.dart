@@ -13,6 +13,8 @@ class Globals {
 
   Globals._internal();
 
+  bool _initialized = false;
+
   String appName = '';
   String packageName = '';
   String version = '';
@@ -24,7 +26,11 @@ class Globals {
 
   late SharedPreferences sharedPrefs;
 
+  bool get isInitialized => _initialized;
+
   Future<void> init() async {
+    if (_initialized) return;
+
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
     this.appName = packageInfo.appName;
@@ -54,6 +60,8 @@ class Globals {
     }
 
     this.sharedPrefs = await SharedPreferences.getInstance();
+
+    this._initialized = true;
   }
 
   String? getPrefFCMToken() {

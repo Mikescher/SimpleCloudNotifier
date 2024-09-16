@@ -63,6 +63,33 @@ class User {
       maxUserMessageIDLength: json['max_user_message_id_length'] as int,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'user_id': userID,
+      'username': username,
+      'timestamp_created': timestampCreated,
+      'timestamp_lastread': timestampLastRead,
+      'timestamp_lastsent': timestampLastSent,
+      'messages_sent': messagesSent,
+      'quota_used': quotaUsed,
+      'quota_remaining': quotaRemaining,
+      'quota_max': quotaPerDay,
+      'is_pro': isPro,
+      'default_channel': defaultChannel,
+      'max_body_size': maxBodySize,
+      'max_title_length': maxTitleLength,
+      'default_priority': defaultPriority,
+      'max_channel_name_length': maxChannelNameLength,
+      'max_channel_description_length': maxChannelDescriptionLength,
+      'max_sender_name_length': maxSenderNameLength,
+      'max_user_message_id_length': maxUserMessageIDLength,
+    };
+  }
+
+  UserPreview toPreview() {
+    return UserPreview(userID: userID, username: username);
+  }
 }
 
 class UserWithClientsAndKeys {

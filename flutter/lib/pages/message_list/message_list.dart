@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
-import 'package:simplecloudnotifier/models/message.dart';
+import 'package:simplecloudnotifier/models/scn_message.dart';
+import 'package:simplecloudnotifier/pages/message_list/message_filter_chiplet.dart';
 import 'package:simplecloudnotifier/pages/message_view/message_view.dart';
+import 'package:simplecloudnotifier/settings/app_settings.dart';
 import 'package:simplecloudnotifier/state/app_bar_state.dart';
+import 'package:simplecloudnotifier/state/app_events.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/pages/message_list/message_list_item.dart';
+import 'package:simplecloudnotifier/state/scn_data_cache.dart';
 import 'package:simplecloudnotifier/utils/navi.dart';
 
 class MessageListPage extends StatefulWidget {
@@ -17,27 +20,27 @@ class MessageListPage extends StatefulWidget {
 
   final bool isVisiblePage;
 
-  //TODO reload on switch to tab
-  //TODO reload on app to foreground
-
   @override
   State<MessageListPage> createState() => _MessageListPageState();
 }
 
 class _MessageListPageState extends State<MessageListPage> with RouteAware {
-  static const _pageSize = 128;
-
   late final AppLifecycleListener _lifecyleListener;
 
-  PagingController<String, Message> _pagingController = PagingController.fromValue(PagingState(nextPageKey: null, itemList: [], error: null), firstPageKey: '@start');
+  PagingController<String, SCNMessage> _pagingController = PagingController.fromValue(PagingState(nextPageKey: null, itemList: [], error: null), firstPageKey: '@start');
 
   Map<String, Channel>? _channels = null;
 
   bool _isInitialized = false;
 
+  List<MessageFilterChiplet> _filterChiplets = [];
+
   @override
   void initState() {
     super.initState();
+
+    AppEvents().subscribeSearchListener(_onAppBarSearch);
+    AppEvents().subscribeMessageReceivedListener(_onMessageReceivedViaNotification);
 
     _pagingController.addPageRequestListener(_fetchPage);
 
@@ -64,18 +67,12 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
   void _realInitState() {
     ApplicationLog.debug('MessageListPage::_realInitState');
 
-    final chnCache = Hive.box<Channel>('scn-channel-cache');
-    final msgCache = Hive.box<Message>('scn-message-cache');
-
-    if (chnCache.isNotEmpty && msgCache.isNotEmpty) {
+    if (SCNDataCache().hasMessagesAndChannels()) {
       // ==== Use cache values - and refresh in background
 
-      _channels = <String, Channel>{for (var v in chnCache.values) v.channelID: v};
+      _channels = SCNDataCache().getChannelMap();
 
-      final cacheMessages = msgCache.values.toList();
-      cacheMessages.sort((a, b) => -1 * a.timestamp.compareTo(b.timestamp));
-
-      _pagingController.value = PagingState(nextPageKey: null, itemList: cacheMessages, error: null);
+      _pagingController.value = PagingState(nextPageKey: null, itemList: SCNDataCache().getMessagesSorted(), error: null);
 
       _backgroundRefresh(true);
     } else {
@@ -95,6 +92,8 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
   @override
   void dispose() {
     ApplicationLog.debug('MessageListPage::dispose');
+    AppEvents().unsubscribeSearchListener(_onAppBarSearch);
+    AppEvents().unsubscribeMessageReceivedListener(_onMessageReceivedViaNotification);
     Navi.modalRouteObserver.unsubscribe(this);
     _pagingController.dispose();
     _lifecyleListener.dispose();
@@ -108,17 +107,22 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
 
   @override
   void didPopNext() {
-    ApplicationLog.debug('[MessageList::RouteObserver] --> didPopNext (will background-refresh)');
-    _backgroundRefresh(false);
+    if (AppSettings().backgroundRefreshMessageListOnPop) {
+      ApplicationLog.debug('[MessageList::RouteObserver] --> didPopNext (will background-refresh)');
+      _backgroundRefresh(false);
+    }
   }
 
   void _onLifecycleResume() {
-    ApplicationLog.debug('[MessageList::_onLifecycleResume] --> (will background-refresh)');
-    _backgroundRefresh(false);
+    if (AppSettings().alwaysBackgroundRefreshMessageListOnLifecycleResume && widget.isVisiblePage) {
+      ApplicationLog.debug('[MessageList::_onLifecycleResume] --> (will background-refresh)');
+      _backgroundRefresh(false);
+    }
   }
 
   Future<void> _fetchPage(String thisPageToken) async {
     final acc = Provider.of<AppAuth>(context, listen: false);
+    final cfg = Provider.of<AppSettings>(context, listen: false);
 
     ApplicationLog.debug('Start MessageList::_pagingController::_fetchPage [ ${thisPageToken} ]');
 
@@ -132,12 +136,12 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
         final channels = await APIClient.getChannelList(acc, ChannelSelector.allAny);
         _channels = <String, Channel>{for (var v in channels) v.channel.channelID: v.channel};
 
-        _setChannelCache(channels); // no await
+        SCNDataCache().setChannelCache(channels); // no await
       }
 
-      final (npt, newItems) = await APIClient.getMessageList(acc, thisPageToken, pageSize: _pageSize);
+      final (npt, newItems) = await APIClient.getMessageList(acc, thisPageToken, pageSize: cfg.messagePageSize);
 
-      _addToMessageCache(newItems); // no await
+      SCNDataCache().addToMessageCache(newItems); // no await
 
       ApplicationLog.debug('Finished MessageList::_pagingController::_fetchPage [ ${newItems.length} items and npt: ${thisPageToken} --> ${npt} ]');
 
@@ -154,6 +158,7 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
 
   Future<void> _backgroundRefresh(bool fullReplaceState) async {
     final acc = Provider.of<AppAuth>(context, listen: false);
+    final cfg = Provider.of<AppSettings>(context, listen: false);
 
     ApplicationLog.debug('Start background refresh of message list (fullReplaceState: $fullReplaceState)');
 
@@ -167,12 +172,12 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
         setState(() {
           _channels = <String, Channel>{for (var v in channels) v.channel.channelID: v.channel};
         });
-        _setChannelCache(channels); // no await
+        SCNDataCache().setChannelCache(channels); // no await
       }
 
-      final (npt, newItems) = await APIClient.getMessageList(acc, '@start', pageSize: _pageSize);
+      final (npt, newItems) = await APIClient.getMessageList(acc, '@start', pageSize: cfg.messagePageSize);
 
-      _addToMessageCache(newItems); // no await
+      SCNDataCache().addToMessageCache(newItems); // no await
 
       if (fullReplaceState) {
         // fully replace/reset state
@@ -221,49 +226,63 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
-      child: RefreshIndicator(
-        onRefresh: () => Future.sync(
-          () => _pagingController.refresh(),
-        ),
-        child: PagedListView<String, Message>(
-          pagingController: _pagingController,
-          builderDelegate: PagedChildBuilderDelegate<Message>(
-            itemBuilder: (context, item, index) => MessageListItem(
-              message: item,
-              allChannels: _channels ?? {},
-              onPressed: () {
-                Navi.push(context, () => MessageViewPage(message: item));
-              },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (_filterChiplets.isNotEmpty)
+            Wrap(
+              alignment: WrapAlignment.start,
+              spacing: 5.0,
+              children: [
+                for (var chiplet in _filterChiplets) _buildFilterChip(context, chiplet),
+              ],
+            ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () => Future.sync(
+                () => _pagingController.refresh(),
+              ),
+              child: PagedListView<String, SCNMessage>(
+                pagingController: _pagingController,
+                builderDelegate: PagedChildBuilderDelegate<SCNMessage>(
+                  itemBuilder: (context, item, index) => MessageListItem(
+                    message: item,
+                    allChannels: _channels ?? {},
+                    onPressed: () {
+                      Navi.push(context, () => MessageViewPage(messageID: item.messageID, preloadedData: (item,)));
+                    },
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  Future<void> _setChannelCache(List<ChannelWithSubscription> channels) async {
-    final cache = Hive.box<Channel>('scn-channel-cache');
-
-    if (cache.length != channels.length) await cache.clear();
-
-    for (var chn in channels) await cache.put(chn.channel.channelID, chn.channel);
+  Widget _buildFilterChip(BuildContext context, MessageFilterChiplet chiplet) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 2, 0, 2),
+      child: InputChip(
+        avatar: Icon(chiplet.icon()),
+        label: Text(chiplet.label),
+        onDeleted: () => setState(() => _filterChiplets.remove(chiplet)),
+        onPressed: () {/* TODO idk what to do here ? */},
+        visualDensity: VisualDensity(horizontal: -4, vertical: -4),
+      ),
+    );
   }
 
-  Future<void> _addToMessageCache(List<Message> newItems) async {
-    final cache = Hive.box<Message>('scn-message-cache');
+  void _onAppBarSearch(String str) {
+    setState(() {
+      _filterChiplets = _filterChiplets.where((element) => false).toList() + [MessageFilterChiplet(label: str, value: str, type: MessageFilterChipletType.search)];
+    });
+  }
 
-    for (var msg in newItems) await cache.put(msg.messageID, msg);
-
-    // delete all but the newest 128 messages
-
-    if (cache.length < _pageSize) return;
-
-    final allValues = cache.values.toList();
-
-    allValues.sort((a, b) => -1 * a.timestamp.compareTo(b.timestamp));
-
-    for (var val in allValues.sublist(_pageSize)) {
-      await cache.delete(val.messageID);
-    }
+  void _onMessageReceivedViaNotification(SCNMessage msg) {
+    setState(() {
+      _pagingController.itemList = [msg] + (_pagingController.itemList ?? []);
+    });
   }
 }

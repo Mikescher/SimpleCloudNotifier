@@ -7,11 +7,12 @@ import 'package:simplecloudnotifier/models/client.dart';
 import 'package:simplecloudnotifier/models/keytoken.dart';
 import 'package:simplecloudnotifier/models/subscription.dart';
 import 'package:simplecloudnotifier/models/user.dart';
+import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/globals.dart';
 import 'package:simplecloudnotifier/state/request_log.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
-import 'package:simplecloudnotifier/models/message.dart';
+import 'package:simplecloudnotifier/models/scn_message.dart';
 import 'package:simplecloudnotifier/state/token_source.dart';
 import 'package:simplecloudnotifier/utils/toaster.dart';
 
@@ -211,7 +212,21 @@ class APIClient {
     );
   }
 
-  static Future<(String, List<Message>)> getMessageList(TokenSource auth, String pageToken, {int? pageSize, List<String>? channelIDs}) async {
+  static Future<ChannelWithSubscription> updateChannel(AppAuth auth, String cid, {String? displayName, String? descriptionName}) async {
+    return await _request(
+      name: 'updateChannel',
+      method: 'PATCH',
+      relURL: 'users/${auth.getUserID()}/channels/${cid}',
+      jsonBody: {
+        if (displayName != null) 'display_name': displayName,
+        if (descriptionName != null) 'description_name': descriptionName,
+      },
+      fn: ChannelWithSubscription.fromJson,
+      authToken: auth.getToken(),
+    );
+  }
+
+  static Future<(String, List<SCNMessage>)> getMessageList(TokenSource auth, String pageToken, {int? pageSize, List<String>? channelIDs}) async {
     return await _request(
       name: 'getMessageList',
       method: 'GET',
@@ -221,18 +236,18 @@ class APIClient {
         if (pageSize != null) 'page_size': pageSize.toString(),
         if (channelIDs != null) 'channel_id': channelIDs.join(","),
       },
-      fn: (json) => Message.fromPaginatedJsonArray(json, 'messages', 'next_page_token'),
+      fn: (json) => SCNMessage.fromPaginatedJsonArray(json, 'messages', 'next_page_token'),
       authToken: auth.getToken(),
     );
   }
 
-  static Future<Message> getMessage(TokenSource auth, String msgid) async {
+  static Future<SCNMessage> getMessage(TokenSource auth, String msgid) async {
     return await _request(
       name: 'getMessage',
       method: 'GET',
       relURL: 'messages/$msgid',
       query: {},
-      fn: Message.fromJson,
+      fn: SCNMessage.fromJson,
       authToken: auth.getToken(),
     );
   }
@@ -242,6 +257,16 @@ class APIClient {
       name: 'getSubscriptionList',
       method: 'GET',
       relURL: 'users/${auth.getUserID()}/subscriptions',
+      fn: (json) => Subscription.fromJsonArray(json['subscriptions'] as List<dynamic>),
+      authToken: auth.getToken(),
+    );
+  }
+
+  static Future<List<Subscription>> getChannelSubscriptions(TokenSource auth, String cid) async {
+    return await _request(
+      name: 'getChannelSubscriptions',
+      method: 'GET',
+      relURL: 'users/${auth.getUserID()}/channels/${cid}/subscriptions',
       fn: (json) => Subscription.fromJsonArray(json['subscriptions'] as List<dynamic>),
       authToken: auth.getToken(),
     );

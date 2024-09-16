@@ -13,7 +13,6 @@ class DebugSharedPrefPage extends StatelessWidget {
     return SCNScaffold(
       title: 'SharedPreferences',
       showSearch: false,
-      showDebug: false,
       child: ListView.separated(
         itemCount: sharedPref.getKeys().length,
         itemBuilder: (context, listIndex) {

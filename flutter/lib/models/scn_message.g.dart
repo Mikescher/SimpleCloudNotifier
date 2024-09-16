@@ -1,22 +1,22 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'message.dart';
+part of 'scn_message.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class MessageAdapter extends TypeAdapter<Message> {
+class SCNMessageAdapter extends TypeAdapter<SCNMessage> {
   @override
   final int typeId = 105;
 
   @override
-  Message read(BinaryReader reader) {
+  SCNMessage read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Message(
+    return SCNMessage(
       messageID: fields[0] as String,
       senderUserID: fields[10] as String,
       channelInternalName: fields[11] as String,
@@ -34,7 +34,7 @@ class MessageAdapter extends TypeAdapter<Message> {
   }
 
   @override
-  void write(BinaryWriter writer, Message obj) {
+  void write(BinaryWriter writer, SCNMessage obj) {
     writer
       ..writeByte(13)
       ..writeByte(0)
@@ -71,7 +71,7 @@ class MessageAdapter extends TypeAdapter<Message> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is MessageAdapter &&
+      other is SCNMessageAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

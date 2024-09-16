@@ -59,8 +59,7 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
     return Scaffold(
       appBar: SCNAppBar(
         title: null,
-        showDebug: true,
-        showSearch: _selectedIndex == 0 || _selectedIndex == 1,
+        showSearch: _selectedIndex == 0,
         showShare: false,
         showThemeSwitch: true,
       ),
@@ -77,6 +76,7 @@ class _SCNNavLayoutState extends State<SCNNavLayout> {
       bottomNavigationBar: _buildNavBar(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: HidableFAB(
+        heroTag: 'fab_main',
         onPressed: _onFABTapped,
         icon: FontAwesomeIcons.solidPaperPlaneTop,
       ),

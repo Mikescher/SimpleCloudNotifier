@@ -8,36 +8,49 @@ import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/components/layout/scaffold.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
 import 'package:simplecloudnotifier/models/keytoken.dart';
-import 'package:simplecloudnotifier/models/message.dart';
+import 'package:simplecloudnotifier/models/scn_message.dart';
 import 'package:simplecloudnotifier/models/user.dart';
+import 'package:simplecloudnotifier/pages/channel_view/channel_view.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/state/app_bar_state.dart';
+import 'package:simplecloudnotifier/utils/navi.dart';
 import 'package:simplecloudnotifier/utils/toaster.dart';
 import 'package:simplecloudnotifier/utils/ui.dart';
 
 class MessageViewPage extends StatefulWidget {
-  const MessageViewPage({super.key, required this.message});
+  const MessageViewPage({
+    super.key,
+    required this.messageID,
+    required this.preloadedData,
+  });
 
-  final Message message; // Potentially trimmed
+  final String messageID; // Potentially trimmed
+  final (SCNMessage,)? preloadedData; // Message is potentially trimmed, whole object is potentially null
 
   @override
   State<MessageViewPage> createState() => _MessageViewPageState();
 }
 
 class _MessageViewPageState extends State<MessageViewPage> {
-  late Future<(Message, ChannelPreview, KeyTokenPreview, UserPreview)>? mainFuture;
-  (Message, ChannelPreview, KeyTokenPreview, UserPreview)? mainFutureSnapshot = null;
+  late Future<(SCNMessage, ChannelPreview, KeyTokenPreview, UserPreview)>? mainFuture;
+  (SCNMessage, ChannelPreview, KeyTokenPreview, UserPreview)? mainFutureSnapshot = null;
   static final _dateFormat = DateFormat('yyyy-MM-dd kk:mm');
 
   bool _monospaceMode = false;
 
+  SCNMessage? message = null;
+
   @override
   void initState() {
+    if (widget.preloadedData != null) {
+      message = widget.preloadedData!.$1;
+    }
+
     mainFuture = fetchData();
     super.initState();
   }
 
-  Future<(Message, ChannelPreview, KeyTokenPreview, UserPreview)> fetchData() async {
+  Future<(SCNMessage, ChannelPreview, KeyTokenPreview, UserPreview)> fetchData() async {
     try {
       await Future.delayed(const Duration(seconds: 0), () {}); // this is annoyingly important - otherwise we call setLoadingIndeterminate directly in initStat() and get an exception....
 
@@ -45,7 +58,7 @@ class _MessageViewPageState extends State<MessageViewPage> {
 
       final acc = Provider.of<AppAuth>(context, listen: false);
 
-      final msg = await APIClient.getMessage(acc, widget.message.messageID);
+      final msg = await APIClient.getMessage(acc, widget.messageID);
 
       final fut_chn = APIClient.getChannelPreview(acc, msg.channelID);
       final fut_key = APIClient.getKeyTokenPreview(acc, msg.usedKeyID);
@@ -79,7 +92,7 @@ class _MessageViewPageState extends State<MessageViewPage> {
       showSearch: false,
       showShare: true,
       onShare: _share,
-      child: FutureBuilder<(Message, ChannelPreview, KeyTokenPreview, UserPreview)>(
+      child: FutureBuilder<(SCNMessage, ChannelPreview, KeyTokenPreview, UserPreview)>(
         future: mainFuture,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
@@ -87,8 +100,8 @@ class _MessageViewPageState extends State<MessageViewPage> {
             return _buildMessageView(context, msg, chn, tok, usr);
           } else if (snapshot.hasError) {
             return Center(child: Text('${snapshot.error}')); //TODO nice error page
-          } else if (!widget.message.trimmed) {
-            return _buildMessageView(context, widget.message, null, null, null);
+          } else if (message != null && !this.message!.trimmed) {
+            return _buildMessageView(context, this.message!, null, null, null);
           } else {
             return const Center(child: CircularProgressIndicator());
           }
@@ -98,7 +111,9 @@ class _MessageViewPageState extends State<MessageViewPage> {
   }
 
   void _share() async {
-    var msg = widget.message;
+    if (this.message == null) return;
+
+    var msg = this.message!;
     if (mainFutureSnapshot != null) {
       (msg, _, _, _) = mainFutureSnapshot!;
     }
@@ -118,7 +133,7 @@ class _MessageViewPageState extends State<MessageViewPage> {
     }
   }
 
-  Widget _buildMessageView(BuildContext context, Message message, ChannelPreview? channel, KeyTokenPreview? token, UserPreview? user) {
+  Widget _buildMessageView(BuildContext context, SCNMessage message, ChannelPreview? channel, KeyTokenPreview? token, UserPreview? user) {
     final userAccUserID = context.select<AppAuth, String?>((v) => v.userID);
 
     return SingleChildScrollView(
@@ -131,12 +146,58 @@ class _MessageViewPageState extends State<MessageViewPage> {
             SizedBox(height: 8),
             if (message.content != null) ..._buildMessageContent(context, message),
             SizedBox(height: 8),
-            if (message.senderName != null) _buildMetaCard(context, FontAwesomeIcons.solidSignature, 'Sender', [message.senderName!], () => {/*TODO*/}),
-            _buildMetaCard(context, FontAwesomeIcons.solidGearCode, 'KeyToken', [message.usedKeyID, if (token != null) token.name], () => {/*TODO*/}),
-            _buildMetaCard(context, FontAwesomeIcons.solidIdCardClip, 'MessageID', [message.messageID, if (message.userMessageID != null) message.userMessageID!], null),
-            _buildMetaCard(context, FontAwesomeIcons.solidSnake, 'Channel', [message.channelID, channel?.displayName ?? message.channelInternalName], () => {/*TODO*/}),
-            _buildMetaCard(context, FontAwesomeIcons.solidTimer, 'Timestamp', [message.timestamp], null),
-            _buildMetaCard(context, FontAwesomeIcons.solidUser, 'User', [if (user != null) user.userID, if (user?.username != null) user!.username!], () => {/*TODO*/}), //TODO
+            if (message.senderName != null)
+              UI.metaCard(
+                context: context,
+                icon: FontAwesomeIcons.solidSignature,
+                title: 'Sender',
+                values: [message.senderName!],
+                mainAction: () => {/*TODO*/},
+              ),
+            UI.metaCard(
+              context: context,
+              icon: FontAwesomeIcons.solidGearCode,
+              title: 'KeyToken',
+              values: [message.usedKeyID, token?.name ?? '...'],
+              mainAction: () => {/*TODO*/},
+            ),
+            UI.metaCard(
+              context: context,
+              icon: FontAwesomeIcons.solidIdCardClip,
+              title: 'MessageID',
+              values: [message.messageID, message.userMessageID ?? ''],
+            ),
+            UI.metaCard(
+              context: context,
+              icon: FontAwesomeIcons.solidSnake,
+              title: 'Channel',
+              values: [message.channelID, channel?.displayName ?? message.channelInternalName],
+              mainAction: (channel != null)
+                  ? () {
+                      Navi.push(context, () => ChannelViewPage(channelID: channel.channelID, preloadedData: null, needsReload: null));
+                    }
+                  : null,
+            ),
+            UI.metaCard(
+              context: context,
+              icon: FontAwesomeIcons.solidTimer,
+              title: 'Timestamp',
+              values: [message.timestamp],
+            ),
+            UI.metaCard(
+              context: context,
+              icon: FontAwesomeIcons.solidUser,
+              title: 'User',
+              values: [user?.userID ?? '...', user?.username ?? ''],
+              mainAction: () => {/*TODO*/},
+            ),
+            UI.metaCard(
+              context: context,
+              icon: FontAwesomeIcons.solidBolt,
+              title: 'Priority',
+              values: [_prettyPrintPriority(message.priority)],
+              mainAction: () => {/*TODO*/},
+            ),
             if (message.senderUserID == userAccUserID) UI.button(text: "Delete Message", onPressed: () {/*TODO*/}, color: Colors.red[900]),
           ],
         ),
@@ -144,11 +205,11 @@ class _MessageViewPageState extends State<MessageViewPage> {
     );
   }
 
-  String _resolveChannelName(ChannelPreview? channel, Message message) {
+  String _resolveChannelName(ChannelPreview? channel, SCNMessage message) {
     return channel?.displayName ?? message.channelInternalName;
   }
 
-  List<Widget> _buildMessageHeader(BuildContext context, Message message, ChannelPreview? channel) {
+  List<Widget> _buildMessageHeader(BuildContext context, SCNMessage message, ChannelPreview? channel) {
     return [
       Row(
         children: [
@@ -167,7 +228,7 @@ class _MessageViewPageState extends State<MessageViewPage> {
     ];
   }
 
-  List<Widget> _buildMessageContent(BuildContext context, Message message) {
+  List<Widget> _buildMessageContent(BuildContext context, SCNMessage message) {
     return [
       Row(
         children: [
@@ -213,43 +274,20 @@ class _MessageViewPageState extends State<MessageViewPage> {
     ];
   }
 
-  Widget _buildMetaCard(BuildContext context, IconData icn, String title, List<String> values, void Function()? action) {
-    final container = UI.box(
-      context: context,
-      padding: EdgeInsets.fromLTRB(16, 2, 4, 2),
-      child: Row(
-        children: [
-          FaIcon(icn, size: 18),
-          SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              for (final val in values) Text(val, style: const TextStyle(fontSize: 14)),
-            ],
-          ),
-        ],
-      ),
-    );
-
-    if (action == null) {
-      return Padding(
-        padding: EdgeInsets.symmetric(vertical: 4, horizontal: 0),
-        child: container,
-      );
-    } else {
-      return Padding(
-        padding: EdgeInsets.symmetric(vertical: 4, horizontal: 0),
-        child: InkWell(
-          splashColor: Theme.of(context).splashColor,
-          onTap: action,
-          child: container,
-        ),
-      );
-    }
+  String _preformatTitle(SCNMessage message) {
+    return message.title.replaceAll('\n', '').replaceAll('\r', '').replaceAll('\t', ' ');
   }
 
-  String _preformatTitle(Message message) {
-    return message.title.replaceAll('\n', '').replaceAll('\r', '').replaceAll('\t', ' ');
+  String _prettyPrintPriority(int priority) {
+    switch (priority) {
+      case 0:
+        return 'Low (0)';
+      case 1:
+        return 'Normal (1)';
+      case 2:
+        return 'High (2)';
+      default:
+        return 'Unknown ($priority)';
+    }
   }
 }

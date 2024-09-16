@@ -12,9 +12,18 @@ class AppBarState extends ChangeNotifier {
   bool _loadingIndeterminate = false;
   bool get loadingIndeterminate => _loadingIndeterminate;
 
+  bool _showSearchField = false;
+  bool get showSearchField => _showSearchField;
+
   void setLoadingIndeterminate(bool v) {
     if (_loadingIndeterminate == v) return;
     _loadingIndeterminate = v;
+    notifyListeners();
+  }
+
+  void setShowSearchField(bool v) {
+    if (_showSearchField == v) return;
+    _showSearchField = v;
     notifyListeners();
   }
 }

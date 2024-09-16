@@ -16,7 +16,6 @@ class DebugRequestViewPage extends StatelessWidget {
     return SCNScaffold(
       title: 'Request',
       showSearch: false,
-      showDebug: false,
       child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(8.0),

@@ -16,7 +16,6 @@ class DebugHiveBoxPage extends StatelessWidget {
     return SCNScaffold(
       title: 'Hive: ' + boxName,
       showSearch: false,
-      showDebug: false,
       child: ListView.separated(
         itemCount: box.length,
         itemBuilder: (context, listIndex) {
@@ -24,8 +23,9 @@ class DebugHiveBoxPage extends StatelessWidget {
             onTap: () {
               Navi.push(context, () => DebugHiveEntryPage(value: box.getAt(listIndex)!));
             },
-            child: ListTile(
-              title: Text(box.getAt(listIndex).toString(), style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Container(
+              padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
+              child: Text(box.getAt(listIndex).toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
             ),
           );
         },

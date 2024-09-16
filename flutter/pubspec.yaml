@@ -33,6 +33,7 @@ dependencies:
   toastification: ^2.0.0
   uuid: ^4.4.0
   share_plus: ^9.0.0
+  flutter_local_notifications: ^17.1.2
 
 
 dependency_overrides:
