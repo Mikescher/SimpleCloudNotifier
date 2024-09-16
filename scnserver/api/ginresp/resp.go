@@ -81,6 +81,10 @@ func (j errorHTTPResponse) Headers() []string {
 	return langext.ArrMap(j.headers, func(v headerval) string { return v.Key + "=" + v.Val })
 }
 
+func (j errorHTTPResponse) Unwrap() error {
+	return j.error
+}
+
 func InternalError(e error) ginext.HTTPResponse {
 	return createApiError(nil, "InternalError", 500, apierr.INTERNAL_EXCEPTION, 0, e.Error(), e)
 }

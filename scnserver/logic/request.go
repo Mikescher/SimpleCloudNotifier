@@ -9,9 +9,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/glebarez/go-sqlite"
+	"github.com/mattn/go-sqlite3"
 	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/dataext"
+	"gogs.mikescher.com/BlackForestBytes/goext/exerr"
 	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"math/rand"
@@ -229,12 +230,12 @@ func resetBody(g *gin.Context) error {
 
 func isSqlite3Busy(r ginext.HTTPResponse) bool {
 	if errwrap, ok := r.(interface{ Unwrap() error }); ok && errwrap != nil {
-		{
-			var s3err *sqlite.Error
-			if errors.As(errwrap.Unwrap(), &s3err) {
-				if s3err.Code() == 5 { // [5] == SQLITE_BUSY
-					return true
-				}
+		orig := exerr.OriginalError(errwrap.Unwrap())
+
+		var sqlite3Err sqlite3.Error
+		if errors.As(orig, &sqlite3Err) {
+			if sqlite3Err.Code == 5 { // [5] == SQLITE_BUSY
+				return true
 			}
 		}
 	}

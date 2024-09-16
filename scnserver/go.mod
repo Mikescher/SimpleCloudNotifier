@@ -12,7 +12,7 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/rs/zerolog v1.33.0
-	gogs.mikescher.com/BlackForestBytes/goext v0.0.512
+	gogs.mikescher.com/BlackForestBytes/goext v0.0.513
 	gopkg.in/loremipsum.v1 v1.1.2
 )
 
