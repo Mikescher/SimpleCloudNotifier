@@ -52,6 +52,18 @@ func (db *Database) GetClient(ctx db.TxContext, userid models.UserID, clientid m
 	}, sq.SModeExtended, sq.Safe)
 }
 
+func (db *Database) GetClientOpt(ctx db.TxContext, userid models.UserID, clientid models.ClientID) (*models.Client, error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return nil, err
+	}
+
+	return sq.QuerySingleOpt[models.Client](ctx, tx, "SELECT * FROM clients WHERE deleted=0 AND user_id = :uid AND client_id = :cid LIMIT 1", sq.PP{
+		"uid": userid,
+		"cid": clientid,
+	}, sq.SModeExtended, sq.Safe)
+}
+
 func (db *Database) DeleteClient(ctx db.TxContext, clientid models.ClientID) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {

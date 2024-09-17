@@ -134,35 +134,34 @@ func (j *DeliveryRetryJob) execute() (fastrr bool, err error) {
 
 func (j *DeliveryRetryJob) redeliver(ctx *simplectx.SimpleContext, delivery models.Delivery) {
 
-	client, err := j.app.Database.Primary.GetClient(ctx, delivery.ReceiverUserID, delivery.ReceiverClientID)
+	client, err := j.app.Database.Primary.GetClientOpt(ctx, delivery.ReceiverUserID, delivery.ReceiverClientID)
 	if err != nil {
 		log.Err(err).Str("ReceiverUserID", delivery.ReceiverUserID.String()).Str("ReceiverClientID", delivery.ReceiverClientID.String()).Msg("Failed to get client")
 		ctx.RollbackTransaction()
+		return
+	}
+	if client == nil {
+		log.Error().Str("ReceiverUserID", delivery.ReceiverUserID.String()).Str("ReceiverClientID", delivery.ReceiverClientID.String()).Msg("Failed to get client (client no longer exists)")
+
+		err = j.app.Database.Primary.SetDeliveryFailed(ctx, delivery)
+		if err != nil {
+			log.Err(err).Str("MessageID", delivery.MessageID.String()).Str("DeliveryID", delivery.DeliveryID.String()).Msg("Failed to update delivery")
+			ctx.RollbackTransaction()
+			return
+		}
+		log.Warn().Str("MessageID", delivery.MessageID.String()).Str("DeliveryID", delivery.DeliveryID.String()).Msg("Delivery failed because of [client==null] (set to FAILURE)")
+
+		err = ctx.CommitTransaction()
+		if err != nil {
+			log.Err(err).Msg("Failed to commit transaction")
+			return
+		}
 		return
 	}
 
 	msg, err := j.app.Database.Primary.GetMessage(ctx, delivery.MessageID, true)
 	if err != nil {
 		log.Err(err).Str("MessageID", delivery.MessageID.String()).Msg("Failed to get message")
-		ctx.RollbackTransaction()
-		return
-	}
-
-	user, err := j.app.Database.Primary.GetUser(ctx, delivery.ReceiverUserID)
-	if err != nil {
-		log.Err(err).Str("ReceiverUserID", delivery.ReceiverUserID.String()).Msg("Failed to get user")
-		ctx.RollbackTransaction()
-		return
-	}
-
-	channel, err := j.app.Database.Primary.GetChannelByID(ctx, msg.ChannelID)
-	if err != nil {
-		log.Err(err).Str("ChannelID", msg.ChannelID.String()).Msg("Failed to get channel")
-		ctx.RollbackTransaction()
-		return
-	}
-	if channel == nil {
-		log.Error().Str("ChannelID", msg.ChannelID.String()).Msg("Failed to get channel")
 		ctx.RollbackTransaction()
 		return
 	}
@@ -174,9 +173,68 @@ func (j *DeliveryRetryJob) redeliver(ctx *simplectx.SimpleContext, delivery mode
 			ctx.RollbackTransaction()
 			return
 		}
-	} else {
+		log.Warn().Str("MessageID", delivery.MessageID.String()).Str("DeliveryID", delivery.DeliveryID.String()).Msg("Delivery failed because of [message.deleted] (set to FAILURE)")
 
-		fcmDelivID, err := j.app.DeliverMessage(ctx, user, client, *channel, msg)
+		err = ctx.CommitTransaction()
+		if err != nil {
+			log.Err(err).Msg("Failed to commit transaction")
+			return
+		}
+		return
+	}
+
+	user, err := j.app.Database.Primary.GetUserOpt(ctx, delivery.ReceiverUserID)
+	if err != nil {
+		log.Err(err).Str("ReceiverUserID", delivery.ReceiverUserID.String()).Msg("Failed to get user")
+		ctx.RollbackTransaction()
+		return
+	}
+	if user == nil {
+		log.Error().Str("ReceiverUserID", delivery.ReceiverUserID.String()).Str("ChannelID", msg.ChannelID.String()).Msg("Failed to get user (user no longer exists)")
+
+		err = j.app.Database.Primary.SetDeliveryFailed(ctx, delivery)
+		if err != nil {
+			log.Err(err).Str("MessageID", delivery.MessageID.String()).Str("DeliveryID", delivery.DeliveryID.String()).Msg("Failed to update delivery")
+			ctx.RollbackTransaction()
+			return
+		}
+		log.Warn().Str("MessageID", delivery.MessageID.String()).Str("DeliveryID", delivery.DeliveryID.String()).Msg("Delivery failed because of [user==null] (set to FAILURE)")
+
+		err = ctx.CommitTransaction()
+		if err != nil {
+			log.Err(err).Msg("Failed to commit transaction")
+			return
+		}
+		return
+	}
+
+	channel, err := j.app.Database.Primary.GetChannelByID(ctx, msg.ChannelID)
+	if err != nil {
+		log.Err(err).Str("ChannelID", msg.ChannelID.String()).Msg("Failed to get channel")
+		ctx.RollbackTransaction()
+		return
+	}
+	if channel == nil {
+		log.Error().Str("ReceiverUserID", delivery.ReceiverUserID.String()).Str("ChannelID", msg.ChannelID.String()).Msg("Failed to get channel (client no longer exists)")
+
+		err = j.app.Database.Primary.SetDeliveryFailed(ctx, delivery)
+		if err != nil {
+			log.Err(err).Str("MessageID", delivery.MessageID.String()).Str("DeliveryID", delivery.DeliveryID.String()).Msg("Failed to update delivery")
+			ctx.RollbackTransaction()
+			return
+		}
+		log.Warn().Str("MessageID", delivery.MessageID.String()).Str("DeliveryID", delivery.DeliveryID.String()).Msg("Delivery failed because of [channel==null] (set to FAILURE)")
+
+		err = ctx.CommitTransaction()
+		if err != nil {
+			log.Err(err).Msg("Failed to commit transaction")
+			return
+		}
+		return
+	}
+
+	{
+		fcmDelivID, err := j.app.DeliverMessage(ctx, *user, *client, *channel, msg)
 		if err == nil {
 			err = j.app.Database.Primary.SetDeliverySuccess(ctx, delivery, fcmDelivID)
 			if err != nil {
@@ -201,8 +259,11 @@ func (j *DeliveryRetryJob) redeliver(ctx *simplectx.SimpleContext, delivery mode
 			}
 		}
 
+		err = ctx.CommitTransaction()
+		if err != nil {
+			log.Err(err).Msg("Failed to commit transaction")
+			return
+		}
 	}
-
-	err = ctx.CommitTransaction()
 
 }

@@ -62,6 +62,15 @@ func (db *Database) GetUser(ctx db.TxContext, userid models.UserID) (models.User
 	return sq.QuerySingle[models.User](ctx, tx, "SELECT * FROM users WHERE user_id = :uid LIMIT 1", sq.PP{"uid": userid}, sq.SModeExtended, sq.Safe)
 }
 
+func (db *Database) GetUserOpt(ctx db.TxContext, userid models.UserID) (*models.User, error) {
+	tx, err := ctx.GetOrCreateTransaction(db)
+	if err != nil {
+		return nil, err
+	}
+
+	return sq.QuerySingleOpt[models.User](ctx, tx, "SELECT * FROM users WHERE user_id = :uid LIMIT 1", sq.PP{"uid": userid}, sq.SModeExtended, sq.Safe)
+}
+
 func (db *Database) UpdateUserUsername(ctx db.TxContext, userid models.UserID, username *string) error {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {

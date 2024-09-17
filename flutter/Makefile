@@ -4,6 +4,12 @@ run:
 	flutter pub run build_runner build
 	flutter run
 	
+run-android:
+	ping -c1 10.10.10.177
+	adb connect 10.10.10.177:5555
+	flutter pub run build_runner build
+	flutter run -d 10.10.10.177:5555
+	
 test:
 	dart analyze
 

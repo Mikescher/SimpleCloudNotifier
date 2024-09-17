@@ -176,7 +176,7 @@ func (app *Application) SendMessage(g *gin.Context, ctx *AppContext, UserID *mod
 		return nil, langext.Ptr(ginresp.SendAPIError(g, 500, apierr.DATABASE_ERROR, hl.NONE, "Failed to inc token msg-counter", err))
 	}
 
-	log.Info().Msg(fmt.Sprintf("Sending new notification %s for user %s", msg.MessageID, UserID))
+	log.Info().Msg(fmt.Sprintf("Sending new notification %s for user %s (to %d active subscriptions)", msg.MessageID, UserID, len(activeSubscriptions)))
 
 	for _, sub := range activeSubscriptions {
 		clients, err := app.Database.Primary.ListClients(ctx, sub.SubscriberUserID)
@@ -185,6 +185,8 @@ func (app *Application) SendMessage(g *gin.Context, ctx *AppContext, UserID *mod
 		}
 
 		for _, client := range clients {
+
+			log.Info().Msg(fmt.Sprintf("Create delivery for message %s to client %s (of user %s)", msg.MessageID, client.ClientID, client.UserID))
 
 			fcmDelivID, err := app.DeliverMessage(ctx, user, client, channel, msg)
 			if err != nil {
