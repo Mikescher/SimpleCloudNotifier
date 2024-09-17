@@ -19,4 +19,5 @@ type Client struct {
 	AgentModel       string     `db:"agent_model"       json:"agent_model"`
 	AgentVersion     string     `db:"agent_version"     json:"agent_version"`
 	Name             *string    `db:"name"              json:"name"`
+	Deleted          bool       `db:"deleted"           json:"-"`
 }

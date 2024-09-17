@@ -12,6 +12,8 @@
 
  - exerr.New | exerr.Wrap
 
+ - (!!!) Run tests in pipeline !!
+
 #### UNSURE
 
  - (?) default-priority for channels

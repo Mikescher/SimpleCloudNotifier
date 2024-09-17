@@ -293,7 +293,7 @@ func TestRequestsDB_Current(t *testing.T) {
 	}
 }
 
-func TestPrimaryDB_Migrate_from_3(t *testing.T) {
+func TestPrimaryDB_Migrate_from_3_to_latest(t *testing.T) {
 	dbf1, dbf2, dbf3, conf, stop := tt.StartSimpleTestspace(t)
 	defer stop()
 
@@ -389,7 +389,7 @@ func TestPrimaryDB_Migrate_from_3(t *testing.T) {
 	}
 }
 
-func TestPrimaryDB_Migrate_from_4(t *testing.T) {
+func TestPrimaryDB_Migrate_from_4_to_latest(t *testing.T) {
 	dbf1, dbf2, dbf3, conf, stop := tt.StartSimpleTestspace(t)
 	defer stop()
 

@@ -3,8 +3,9 @@ package schema
 import _ "embed"
 
 type Def struct {
-	SQL  string
-	Hash string
+	SQL       string
+	Hash      string
+	MigScript string
 }
 
 //go:embed primary_1.ddl
@@ -28,17 +29,23 @@ var primarySchema6 string
 //go:embed primary_7.ddl
 var primarySchema7 string
 
+//go:embed primary_8.ddl
+var primarySchema8 string
+
 //go:embed primary_migration_3_4.ddl
-var PrimaryMigration_3_4 string
+var primaryMigration_3_4 string
 
 //go:embed primary_migration_4_5.ddl
-var PrimaryMigration_4_5 string
+var primaryMigration_4_5 string
 
 //go:embed primary_migration_5_6.ddl
-var PrimaryMigration_5_6 string
+var primaryMigration_5_6 string
 
 //go:embed primary_migration_6_7.ddl
-var PrimaryMigration_6_7 string
+var primaryMigration_6_7 string
+
+//go:embed primary_migration_7_8.ddl
+var primaryMigration_7_8 string
 
 //go:embed requests_1.ddl
 var requestsSchema1 string
@@ -47,28 +54,29 @@ var requestsSchema1 string
 var logsSchema1 string
 
 var PrimarySchema = map[int]Def{
-	0: {"", ""},
-	1: {primarySchema1, "f2b2847f32681a7178e405553beea4a324034915a0c5a5dc70b3c6abbcc852f2"},
-	2: {primarySchema2, "07ed1449114416ed043084a30e0722a5f97bf172161338d2f7106a8dfd387d0a"},
-	3: {primarySchema3, "65c2125ad0e12d02490cf2275f0067ef3c62a8522edf9a35ee8aa3f3c09b12e8"},
-	4: {primarySchema4, "cb022156ab0e7aea39dd0c985428c43cae7d60e41ca8e9e5a84c774b3019d2ca"},
-	5: {primarySchema5, "9d6217ba4a3503cfe090f72569367f95a413bb14e9effe49ffeabbf255bce8dd"},
-	6: {primarySchema6, "8e83d20bcd008082713f248ae8cd558335a37a37ce90bd8c86e782da640ee160"},
-	7: {primarySchema7, "90d8dbc460afe025f9b74cda5c16bb8e58b178df275223bd2531907a8d8c36c3"},
+	0: {"", "", ""},
+	1: {primarySchema1, "f2b2847f32681a7178e405553beea4a324034915a0c5a5dc70b3c6abbcc852f2", ""},
+	2: {primarySchema2, "07ed1449114416ed043084a30e0722a5f97bf172161338d2f7106a8dfd387d0a", ""},
+	3: {primarySchema3, "65c2125ad0e12d02490cf2275f0067ef3c62a8522edf9a35ee8aa3f3c09b12e8", ""},
+	4: {primarySchema4, "cb022156ab0e7aea39dd0c985428c43cae7d60e41ca8e9e5a84c774b3019d2ca", primaryMigration_3_4},
+	5: {primarySchema5, "9d6217ba4a3503cfe090f72569367f95a413bb14e9effe49ffeabbf255bce8dd", primaryMigration_4_5},
+	6: {primarySchema6, "8e83d20bcd008082713f248ae8cd558335a37a37ce90bd8c86e782da640ee160", primaryMigration_5_6},
+	7: {primarySchema7, "90d8dbc460afe025f9b74cda5c16bb8e58b178df275223bd2531907a8d8c36c3", primaryMigration_6_7},
+	8: {primarySchema8, "746f6005c7a573b8816e5993ecd1d949fe2552b0134ba63bab8b4d5b2b5058ad", primaryMigration_7_8},
 }
 
-var PrimarySchemaVersion = 7
+var PrimarySchemaVersion = len(PrimarySchema) - 1
 
 var RequestsSchema = map[int]Def{
-	0: {"", ""},
-	1: {requestsSchema1, "ebb0a5748b605e8215437413b738279670190ca8159b6227cfc2aa13418b41e9"},
+	0: {"", "", ""},
+	1: {requestsSchema1, "ebb0a5748b605e8215437413b738279670190ca8159b6227cfc2aa13418b41e9", ""},
 }
 
-var RequestsSchemaVersion = 1
+var RequestsSchemaVersion = len(RequestsSchema) - 1
 
 var LogsSchema = map[int]Def{
-	0: {"", ""},
-	1: {logsSchema1, "65fba477c04095effc3a8e1bb79fe7547b8e52e983f776f156266eddc4f201d7"},
+	0: {"", "", ""},
+	1: {logsSchema1, "65fba477c04095effc3a8e1bb79fe7547b8e52e983f776f156266eddc4f201d7", ""},
 }
 
-var LogsSchemaVersion = 1
+var LogsSchemaVersion = len(LogsSchema) - 1

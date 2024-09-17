@@ -121,8 +121,8 @@ func (db *Database) Migrate(outerctx context.Context) error {
 		if currschema == 0 {
 			log.Info().Msgf("Migrate database (initialize) [%s] %d -> %d", db.name, currschema, db.schemaVersion)
 
-			schemastr := db.schema[1].SQL
-			schemahash := db.schema[1].Hash
+			schemastr := db.schema[db.schemaVersion].SQL
+			schemahash := db.schema[db.schemaVersion].Hash
 
 			_, err = tx.Exec(tctx, schemastr, sq.PP{})
 			if err != nil {
@@ -177,20 +177,14 @@ func (db *Database) Migrate(outerctx context.Context) error {
 //goland:noinspection SqlConstantCondition,SqlWithoutWhere
 func (db *Database) migrateSingle(tctx *simplectx.SimpleContext, tx sq.Tx, schemaFrom int, schemaTo int) error {
 
-	if schemaFrom == 3 && schemaTo == 4 {
-		return db.migrateBySQL(tctx, tx, schema.PrimaryMigration_3_4, schemaFrom, schemaTo, db.schema[schemaTo].Hash, nil)
-	}
+	if schemaFrom == schemaTo-1 {
 
-	if schemaFrom == 4 && schemaTo == 5 {
-		return db.migrateBySQL(tctx, tx, schema.PrimaryMigration_4_5, schemaFrom, schemaTo, db.schema[schemaTo].Hash, nil)
-	}
+		migSQL := db.schema[schemaTo].MigScript
+		if migSQL == "" {
+			return exerr.New(exerr.TypeInternal, fmt.Sprintf("missing %s migration from %d to %d", db.name, schemaFrom, schemaTo)).Build()
+		}
 
-	if schemaFrom == 5 && schemaTo == 6 {
-		return db.migrateBySQL(tctx, tx, schema.PrimaryMigration_5_6, schemaFrom, schemaTo, db.schema[schemaTo].Hash, nil)
-	}
-
-	if schemaFrom == 6 && schemaTo == 7 {
-		return db.migrateBySQL(tctx, tx, schema.PrimaryMigration_6_7, schemaFrom, schemaTo, db.schema[schemaTo].Hash, nil)
+		return db.migrateBySQL(tctx, tx, migSQL, schemaFrom, schemaTo, db.schema[schemaTo].Hash, nil)
 	}
 
 	return exerr.New(exerr.TypeInternal, fmt.Sprintf("missing %s migration from %d to %d", db.name, schemaFrom, schemaTo)).Build()
