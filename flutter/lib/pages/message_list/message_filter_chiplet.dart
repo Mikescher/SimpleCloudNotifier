@@ -11,8 +11,8 @@ enum MessageFilterChipletType {
 }
 
 class MessageFilterChiplet {
-  final String label;
-  final String value;
+  final String label; // display value
+  final dynamic value; // search/api value
   final MessageFilterChipletType type;
 
   MessageFilterChiplet({required this.label, required this.value, required this.type});

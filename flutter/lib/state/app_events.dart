@@ -1,4 +1,5 @@
 import 'package:simplecloudnotifier/models/scn_message.dart';
+import 'package:simplecloudnotifier/pages/message_list/message_filter_chiplet.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 
 class AppEvents {
@@ -10,24 +11,29 @@ class AppEvents {
 
   AppEvents._internal() {}
 
-  List<void Function(String)> _searchListeners = [];
-  List<void Function(SCNMessage)> _messageReceivedListeners = [];
+  // --------------------------------------------------------------------------
 
-  void subscribeSearchListener(void Function(String) listener) {
-    _searchListeners.add(listener);
+  List<void Function(List<MessageFilterChipletType> types, List<MessageFilterChiplet>)> _filterListeners = [];
+
+  void subscribeFilterListener(void Function(List<MessageFilterChipletType> types, List<MessageFilterChiplet>) listener) {
+    _filterListeners.add(listener);
   }
 
-  void unsubscribeSearchListener(void Function(String) listener) {
-    _searchListeners.remove(listener);
+  void unsubscribeFilterListener(void Function(List<MessageFilterChipletType> types, List<MessageFilterChiplet>) listener) {
+    _filterListeners.remove(listener);
   }
 
-  void notifySearchListeners(String query) {
-    ApplicationLog.debug('[AppEvents] onSearch: $query');
+  void notifyFilterListeners(List<MessageFilterChipletType> types, List<MessageFilterChiplet> query) {
+    ApplicationLog.debug('[AppEvents] onFilter: [${types.join(" ; ")}], [${query.map((e) => e.label).join('|')}]');
 
-    for (var listener in _searchListeners) {
-      listener(query);
+    for (var listener in _filterListeners) {
+      listener(types, query);
     }
   }
+
+  // --------------------------------------------------------------------------
+
+  List<void Function(SCNMessage)> _messageReceivedListeners = [];
 
   void subscribeMessageReceivedListener(void Function(SCNMessage) listener) {
     _messageReceivedListeners.add(listener);

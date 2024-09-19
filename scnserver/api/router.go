@@ -152,9 +152,13 @@ func (r *Router) Init(e *ginext.GinWrapper) error {
 		apiv2.DELETE("/users/:uid/subscriptions/:sid").Handle(r.apiHandler.CancelSubscription)
 		apiv2.PATCH("/users/:uid/subscriptions/:sid").Handle(r.apiHandler.UpdateSubscription)
 
+		apiv2.GET("/users/:uid/sender-names").Handle(r.apiHandler.ListUserSenderNames)
+
 		apiv2.GET("/messages").Handle(r.apiHandler.ListMessages)
 		apiv2.GET("/messages/:mid").Handle(r.apiHandler.GetMessage)
 		apiv2.DELETE("/messages/:mid").Handle(r.apiHandler.DeleteMessage)
+
+		apiv2.GET("/sender-names").Handle(r.apiHandler.ListSenderNames)
 
 		apiv2.GET("/preview/users/:uid").Handle(r.apiHandler.GetUserPreview)
 		apiv2.GET("/preview/keys/:kid").Handle(r.apiHandler.GetUserKeyPreview)

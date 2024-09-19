@@ -698,3 +698,163 @@ func TestListMessagesZeroPagesize(t *testing.T) {
 	tt.AssertEqual(t, "msgList.PageSize", 1, msgList1.PageSize)
 	tt.AssertEqual(t, "msgList[0]", "Lorem Ipsum 23", msgList1.Messages[0].Title)
 }
+
+func TestListMessagesFilterChannel(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	type msg struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		Content             string `json:"content"`
+		MessageId           string `json:"message_id"`
+		OwnerUserId         string `json:"owner_user_id"`
+		Priority            int    `json:"priority"`
+		SenderIp            string `json:"sender_ip"`
+		SenderName          string `json:"sender_name"`
+		SenderUserId        string `json:"sender_user_id"`
+		Timestamp           string `json:"timestamp"`
+		Title               string `json:"title"`
+		Trimmed             bool   `json:"trimmed"`
+		UsrMessageId        string `json:"usr_message_id"`
+	}
+	type mglist struct {
+		Messages []msg `json:"messages"`
+	}
+
+	cid1 := ""
+	for _, channel := range data.User[0].Channels {
+		if channel.InternalName == "Reminders" {
+			cid1 = channel.ChannelID
+		}
+	}
+
+	cid2 := ""
+	for _, channel := range data.User[0].Channels {
+		if channel.InternalName == "Chatting Chamber" {
+			cid2 = channel.ChannelID
+		}
+	}
+
+	skey := ""
+	for _, key := range data.User[0].Keys {
+		if key.Name == "SendKey (default)" {
+			skey = key.KeyID
+		}
+	}
+
+	akey := ""
+	for _, key := range data.User[0].Keys {
+		if key.Name == "AdminKey (default)" {
+			akey = key.KeyID
+		}
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?channel=%s", "Reminders,Promotions"))
+		tt.AssertEqual(t, "msgList.len", 9, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?channel=%s", "Reminders"))
+		tt.AssertEqual(t, "msgList.len", 6, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?channel_id=%s", cid1))
+		tt.AssertEqual(t, "msgList.len", 6, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?channel_id=%s,%s", cid1, cid2))
+		tt.AssertEqual(t, "msgList.len", 9, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?filter=%s", "unusual"))
+		tt.AssertEqual(t, "msgList.len", 1, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?filter=%s", "your"))
+		tt.AssertEqual(t, "msgList.len", 7, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?priority=%s", "1"))
+		tt.AssertEqual(t, "msgList.len", 4, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?priority=%s", "2"))
+		tt.AssertEqual(t, "msgList.len", 6, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?priority=%s", "0"))
+		tt.AssertEqual(t, "msgList.len", 5, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?priority=%s", "0,2"))
+		tt.AssertEqual(t, "msgList.len", 11, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?used_key_id=%s", akey))
+		tt.AssertEqual(t, "msgList.len", 11, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?used_key_id=%s", skey))
+		tt.AssertEqual(t, "msgList.len", 11, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?used_key_id=%s,%s", akey, skey))
+		tt.AssertEqual(t, "msgList.len", 22, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?used_key_id=%s&priority=%d", akey, 0))
+		tt.AssertEqual(t, "msgList.len", 5, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?sender=%s", "Mobile Mate"))
+		tt.AssertEqual(t, "msgList.len", 3, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?sender=%s", "Pocket Pal"))
+		tt.AssertEqual(t, "msgList.len", 3, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?sender=%s,%s", "Pocket Pal", "Mobile Mate"))
+		tt.AssertEqual(t, "msgList.len", 6, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?sender=%s", ""))
+		tt.AssertEqual(t, "msgList.len", 12, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?before=%s", time.Now().Add(-time.Hour)))
+		tt.AssertEqual(t, "msgList.len", 2, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?after=%s", time.Now().Add(-time.Hour)))
+		tt.AssertEqual(t, "msgList.len", 20, len(msgList.Messages))
+	}
+
+	{
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?after=%s", time.Now().Add(5*time.Minute)))
+		tt.AssertEqual(t, "msgList.len", 3, len(msgList.Messages))
+	}
+
+}

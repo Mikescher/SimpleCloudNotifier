@@ -27,6 +27,26 @@ enum ChannelSelector {
   final String apiKey;
 }
 
+class MessageFilter {
+  List<String>? channelIDs;
+  String? searchFilter;
+  List<String>? senderNames;
+  List<String>? usedKeys;
+  List<int>? priority;
+  DateTime? timeBefore;
+  DateTime? timeAfter;
+
+  MessageFilter({
+    this.channelIDs,
+    this.searchFilter,
+    this.senderNames,
+    this.usedKeys,
+    this.priority,
+    this.timeBefore,
+    this.timeAfter,
+  });
+}
+
 class APIClient {
   static const String _base = 'https://simplecloudnotifier.de/api/v2';
 
@@ -226,7 +246,7 @@ class APIClient {
     );
   }
 
-  static Future<(String, List<SCNMessage>)> getMessageList(TokenSource auth, String pageToken, {int? pageSize, List<String>? channelIDs}) async {
+  static Future<(String, List<SCNMessage>)> getMessageList(TokenSource auth, String pageToken, {int? pageSize, MessageFilter? filter}) async {
     return await _request(
       name: 'getMessageList',
       method: 'GET',
@@ -234,7 +254,12 @@ class APIClient {
       query: {
         'next_page_token': pageToken,
         if (pageSize != null) 'page_size': pageSize.toString(),
-        if (channelIDs != null) 'channel_id': channelIDs.join(","),
+        if (filter?.channelIDs != null) 'channel_id': filter!.channelIDs!.join(","),
+        if (filter?.senderNames != null) 'sender': filter!.senderNames!.join(","),
+        if (filter?.timeBefore != null) 'before': filter!.timeBefore!.toIso8601String(),
+        if (filter?.timeAfter != null) 'after': filter!.timeAfter!.toIso8601String(),
+        if (filter?.priority != null) 'priority': filter!.priority!.map((p) => p.toString()).join(","),
+        if (filter?.usedKeys != null) 'used_key': filter!.usedKeys!.join(","),
       },
       fn: (json) => SCNMessage.fromPaginatedJsonArray(json, 'messages', 'next_page_token'),
       authToken: auth.getToken(),
@@ -338,5 +363,9 @@ class APIClient {
       fn: KeyToken.fromJson,
       authToken: token,
     );
+  }
+
+  static Future<List<String>> getSenderNameList(AppAuth userAcc) {
+    return Future.value(['TODO']); //TODO
   }
 }

@@ -39,7 +39,7 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
   void initState() {
     super.initState();
 
-    AppEvents().subscribeSearchListener(_onAppBarSearch);
+    AppEvents().subscribeFilterListener(_onAddFilter);
     AppEvents().subscribeMessageReceivedListener(_onMessageReceivedViaNotification);
 
     _pagingController.addPageRequestListener(_fetchPage);
@@ -92,7 +92,7 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
   @override
   void dispose() {
     ApplicationLog.debug('MessageListPage::dispose');
-    AppEvents().unsubscribeSearchListener(_onAppBarSearch);
+    AppEvents().unsubscribeFilterListener(_onAddFilter);
     AppEvents().unsubscribeMessageReceivedListener(_onMessageReceivedViaNotification);
     Navi.modalRouteObserver.unsubscribe(this);
     _pagingController.dispose();
@@ -139,7 +139,7 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
         SCNDataCache().setChannelCache(channels); // no await
       }
 
-      final (npt, newItems) = await APIClient.getMessageList(acc, thisPageToken, pageSize: cfg.messagePageSize);
+      final (npt, newItems) = await APIClient.getMessageList(acc, thisPageToken, pageSize: cfg.messagePageSize, filter: _getFilter());
 
       SCNDataCache().addToMessageCache(newItems); // no await
 
@@ -267,16 +267,28 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
       child: InputChip(
         avatar: Icon(chiplet.icon()),
         label: Text(chiplet.label),
-        onDeleted: () => setState(() => _filterChiplets.remove(chiplet)),
+        onDeleted: () => _onRemFilter(chiplet),
         onPressed: () {/* TODO idk what to do here ? */},
         visualDensity: VisualDensity(horizontal: -4, vertical: -4),
       ),
     );
   }
 
-  void _onAppBarSearch(String str) {
+  void _onAddFilter(List<MessageFilterChipletType> remTypeList, List<MessageFilterChiplet> chiplets) {
     setState(() {
-      _filterChiplets = _filterChiplets.where((element) => false).toList() + [MessageFilterChiplet(label: str, value: str, type: MessageFilterChipletType.search)];
+      final remTypes = remTypeList.toSet();
+
+      _filterChiplets = _filterChiplets.where((element) => !remTypes.contains(element.type)).toList() + chiplets;
+
+      _pagingController.refresh();
+    });
+  }
+
+  void _onRemFilter(MessageFilterChiplet chiplet) {
+    setState(() {
+      _filterChiplets.remove(chiplet);
+
+      _pagingController.refresh();
     });
   }
 
@@ -284,5 +296,36 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
     setState(() {
       _pagingController.itemList = [msg] + (_pagingController.itemList ?? []);
     });
+  }
+
+  MessageFilter _getFilter() {
+    var filter = MessageFilter();
+
+    var chipletsChannel = _filterChiplets.where((p) => p.type == MessageFilterChipletType.channel).toList();
+    if (chipletsChannel.isNotEmpty) {
+      filter.channelIDs = chipletsChannel.map((p) => p.value as String).toList();
+    }
+
+    var chipletsSearch = _filterChiplets.where((p) => p.type == MessageFilterChipletType.search).toList();
+    if (chipletsSearch.isNotEmpty) {
+      filter.searchFilter = chipletsSearch.map((p) => p.value as String).first;
+    }
+
+    var chipletsKeyTokens = _filterChiplets.where((p) => p.type == MessageFilterChipletType.sendkey).toList();
+    if (chipletsKeyTokens.isNotEmpty) {
+      filter.usedKeys = chipletsKeyTokens.map((p) => p.value as String).toList();
+    }
+
+    var chipletPriority = _filterChiplets.where((p) => p.type == MessageFilterChipletType.priority).toList();
+    if (chipletPriority.isNotEmpty) {
+      filter.priority = chipletPriority.map((p) => p.value as int).toList();
+    }
+
+    var chipletSender = _filterChiplets.where((p) => p.type == MessageFilterChipletType.sender).toList();
+    if (chipletSender.isNotEmpty) {
+      filter.senderNames = chipletSender.map((p) => p.value as String).toList();
+    }
+
+    return filter;
   }
 }

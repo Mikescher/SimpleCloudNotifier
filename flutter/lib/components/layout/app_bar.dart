@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/components/layout/app_bar_filter_dialog.dart';
 import 'package:simplecloudnotifier/components/layout/app_bar_progress_indicator.dart';
 import 'package:simplecloudnotifier/pages/debug/debug_main.dart';
+import 'package:simplecloudnotifier/pages/message_list/message_filter_chiplet.dart';
 import 'package:simplecloudnotifier/settings/app_settings.dart';
 import 'package:simplecloudnotifier/state/app_bar_state.dart';
 import 'package:simplecloudnotifier/state/app_events.dart';
@@ -108,7 +109,8 @@ class _SCNAppBarState extends State<SCNAppBar> {
               icon: const Icon(FontAwesomeIcons.solidMagnifyingGlass),
               onPressed: () {
                 value.setShowSearchField(false);
-                AppEvents().notifySearchListeners(_ctrlSearchField.text);
+                final chiplet = MessageFilterChiplet(label: _ctrlSearchField.text, value: _ctrlSearchField.text, type: MessageFilterChipletType.search);
+                AppEvents().notifyFilterListeners([MessageFilterChipletType.search], [chiplet]);
                 _ctrlSearchField.clear();
               },
             ),
@@ -157,7 +159,8 @@ class _SCNAppBarState extends State<SCNAppBar> {
       ),
       onSubmitted: (value) {
         AppBarState().setShowSearchField(false);
-        AppEvents().notifySearchListeners(_ctrlSearchField.text);
+        final chiplet = MessageFilterChiplet(label: _ctrlSearchField.text, value: _ctrlSearchField.text, type: MessageFilterChipletType.search);
+        AppEvents().notifyFilterListeners([MessageFilterChipletType.search], [chiplet]);
         _ctrlSearchField.clear();
       },
     );

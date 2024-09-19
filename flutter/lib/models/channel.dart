@@ -12,11 +12,11 @@ class Channel extends HiveObject implements FieldDebuggable {
   @HiveField(10)
   final String ownerUserID;
   @HiveField(11)
-  final String internalName;
+  final String internalName; // = InternalName, used for sending, normalized, cannot be changed
   @HiveField(12)
-  final String displayName;
+  final String displayName; // = DisplayName, used for display purposes, can be changed, initially equals InternalName
   @HiveField(13)
-  final String? descriptionName;
+  final String? descriptionName; // = DescriptionName, (optional), longer description text, initally nil
   @HiveField(14)
   final String? subscribeKey;
   @HiveField(15)

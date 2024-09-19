@@ -59,15 +59,25 @@ type clientex struct {
 	FCMTok       string
 }
 
+type ChanData struct {
+	ChannelID    string
+	InternalName string
+}
+
+type KeyDat struct {
+	KeyID string
+	Name  string
+}
+
 type Userdat struct {
 	UID           string
 	SendKey       string
 	AdminKey      string
 	ReadKey       string
 	Clients       []string
-	Channels      []string
+	Channels      []ChanData
 	Messages      []string
-	Keys          []string
+	Keys          []KeyDat
 	Subscriptions []string
 }
 
@@ -419,26 +429,28 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 
 	for i, usr := range users {
 		type schan struct {
-			ID string `json:"channel_id"`
+			ID           string `json:"channel_id"`
+			InternalName string `json:"internal_name"`
 		}
 		type chanlist struct {
 			Channels []schan `json:"channels"`
 		}
 		r0 := RequestAuthGet[chanlist](t, usr.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels?selector=%s", usr.UID, "owned"))
-		users[i].Channels = langext.ArrMap(r0.Channels, func(v schan) string { return v.ID })
+		users[i].Channels = langext.ArrMap(r0.Channels, func(v schan) ChanData { return ChanData{ChannelID: v.ID, InternalName: v.InternalName} })
 	}
 
 	// list keys
 
 	for i, usr := range users {
 		type skey struct {
-			ID string `json:"keytoken_id"`
+			ID   string `json:"keytoken_id"`
+			Name string `json:"name"`
 		}
 		type keylist struct {
 			Keys []skey `json:"keys"`
 		}
 		r0 := RequestAuthGet[keylist](t, usr.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", usr.UID))
-		users[i].Keys = langext.ArrMap(r0.Keys, func(v skey) string { return v.ID })
+		users[i].Keys = langext.ArrMap(r0.Keys, func(v skey) KeyDat { return KeyDat{KeyID: v.ID, KeyName: v.Name} })
 	}
 
 	// list subscriptions

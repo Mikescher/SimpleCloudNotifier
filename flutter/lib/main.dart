@@ -359,7 +359,7 @@ Future<void> _receiveMessage(RemoteMessage message, bool foreground) async {
     SCNDataCache().addToMessageCache([msg]);
     if (foreground) AppEvents().notifyMessageReceivedListeners(msg);
   } catch (exc, trace) {
-    ApplicationLog.error('Failed to query+persist message' + exc.toString(), trace: trace);
+    ApplicationLog.error('Failed to query+persist message: ' + exc.toString(), trace: trace);
     return;
   }
 }

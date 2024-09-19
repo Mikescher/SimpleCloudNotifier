@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:simplecloudnotifier/components/modals/filter_modal_channel.dart';
+import 'package:simplecloudnotifier/components/modals/filter_modal_keytoken.dart';
+import 'package:simplecloudnotifier/components/modals/filter_modal_priority.dart';
+import 'package:simplecloudnotifier/components/modals/filter_modal_sendername.dart';
+import 'package:simplecloudnotifier/components/modals/filter_modal_time.dart';
+import 'package:simplecloudnotifier/state/app_bar_state.dart';
 import 'package:simplecloudnotifier/utils/navi.dart';
 
 class AppBarFilterDialog extends StatefulWidget {
@@ -48,17 +54,17 @@ class _AppBarFilterDialogState extends State<AppBarFilterDialog> {
                   child: Column(
                     children: [
                       SizedBox(height: 4),
-                      _buildFilterItem(context, FontAwesomeIcons.magnifyingGlass, 'Search'),
+                      _buildFilterItem(context, FontAwesomeIcons.magnifyingGlass, 'Search', _showSearch),
                       Divider(),
-                      _buildFilterItem(context, FontAwesomeIcons.snake, 'Channel'),
+                      _buildFilterItem(context, FontAwesomeIcons.snake, 'Channel', _showChannelModal),
                       Divider(),
-                      _buildFilterItem(context, FontAwesomeIcons.signature, 'Sender'),
+                      _buildFilterItem(context, FontAwesomeIcons.signature, 'Sender', _showSenderModal),
                       Divider(),
-                      _buildFilterItem(context, FontAwesomeIcons.timer, 'Time'),
+                      _buildFilterItem(context, FontAwesomeIcons.timer, 'Time', _showTimeModal),
                       Divider(),
-                      _buildFilterItem(context, FontAwesomeIcons.bolt, 'Priority'),
+                      _buildFilterItem(context, FontAwesomeIcons.bolt, 'Priority', _showPriorityModal),
                       Divider(),
-                      _buildFilterItem(context, FontAwesomeIcons.gearCode, 'Key'),
+                      _buildFilterItem(context, FontAwesomeIcons.gearCode, 'Key', _showKeytokenModal),
                       SizedBox(height: 4),
                     ],
                   ),
@@ -72,15 +78,39 @@ class _AppBarFilterDialogState extends State<AppBarFilterDialog> {
     );
   }
 
-  Widget _buildFilterItem(BuildContext context, IconData icon, String label) {
+  Widget _buildFilterItem(BuildContext context, IconData icon, String label, void Function(BuildContext context) action) {
     return ListTile(
       visualDensity: VisualDensity.compact,
       title: Text(label),
       leading: Icon(icon),
       onTap: () {
         Navi.popDialog(context);
-        //TOOD show more...
+        action(context);
       },
     );
+  }
+
+  void _showSearch(BuildContext context) {
+    AppBarState().setShowSearchField(true);
+  }
+
+  void _showPriorityModal(BuildContext context) {
+    showDialog<void>(context: context, builder: (BuildContext context) => FilterModalPriority());
+  }
+
+  void _showChannelModal(BuildContext context) {
+    showDialog<void>(context: context, builder: (BuildContext context) => FilterModalChannel());
+  }
+
+  void _showSenderModal(BuildContext context) {
+    showDialog<void>(context: context, builder: (BuildContext context) => FilterModalSendername());
+  }
+
+  void _showKeytokenModal(BuildContext context) {
+    showDialog<void>(context: context, builder: (BuildContext context) => FilterModalKeytoken());
+  }
+
+  void _showTimeModal(BuildContext context) {
+    showDialog<void>(context: context, builder: (BuildContext context) => FilterModalTime());
   }
 }

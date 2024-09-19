@@ -3,9 +3,9 @@ package models
 type Channel struct {
 	ChannelID         ChannelID `db:"channel_id"         json:"channel_id"`
 	OwnerUserID       UserID    `db:"owner_user_id"      json:"owner_user_id"`
-	InternalName      string    `db:"internal_name"      json:"internal_name"`
-	DisplayName       string    `db:"display_name"       json:"display_name"`
-	DescriptionName   *string   `db:"description_name"   json:"description_name"`
+	InternalName      string    `db:"internal_name"      json:"internal_name"`                               // = InternalName, used for sending, normalized, cannot be changed
+	DisplayName       string    `db:"display_name"       json:"display_name"`                                // = DisplayName, used for display purposes, can be changed, initially equals InternalName
+	DescriptionName   *string   `db:"description_name"   json:"description_name"`                            // = DescriptionName, (optional), longer description text, initally nil
 	SubscribeKey      string    `db:"subscribe_key"      json:"subscribe_key"      jsonfilter:"INCLUDE_KEY"` // can be nil, depending on endpoint
 	TimestampCreated  SCNTime   `db:"timestamp_created"  json:"timestamp_created"`
 	TimestampLastSent *SCNTime  `db:"timestamp_lastsent" json:"timestamp_lastsent"`

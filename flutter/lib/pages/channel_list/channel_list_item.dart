@@ -45,7 +45,7 @@ class _ChannelListItemState extends State<ChannelListItem> {
       lastMessage = SCNDataCache().getMessagesSorted().where((p) => p.channelID == widget.channel.channelID).firstOrNull;
 
       () async {
-        final (_, channelMessages) = await APIClient.getMessageList(acc, '@start', pageSize: 1, channelIDs: [widget.channel.channelID]);
+        final (_, channelMessages) = await APIClient.getMessageList(acc, '@start', pageSize: 1, filter: MessageFilter(channelIDs: [widget.channel.channelID]));
         setState(() {
           lastMessage = channelMessages.firstOrNull;
         });

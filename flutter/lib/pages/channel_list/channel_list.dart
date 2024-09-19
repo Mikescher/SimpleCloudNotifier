@@ -75,7 +75,7 @@ class _ChannelRootPageState extends State<ChannelRootPage> with RouteAware {
       () async {
         _reloadEnqueued = false;
         AppBarState().setLoadingIndeterminate(true);
-        await Future.delayed(const Duration(milliseconds: 500)); // prevents flutter bug where the whole process crashes ?!?
+        await Future.delayed(const Duration(milliseconds: 500), () {}); // prevents flutter bug where the whole process crashes ?!?
         await _backgroundRefresh();
       }();
     }
