@@ -1,9 +1,12 @@
 package handler
 
 import (
+	"blackforestbytes.com/simplecloudnotifier/api/apierr"
+	"blackforestbytes.com/simplecloudnotifier/api/ginresp"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/models"
 	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
+	"net/http"
 )
 
 // ListUserSenderNames swaggerdoc
@@ -26,6 +29,7 @@ func (h APIHandler) ListUserSenderNames(pctx ginext.PreContext) ginext.HTTPRespo
 		UserID models.UserID `uri:"uid" binding:"entityid"`
 	}
 	type response struct {
+		SenderNames []models.SenderNameStatistics `json:"sender_names"`
 	}
 
 	var u uri
@@ -41,7 +45,12 @@ func (h APIHandler) ListUserSenderNames(pctx ginext.PreContext) ginext.HTTPRespo
 			return *permResp
 		}
 
-		return nil //TODO
+		names, err := h.database.ListSenderNames(ctx, u.UserID, false)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query messages", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, response{SenderNames: names}))
 
 	})
 }
@@ -61,6 +70,7 @@ func (h APIHandler) ListUserSenderNames(pctx ginext.PreContext) ginext.HTTPRespo
 //	@Router			/api/v2/sender-names [GET]
 func (h APIHandler) ListSenderNames(pctx ginext.PreContext) ginext.HTTPResponse {
 	type response struct {
+		SenderNames []models.SenderNameStatistics `json:"sender_names"`
 	}
 
 	ctx, g, errResp := pctx.Start()
@@ -75,13 +85,18 @@ func (h APIHandler) ListSenderNames(pctx ginext.PreContext) ginext.HTTPResponse 
 			return *permResp
 		}
 
-		userid := *ctx.GetPermissionUserID()
+		userID := *ctx.GetPermissionUserID()
 
-		if permResp := ctx.CheckPermissionUserRead(userid); permResp != nil {
+		if permResp := ctx.CheckPermissionUserRead(userID); permResp != nil {
 			return *permResp
 		}
 
-		return nil //TODO
+		names, err := h.database.ListSenderNames(ctx, userID, true)
+		if err != nil {
+			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query messages", err)
+		}
+
+		return finishSuccess(ginext.JSON(http.StatusOK, response{SenderNames: names}))
 
 	})
 }

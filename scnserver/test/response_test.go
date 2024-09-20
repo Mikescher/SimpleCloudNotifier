@@ -13,7 +13,7 @@ func TestResponseChannel(t *testing.T) {
 
 	data := tt.InitDefaultData(t, ws)
 
-	response := tt.RequestAuthGetRaw(t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels/%s", data.User[0].UID, data.User[0].Channels[0]))
+	response := tt.RequestAuthGetRaw(t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels/%s", data.User[0].UID, data.User[0].Channels[0].ChannelID))
 
 	tt.AssertJsonStructureMatch(t, "json[channel]", response, map[string]any{
 		"channel_id":         "id",
@@ -63,7 +63,7 @@ func TestResponseKeyToken1(t *testing.T) {
 
 	data := tt.InitDefaultData(t, ws)
 
-	response := tt.RequestAuthGetRaw(t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys/%s", data.User[0].UID, data.User[0].Keys[0]))
+	response := tt.RequestAuthGetRaw(t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys/%s", data.User[0].UID, data.User[0].Keys[0].KeyID))
 
 	tt.AssertJsonStructureMatch(t, "json[key]", response, map[string]any{
 		"keytoken_id":        "id",
@@ -246,7 +246,7 @@ func TestResponseChannelPreview(t *testing.T) {
 
 	data := tt.InitDefaultData(t, ws)
 
-	response := tt.RequestAuthGetRaw(t, data.User[1].AdminKey, baseUrl, fmt.Sprintf("/api/v2/preview/channels/%s", data.User[0].Channels[0]))
+	response := tt.RequestAuthGetRaw(t, data.User[1].AdminKey, baseUrl, fmt.Sprintf("/api/v2/preview/channels/%s", data.User[0].Channels[0].ChannelID))
 
 	tt.AssertJsonStructureMatch(t, "json[channel]", response, map[string]any{
 		"channel_id":       "id",
@@ -277,7 +277,7 @@ func TestResponseKeyTokenPreview(t *testing.T) {
 
 	data := tt.InitDefaultData(t, ws)
 
-	response := tt.RequestAuthGetRaw(t, data.User[1].AdminKey, baseUrl, fmt.Sprintf("/api/v2/preview/keys/%s", data.User[0].Keys[0]))
+	response := tt.RequestAuthGetRaw(t, data.User[1].AdminKey, baseUrl, fmt.Sprintf("/api/v2/preview/keys/%s", data.User[0].Keys[0].KeyID))
 
 	tt.AssertJsonStructureMatch(t, "json[key]", response, map[string]any{
 		"keytoken_id":   "id",

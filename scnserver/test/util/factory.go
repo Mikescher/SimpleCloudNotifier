@@ -294,7 +294,8 @@ var messageExamples = []msgex{
 	{15, "", "", P0, SKEY, "New Feature Available", "ability to schedule appointments", 0},
 	{15, "chan_other_nosub", "", P0, SKEY, "Account Suspended", "Please contact us", 0},
 	{15, "chan_other_request", "", P0, SKEY, "Invitation to Beta Test", "", 0},
-	{15, "chan_other_accepted", "", P0, SKEY, "New Blog Post", "Congratulations on your promotion! We are proud", 0},
+	{15, "chan_other_request", "", P0, SKEY, "Invitation to Beta Test (with sendername)", "", 0},
+	{15, "chan_other_accepted", "dummy-man", P0, SKEY, "New Blog Post", "Congratulations on your promotion! We are proud", 0},
 
 	{16, "Chan1", "", P2, SKEY, "Lorem Ipsum 01", Lipsum(30001, 1), 0},
 	{16, "Chan2", "", P0, SKEY, "Lorem Ipsum 02", Lipsum(30002, 1), 0},

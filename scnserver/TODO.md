@@ -12,7 +12,7 @@
 
  - exerr.New | exerr.Wrap
 
- - (!!!) Run tests in pipeline !!
+ - Fork go-sqlite with always-on fts5
 
 #### UNSURE
 
