@@ -13,7 +13,7 @@ on:
 
 
 jobs:
-  build_job:
+  build_server:
     name: Build Docker Container
     runs-on: bfb-cicd-latest
     steps:
@@ -24,9 +24,49 @@ jobs:
       - run: cd "${{ gitea.workspace }}/scnserver" && make docker
       - run: cd "${{ gitea.workspace }}/scnserver" && make push-docker
     
-  deploy_job:
+  test_server:
+    name: Run Unit-Tests
+    runs-on: bfb-cicd-latest
+    steps:
+
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Get Commiter Info
+        id: commiter_info
+        run: |
+          echo "NAME=$( git log -n 1 --pretty=format:%an )" >> $GITHUB_OUTPUT
+          echo "MAIL=$( git log -n 1 --pretty=format:%ae )" >> $GITHUB_OUTPUT
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: '${{ gitea.workspace }}/go.mod'
+          cache: false
+
+      - name: Print Go Version
+        run: go version
+
+      - name: Run tests
+        run: cd "${{ gitea.workspace }}/scnserver" && make dgi && make swagger && make test
+
+      - name: Send failure mail
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.fastmail.com
+          server_port: 465
+          secure: true
+          username: ${{secrets.MAIL_USERNAME}}
+          password: ${{secrets.MAIL_PASSWORD}}
+          subject: Pipeline on '${{ gitea.repository }}' failed
+          to: ${{ steps.commiter_info.outputs.MAIL }}
+          from: Gitea Actions <gitea_actions@blackforestbytes.de>
+          body: "Go to https://gogs.blackforestbytes.com/${{ gitea.repository }}/actions"
+
+  deploy_server:
     name: Deploy to Server
-    needs: [build_job]
+    needs: [build_server, test_server]
     runs-on: ubuntu-latest
     steps:
       - name: Execute deploy on remote (via ssh)
