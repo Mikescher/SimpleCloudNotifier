@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
@@ -27,18 +28,22 @@ func ClearBufLogger(dump bool) {
 	}
 }
 
-func TPrintf(format string, a ...any) {
-	if buflogger != nil {
-		buflogger.Printf(format, a...)
-	} else {
-		fmt.Printf(format, a...)
+func TPrintf(lvl zerolog.Level, format string, a ...any) {
+	if zerolog.GlobalLevel() <= lvl {
+		if buflogger != nil {
+			buflogger.Printf(format, a...)
+		} else {
+			fmt.Printf(format, a...)
+		}
 	}
 }
 
-func TPrintln(a ...any) {
-	if buflogger != nil {
-		buflogger.Println(a...)
-	} else {
-		fmt.Println(a...)
+func TPrintln(lvl zerolog.Level, a ...any) {
+	if zerolog.GlobalLevel() <= lvl {
+		if buflogger != nil {
+			buflogger.Println(a...)
+		} else {
+			fmt.Println(a...)
+		}
 	}
 }

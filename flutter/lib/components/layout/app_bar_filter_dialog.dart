@@ -65,6 +65,8 @@ class _AppBarFilterDialogState extends State<AppBarFilterDialog> {
                       _buildFilterItem(context, FontAwesomeIcons.bolt, 'Priority', _showPriorityModal),
                       Divider(),
                       _buildFilterItem(context, FontAwesomeIcons.gearCode, 'Key', _showKeytokenModal),
+                      Divider(),
+                      _buildFilterItem(context, FontAwesomeIcons.magnifyingGlassPlus, 'Search (Plain)', _showPlainSearchModal),
                       SizedBox(height: 4),
                     ],
                   ),
@@ -112,5 +114,9 @@ class _AppBarFilterDialogState extends State<AppBarFilterDialog> {
 
   void _showTimeModal(BuildContext context) {
     showDialog<void>(context: context, builder: (BuildContext context) => FilterModalTime());
+  }
+
+  void _showPlainSearchModal(BuildContext context) {
+    //TODO showDialog<void>(context: context, builder: (BuildContext context) => FilterModalSearchPlain());
   }
 }

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"io"
 	"mime/multipart"
@@ -101,7 +102,7 @@ func RequestAuthDeleteShouldFail(t *testing.T, akey string, baseURL string, urlS
 func RequestAny[TResult any](t *testing.T, akey string, method string, baseURL string, urlSuffix string, body any, deserialize bool) TResult {
 	client := http.Client{}
 
-	TPrintf("[-> REQUEST] (%s) %s%s [%s] [%s]\n", method, baseURL, urlSuffix, langext.Conditional(akey == "", "NO AUTH", "AUTH"), langext.Conditional(body == nil, "NO BODY", "BODY"))
+	TPrintf(zerolog.InfoLevel, "[-> REQUEST] (%s) %s%s [%s] [%s]\n", method, baseURL, urlSuffix, langext.Conditional(akey == "", "NO AUTH", "AUTH"), langext.Conditional(body == nil, "NO BODY", "BODY"))
 
 	bytesbody := make([]byte, 0)
 	contentType := ""
@@ -159,16 +160,16 @@ func RequestAny[TResult any](t *testing.T, akey string, method string, baseURL s
 		TestFailErr(t, err)
 	}
 
-	TPrintln("")
-	TPrintf("----------------  RESPONSE (%d) ----------------\n", resp.StatusCode)
+	TPrintln(zerolog.DebugLevel, "")
+	TPrintf(zerolog.DebugLevel, "----------------  RESPONSE (%d) ----------------\n", resp.StatusCode)
 	if len(respBodyBin) > 100_000 {
-		TPrintln("[[RESPONSE TOO LONG]]")
+		TPrintln(zerolog.DebugLevel, "[[RESPONSE TOO LONG]]")
 	} else {
-		TPrintln(langext.TryPrettyPrintJson(string(respBodyBin)))
+		TPrintln(zerolog.DebugLevel, langext.TryPrettyPrintJson(string(respBodyBin)))
 	}
-	TryPrintTraceObj("----------------  --------  ----------------", respBodyBin, "")
-	TPrintln("----------------  --------  ----------------")
-	TPrintln("")
+	TryPrintTraceObj(zerolog.DebugLevel, "----------------  --------  ----------------", respBodyBin, "")
+	TPrintln(zerolog.DebugLevel, "----------------  --------  ----------------")
+	TPrintln(zerolog.DebugLevel, "")
 
 	if resp.StatusCode != 200 {
 		TestFailFmt(t, "Statuscode != 200 (actual = %d)", resp.StatusCode)
@@ -195,7 +196,7 @@ func RequestAny[TResult any](t *testing.T, akey string, method string, baseURL s
 func RequestAuthAnyShouldFail(t *testing.T, akey string, method string, baseURL string, urlSuffix string, body any, expectedStatusCode int, errcode apierr.APIError) {
 	client := http.Client{}
 
-	TPrintf("[-> REQUEST] (%s) %s%s [%s] (should-fail with %d/%d)\n", method, baseURL, urlSuffix, langext.Conditional(akey == "", "NO AUTH", "AUTH"), expectedStatusCode, errcode)
+	TPrintf(zerolog.InfoLevel, "[-> REQUEST] (%s) %s%s [%s] (should-fail with %d/%d)\n", method, baseURL, urlSuffix, langext.Conditional(akey == "", "NO AUTH", "AUTH"), expectedStatusCode, errcode)
 
 	bytesbody := make([]byte, 0)
 	contentType := ""
@@ -250,14 +251,14 @@ func RequestAuthAnyShouldFail(t *testing.T, akey string, method string, baseURL 
 		TestFailErr(t, err)
 	}
 
-	TPrintln("")
-	TPrintf("----------------  RESPONSE (%d) ----------------\n", resp.StatusCode)
-	TPrintln(langext.TryPrettyPrintJson(string(respBodyBin)))
+	TPrintln(zerolog.DebugLevel, "")
+	TPrintf(zerolog.DebugLevel, "----------------  RESPONSE (%d) ----------------\n", resp.StatusCode)
+	TPrintln(zerolog.DebugLevel, langext.TryPrettyPrintJson(string(respBodyBin)))
 	if (expectedStatusCode != 0 && resp.StatusCode != expectedStatusCode) || (expectedStatusCode == 0 && resp.StatusCode == 200) {
-		TryPrintTraceObj("----------------  --------  ----------------", respBodyBin, "")
+		TryPrintTraceObj(zerolog.DebugLevel, "----------------  --------  ----------------", respBodyBin, "")
 	}
-	TPrintln("----------------  --------  ----------------")
-	TPrintln("")
+	TPrintln(zerolog.DebugLevel, "----------------  --------  ----------------")
+	TPrintln(zerolog.DebugLevel, "")
 
 	if expectedStatusCode != 0 && resp.StatusCode != expectedStatusCode {
 		TestFailFmt(t, "Statuscode != %d (expected failure, but got %d)", expectedStatusCode, resp.StatusCode)
@@ -290,19 +291,19 @@ func RequestAuthAnyShouldFail(t *testing.T, akey string, method string, baseURL 
 	}
 }
 
-func TryPrintTraceObj(prefix string, body []byte, suffix string) {
+func TryPrintTraceObj(lvl zerolog.Level, prefix string, body []byte, suffix string) {
 	v1 := gin.H{}
 	if err := json.Unmarshal(body, &v1); err == nil {
 		if v2, ok := v1["traceObj"]; ok {
 			if v3, ok := v2.(string); ok {
 				if prefix != "" {
-					TPrintln(prefix)
+					TPrintln(lvl, prefix)
 				}
 
-				TPrintln(strings.TrimSpace(v3))
+				TPrintln(lvl, strings.TrimSpace(v3))
 
 				if suffix != "" {
-					TPrintln(suffix)
+					TPrintln(lvl, suffix)
 				}
 			}
 		}

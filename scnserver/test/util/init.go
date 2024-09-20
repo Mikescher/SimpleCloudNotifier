@@ -12,7 +12,17 @@ func InitTests() {
 	log.Logger = createLogger(createConsoleWriter())
 
 	gin.SetMode(gin.TestMode)
-	zerolog.SetGlobalLevel(zerolog.DebugLevel)
+
+	if llstr, ok := os.LookupEnv("SCN_TEST_LOGLEVEL"); ok {
+		ll, err := zerolog.ParseLevel(llstr)
+		if err != nil {
+			panic(err)
+		}
+		zerolog.SetGlobalLevel(ll)
+	} else {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+
 }
 
 func createConsoleWriter() *zerolog.ConsoleWriter {

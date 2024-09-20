@@ -41,14 +41,14 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: '${{ gitea.workspace }}/go.mod'
+          go-version-file: '${{ gitea.workspace }}/scnserver/go.mod'
           cache: false
 
       - name: Print Go Version
         run: go version
 
       - name: Run tests
-        run: cd "${{ gitea.workspace }}/scnserver" && make dgi && make swagger && make test
+        run: cd "${{ gitea.workspace }}/scnserver" && make dgi && make swagger && SCN_TEST_LOGLEVEL=WARN make test
 
       - name: Send failure mail
         if: failure()

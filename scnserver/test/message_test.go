@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
-	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
 	"net/url"
 	"testing"
 	"time"
@@ -551,7 +550,7 @@ func TestGetMessageFull(t *testing.T) {
 	tt.AssertEqual(t, "msg.msg_id", "580b5055-a9b5-4cee-b53c-28cf304d25b0", msgIn["usr_message_id"])
 	tt.AssertStrRepEqual(t, "msg.priority", 0, msgIn["priority"])
 	tt.AssertEqual(t, "msg.sender_name", "unit-test-[TestGetMessageFull]", msgIn["sender_name"])
-	tt.AssertEqual(t, "msg.timestamp", time.Unix(ts, 0).In(timeext.TimezoneBerlin).Format(time.RFC3339Nano), msgIn["timestamp"])
+	tt.AssertEqual(t, "msg.timestamp", time.Unix(ts, 0).In(time.UTC).Format(time.RFC3339Nano), msgIn["timestamp"])
 }
 
 func TestListMessages(t *testing.T) {

@@ -35,7 +35,7 @@ func (t *SCNTime) UnmarshalJSON(data []byte) error {
 }
 
 func (t SCNTime) MarshalJSON() ([]byte, error) {
-	str := t.Time().Format(time.RFC3339Nano)
+	str := t.Time().In(time.UTC).Format(time.RFC3339Nano)
 	return json.Marshal(str)
 }
 

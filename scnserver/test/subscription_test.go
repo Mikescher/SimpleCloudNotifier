@@ -599,8 +599,8 @@ func TestGetSubscriptionToForeignChannel(t *testing.T) {
 
 	assertCount2 := func(u tt.Userdat, c int, dir string, conf string, ext string) {
 		slist := tt.RequestAuthGet[sublist](t, u.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/subscriptions?direction=%s&confirmation=%s&external=%s", u.UID, dir, conf, ext))
-		fmt.Printf("assertCount2 := %d\n", len(slist.Subscriptions))
-		//tt.AssertEqual(t, dir+"."+conf+"."+ext+".len", c, len(slist.Subscriptions))
+		//fmt.Printf("assertCount2 := %d\n", len(slist.Subscriptions))
+		tt.AssertEqual(t, dir+"."+conf+"."+ext+".len", c, len(slist.Subscriptions))
 	}
 
 	clist := tt.RequestAuthGet[chanlist](t, data.User[16].AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/channels", data.User[16].UID))

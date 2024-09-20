@@ -7,6 +7,7 @@ import (
 	"blackforestbytes.com/simplecloudnotifier/jobs"
 	"blackforestbytes.com/simplecloudnotifier/logic"
 	"blackforestbytes.com/simplecloudnotifier/push"
+	"github.com/rs/zerolog"
 	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"os"
@@ -71,9 +72,9 @@ func StartSimpleWebserver(t *testing.T) (*logic.Application, string, func()) {
 		TestFailErr(t, err)
 	}
 
-	TPrintln("DatabaseFile<main>:      " + dbfile1)
-	TPrintln("DatabaseFile<requests>:  " + dbfile2)
-	TPrintln("DatabaseFile<logs>:      " + dbfile3)
+	TPrintln(zerolog.InfoLevel, "DatabaseFile<main>:      "+dbfile1)
+	TPrintln(zerolog.InfoLevel, "DatabaseFile<requests>:  "+dbfile2)
+	TPrintln(zerolog.InfoLevel, "DatabaseFile<logs>:      "+dbfile3)
 
 	scn.Conf = CreateTestConfig(t, dbfile1, dbfile2, dbfile3)
 
@@ -113,10 +114,10 @@ func StartSimpleWebserver(t *testing.T) (*logic.Application, string, func()) {
 	}
 
 	stop := func() {
-		t.Logf("Stopping App")
+		TPrintln(zerolog.InfoLevel, "Stopping App")
 		app.Stop()
 		_ = app.IsRunning.WaitWithTimeout(5*time.Second, false)
-		t.Logf("Stopped App")
+		TPrintln(zerolog.InfoLevel, "Stopped App")
 		_ = os.Remove(dbfile1)
 		_ = os.Remove(dbfile2)
 		_ = os.Remove(dbfile3)
@@ -186,9 +187,9 @@ func StartSimpleTestspace(t *testing.T) (string, string, string, scn.Config, fun
 		TestFailErr(t, err)
 	}
 
-	TPrintln("DatabaseFile<main>:      " + dbfile1)
-	TPrintln("DatabaseFile<requests>:  " + dbfile2)
-	TPrintln("DatabaseFile<logs>:      " + dbfile3)
+	TPrintln(zerolog.InfoLevel, "DatabaseFile<main>:      "+dbfile1)
+	TPrintln(zerolog.InfoLevel, "DatabaseFile<requests>:  "+dbfile2)
+	TPrintln(zerolog.InfoLevel, "DatabaseFile<logs>:      "+dbfile3)
 
 	scn.Conf = CreateTestConfig(t, dbfile1, dbfile2, dbfile3)
 

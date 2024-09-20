@@ -11,5 +11,6 @@ func TestMain(m *testing.M) {
 	if !exerr.Initialized() {
 		exerr.Init(exerr.ErrorPackageConfigInit{ZeroLogErrTraces: langext.PFalse, ZeroLogAllTraces: langext.PFalse})
 	}
+
 	os.Exit(m.Run())
 }
