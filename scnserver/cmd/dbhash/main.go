@@ -15,39 +15,46 @@ import (
 func main() {
 	exerr.Init(exerr.ErrorPackageConfigInit{})
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 1011*time.Second)
 	defer cancel()
 
 	if !langext.InArray("sqlite3", sql.Drivers()) {
 		sqlite.RegisterAsSQLITE3()
 	}
 
-	fmt.Println()
+	for key, schemaObj := range langext.AsSortedBy(langext.MapToArr(schema.PrimarySchema), func(v langext.MapEntry[int, schema.Def]) int { return v.Key }) {
+		var h0 string
+		if key == 1 {
+			h0 = "N/A"
+		} else {
+			var err error
+			h0, err = sq.HashGoSqliteSchema(ctx, schemaObj.Value.SQL)
+			if err != nil {
+				h0 = "ERR"
+			}
+		}
+		fmt.Printf("PrimarySchema    [%d] := %s%s\n", schemaObj.Key, h0, langext.Conditional(schemaObj.Key == schema.PrimarySchemaVersion, "     (active)", ""))
+	}
 
-	for i := 2; i <= schema.PrimarySchemaVersion; i++ {
-		h0, err := sq.HashGoSqliteSchema(ctx, schema.PrimarySchema[i].SQL)
+	fmt.Printf("\n")
+
+	for _, schemaObj := range langext.AsSortedBy(langext.MapToArr(schema.RequestsSchema), func(v langext.MapEntry[int, schema.Def]) int { return v.Key }) {
+		h0, err := sq.HashGoSqliteSchema(ctx, schemaObj.Value.SQL)
 		if err != nil {
 			h0 = "ERR"
 		}
-		fmt.Printf("PrimarySchema%d   := %s\n", i, h0)
+		fmt.Printf("RequestsSchema   [%d] := %s%s\n", schemaObj.Key, h0, langext.Conditional(schemaObj.Key == schema.RequestsSchemaVersion, "     (active)", ""))
 	}
 
-	for i := 1; i <= schema.RequestsSchemaVersion; i++ {
-		h0, err := sq.HashGoSqliteSchema(ctx, schema.RequestsSchema[i].SQL)
+	fmt.Printf("\n")
+
+	for _, schemaObj := range langext.AsSortedBy(langext.MapToArr(schema.LogsSchema), func(v langext.MapEntry[int, schema.Def]) int { return v.Key }) {
+		h0, err := sq.HashGoSqliteSchema(ctx, schemaObj.Value.SQL)
 		if err != nil {
 			h0 = "ERR"
 		}
-		fmt.Printf("RequestsSchema%d  := %s\n", i, h0)
+		fmt.Printf("LogsSchema       [%d] := %s%s\n", schemaObj.Key, h0, langext.Conditional(schemaObj.Key == schema.LogsSchemaVersion, "     (active)", ""))
 	}
 
-	for i := 1; i <= schema.LogsSchemaVersion; i++ {
-		h0, err := sq.HashGoSqliteSchema(ctx, schema.LogsSchema[i].SQL)
-		if err != nil {
-			h0 = "ERR"
-		}
-		fmt.Printf("LogsSchema%d      := %s\n", i, h0)
-	}
-
-	fmt.Println()
-
+	fmt.Printf("\n")
 }
