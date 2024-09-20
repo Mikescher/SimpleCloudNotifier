@@ -48,11 +48,13 @@ func (h APIHandler) ListMessages(pctx ginext.PreContext) ginext.HTTPResponse {
 		TimeAfter     *string  `json:"after"           form:"after"`  // RFC3339
 		Priority      []int    `json:"priority"        form:"priority"`
 		KeyTokens     []string `json:"used_key"        form:"used_key"`
+		HasSender     *bool    `json:"has_sender"      form:"has_sender"`
 	}
 	type response struct {
 		Messages      []models.Message `json:"messages"`
 		NextPageToken string           `json:"next_page_token"`
 		PageSize      int              `json:"page_size"`
+		TotalCount    int64            `json:"total_count"`
 	}
 
 	var q query
@@ -114,6 +116,10 @@ func (h APIHandler) ListMessages(pctx ginext.PreContext) ginext.HTTPResponse {
 			filter.SenderNameCS = langext.Ptr(q.Senders)
 		}
 
+		if q.HasSender != nil {
+			filter.HasSenderName = langext.Ptr(*q.HasSender)
+		}
+
 		if q.TimeBefore != nil {
 			t0, err := time.Parse(time.RFC3339, *q.TimeBefore)
 			if err != nil {
@@ -146,17 +152,17 @@ func (h APIHandler) ListMessages(pctx ginext.PreContext) ginext.HTTPResponse {
 			filter.UsedKeyID = &tids
 		}
 
-		messages, npt, err := h.database.ListMessages(ctx, filter, &pageSize, tok)
+		messages, npt, totalCount, err := h.database.ListMessages(ctx, filter, &pageSize, tok)
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query messages", err)
 		}
 
 		if trimmed {
 			res := langext.ArrMap(messages, func(v models.Message) models.Message { return v.PreMarshal().Trim() })
-			return finishSuccess(ginext.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize}))
+			return finishSuccess(ginext.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize, TotalCount: totalCount}))
 		} else {
 			res := langext.ArrMap(messages, func(v models.Message) models.Message { return v.PreMarshal() })
-			return finishSuccess(ginext.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize}))
+			return finishSuccess(ginext.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize, TotalCount: totalCount}))
 		}
 	})
 }

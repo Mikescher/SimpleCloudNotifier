@@ -80,14 +80,10 @@ func (db *Database) DeleteMessage(ctx db.TxContext, messageID models.MessageID) 
 	return nil
 }
 
-func (db *Database) ListMessages(ctx db.TxContext, filter models.MessageFilter, pageSize *int, inTok ct.CursorToken) ([]models.Message, ct.CursorToken, error) {
+func (db *Database) ListMessages(ctx db.TxContext, filter models.MessageFilter, pageSize *int, inTok ct.CursorToken) ([]models.Message, ct.CursorToken, int64, error) {
 	tx, err := ctx.GetOrCreateTransaction(db)
 	if err != nil {
-		return nil, ct.CursorToken{}, err
-	}
-
-	if inTok.Mode == ct.CTMEnd {
-		return make([]models.Message, 0), ct.End(), nil
+		return nil, ct.CursorToken{}, 0, err
 	}
 
 	pageCond := "1=1"
@@ -105,21 +101,39 @@ func (db *Database) ListMessages(ctx db.TxContext, filter models.MessageFilter, 
 		orderClause = "ORDER BY COALESCE(timestamp_client, timestamp_real) DESC, message_id DESC"
 	}
 
-	sqlQuery := "SELECT " + "messages.*" + " FROM messages " + filterJoin + " WHERE ( " + pageCond + " ) AND ( " + filterCond + " ) " + orderClause
+	sqlQueryList := "SELECT " + "messages.*" + " FROM messages " + filterJoin + " WHERE ( " + pageCond + " ) AND ( " + filterCond + " ) " + orderClause
+	sqlQueryCount := "SELECT " + " COUNT(*) AS count FROM messages " + filterJoin + " WHERE  ( " + filterCond + " ) "
 
 	prepParams["tokts"] = inTok.Timestamp
 	prepParams["tokid"] = inTok.Id
 
-	data, err := sq.QueryAll[models.Message](ctx, tx, sqlQuery, prepParams, sq.SModeExtended, sq.Safe)
-	if err != nil {
-		return nil, ct.CursorToken{}, err
+	if inTok.Mode == ct.CTMEnd {
+
+		dataCount, err := sq.QuerySingle[CountResponse](ctx, tx, sqlQueryCount, prepParams, sq.SModeFast, sq.Safe)
+		if err != nil {
+			return nil, ct.CursorToken{}, 0, err
+		}
+
+		return make([]models.Message, 0), ct.End(), dataCount.Count, nil
 	}
 
-	if pageSize == nil || len(data) <= *pageSize {
-		return data, ct.End(), nil
+	dataList, err := sq.QueryAll[models.Message](ctx, tx, sqlQueryList, prepParams, sq.SModeExtended, sq.Safe)
+	if err != nil {
+		return nil, ct.CursorToken{}, 0, err
+	}
+
+	if pageSize == nil || len(dataList) <= *pageSize {
+		return dataList, ct.End(), int64(len(dataList)), nil
 	} else {
-		outToken := ct.Normal(data[*pageSize-1].Timestamp(), data[*pageSize-1].MessageID.String(), "DESC", filter.Hash())
-		return data[0:*pageSize], outToken, nil
+
+		dataCount, err := sq.QuerySingle[CountResponse](ctx, tx, sqlQueryCount, prepParams, sq.SModeFast, sq.Safe)
+		if err != nil {
+			return nil, ct.CursorToken{}, 0, err
+		}
+
+		outToken := ct.Normal(dataList[*pageSize-1].Timestamp(), dataList[*pageSize-1].MessageID.String(), "DESC", filter.Hash())
+
+		return dataList[0:*pageSize], outToken, dataCount.Count, nil
 	}
 }
 

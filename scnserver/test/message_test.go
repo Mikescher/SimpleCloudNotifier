@@ -721,7 +721,8 @@ func TestListMessagesFilterChannel(t *testing.T) {
 		UsrMessageId        string `json:"usr_message_id"`
 	}
 	type mglist struct {
-		Messages []msg `json:"messages"`
+		Messages   []msg `json:"messages"`
+		TotalCount int   `json:"total_count"`
 	}
 
 	cid1 := ""
@@ -752,109 +753,40 @@ func TestListMessagesFilterChannel(t *testing.T) {
 		}
 	}
 
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?channel=%s", "Reminders,Promotions"))
-		tt.AssertEqual(t, "msgList.len", 9, len(msgList.Messages))
+	filterTests := []struct {
+		Name  string
+		Count int
+		Query string
+	}{
+		{"all", 22, fmt.Sprintf("/api/v2/messages")},
+		{"channel=Reminders|Promotions", 9, fmt.Sprintf("/api/v2/messages?channel=%s&channel=%s", "Reminders", "Promotions")},
+		{"channel=Reminders", 6, fmt.Sprintf("/api/v2/messages?channel=%s", "Reminders")},
+		{"channel_id=1", 6, fmt.Sprintf("/api/v2/messages?channel_id=%s", cid1)},
+		{"channel_id=1|2", 9, fmt.Sprintf("/api/v2/messages?channel_id=%s&channel_id=%s", cid1, cid2)},
+		{"filter=unusual", 1, fmt.Sprintf("/api/v2/messages?filter=%s", "unusual")},
+		{"filter=your", 6, fmt.Sprintf("/api/v2/messages?filter=%s", "your")},
+		{"prio=0", 5, fmt.Sprintf("/api/v2/messages?priority=%s", "0")},
+		{"prio=1", 4 + 7, fmt.Sprintf("/api/v2/messages?priority=%s", "1")},
+		{"prio=2", 6, fmt.Sprintf("/api/v2/messages?priority=%s", "2")},
+		{"prio=0|2", 5 + 6, fmt.Sprintf("/api/v2/messages?priority=%s&priority=%s", "0", "2")},
+		{"key=a", 11, fmt.Sprintf("/api/v2/messages?used_key=%s", akey)},
+		{"key=s", 11, fmt.Sprintf("/api/v2/messages?used_key=%s", skey)},
+		{"key=a|s", 11 + 11, fmt.Sprintf("/api/v2/messages?used_key=%s&used_key=%s", akey, skey)},
+		{"key=a&prio=0", 0, fmt.Sprintf("/api/v2/messages?used_key=%s&priority=%d", akey, 0)},
+		{"key=s&prio=0", 5, fmt.Sprintf("/api/v2/messages?used_key=%s&priority=%d", skey, 0)},
+		{"key=s&prio=2", 6, fmt.Sprintf("/api/v2/messages?used_key=%s&priority=%d", skey, 2)},
+		{"sender=MobileMate", 4, fmt.Sprintf("/api/v2/messages?sender=%s", url.QueryEscape("Mobile Mate"))},
+		{"sender=PocketPal", 3, fmt.Sprintf("/api/v2/messages?sender=%s", url.QueryEscape("Pocket Pal"))},
+		{"sender=MobileMate|PocketPal", 3 + 4, fmt.Sprintf("/api/v2/messages?sender=%s&sender=%s", url.QueryEscape("Pocket Pal"), url.QueryEscape("Mobile Mate"))},
+		{"sender=empty", 12, fmt.Sprintf("/api/v2/messages?has_sender=%s", "false")},
+		{"sender=any", 10, fmt.Sprintf("/api/v2/messages?has_sender=%s", "true")},
+		{"before=-1H", 2, fmt.Sprintf("/api/v2/messages?before=%s", url.QueryEscape(time.Now().Add(-time.Hour).Format(time.RFC3339Nano)))},
+		{"after=-1H", 20, fmt.Sprintf("/api/v2/messages?after=%s", url.QueryEscape(time.Now().Add(-time.Hour).Format(time.RFC3339Nano)))},
+		{"after=+5min", 3, fmt.Sprintf("/api/v2/messages?after=%s", url.QueryEscape(time.Now().Add(5*time.Minute).Format(time.RFC3339Nano)))},
 	}
 
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?channel=%s", "Reminders"))
-		tt.AssertEqual(t, "msgList.len", 6, len(msgList.Messages))
+	for _, testdata := range filterTests {
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, testdata.Query)
+		tt.AssertEqual(t, "msgList.filter["+testdata.Name+"].len", testdata.Count, msgList.TotalCount)
 	}
-
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?channel_id=%s", cid1))
-		tt.AssertEqual(t, "msgList.len", 6, len(msgList.Messages))
-	}
-
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?channel_id=%s,%s", cid1, cid2))
-		tt.AssertEqual(t, "msgList.len", 9, len(msgList.Messages))
-	}
-
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?filter=%s", "unusual"))
-		tt.AssertEqual(t, "msgList.len", 1, len(msgList.Messages))
-	}
-
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?filter=%s", "your"))
-		tt.AssertEqual(t, "msgList.len", 7, len(msgList.Messages))
-	}
-
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?priority=%s", "1"))
-		tt.AssertEqual(t, "msgList.len", 4, len(msgList.Messages))
-	}
-
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?priority=%s", "2"))
-		tt.AssertEqual(t, "msgList.len", 6, len(msgList.Messages))
-	}
-
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?priority=%s", "0"))
-		tt.AssertEqual(t, "msgList.len", 5, len(msgList.Messages))
-	}
-
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?priority=%s", "0,2"))
-		tt.AssertEqual(t, "msgList.len", 11, len(msgList.Messages))
-	}
-
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?used_key_id=%s", akey))
-		tt.AssertEqual(t, "msgList.len", 11, len(msgList.Messages))
-	}
-
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?used_key_id=%s", skey))
-		tt.AssertEqual(t, "msgList.len", 11, len(msgList.Messages))
-	}
-
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?used_key_id=%s,%s", akey, skey))
-		tt.AssertEqual(t, "msgList.len", 22, len(msgList.Messages))
-	}
-
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?used_key_id=%s&priority=%d", akey, 0))
-		tt.AssertEqual(t, "msgList.len", 5, len(msgList.Messages))
-	}
-
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?sender=%s", "Mobile Mate"))
-		tt.AssertEqual(t, "msgList.len", 3, len(msgList.Messages))
-	}
-
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?sender=%s", "Pocket Pal"))
-		tt.AssertEqual(t, "msgList.len", 3, len(msgList.Messages))
-	}
-
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?sender=%s,%s", "Pocket Pal", "Mobile Mate"))
-		tt.AssertEqual(t, "msgList.len", 6, len(msgList.Messages))
-	}
-
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?sender=%s", ""))
-		tt.AssertEqual(t, "msgList.len", 12, len(msgList.Messages))
-	}
-
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?before=%s", time.Now().Add(-time.Hour)))
-		tt.AssertEqual(t, "msgList.len", 2, len(msgList.Messages))
-	}
-
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?after=%s", time.Now().Add(-time.Hour)))
-		tt.AssertEqual(t, "msgList.len", 20, len(msgList.Messages))
-	}
-
-	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?after=%s", time.Now().Add(5*time.Minute)))
-		tt.AssertEqual(t, "msgList.len", 3, len(msgList.Messages))
-	}
-
 }

@@ -22,6 +22,7 @@ type MessageFilter struct {
 	ChannelID               *[]ChannelID
 	SenderNameCS            *[]string // case-sensitive
 	SenderNameCI            *[]string // case-insensitive
+	HasSenderName           *bool
 	SenderIP                *[]string
 	TimestampCoalesce       *time.Time
 	TimestampCoalesceAfter  *time.Time
@@ -121,6 +122,14 @@ func (f MessageFilter) SQL() (string, string, sq.PP, error) {
 			params[fmt.Sprintf("sendernamecs_%d", i)] = v
 		}
 		sqlClauses = append(sqlClauses, "(sender_name IS NOT NULL AND ("+strings.Join(filter, " OR ")+"))")
+	}
+
+	if f.HasSenderName != nil {
+		if *f.HasSenderName {
+			sqlClauses = append(sqlClauses, "(sender_name IS NOT NULL)")
+		} else {
+			sqlClauses = append(sqlClauses, "(sender_name IS     NULL)")
+		}
 	}
 
 	if f.SenderIP != nil {

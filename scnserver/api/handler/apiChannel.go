@@ -418,6 +418,7 @@ func (h APIHandler) ListChannelMessages(pctx ginext.PreContext) ginext.HTTPRespo
 		Messages      []models.Message `json:"messages"`
 		NextPageToken string           `json:"next_page_token"`
 		PageSize      int              `json:"page_size"`
+		TotalCount    int64            `json:"total_count"`
 	}
 
 	var u uri
@@ -457,16 +458,16 @@ func (h APIHandler) ListChannelMessages(pctx ginext.PreContext) ginext.HTTPRespo
 			ChannelID: langext.Ptr([]models.ChannelID{channel.ChannelID}),
 		}
 
-		messages, npt, err := h.database.ListMessages(ctx, filter, &pageSize, tok)
+		messages, npt, totalCount, err := h.database.ListMessages(ctx, filter, &pageSize, tok)
 		if err != nil {
 			return ginresp.APIError(g, 500, apierr.DATABASE_ERROR, "Failed to query messages", err)
 		}
 
 		if trimmed {
 			res := langext.ArrMap(messages, func(v models.Message) models.Message { return v.Trim() })
-			return finishSuccess(ginext.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize}))
+			return finishSuccess(ginext.JSON(http.StatusOK, response{Messages: res, NextPageToken: npt.Token(), PageSize: pageSize, TotalCount: totalCount}))
 		} else {
-			return finishSuccess(ginext.JSON(http.StatusOK, response{Messages: messages, NextPageToken: npt.Token(), PageSize: pageSize}))
+			return finishSuccess(ginext.JSON(http.StatusOK, response{Messages: messages, NextPageToken: npt.Token(), PageSize: pageSize, TotalCount: totalCount}))
 		}
 
 	})

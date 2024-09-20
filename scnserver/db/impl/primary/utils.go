@@ -23,3 +23,7 @@ func time2DBOpt(t *time.Time) *int64 {
 	}
 	return langext.Ptr(t.UnixMilli())
 }
+
+type CountResponse struct {
+	Count int64 `db:"count"`
+}

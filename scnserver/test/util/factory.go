@@ -450,7 +450,7 @@ func InitDefaultData(t *testing.T, ws *logic.Application) DefData {
 			Keys []skey `json:"keys"`
 		}
 		r0 := RequestAuthGet[keylist](t, usr.AdminKey, baseUrl, fmt.Sprintf("/api/v2/users/%s/keys", usr.UID))
-		users[i].Keys = langext.ArrMap(r0.Keys, func(v skey) KeyDat { return KeyDat{KeyID: v.ID, KeyName: v.Name} })
+		users[i].Keys = langext.ArrMap(r0.Keys, func(v skey) KeyDat { return KeyDat{KeyID: v.ID, Name: v.Name} })
 	}
 
 	// list subscriptions
