@@ -29,12 +29,13 @@ enum ChannelSelector {
 
 class MessageFilter {
   List<String>? channelIDs;
-  String? searchFilter;
+  List<String>? searchFilter;
   List<String>? senderNames;
   List<String>? usedKeys;
   List<int>? priority;
   DateTime? timeBefore;
   DateTime? timeAfter;
+  bool? hasSenderName;
 
   MessageFilter({
     this.channelIDs,
@@ -54,7 +55,7 @@ class APIClient {
     required String name,
     required String method,
     required String relURL,
-    Map<String, String>? query,
+    Map<String, Iterable<String>>? query,
     required T Function(Map<String, dynamic> json)? fn,
     dynamic jsonBody,
     String? authToken,
@@ -66,7 +67,7 @@ class APIClient {
 
     final req = http.Request(method, uri);
 
-    print('[REQUEST|RUN] [${method}] ${name}');
+    print('[REQUEST|RUN] [${method}] ${name} | ${uri.toString()}');
 
     if (jsonBody != null) {
       req.body = jsonEncode(jsonBody);
@@ -206,7 +207,9 @@ class APIClient {
       name: 'getChannelList',
       method: 'GET',
       relURL: 'users/${auth.getUserID()}/channels',
-      query: {'selector': sel.apiKey},
+      query: {
+        'selector': [sel.apiKey]
+      },
       fn: (json) => ChannelWithSubscription.fromJsonArray(json['channels'] as List<dynamic>),
       authToken: auth.getToken(),
     );
@@ -252,14 +255,16 @@ class APIClient {
       method: 'GET',
       relURL: 'messages',
       query: {
-        'next_page_token': pageToken,
-        if (pageSize != null) 'page_size': pageSize.toString(),
-        if (filter?.channelIDs != null) 'channel_id': filter!.channelIDs!.join(","),
-        if (filter?.senderNames != null) 'sender': filter!.senderNames!.join(","),
-        if (filter?.timeBefore != null) 'before': filter!.timeBefore!.toIso8601String(),
-        if (filter?.timeAfter != null) 'after': filter!.timeAfter!.toIso8601String(),
-        if (filter?.priority != null) 'priority': filter!.priority!.map((p) => p.toString()).join(","),
-        if (filter?.usedKeys != null) 'used_key': filter!.usedKeys!.join(","),
+        'next_page_token': [pageToken],
+        if (pageSize != null) 'page_size': [pageSize.toString()],
+        if (filter?.searchFilter != null) 'search': filter!.searchFilter!,
+        if (filter?.channelIDs != null) 'channel_id': filter!.channelIDs!,
+        if (filter?.senderNames != null) 'sender': filter!.senderNames!,
+        if (filter?.hasSenderName != null) 'has_sender': [filter!.hasSenderName!.toString()],
+        if (filter?.timeBefore != null) 'before': [filter!.timeBefore!.toIso8601String()],
+        if (filter?.timeAfter != null) 'after': [filter!.timeAfter!.toIso8601String()],
+        if (filter?.priority != null) 'priority': filter!.priority!.map((p) => p.toString()).toList(),
+        if (filter?.usedKeys != null) 'used_key': filter!.usedKeys!,
       },
       fn: (json) => SCNMessage.fromPaginatedJsonArray(json, 'messages', 'next_page_token'),
       authToken: auth.getToken(),
@@ -271,7 +276,6 @@ class APIClient {
       name: 'getMessage',
       method: 'GET',
       relURL: 'messages/$msgid',
-      query: {},
       fn: SCNMessage.fromJson,
       authToken: auth.getToken(),
     );

@@ -139,7 +139,7 @@ var messageExamples = []msgex{
 	{0, "", "", P0, SKEY, "Deadline reminder", "Please remember to submit your project proposal by the end of the day \U0001f638", 0},
 	{0, "Reminders", "", PX, AKEY, "Attention - The copier is out of toner", "", 0},
 	{0, "Reminders", "Cellular Confidant", P2, SKEY, "Reminder", "Don't forget to clock in before starting your shift", timeext.FromHours(0.40)},
-	{0, "Reminders", "Cellular Confidant", P1, AKEY, "Important", "There will be a company-wide meeting on Monday at 9:00am in the conference room", timeext.FromHours(23.15)},
+	{0, "Reminders", "Cellular Confidant", P1, AKEY, "Important", "There will be a company-wide meeting on Monday at 9:00am in the conference room, all staff must attend", timeext.FromHours(23.15)},
 	{0, "", "", P2, SKEY, "System update", "We will be performing maintenance on the server tonight at 11:00pm. The system may be unavailable for up to an hour. Please save any unsaved work before then", 0},
 	{0, "Promotions", "Pocket Pal", P0, SKEY, "Attention - The first aid kit is running low on supplies.", "", 0},
 	{0, "Promotions", "Pocket Pal", PX, AKEY, "Urgent", "We have received a complaint about a safety hazard in the workplace. Please address the issue immediately", 0},

@@ -308,7 +308,7 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
 
     var chipletsSearch = _filterChiplets.where((p) => p.type == MessageFilterChipletType.search).toList();
     if (chipletsSearch.isNotEmpty) {
-      filter.searchFilter = chipletsSearch.map((p) => p.value as String).first;
+      filter.searchFilter = chipletsSearch.map((p) => p.value as String).toList();
     }
 
     var chipletsKeyTokens = _filterChiplets.where((p) => p.type == MessageFilterChipletType.sendkey).toList();

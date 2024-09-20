@@ -34,52 +34,45 @@ func (f SubscriptionFilter) SQL() (string, string, sq.PP, error) {
 	params := sq.PP{}
 
 	if f.AnyUserID != nil {
-		sqlClauses = append(sqlClauses, "(subscriber_user_id = :anyuid1 OR channel_owner_user_id = :anyuid2)")
-		params["anyuid1"] = *f.AnyUserID
-		params["anyuid2"] = *f.AnyUserID
+		sqlClauses = append(sqlClauses, fmt.Sprintf("(subscriber_user_id = :%s OR channel_owner_user_id = :%s)", params.Add(*f.AnyUserID), params.Add(*f.AnyUserID)))
 	}
 
 	if f.SubscriberUserID != nil {
 		filter := make([]string, 0)
-		for i, v := range *f.SubscriberUserID {
-			filter = append(filter, fmt.Sprintf("(subscriber_user_id = :subscriber_uid_1_%d)", i))
-			params[fmt.Sprintf("subscriber_uid_1_%d", i)] = v
+		for _, v := range *f.SubscriberUserID {
+			filter = append(filter, fmt.Sprintf("(subscriber_user_id = :%s)", params.Add(v)))
 		}
 		sqlClauses = append(sqlClauses, "("+strings.Join(filter, " OR ")+")")
 	}
 
 	if f.SubscriberUserID2 != nil {
 		filter := make([]string, 0)
-		for i, v := range *f.SubscriberUserID2 {
-			filter = append(filter, fmt.Sprintf("(subscriber_user_id = :subscriber_uid_2_%d)", i))
-			params[fmt.Sprintf("subscriber_uid_2_%d", i)] = v
+		for _, v := range *f.SubscriberUserID2 {
+			filter = append(filter, fmt.Sprintf("(subscriber_user_id = :%s)", params.Add(v)))
 		}
 		sqlClauses = append(sqlClauses, "("+strings.Join(filter, " OR ")+")")
 	}
 
 	if f.ChannelOwnerUserID != nil {
 		filter := make([]string, 0)
-		for i, v := range *f.ChannelOwnerUserID {
-			filter = append(filter, fmt.Sprintf("(channel_owner_user_id = :chanowner_uid_1_%d)", i))
-			params[fmt.Sprintf("chanowner_uid_1_%d", i)] = v
+		for _, v := range *f.ChannelOwnerUserID {
+			filter = append(filter, fmt.Sprintf("(channel_owner_user_id = :%s)", params.Add(v)))
 		}
 		sqlClauses = append(sqlClauses, "("+strings.Join(filter, " OR ")+")")
 	}
 
 	if f.ChannelOwnerUserID2 != nil {
 		filter := make([]string, 0)
-		for i, v := range *f.ChannelOwnerUserID2 {
-			filter = append(filter, fmt.Sprintf("(channel_owner_user_id = :chanowner_uid_2_%d)", i))
-			params[fmt.Sprintf("chanowner_uid_2_%d", i)] = v
+		for _, v := range *f.ChannelOwnerUserID2 {
+			filter = append(filter, fmt.Sprintf("(channel_owner_user_id = :%s)", params.Add(v)))
 		}
 		sqlClauses = append(sqlClauses, "("+strings.Join(filter, " OR ")+")")
 	}
 
 	if f.ChannelID != nil {
 		filter := make([]string, 0)
-		for i, v := range *f.ChannelID {
-			filter = append(filter, fmt.Sprintf("(channel_id = :chanid_%d)", i))
-			params[fmt.Sprintf("chanid_%d", i)] = v
+		for _, v := range *f.ChannelID {
+			filter = append(filter, fmt.Sprintf("(channel_id = :%s)", params.Add(v)))
 		}
 		sqlClauses = append(sqlClauses, "("+strings.Join(filter, " OR ")+")")
 	}
@@ -101,18 +94,15 @@ func (f SubscriptionFilter) SQL() (string, string, sq.PP, error) {
 	}
 
 	if f.Timestamp != nil {
-		sqlClauses = append(sqlClauses, "(timestamp_created = :ts_equals)")
-		params["ts_equals"] = (*f.Timestamp).UnixMilli()
+		sqlClauses = append(sqlClauses, fmt.Sprintf("(timestamp_created = :%s)", params.Add((*f.Timestamp).UnixMilli())))
 	}
 
 	if f.TimestampAfter != nil {
-		sqlClauses = append(sqlClauses, "(timestamp_created > :ts_after)")
-		params["ts_after"] = (*f.TimestampAfter).UnixMilli()
+		sqlClauses = append(sqlClauses, fmt.Sprintf("(timestamp_created > :%s)", params.Add((*f.TimestampAfter).UnixMilli())))
 	}
 
 	if f.TimestampBefore != nil {
-		sqlClauses = append(sqlClauses, "(timestamp_created < :ts_before)")
-		params["ts_before"] = (*f.TimestampBefore).UnixMilli()
+		sqlClauses = append(sqlClauses, fmt.Sprintf("(timestamp_created < ::%s)", params.Add((*f.TimestampBefore).UnixMilli())))
 	}
 
 	sqlClause := ""

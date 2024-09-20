@@ -38,7 +38,7 @@ func TestSearchMessageFTSSimple(t *testing.T) {
 		Messages []msg `json:"messages"`
 	}
 
-	msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?filter=%s", url.QueryEscape("Friday")))
+	msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?search=%s", url.QueryEscape("Friday")))
 	tt.AssertEqual(t, "msgList.len", 2, len(msgList.Messages))
 	tt.AssertArrAny(t, "msgList.any<1>", msgList.Messages, func(msg msg) bool { return msg.Title == "Invitation" })
 	tt.AssertArrAny(t, "msgList.any<2>", msgList.Messages, func(msg msg) bool { return msg.Title == "Important notice" })
@@ -101,7 +101,7 @@ func TestSearchMessageFTSMulti(t *testing.T) {
 	}
 
 	{
-		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?used_key=%s&used_key=%s&channel=%s&filter=%s", skey, akey, "main", url.QueryEscape("tomorrow")))
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, fmt.Sprintf("/api/v2/messages?used_key=%s&used_key=%s&channel=%s&search=%s", skey, akey, "main", url.QueryEscape("tomorrow")))
 		tt.AssertEqual(t, "msgList.len", 1, len(msgList.Messages))
 		tt.AssertEqual(t, "msg.Title", "Notice", msgList.Messages[0].Title)
 	}
@@ -699,7 +699,7 @@ func TestListMessagesZeroPagesize(t *testing.T) {
 	tt.AssertEqual(t, "msgList[0]", "Lorem Ipsum 23", msgList1.Messages[0].Title)
 }
 
-func TestListMessagesFilterChannel(t *testing.T) {
+func TestListMessagesFiltered(t *testing.T) {
 	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
 	defer stop()
 
@@ -763,8 +763,8 @@ func TestListMessagesFilterChannel(t *testing.T) {
 		{"channel=Reminders", 6, fmt.Sprintf("/api/v2/messages?channel=%s", "Reminders")},
 		{"channel_id=1", 6, fmt.Sprintf("/api/v2/messages?channel_id=%s", cid1)},
 		{"channel_id=1|2", 9, fmt.Sprintf("/api/v2/messages?channel_id=%s&channel_id=%s", cid1, cid2)},
-		{"filter=unusual", 1, fmt.Sprintf("/api/v2/messages?filter=%s", "unusual")},
-		{"filter=your", 6, fmt.Sprintf("/api/v2/messages?filter=%s", "your")},
+		{"search=unusual", 1, fmt.Sprintf("/api/v2/messages?search=%s", "unusual")},
+		{"search=your", 6, fmt.Sprintf("/api/v2/messages?search=%s", "your")},
 		{"prio=0", 5, fmt.Sprintf("/api/v2/messages?priority=%s", "0")},
 		{"prio=1", 4 + 7, fmt.Sprintf("/api/v2/messages?priority=%s", "1")},
 		{"prio=2", 6, fmt.Sprintf("/api/v2/messages?priority=%s", "2")},
@@ -783,6 +783,118 @@ func TestListMessagesFilterChannel(t *testing.T) {
 		{"before=-1H", 2, fmt.Sprintf("/api/v2/messages?before=%s", url.QueryEscape(time.Now().Add(-time.Hour).Format(time.RFC3339Nano)))},
 		{"after=-1H", 20, fmt.Sprintf("/api/v2/messages?after=%s", url.QueryEscape(time.Now().Add(-time.Hour).Format(time.RFC3339Nano)))},
 		{"after=+5min", 3, fmt.Sprintf("/api/v2/messages?after=%s", url.QueryEscape(time.Now().Add(5*time.Minute).Format(time.RFC3339Nano)))},
+	}
+
+	for _, testdata := range filterTests {
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, testdata.Query)
+		tt.AssertEqual(t, "msgList.filter["+testdata.Name+"].len", testdata.Count, msgList.TotalCount)
+	}
+}
+
+func TestListMessagesSearch(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	type msg struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		Content             string `json:"content"`
+		MessageId           string `json:"message_id"`
+		OwnerUserId         string `json:"owner_user_id"`
+		Priority            int    `json:"priority"`
+		SenderIp            string `json:"sender_ip"`
+		SenderName          string `json:"sender_name"`
+		SenderUserId        string `json:"sender_user_id"`
+		Timestamp           string `json:"timestamp"`
+		Title               string `json:"title"`
+		Trimmed             bool   `json:"trimmed"`
+		UsrMessageId        string `json:"usr_message_id"`
+	}
+	type mglist struct {
+		Messages   []msg `json:"messages"`
+		TotalCount int   `json:"total_count"`
+	}
+
+	filterTests := []struct {
+		Name  string
+		Count int
+		Query string
+	}{
+		{"all", 22, fmt.Sprintf("/api/v2/messages")},
+
+		{"search=Promotions", 3, fmt.Sprintf("/api/v2/messages?search=%s", url.QueryEscape("Promotions"))},
+		{"search=Important(1)", 3, fmt.Sprintf("/api/v2/messages?search=%s", url.QueryEscape("Important"))},
+		{"search=Important(2)", 3, fmt.Sprintf("/api/v2/messages?search=%s", url.QueryEscape("important"))},
+		{"search=Important(3)", 3, fmt.Sprintf("/api/v2/messages?search=%s", url.QueryEscape("IMPORTANT"))},
+		{"search=safetyTraining(1)", 1, fmt.Sprintf("/api/v2/messages?search=%s", url.QueryEscape("safety training"))},
+		{"search=safetyTraining(2)", 1, fmt.Sprintf("/api/v2/messages?search=%s", url.QueryEscape("\"safety training\""))},
+		{"search=staffMeeting(1)", 2, fmt.Sprintf("/api/v2/messages?search=%s", url.QueryEscape("staff meeting"))},
+		{"search=staffMeeting(2)", 1, fmt.Sprintf("/api/v2/messages?search=%s", url.QueryEscape("\"staff meeting\""))},
+		{"search=?", 0, fmt.Sprintf("/api/v2/messages?search=%s", url.QueryEscape("\"?\""))},   // fails because FTS searches for full words
+		{"search=Prom", 0, fmt.Sprintf("/api/v2/messages?search=%s", url.QueryEscape("Prom"))}, // fails because FTS searches for full words
+		{"search=the(1)", 17, fmt.Sprintf("/api/v2/messages?search=%s", url.QueryEscape("the"))},
+		{"search=the(2)", 17, fmt.Sprintf("/api/v2/messages?search=%s", url.QueryEscape("THE"))},
+		{"search=please", 9, fmt.Sprintf("/api/v2/messages?search=%s", url.QueryEscape("please"))},
+		{"search=11pm", 2, fmt.Sprintf("/api/v2/messages?search=%s", url.QueryEscape("\"11:00pm\""))},
+	}
+
+	for _, testdata := range filterTests {
+		msgList := tt.RequestAuthGet[mglist](t, data.User[0].AdminKey, baseUrl, testdata.Query)
+		tt.AssertEqual(t, "msgList.filter["+testdata.Name+"].len", testdata.Count, msgList.TotalCount)
+	}
+}
+
+func TestListMessagesStringSearch(t *testing.T) {
+	ws, baseUrl, stop := tt.StartSimpleWebserver(t)
+	defer stop()
+
+	data := tt.InitDefaultData(t, ws)
+
+	type msg struct {
+		ChannelId           string `json:"channel_id"`
+		ChannelInternalName string `json:"channel_internal_name"`
+		Content             string `json:"content"`
+		MessageId           string `json:"message_id"`
+		OwnerUserId         string `json:"owner_user_id"`
+		Priority            int    `json:"priority"`
+		SenderIp            string `json:"sender_ip"`
+		SenderName          string `json:"sender_name"`
+		SenderUserId        string `json:"sender_user_id"`
+		Timestamp           string `json:"timestamp"`
+		Title               string `json:"title"`
+		Trimmed             bool   `json:"trimmed"`
+		UsrMessageId        string `json:"usr_message_id"`
+	}
+	type mglist struct {
+		Messages   []msg `json:"messages"`
+		TotalCount int   `json:"total_count"`
+	}
+
+	filterTests := []struct {
+		Name  string
+		Count int
+		Query string
+	}{
+		{"all", 22, fmt.Sprintf("/api/v2/messages")},
+
+		{"search=Promotions", 3, fmt.Sprintf("/api/v2/messages?string_search=%s", url.QueryEscape("Promotions"))},
+		{"search=Important(1)", 3, fmt.Sprintf("/api/v2/messages?string_search=%s", url.QueryEscape("Important"))},
+		{"search=Important(2)", 3, fmt.Sprintf("/api/v2/messages?string_search=%s", url.QueryEscape("important"))},
+		{"search=Important(3)", 3, fmt.Sprintf("/api/v2/messages?string_search=%s", url.QueryEscape("IMPORTANT"))},
+		{"search=safetyTraining", 1, fmt.Sprintf("/api/v2/messages?string_search=%s", url.QueryEscape("safety training"))},
+		{"search=?", 1, fmt.Sprintf("/api/v2/messages?string_search=%s", url.QueryEscape("?"))},
+		{"search=the(1)", 17, fmt.Sprintf("/api/v2/messages?string_search=%s", url.QueryEscape("the"))},
+		{"search=the(2)", 17, fmt.Sprintf("/api/v2/messages?string_search=%s", url.QueryEscape("THE"))},
+		{"search=please", 9, fmt.Sprintf("/api/v2/messages?string_search=%s", url.QueryEscape("please"))},
+		{"search=there", 3, fmt.Sprintf("/api/v2/messages?string_search=%s", url.QueryEscape("tHERe"))},
+		{"search=11pm", 2, fmt.Sprintf("/api/v2/messages?string_search=%s", url.QueryEscape("11:00pm"))},
+
+		{"search=Prom", 3, fmt.Sprintf("/api/v2/messages?string_search=%s", url.QueryEscape("Prom"))},
+		{"search=run", 1, fmt.Sprintf("/api/v2/messages?string_search=%s", url.QueryEscape("run"))},
+
+		{"search=please+there", 10, fmt.Sprintf("/api/v2/messages?string_search=%s&string_search=%s", url.QueryEscape("please"), url.QueryEscape("THERE"))},
 	}
 
 	for _, testdata := range filterTests {

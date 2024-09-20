@@ -239,6 +239,7 @@ class _MessageViewPageState extends State<MessageViewPage> {
             onPressed: () {
               Clipboard.setData(new ClipboardData(text: message.content ?? ''));
               Toaster.info("Clipboard", 'Copied text to Clipboard');
+              print('================= [CLIPBOARD] =================\n${message.content}\n================= [/CLIPBOARD] =================');
             },
             icon: FontAwesomeIcons.copy,
           ),

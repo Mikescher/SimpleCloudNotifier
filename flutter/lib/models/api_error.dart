@@ -66,7 +66,7 @@ class APIError {
   factory APIError.fromJson(Map<String, dynamic> json) {
     return APIError(
       success: json['success'] as bool,
-      error: (json['error'] as double).toInt(),
+      error: (json['error'] as num).toInt(),
       errhighlight: json['errhighlight'] as String,
       message: json['message'] as String,
     );

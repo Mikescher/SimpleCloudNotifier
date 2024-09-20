@@ -39,7 +39,8 @@ func (h APIHandler) ListMessages(pctx ginext.PreContext) ginext.HTTPResponse {
 	type query struct {
 		PageSize      *int     `json:"page_size"       form:"page_size"`
 		NextPageToken *string  `json:"next_page_token" form:"next_page_token"`
-		Filter        *string  `json:"filter"          form:"filter"`
+		Search        []string `json:"search"          form:"search"`
+		StringSearch  []string `json:"string_search"   form:"string_search"`
 		Trimmed       *bool    `json:"trimmed"         form:"trimmed"`
 		Channels      []string `json:"channel"         form:"channel"`
 		ChannelIDs    []string `json:"channel_id"      form:"channel_id"`
@@ -92,8 +93,12 @@ func (h APIHandler) ListMessages(pctx ginext.PreContext) ginext.HTTPResponse {
 			ConfirmedSubscriptionBy: langext.Ptr(userid),
 		}
 
-		if q.Filter != nil && strings.TrimSpace(*q.Filter) != "" {
-			filter.SearchString = langext.Ptr([]string{strings.TrimSpace(*q.Filter)})
+		if len(q.Search) != 0 {
+			filter.SearchStringFTS = langext.Ptr(langext.ArrMap(q.Search, func(v string) string { return strings.TrimSpace(v) }))
+		}
+
+		if len(q.StringSearch) != 0 {
+			filter.SearchStringPlain = langext.Ptr(langext.ArrMap(q.StringSearch, func(v string) string { return strings.TrimSpace(v) }))
 		}
 
 		if len(q.Channels) != 0 {

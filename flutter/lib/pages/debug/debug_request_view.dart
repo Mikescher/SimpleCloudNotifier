@@ -60,6 +60,7 @@ class DebugRequestViewPage extends StatelessWidget {
               onPressed: () {
                 Clipboard.setData(new ClipboardData(text: title));
                 Toaster.info("Clipboard", 'Copied text to Clipboard');
+                print('================= [CLIPBOARD] =================\n${title}\n================= [/CLIPBOARD] =================');
               },
               icon: FontAwesomeIcons.copy,
             ),
