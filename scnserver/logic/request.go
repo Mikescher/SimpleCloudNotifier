@@ -9,7 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/mattn/go-sqlite3"
+	"github.com/glebarez/go-sqlite"
 	"github.com/rs/zerolog/log"
 	"gogs.mikescher.com/BlackForestBytes/goext/dataext"
 	"gogs.mikescher.com/BlackForestBytes/goext/exerr"
@@ -232,9 +232,18 @@ func isSqlite3Busy(r ginext.HTTPResponse) bool {
 	if errwrap, ok := r.(interface{ Unwrap() error }); ok && errwrap != nil {
 		orig := exerr.OriginalError(errwrap.Unwrap())
 
-		var sqlite3Err sqlite3.Error
-		if errors.As(orig, &sqlite3Err) {
-			if sqlite3Err.Code == 5 { // [5] == SQLITE_BUSY
+		var sqliteErr *sqlite.Error
+		if errors.As(orig, &sqliteErr) {
+			if sqliteErr.Code() == 5 { // [5] == SQLITE_BUSY
+				return true
+			}
+			if sqliteErr.Code() == 517 { // [517] == SQLITE_BUSY_SNAPSHOT
+				return true
+			}
+			if sqliteErr.Code() == 261 { // [261] == SQLITE_BUSY_RECOVERY
+				return true
+			}
+			if sqliteErr.Code() == 773 { // [773] == SQLITE_BUSY_TIMEOUT
 				return true
 			}
 		}

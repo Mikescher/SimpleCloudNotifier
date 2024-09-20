@@ -10,8 +10,8 @@ require (
 	github.com/go-playground/validator/v10 v10.22.1
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/jmoiron/sqlx v1.4.0
-	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/rs/zerolog v1.33.0
+	github.com/viney-shih/go-lock v1.1.2
 	gogs.mikescher.com/BlackForestBytes/goext v0.0.513
 	gopkg.in/loremipsum.v1 v1.1.2
 )
@@ -44,7 +44,6 @@ require (
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
-	github.com/viney-shih/go-lock v1.1.2 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect

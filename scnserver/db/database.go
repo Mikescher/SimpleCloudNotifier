@@ -10,6 +10,7 @@ type DatabaseImpl interface {
 
 	Migrate(ctx context.Context) error
 	Ping(ctx context.Context) error
+	Version(ctx context.Context) (string, string, error)
 	BeginTx(ctx context.Context) (sq.Tx, error)
 	Stop(ctx context.Context) error
 

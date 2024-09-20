@@ -11,19 +11,19 @@ import (
 
 // ListUserSenderNames swaggerdoc
 //
-//	@Summary		List sender-names (of allthe messages of this user)
-//	@ID				api-usersendernames-list
-//	@Tags			API-v2
+//	@Summary	List sender-names (of allthe messages of this user)
+//	@ID			api-usersendernames-list
+//	@Tags		API-v2
 //
-//	@Param			uid	path		string	true	"UserID"
+//	@Param		uid	path		string	true	"UserID"
 //
-//	@Success		200	{object}	handler.ListUserKeys.response
-//	@Failure		400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
-//	@Failure		401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
-//	@Failure		404	{object}	ginresp.apiError	"message not found"
-//	@Failure		500	{object}	ginresp.apiError	"internal server error"
+//	@Success	200	{object}	handler.ListUserKeys.response
+//	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure	404	{object}	ginresp.apiError	"message not found"
+//	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
-//	@Router			/api/v2/users/{uid}/keys [GET]
+//	@Router		/api/v2/users/{uid}/keys [GET]
 func (h APIHandler) ListUserSenderNames(pctx ginext.PreContext) ginext.HTTPResponse {
 	type uri struct {
 		UserID models.UserID `uri:"uid" binding:"entityid"`
@@ -57,17 +57,17 @@ func (h APIHandler) ListUserSenderNames(pctx ginext.PreContext) ginext.HTTPRespo
 
 // ListSenderNames swaggerdoc
 //
-//	@Summary		List sender-names (of all messages this user can view, eitehr own or foreign-subscribed)
-//	@ID				api-sendernames-list
-//	@Tags			API-v2
+//	@Summary	List sender-names (of all messages this user can view, eitehr own or foreign-subscribed)
+//	@ID			api-sendernames-list
+//	@Tags		API-v2
 //
-//	@Success		200	{object}	handler.ListSenderNames.response
-//	@Failure		400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
-//	@Failure		401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
-//	@Failure		404	{object}	ginresp.apiError	"message not found"
-//	@Failure		500	{object}	ginresp.apiError	"internal server error"
+//	@Success	200	{object}	handler.ListSenderNames.response
+//	@Failure	400	{object}	ginresp.apiError	"supplied values/parameters cannot be parsed / are invalid"
+//	@Failure	401	{object}	ginresp.apiError	"user is not authorized / has missing permissions"
+//	@Failure	404	{object}	ginresp.apiError	"message not found"
+//	@Failure	500	{object}	ginresp.apiError	"internal server error"
 //
-//	@Router			/api/v2/sender-names [GET]
+//	@Router		/api/v2/sender-names [GET]
 func (h APIHandler) ListSenderNames(pctx ginext.PreContext) ginext.HTTPResponse {
 	type response struct {
 		SenderNames []models.SenderNameStatistics `json:"sender_names"`

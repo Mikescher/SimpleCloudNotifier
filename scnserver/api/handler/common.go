@@ -9,7 +9,6 @@ import (
 	"bytes"
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/mattn/go-sqlite3"
 	"gogs.mikescher.com/BlackForestBytes/goext/ginext"
 	"gogs.mikescher.com/BlackForestBytes/goext/langext"
 	"gogs.mikescher.com/BlackForestBytes/goext/timeext"
@@ -91,10 +90,9 @@ func (h CommonHandler) Ping(pctx ginext.PreContext) ginext.HTTPResponse {
 //	@Router		/api/db-test [post]
 func (h CommonHandler) DatabaseTest(pctx ginext.PreContext) ginext.HTTPResponse {
 	type response struct {
-		Success          bool   `json:"success"`
-		LibVersion       string `json:"libVersion"`
-		LibVersionNumber int    `json:"libVersionNumber"`
-		SourceID         string `json:"sourceID"`
+		Success    bool   `json:"success"`
+		LibVersion string `json:"libVersion"`
+		SourceID   string `json:"sourceID"`
 	}
 
 	ctx, g, errResp := pctx.Start()
@@ -105,18 +103,20 @@ func (h CommonHandler) DatabaseTest(pctx ginext.PreContext) ginext.HTTPResponse 
 
 	return h.app.DoRequest(ctx, g, models.TLockRead, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
 
-		libVersion, libVersionNumber, sourceID := sqlite3.Version()
+		versionStr, sourceID, err := h.app.Database.Primary.Version(ctx)
+		if err != nil {
+			return ginresp.InternalError(err)
+		}
 
-		err := h.app.Database.Ping(ctx)
+		err = h.app.Database.Ping(ctx)
 		if err != nil {
 			return ginresp.InternalError(err)
 		}
 
 		return ginext.JSON(http.StatusOK, response{
-			Success:          true,
-			LibVersion:       libVersion,
-			LibVersionNumber: libVersionNumber,
-			SourceID:         sourceID,
+			Success:    true,
+			LibVersion: versionStr,
+			SourceID:   sourceID,
 		})
 
 	})
@@ -144,12 +144,6 @@ func (h CommonHandler) Health(pctx ginext.PreContext) ginext.HTTPResponse {
 	defer ctx.Cancel()
 
 	return h.app.DoRequest(ctx, g, models.TLockReadWrite, func(ctx *logic.AppContext, finishSuccess func(r ginext.HTTPResponse) ginext.HTTPResponse) ginext.HTTPResponse {
-
-		_, libVersionNumber, _ := sqlite3.Version()
-
-		if libVersionNumber < 3039000 {
-			return ginresp.InternalError(errors.New("sqlite version too low"))
-		}
 
 		tctx := simplectx.CreateSimpleContext(ctx, nil)
 

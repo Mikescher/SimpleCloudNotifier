@@ -198,8 +198,6 @@ definitions:
     properties:
       libVersion:
         type: string
-      libVersionNumber:
-        type: integer
       sourceID:
         type: string
       success:
@@ -250,6 +248,8 @@ definitions:
         type: string
       page_size:
         type: integer
+      total_count:
+        type: integer
     type: object
   handler.ListChannelSubscriptions.response:
     properties:
@@ -282,6 +282,15 @@ definitions:
         type: string
       page_size:
         type: integer
+      total_count:
+        type: integer
+    type: object
+  handler.ListSenderNames.response:
+    properties:
+      sender_names:
+        items:
+          $ref: '#/definitions/models.SenderNameStatistics'
+        type: array
     type: object
   handler.ListUserKeys.response:
     properties:
@@ -517,10 +526,15 @@ definitions:
       channel_id:
         type: string
       description_name:
+        description: = DescriptionName, (optional), longer description text, initally
+          nil
         type: string
       display_name:
+        description: = DisplayName, used for display purposes, can be changed, initially
+          equals InternalName
         type: string
       internal_name:
+        description: = InternalName, used for sending, normalized, cannot be changed
         type: string
       messages_sent:
         type: integer
@@ -659,6 +673,17 @@ definitions:
       used_key_id:
         type: string
       usr_message_id:
+        type: string
+    type: object
+  models.SenderNameStatistics:
+    properties:
+      count:
+        type: integer
+      first_timestamp:
+        type: string
+      last_timestamp:
+        type: string
+      name:
         type: string
     type: object
   models.Subscription:
@@ -1397,6 +1422,9 @@ paths:
         name: filter
         type: string
       - in: query
+        name: has_sender
+        type: boolean
+      - in: query
         name: next_page_token
         type: string
       - in: query
@@ -1614,6 +1642,34 @@ paths:
             $ref: '#/definitions/ginresp.apiError'
       summary: Get a user (similar to api-user-get, but can be called from anyone
         and only returns a subset of fields)
+      tags:
+      - API-v2
+  /api/v2/sender-names:
+    get:
+      operationId: api-sendernames-list
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListSenderNames.response'
+        "400":
+          description: supplied values/parameters cannot be parsed / are invalid
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "401":
+          description: user is not authorized / has missing permissions
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "404":
+          description: message not found
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ginresp.apiError'
+      summary: List sender-names (of all messages this user can view, eitehr own or
+        foreign-subscribed)
       tags:
       - API-v2
   /api/v2/users:
@@ -2171,9 +2227,7 @@ paths:
       - API-v2
   /api/v2/users/{uid}/keys:
     get:
-      description: The request must be done with an ADMIN key, the returned keys are
-        without their token.
-      operationId: api-tokenkeys-list
+      operationId: api-usersendernames-list
       parameters:
       - description: UserID
         in: path
@@ -2201,7 +2255,7 @@ paths:
           description: internal server error
           schema:
             $ref: '#/definitions/ginresp.apiError'
-      summary: List keys of the user
+      summary: List sender-names (of allthe messages of this user)
       tags:
       - API-v2
     post:

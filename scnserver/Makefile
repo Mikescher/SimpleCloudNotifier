@@ -5,7 +5,7 @@ PORT=9090
 NAMESPACE=$(shell git rev-parse --abbrev-ref HEAD)
 HASH=$(shell git rev-parse HEAD)
 
-TAGS="timetzdata sqlite_fts5 sqlite_foreign_keys"
+TAGS="timetzdata"
 
 .PHONY: test swagger pygmentize docker migrate dgi pygmentize lint docker
 

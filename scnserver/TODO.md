@@ -12,8 +12,6 @@
 
  - exerr.New | exerr.Wrap
 
- - Fork go-sqlite with always-on fts5
-
 #### UNSURE
 
  - (?) default-priority for channels

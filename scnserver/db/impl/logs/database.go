@@ -280,6 +280,20 @@ func (db *Database) Ping(ctx context.Context) error {
 	return db.db.Ping(ctx)
 }
 
+func (db *Database) Version(ctx context.Context) (string, string, error) {
+	type rt struct {
+		Version  string `db:"version"`
+		SourceID string `db:"sourceID"`
+	}
+
+	resp, err := sq.QuerySingle[rt](ctx, db.db, "SELECT sqlite_version() AS version, sqlite_source_id() AS sourceID", sq.PP{}, sq.SModeFast, sq.Safe)
+	if err != nil {
+		return "", "", err
+	}
+
+	return resp.Version, resp.SourceID, nil
+}
+
 func (db *Database) BeginTx(ctx context.Context) (sq.Tx, error) {
 	return db.db.BeginTransaction(ctx, sql.LevelDefault)
 }

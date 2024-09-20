@@ -887,6 +887,11 @@
                         "in": "query"
                     },
                     {
+                        "type": "boolean",
+                        "name": "has_sender",
+                        "in": "query"
+                    },
+                    {
                         "type": "string",
                         "name": "next_page_token",
                         "in": "query"
@@ -1194,6 +1199,47 @@
                     },
                     "404": {
                         "description": "user not found",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v2/sender-names": {
+            "get": {
+                "tags": [
+                    "API-v2"
+                ],
+                "summary": "List sender-names (of all messages this user can view, eitehr own or foreign-subscribed)",
+                "operationId": "api-sendernames-list",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ListSenderNames.response"
+                        }
+                    },
+                    "400": {
+                        "description": "supplied values/parameters cannot be parsed / are invalid",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "401": {
+                        "description": "user is not authorized / has missing permissions",
+                        "schema": {
+                            "$ref": "#/definitions/ginresp.apiError"
+                        }
+                    },
+                    "404": {
+                        "description": "message not found",
                         "schema": {
                             "$ref": "#/definitions/ginresp.apiError"
                         }
@@ -2026,12 +2072,11 @@
         },
         "/api/v2/users/{uid}/keys": {
             "get": {
-                "description": "The request must be done with an ADMIN key, the returned keys are without their token.",
                 "tags": [
                     "API-v2"
                 ],
-                "summary": "List keys of the user",
-                "operationId": "api-tokenkeys-list",
+                "summary": "List sender-names (of allthe messages of this user)",
+                "operationId": "api-usersendernames-list",
                 "parameters": [
                     {
                         "type": "string",
@@ -3344,9 +3389,6 @@
                 "libVersion": {
                     "type": "string"
                 },
-                "libVersionNumber": {
-                    "type": "integer"
-                },
                 "sourceID": {
                     "type": "string"
                 },
@@ -3423,6 +3465,9 @@
                 },
                 "page_size": {
                     "type": "integer"
+                },
+                "total_count": {
+                    "type": "integer"
                 }
             }
         },
@@ -3473,6 +3518,20 @@
                 },
                 "page_size": {
                     "type": "integer"
+                },
+                "total_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handler.ListSenderNames.response": {
+            "type": "object",
+            "properties": {
+                "sender_names": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SenderNameStatistics"
+                    }
                 }
             }
         },
@@ -3830,12 +3889,15 @@
                     "type": "string"
                 },
                 "description_name": {
+                    "description": "= DescriptionName, (optional), longer description text, initally nil",
                     "type": "string"
                 },
                 "display_name": {
+                    "description": "= DisplayName, used for display purposes, can be changed, initially equals InternalName",
                     "type": "string"
                 },
                 "internal_name": {
+                    "description": "= InternalName, used for sending, normalized, cannot be changed",
                     "type": "string"
                 },
                 "messages_sent": {
@@ -4039,6 +4101,23 @@
                     "type": "string"
                 },
                 "usr_message_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SenderNameStatistics": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "first_timestamp": {
+                    "type": "string"
+                },
+                "last_timestamp": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }
