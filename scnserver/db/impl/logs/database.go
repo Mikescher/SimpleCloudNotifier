@@ -151,6 +151,8 @@ func (db *Database) Migrate(outerctx context.Context) error {
 			}
 
 			currschema = currschema + 1
+
+			ppReInit = true
 		}
 	}
 
