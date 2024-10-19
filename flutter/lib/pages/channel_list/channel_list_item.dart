@@ -199,7 +199,7 @@ class _ChannelListItemState extends State<ChannelListItem> {
         await APIClient.deleteSubscription(acc, widget.channel.channelID, widget.subscription!.subscriptionID);
         widget.onChannelListReloadTrigger.call();
 
-        widget.onSubscriptionChanged?.call(widget.channel.channelID, null);
+        widget.onSubscriptionChanged.call(widget.channel.channelID, null);
 
         Toaster.success("Success", 'Unsubscribed from channel');
       } catch (exc, trace) {

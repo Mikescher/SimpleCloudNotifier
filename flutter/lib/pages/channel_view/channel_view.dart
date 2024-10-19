@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/components/layout/scaffold.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
+import 'package:simplecloudnotifier/models/scan_result.dart';
 import 'package:simplecloudnotifier/models/subscription.dart';
 import 'package:simplecloudnotifier/models/user.dart';
 import 'package:simplecloudnotifier/pages/channel_message_view/channel_message_view.dart';
@@ -295,8 +296,8 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
     return FutureBuilder(
       future: _futureSubscribeKey.future,
       builder: (context, snapshot) {
-        if (snapshot.hasData && snapshot.data != null) {
-          var text = '@scn.channel.subscribe' + '\n' + "v1" + '\n' + channel!.displayName + '\n' + channel!.ownerUserID + '\n' + channel!.channelID + '\n' + snapshot.data!;
+        if (snapshot.hasData) {
+          final text = (snapshot.data == null) ? ScanResult.createChannelQR(channel!) : ScanResult.createChannelSubscribeQR(channel!, snapshot.data!);
           return GestureDetector(
             onTap: () {
               Share.share(text, subject: _displayNameOverride ?? channel!.displayName);
@@ -316,12 +317,6 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
                 ),
               ),
             ),
-          );
-        } else if (snapshot.hasData && snapshot.data == null) {
-          return const SizedBox(
-            width: 300.0,
-            height: 300.0,
-            child: Center(child: Icon(FontAwesomeIcons.solidSnake, size: 64)),
           );
         } else {
           return const SizedBox(

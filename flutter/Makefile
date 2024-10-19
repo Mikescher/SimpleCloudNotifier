@@ -17,7 +17,17 @@ run-android:
 	adb connect 10.10.10.177:5555
 	flutter pub run build_runner build
 	_JAVA_OPTIONS="" flutter run -d 10.10.10.177:5555
-	
+
+install-release:
+	# Install on Pixel 7a
+	flutter build apk --release
+	flutter install --release -d 35221JEHN07157
+
+build-release:
+	flutter build apk       --release
+	flutter build appbundle --release
+	flutter build linux     --release
+
 test:
 	dart analyze
 

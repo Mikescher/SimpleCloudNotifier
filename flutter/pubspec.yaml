@@ -37,6 +37,7 @@ dependencies:
 
 
   path: any
+  mobile_scanner: ^6.0.1
 dependency_overrides:
   font_awesome_flutter:
     path: deps/font_awesome_flutter

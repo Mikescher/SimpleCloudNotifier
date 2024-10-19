@@ -4,6 +4,7 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
+import 'package:simplecloudnotifier/pages/channel_list/channel_scanner.dart';
 import 'package:simplecloudnotifier/state/app_bar_state.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
@@ -168,7 +169,7 @@ class _ChannelRootPageState extends State<ChannelRootPage> with RouteAware {
       floatingActionButton: FloatingActionButton(
         heroTag: 'fab_channel_list_qr',
         onPressed: () {
-          //TODO scan qr code to subscribe channel
+          Navi.push(context, () => ChannelScannerPage());
         },
         child: const Icon(FontAwesomeIcons.qrcode),
       ),

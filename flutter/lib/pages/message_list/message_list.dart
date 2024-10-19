@@ -72,6 +72,9 @@ class _MessageListPageState extends State<MessageListPage> with RouteAware {
 
       _channels = SCNDataCache().getChannelMap();
 
+      //TODO this is not 100% correct - the message-cache contains (which is right!) all messages, even from unsubscribed channels
+      //TODO what we should do is save another list in SCNDataCache, with the result of the last getMessageList call (page-1) and use that
+      //TODO this way we only get 1 page of data from cache, but its a weird behaviour anway that we loose data once _backgroundRefresh is finished
       _pagingController.value = PagingState(nextPageKey: null, itemList: SCNDataCache().getMessagesSorted(), error: null);
 
       _backgroundRefresh(true);
