@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:simplecloudnotifier/components/layout/scaffold.dart';
 import 'package:simplecloudnotifier/types/immediate_future.dart';
 

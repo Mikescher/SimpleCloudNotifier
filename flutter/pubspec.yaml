@@ -36,6 +36,7 @@ dependencies:
   flutter_local_notifications: ^17.1.2
 
 
+  path: any
 dependency_overrides:
   font_awesome_flutter:
     path: deps/font_awesome_flutter

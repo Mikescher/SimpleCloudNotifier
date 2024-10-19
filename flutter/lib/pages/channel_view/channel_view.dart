@@ -68,7 +68,6 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
     super.initState();
   }
 
-  @override
   void _initStateAsync() async {
     final userAcc = Provider.of<AppAuth>(context, listen: false);
 

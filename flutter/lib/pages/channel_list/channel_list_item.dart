@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -12,7 +10,6 @@ import 'package:simplecloudnotifier/pages/channel_message_view/channel_message_v
 import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/state/scn_data_cache.dart';
 import 'package:simplecloudnotifier/utils/navi.dart';
-import 'package:simplecloudnotifier/utils/toaster.dart';
 
 class ChannelListItem extends StatefulWidget {
   static final _dateFormat = DateFormat('yyyy-MM-dd kk:mm');

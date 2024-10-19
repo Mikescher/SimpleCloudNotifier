@@ -226,7 +226,7 @@ class SCNApp extends StatelessWidget {
     return ToastificationWrapper(
       config: ToastificationConfig(
         itemWidth: 440,
-        marginBuilder: (alignment) => EdgeInsets.symmetric(vertical: 64),
+        marginBuilder: (context, alignment) => EdgeInsets.symmetric(vertical: 64),
         animationDuration: Duration(milliseconds: 200),
       ),
       child: Consumer<AppTheme>(
@@ -393,7 +393,7 @@ void _handleNotificationClickAction(String? payload, Duration delay) {
   if (parts.length == 4 && parts[0] == '@SCN_MESSAGE') {
     final messageID = parts[1];
     () async {
-      await Future.delayed(delay);
+      await Future.delayed(delay, () {});
 
       SchedulerBinding.instance.addPostFrameCallback((_) {
         ApplicationLog.info('Handle notification action @SCN_MESSAGE --> ${messageID}');
@@ -403,7 +403,7 @@ void _handleNotificationClickAction(String? payload, Duration delay) {
   } else if (parts.length == 3 && parts[0] == '@SCN_MESSAGE_SUMMARY') {
     final channelID = parts[1];
     () async {
-      await Future.delayed(delay);
+      await Future.delayed(delay, () {});
 
       SchedulerBinding.instance.addPostFrameCallback((_) {
         ApplicationLog.info('Handle notification action @SCN_MESSAGE_SUMMARY --> ${channelID}');

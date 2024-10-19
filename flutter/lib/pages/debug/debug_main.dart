@@ -60,7 +60,7 @@ class _DebugMainPageState extends State<DebugMainPage> {
         ButtonSegment<DebugMainPageSubPage>(value: DebugMainPageSubPage.logs, icon: Icon(FontAwesomeIcons.solidFileLines, size: 14)),
       ],
       style: ButtonStyle(
-        padding: MaterialStateProperty.all<EdgeInsets>(EdgeInsets.fromLTRB(0, 0, 0, 0)),
+        padding: WidgetStateProperty.all<EdgeInsets>(EdgeInsets.fromLTRB(0, 0, 0, 0)),
         visualDensity: VisualDensity(horizontal: -3, vertical: -3),
       ),
       selected: <DebugMainPageSubPage>{_subPage},
