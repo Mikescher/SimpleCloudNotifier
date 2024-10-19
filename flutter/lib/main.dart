@@ -59,6 +59,7 @@ void main() async {
     Hive.deleteBoxFromDisk('scn-logs');
     await Hive.openBox<SCNLog>('scn-logs');
     ApplicationLog.error('Failed to open Hive-Box: scn-logs: ' + exc.toString(), trace: trace);
+    ApplicationLog.writeRawFailure('Failed to open Hive-Box: scn-logs', {'error': exc.toString(), 'trace': trace});
   }
 
   print('[INIT] Load Hive<scn-requests>...');
@@ -69,6 +70,7 @@ void main() async {
     Hive.deleteBoxFromDisk('scn-requests');
     await Hive.openBox<SCNRequest>('scn-requests');
     ApplicationLog.error('Failed to open Hive-Box: scn-requests: ' + exc.toString(), trace: trace);
+    ApplicationLog.writeRawFailure('Failed to open Hive-Box: scn-requests', {'error': exc.toString(), 'trace': trace});
   }
 
   print('[INIT] Load Hive<scn-message-cache>...');
@@ -79,6 +81,7 @@ void main() async {
     Hive.deleteBoxFromDisk('scn-message-cache');
     await Hive.openBox<SCNMessage>('scn-message-cache');
     ApplicationLog.error('Failed to open Hive-Box: scn-message-cache' + exc.toString(), trace: trace);
+    ApplicationLog.writeRawFailure('Failed to open Hive-Box: scn-message-cache', {'error': exc.toString(), 'trace': trace});
   }
 
   print('[INIT] Load Hive<scn-channel-cache>...');
@@ -89,6 +92,7 @@ void main() async {
     Hive.deleteBoxFromDisk('scn-channel-cache');
     await Hive.openBox<Channel>('scn-channel-cache');
     ApplicationLog.error('Failed to open Hive-Box: scn-channel-cache' + exc.toString(), trace: trace);
+    ApplicationLog.writeRawFailure('Failed to open Hive-Box: scn-channel-cache', {'error': exc.toString(), 'trace': trace});
   }
 
   print('[INIT] Load Hive<scn-fb-messages>...');
@@ -99,6 +103,7 @@ void main() async {
     Hive.deleteBoxFromDisk('scn-fb-messages');
     await Hive.openBox<FBMessage>('scn-fb-messages');
     ApplicationLog.error('Failed to open Hive-Box: scn-fb-messages' + exc.toString(), trace: trace);
+    ApplicationLog.writeRawFailure('Failed to open Hive-Box: scn-fb-messages', {'error': exc.toString(), 'trace': trace});
   }
 
   print('[INIT] Load AppAuth...');
@@ -112,11 +117,13 @@ void main() async {
         await appAuth.loadUser();
       } catch (exc, trace) {
         ApplicationLog.error('Failed to load user (background load on startup): ' + exc.toString(), trace: trace);
+        ApplicationLog.writeRawFailure('Failed to load user (background load on startup)', {'error': exc.toString(), 'trace': trace});
       }
       try {
         await appAuth.loadClient();
       } catch (exc, trace) {
         ApplicationLog.error('Failed to load user (background load on startup): ' + exc.toString(), trace: trace);
+        ApplicationLog.writeRawFailure('Failed to load user (background load on startup)', {'error': exc.toString(), 'trace': trace});
       }
     }();
   }
@@ -321,6 +328,7 @@ Future<void> _receiveMessage(RemoteMessage message, bool foreground) async {
     await Hive.openBox<SCNMessage>('scn-message-cache');
     await Hive.openBox<SCNRequest>('scn-requests');
   } catch (exc, trace) {
+    ApplicationLog.writeRawFailure('Failed to init hive', {'exception': exc.toString(), 'trace': trace.toString(), 'data': message, 'foreground': foreground});
     ApplicationLog.error('Failed to init hive:' + exc.toString(), trace: trace);
     Notifier.showLocalNotification("", "@ERROR", "@ERROR", 'Error Channel', "Error", "Failed to receive SCN message (init failed)", null);
     return;
@@ -341,6 +349,7 @@ Future<void> _receiveMessage(RemoteMessage message, bool foreground) async {
 
     Notifier.showLocalNotification(scn_msg_id, channel_id, channel, 'Channel: ${channel}', title, body, timestamp);
   } catch (exc, trace) {
+    ApplicationLog.writeRawFailure('Failed to decode received FB message', {'exception': exc.toString(), 'trace': trace.toString(), 'data': message, 'foreground': foreground});
     ApplicationLog.error('Failed to decode received FB message' + exc.toString(), trace: trace);
     Notifier.showLocalNotification("", "@ERROR", "@ERROR", 'Error Channel', "Error", "Failed to receive SCN message (decode failed)", null);
     return;
@@ -349,6 +358,7 @@ Future<void> _receiveMessage(RemoteMessage message, bool foreground) async {
   try {
     FBMessageLog.insert(message);
   } catch (exc, trace) {
+    ApplicationLog.writeRawFailure('Failed to persist received FB message', {'exception': exc.toString(), 'trace': trace.toString(), 'data': message, 'foreground': foreground});
     ApplicationLog.error('Failed to persist received FB message' + exc.toString(), trace: trace);
     Notifier.showLocalNotification("", "@ERROR", "@ERROR", 'Error Channel', "Error", "Failed to receive SCN message (persist failed)", null);
     return;
@@ -359,6 +369,7 @@ Future<void> _receiveMessage(RemoteMessage message, bool foreground) async {
     SCNDataCache().addToMessageCache([msg]);
     if (foreground) AppEvents().notifyMessageReceivedListeners(msg);
   } catch (exc, trace) {
+    ApplicationLog.writeRawFailure('Failed to query+persist message', {'exception': exc.toString(), 'trace': trace.toString(), 'data': message, 'foreground': foreground});
     ApplicationLog.error('Failed to query+persist message: ' + exc.toString(), trace: trace);
     return;
   }

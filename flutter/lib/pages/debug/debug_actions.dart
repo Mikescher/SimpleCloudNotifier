@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/utils/notifier.dart';
 import 'package:simplecloudnotifier/utils/toaster.dart';
 import 'package:simplecloudnotifier/utils/ui.dart';
@@ -59,6 +60,19 @@ class _DebugActionsPageState extends State<DebugActionsPage> {
                 onPressed: () => Notifier.showLocalNotification('', 'TEST_CHANNEL', "Test Channel", "Channel for testing", "Hello World", "Local Notification test", null),
                 text: 'Show local notification',
               ),
+              SizedBox(height: 20),
+              UI.button(
+                  big: false,
+                  onPressed: () => ApplicationLog.writeRawFailure('test', {
+                        'text': "hello world",
+                        'object': {
+                          1: 2,
+                          4: 5,
+                          6: [7, 8, 9]
+                        },
+                        'trace': StackTrace.current
+                      }),
+                  text: 'asdf'),
             ],
           ),
         ),

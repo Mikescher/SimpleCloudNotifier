@@ -1,6 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:simplecloudnotifier/state/globals.dart';
 import 'package:simplecloudnotifier/state/interfaces.dart';
 import 'package:xid/xid.dart';
+import 'package:path/path.dart' as path;
 
 part 'application_log.g.dart';
 
@@ -75,6 +80,61 @@ class ApplicationLog {
       additional: additional ?? '',
       trace: trace?.toString() ?? '',
     ));
+  }
+
+  static void writeRawFailure(String message, Map<String, dynamic> extraData) async {
+    try {
+      await Globals().init();
+
+      final fn = path.join(Globals().rawFailureLogsDir.path, 'failure-${DateTime.now().toIso8601String()}.log');
+
+      var txt = "[TEXT]\n${message}\n\n";
+      for (var k in extraData.keys) {
+        txt += "[${k}]\n${_debugToStr(extraData[k])}\n\n";
+      }
+
+      await File(fn).writeAsString(txt);
+
+      ApplicationLog.debug("Wrote raw failure log to '${fn}'  ('${message}')");
+    } catch (e) {
+      print("Failed to <writeRawFailure>: ${e}");
+    }
+  }
+
+  static String _debugToStr(dynamic v) {
+    if (v is String) {
+      return v;
+    }
+    if (v is StackTrace) {
+      return v.toString();
+    }
+
+    try {
+      final enc = new JsonEncoder.withIndent("  ");
+      return enc.convert(v);
+    } catch (e) {
+      // ignore
+    }
+
+    try {
+      return jsonEncode(v);
+    } catch (e) {
+      // ignore
+    }
+
+    try {
+      return v.toString();
+    } catch (e) {
+      // ignore
+    }
+
+    try {
+      return "${v}";
+    } catch (e) {
+      // ignore
+    }
+
+    return "<[!]FAILED_TO_PRINT_OBJECT>";
   }
 }
 

@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path/path.dart' as path;
 
 class Globals {
   static final Globals _singleton = Globals._internal();
@@ -25,6 +27,9 @@ class Globals {
   String deviceModel = '';
 
   late SharedPreferences sharedPrefs;
+
+  late Directory appDocumentsDir;
+  late Directory rawFailureLogsDir;
 
   bool get isInitialized => _initialized;
 
@@ -60,6 +65,11 @@ class Globals {
     }
 
     this.sharedPrefs = await SharedPreferences.getInstance();
+
+    this.appDocumentsDir = await getApplicationDocumentsDirectory();
+
+    this.rawFailureLogsDir = Directory(path.join(Globals().appDocumentsDir.path, "rawlogs"));
+    await this.rawFailureLogsDir.create(recursive: true);
 
     this._initialized = true;
   }
