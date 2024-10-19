@@ -1,7 +1,7 @@
 class APIError {
   final bool success;
   final int error;
-  final String errhighlight;
+  final int errhighlight;
   final String message;
 
   static final MISSING_UID = 1101;
@@ -67,7 +67,7 @@ class APIError {
     return APIError(
       success: json['success'] as bool,
       error: (json['error'] as num).toInt(),
-      errhighlight: json['errhighlight'] as String,
+      errhighlight: (json['errhighlight'] as num).toInt(),
       message: json['message'] as String,
     );
   }

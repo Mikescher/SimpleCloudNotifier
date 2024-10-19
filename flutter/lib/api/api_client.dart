@@ -5,6 +5,7 @@ import 'package:simplecloudnotifier/api/api_exception.dart';
 import 'package:simplecloudnotifier/models/api_error.dart';
 import 'package:simplecloudnotifier/models/client.dart';
 import 'package:simplecloudnotifier/models/keytoken.dart';
+import 'package:simplecloudnotifier/models/sender_name_statistics.dart';
 import 'package:simplecloudnotifier/models/subscription.dart';
 import 'package:simplecloudnotifier/models/user.dart';
 import 'package:simplecloudnotifier/state/app_auth.dart';
@@ -101,19 +102,21 @@ class APIClient {
     }
 
     if (responseStatusCode != 200) {
-      try {
-        final apierr = APIError.fromJson(jsonDecode(responseBody) as Map<String, dynamic>);
+      APIError apierr;
 
-        RequestLog.addRequestAPIError(name, t0, method, uri, req.body, req.headers, responseStatusCode, responseBody, responseHeaders, apierr);
-        Toaster.error("Error", 'Request "${name}" failed');
-        throw APIException(responseStatusCode, apierr.error, apierr.errhighlight, apierr.message);
+      try {
+        apierr = APIError.fromJson(jsonDecode(responseBody) as Map<String, dynamic>);
       } catch (exc, trace) {
         ApplicationLog.warn('Failed to decode api response as error-object', additional: exc.toString() + "\nBody:\n" + responseBody, trace: trace);
+
+        RequestLog.addRequestErrorStatuscode(name, t0, method, uri, req.body, req.headers, responseStatusCode, responseBody, responseHeaders);
+        Toaster.error("Error", 'Request "${name}" failed');
+        throw Exception('API request failed with status code ${responseStatusCode}');
       }
 
-      RequestLog.addRequestErrorStatuscode(name, t0, method, uri, req.body, req.headers, responseStatusCode, responseBody, responseHeaders);
-      Toaster.error("Error", 'Request "${name}" failed');
-      throw Exception('API request failed with status code ${responseStatusCode}');
+      RequestLog.addRequestAPIError(name, t0, method, uri, req.body, req.headers, responseStatusCode, responseBody, responseHeaders, apierr);
+      Toaster.error("Error", apierr.message);
+      throw APIException(responseStatusCode, apierr.error, apierr.errhighlight, apierr.message);
     }
 
     try {
@@ -281,6 +284,20 @@ class APIClient {
     );
   }
 
+  static Future<(String, List<SCNMessage>)> getChannelMessageList(TokenSource auth, String cid, String pageToken, {int? pageSize}) async {
+    return await _request(
+      name: 'getChannelMessageList',
+      method: 'GET',
+      relURL: 'users/${auth.getUserID()}/channels/${cid}/messages',
+      query: {
+        'next_page_token': [pageToken],
+        if (pageSize != null) 'page_size': [pageSize.toString()],
+      },
+      fn: (json) => SCNMessage.fromPaginatedJsonArray(json, 'messages', 'next_page_token'),
+      authToken: auth.getToken(),
+    );
+  }
+
   static Future<List<Subscription>> getSubscriptionList(TokenSource auth) async {
     return await _request(
       name: 'getSubscriptionList',
@@ -369,7 +386,62 @@ class APIClient {
     );
   }
 
-  static Future<List<String>> getSenderNameList(AppAuth userAcc) {
-    return Future.value(['TODO']); //TODO
+  static Future<List<SenderNameStatistics>> getSenderNameList(TokenSource auth) async {
+    return await _request(
+      name: 'getSenderNameList',
+      method: 'GET',
+      relURL: 'users/${auth.getUserID()}/sender-names',
+      fn: (json) => SenderNameStatistics.fromJsonArray(json['sender_names'] as List<dynamic>),
+      authToken: auth.getToken(),
+    );
+  }
+
+  static Future<Subscription> subscribeToChannelbyID(TokenSource auth, String channelID) async {
+    return await _request(
+      name: 'subscribeToChannelbyID',
+      method: 'POST',
+      relURL: 'users/${auth.getUserID()}/subscriptions',
+      jsonBody: {
+        'channel_id': channelID,
+      },
+      fn: Subscription.fromJson,
+      authToken: auth.getToken(),
+    );
+  }
+
+  static Future<Subscription> deleteSubscription(TokenSource auth, String channelID, String subID) async {
+    return await _request(
+      name: 'deleteSubscription',
+      method: 'DELETE',
+      relURL: 'users/${auth.getUserID()}/subscriptions/${subID}',
+      fn: Subscription.fromJson,
+      authToken: auth.getToken(),
+    );
+  }
+
+  static Future<Subscription> confirmSubscription(TokenSource auth, String channelID, String subID) async {
+    return await _request(
+      name: 'confirmSubscription',
+      method: 'PATCH',
+      relURL: 'users/${auth.getUserID()}/subscriptions/${subID}',
+      jsonBody: {
+        'confirmed': true,
+      },
+      fn: Subscription.fromJson,
+      authToken: auth.getToken(),
+    );
+  }
+
+  static Future<Subscription> unconfirmSubscription(TokenSource auth, String channelID, String subID) async {
+    return await _request(
+      name: 'unconfirmSubscription',
+      method: 'PATCH',
+      relURL: 'users/${auth.getUserID()}/subscriptions/${subID}',
+      jsonBody: {
+        'confirmed': false,
+      },
+      fn: Subscription.fromJson,
+      authToken: auth.getToken(),
+    );
   }
 }

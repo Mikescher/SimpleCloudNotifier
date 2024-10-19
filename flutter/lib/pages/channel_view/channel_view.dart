@@ -63,15 +63,15 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
 
   @override
   void initState() {
-    _initStateAsync();
+    _initStateAsync(true);
 
     super.initState();
   }
 
-  void _initStateAsync() async {
+  Future<void> _initStateAsync(bool usePreload) async {
     final userAcc = Provider.of<AppAuth>(context, listen: false);
 
-    if (widget.preloadedData != null) {
+    if (widget.preloadedData != null && usePreload) {
       channelPreview = widget.preloadedData!.$1.toPreview();
       channel = widget.preloadedData!.$1;
       subscription = widget.preloadedData!.$2;
@@ -231,7 +231,7 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
             UI.metaCard(
               context: context,
               icon: FontAwesomeIcons.solidDiagramSubtask,
-              title: 'Subscription (own)',
+              title: 'Subscription (foreign)',
               values: [_formatSubscriptionStatus(subscription)],
               iconActions: isSubscribed ? [(FontAwesomeIcons.solidSquareXmark, _unsubscribe)] : [(FontAwesomeIcons.solidSquareRss, _subscribe)],
             ),
@@ -296,7 +296,7 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
       future: _futureSubscribeKey.future,
       builder: (context, snapshot) {
         if (snapshot.hasData && snapshot.data != null) {
-          var text = 'TODO' + '\n' + channel!.channelID + '\n' + snapshot.data!; //TODO deeplink-y (also perhaps just bas64 everything together?)
+          var text = '@scn.channel.subscribe' + '\n' + "v1" + '\n' + channel!.displayName + '\n' + channel!.ownerUserID + '\n' + channel!.channelID + '\n' + snapshot.data!;
           return GestureDetector(
             onTap: () {
               Share.share(text, subject: _displayNameOverride ?? channel!.displayName);
@@ -305,7 +305,7 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
               child: QrImageView(
                 data: text,
                 version: QrVersions.auto,
-                size: 300.0,
+                size: 265.0,
                 eyeStyle: QrEyeStyle(
                   eyeShape: QrEyeShape.square,
                   color: Theme.of(context).textTheme.bodyLarge?.color,
@@ -446,14 +446,6 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
     }
   }
 
-  void _subscribe() {
-    //TODO
-  }
-
-  void _unsubscribe() {
-    //TODO
-  }
-
   void _showEditDisplayName() {
     setState(() {
       _ctrlDisplayName.text = _displayNameOverride ?? channelPreview?.displayName ?? '';
@@ -518,16 +510,90 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
     }
   }
 
-  void _cancelForeignSubscription(Subscription sub) {
-    //TODO
+  void _subscribe() async {
+    final acc = AppAuth();
+
+    try {
+      var sub = await APIClient.subscribeToChannelbyID(acc, widget.channelID);
+      widget.needsReload?.call();
+
+      await _initStateAsync(false);
+
+      if (sub.confirmed) {
+        Toaster.success("Success", 'Subscribed to channel');
+      } else {
+        Toaster.success("Success", 'Requested subscription to channel');
+      }
+    } catch (exc, trace) {
+      Toaster.error("Error", 'Failed to subscribe to channel');
+      ApplicationLog.error('Failed to subscribe to channel: ' + exc.toString(), trace: trace);
+    }
   }
 
-  void _confirmForeignSubscription(Subscription sub) {
-    //TODO
+  void _unsubscribe() async {
+    final acc = AppAuth();
+
+    if (subscription == null) return;
+
+    try {
+      await APIClient.deleteSubscription(acc, widget.channelID, subscription!.subscriptionID);
+      widget.needsReload?.call();
+
+      await _initStateAsync(false);
+
+      Toaster.success("Success", 'Unsubscribed from channel');
+    } catch (exc, trace) {
+      Toaster.error("Error", 'Failed to unsubscribe from channel');
+      ApplicationLog.error('Failed to unsubscribe from channel: ' + exc.toString(), trace: trace);
+    }
   }
 
-  void _denyForeignSubscription(Subscription sub) {
-    //TODO
+  void _cancelForeignSubscription(Subscription sub) async {
+    final acc = AppAuth();
+
+    try {
+      await APIClient.unconfirmSubscription(acc, widget.channelID, subscription!.subscriptionID);
+      widget.needsReload?.call();
+
+      await _initStateAsync(false);
+
+      Toaster.success("Success", 'Subscription succesfully revoked');
+    } catch (exc, trace) {
+      Toaster.error("Error", 'Failed to revoke subscription');
+      ApplicationLog.error('Failed to revoke subscription: ' + exc.toString(), trace: trace);
+    }
+  }
+
+  void _confirmForeignSubscription(Subscription sub) async {
+    final acc = AppAuth();
+
+    try {
+      await APIClient.confirmSubscription(acc, widget.channelID, subscription!.subscriptionID);
+      widget.needsReload?.call();
+
+      await _initStateAsync(false);
+
+      Toaster.success("Success", 'Subscription succesfully confirmed');
+    } catch (exc, trace) {
+      Toaster.error("Error", 'Failed to confirm subscription');
+      ApplicationLog.error('Failed to confirm subscription: ' + exc.toString(), trace: trace);
+    }
+  }
+
+  void _denyForeignSubscription(Subscription sub) async {
+    final acc = AppAuth();
+
+    try {
+      await APIClient.deleteSubscription(acc, widget.channelID, subscription!.subscriptionID);
+      widget.needsReload?.call();
+
+      await _initStateAsync(false);
+
+      Toaster.success("Success", 'Subscription request succesfully denied');
+    } catch (exc, trace) {
+      Toaster.error("Error", 'Failed to deny subscription');
+      ApplicationLog.error('Failed to deny subscription: ' + exc.toString(), trace: trace);
+    }
   }
 
   String _formatSubscriptionStatus(Subscription? subscription) {

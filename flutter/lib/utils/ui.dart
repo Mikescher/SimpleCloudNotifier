@@ -72,7 +72,7 @@ class UI {
         splashColor: Theme.of(context).splashColor,
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: child,
         ),
       ),

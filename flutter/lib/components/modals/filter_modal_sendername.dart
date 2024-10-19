@@ -25,7 +25,7 @@ class _FilterModalSendernameState extends State<FilterModalSendername> {
       final userAcc = Provider.of<AppAuth>(context, listen: false);
       if (!userAcc.isAuth()) throw new Exception('not logged in');
 
-      final senders = await APIClient.getSenderNameList(userAcc);
+      final senders = (await APIClient.getSenderNameList(userAcc)).map((p) => p.name).toList();
 
       return senders;
     }());

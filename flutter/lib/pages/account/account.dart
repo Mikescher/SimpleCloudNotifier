@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
 import 'package:simplecloudnotifier/models/user.dart';
 import 'package:simplecloudnotifier/pages/account/login.dart';
+import 'package:simplecloudnotifier/pages/channel_list/channel_list_extended.dart';
 import 'package:simplecloudnotifier/state/app_bar_state.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
 import 'package:simplecloudnotifier/state/globals.dart';
@@ -32,6 +33,7 @@ class _AccountRootPageState extends State<AccountRootPage> {
   late ImmediateFuture<int>? futureKeyCount;
   late ImmediateFuture<int>? futureChannelAllCount;
   late ImmediateFuture<int>? futureChannelSubscribedCount;
+  late ImmediateFuture<int>? futureSenderNamesCount;
   late ImmediateFuture<User>? futureUser;
 
   late AppAuth userAcc;
@@ -87,6 +89,7 @@ class _AccountRootPageState extends State<AccountRootPage> {
     futureKeyCount = null;
     futureChannelAllCount = null;
     futureChannelSubscribedCount = null;
+    futureSenderNamesCount = null;
 
     if (userAcc.isAuth()) {
       futureChannelAllCount = ImmediateFuture.ofFuture(() async {
@@ -119,6 +122,12 @@ class _AccountRootPageState extends State<AccountRootPage> {
         return keys.length;
       }());
 
+      futureSenderNamesCount = ImmediateFuture.ofFuture(() async {
+        if (!userAcc.isAuth()) throw new Exception('not logged in');
+        final senders = (await APIClient.getSenderNameList(userAcc)).map((p) => p.name).toList();
+        return senders.length;
+      }());
+
       futureUser = ImmediateFuture.ofFuture(userAcc.loadUser(force: false));
     }
   }
@@ -137,6 +146,7 @@ class _AccountRootPageState extends State<AccountRootPage> {
         final subs = await APIClient.getSubscriptionList(userAcc);
         final clients = await APIClient.getClientList(userAcc);
         final keys = await APIClient.getKeyTokenList(userAcc);
+        final senderNames = await APIClient.getSenderNameList(userAcc);
         final user = await userAcc.loadUser(force: true);
 
         setState(() {
@@ -145,6 +155,7 @@ class _AccountRootPageState extends State<AccountRootPage> {
           futureSubscriptionCount = ImmediateFuture.ofValue(subs.length);
           futureClientCount = ImmediateFuture.ofValue(clients.length);
           futureKeyCount = ImmediateFuture.ofValue(keys.length);
+          futureSenderNamesCount = ImmediateFuture.ofValue(senderNames.length);
           futureUser = ImmediateFuture.ofValue(user);
         });
       } catch (exc, trace) {
@@ -368,7 +379,10 @@ class _AccountRootPageState extends State<AccountRootPage> {
       _buildNumberCard(context, 'Subscriptions', futureSubscriptionCount, () {/*TODO*/}),
       _buildNumberCard(context, 'Clients', futureClientCount, () {/*TODO*/}),
       _buildNumberCard(context, 'Keys', futureKeyCount, () {/*TODO*/}),
-      _buildNumberCard(context, 'Channels', futureChannelSubscribedCount, () {/*TODO*/}),
+      _buildNumberCard(context, 'Channels', futureChannelSubscribedCount, () {
+        Navi.push(context, () => ChannelListExtendedPage());
+      }),
+      _buildNumberCard(context, 'Sender', futureSenderNamesCount, () {/*TODO*/}),
       UI.buttonCard(
         context: context,
         margin: EdgeInsets.fromLTRB(0, 4, 0, 4),

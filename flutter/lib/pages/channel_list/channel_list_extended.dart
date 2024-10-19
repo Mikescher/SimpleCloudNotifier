@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
 import 'package:simplecloudnotifier/api/api_client.dart';
+import 'package:simplecloudnotifier/components/layout/scaffold.dart';
 import 'package:simplecloudnotifier/models/channel.dart';
 import 'package:simplecloudnotifier/state/app_bar_state.dart';
 import 'package:simplecloudnotifier/state/application_log.dart';
@@ -10,19 +10,15 @@ import 'package:simplecloudnotifier/state/app_auth.dart';
 import 'package:simplecloudnotifier/pages/channel_list/channel_list_item.dart';
 import 'package:simplecloudnotifier/utils/navi.dart';
 
-class ChannelRootPage extends StatefulWidget {
-  const ChannelRootPage({super.key, required this.isVisiblePage});
-
-  final bool isVisiblePage;
+class ChannelListExtendedPage extends StatefulWidget {
+  const ChannelListExtendedPage({super.key});
 
   @override
-  State<ChannelRootPage> createState() => _ChannelRootPageState();
+  State<ChannelListExtendedPage> createState() => _ChannelListExtendedPageState();
 }
 
-class _ChannelRootPageState extends State<ChannelRootPage> with RouteAware {
+class _ChannelListExtendedPageState extends State<ChannelListExtendedPage> with RouteAware {
   final PagingController<int, ChannelWithSubscription> _pagingController = PagingController.fromValue(PagingState(nextPageKey: null, itemList: [], error: null), firstPageKey: 0);
-
-  bool _isInitialized = false;
 
   bool _reloadEnqueued = false;
 
@@ -32,7 +28,7 @@ class _ChannelRootPageState extends State<ChannelRootPage> with RouteAware {
 
     _pagingController.addPageRequestListener(_fetchPage);
 
-    if (widget.isVisiblePage && !_isInitialized) _realInitState();
+    _pagingController.refresh();
   }
 
   @override
@@ -50,40 +46,15 @@ class _ChannelRootPageState extends State<ChannelRootPage> with RouteAware {
   }
 
   @override
-  void didUpdateWidget(ChannelRootPage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (oldWidget.isVisiblePage != widget.isVisiblePage && widget.isVisiblePage) {
-      if (!_isInitialized) {
-        _realInitState();
-      } else {
-        _backgroundRefresh();
-      }
-    }
-  }
-
-  @override
-  void didPush() {
-    // ...
-  }
-
-  @override
   void didPopNext() {
     if (_reloadEnqueued) {
       ApplicationLog.debug('[ChannelList::RouteObserver] --> didPopNext (will background-refresh) (_reloadEnqueued == true)');
       () async {
         _reloadEnqueued = false;
-        AppBarState().setLoadingIndeterminate(true);
         await Future.delayed(const Duration(milliseconds: 500), () {}); // prevents flutter bug where the whole process crashes ?!?
         await _backgroundRefresh();
       }();
     }
-  }
-
-  void _realInitState() {
-    ApplicationLog.debug('ChannelRootPage::_realInitState');
-    _pagingController.refresh();
-    _isInitialized = true;
   }
 
   Future<void> _fetchPage(int pageKey) async {
@@ -142,35 +113,34 @@ class _ChannelRootPageState extends State<ChannelRootPage> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: RefreshIndicator(
-        onRefresh: () => Future.sync(
-          () => _pagingController.refresh(),
-        ),
-        child: PagedListView<int, ChannelWithSubscription>(
-          pagingController: _pagingController,
-          builderDelegate: PagedChildBuilderDelegate<ChannelWithSubscription>(
-            itemBuilder: (context, item, index) => ChannelListItem(
-              channel: item.channel,
-              subscription: item.subscription,
-              mode: ChannelListItemMode.Messages,
-              onChannelListReloadTrigger: _enqueueReload,
-              onSubscriptionChanged: (channelID, subscription) {
-                setState(() {
-                  final idx = _pagingController.itemList?.indexWhere((p) => p.channel.channelID == channelID);
-                  if (idx != null && idx >= 0) _pagingController.itemList![idx] = ChannelWithSubscription(channel: _pagingController.itemList![idx].channel, subscription: subscription);
-                });
-              },
+    return SCNScaffold(
+      title: "Channels",
+      showSearch: false,
+      showShare: false,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
+        child: RefreshIndicator(
+          onRefresh: () => Future.sync(
+            () => _pagingController.refresh(),
+          ),
+          child: PagedListView<int, ChannelWithSubscription>(
+            pagingController: _pagingController,
+            builderDelegate: PagedChildBuilderDelegate<ChannelWithSubscription>(
+              itemBuilder: (context, item, index) => ChannelListItem(
+                channel: item.channel,
+                subscription: item.subscription,
+                mode: ChannelListItemMode.Extended,
+                onChannelListReloadTrigger: _enqueueReload,
+                onSubscriptionChanged: (channelID, subscription) {
+                  setState(() {
+                    final idx = _pagingController.itemList?.indexWhere((p) => p.channel.channelID == channelID);
+                    if (idx != null && idx >= 0) _pagingController.itemList![idx] = ChannelWithSubscription(channel: _pagingController.itemList![idx].channel, subscription: subscription);
+                  });
+                },
+              ),
             ),
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'fab_channel_list_qr',
-        onPressed: () {
-          //TODO scan qr code to subscribe channel
-        },
-        child: const Icon(FontAwesomeIcons.qrcode),
       ),
     );
   }

@@ -411,7 +411,6 @@ func (h APIHandler) ListChannelMessages(pctx ginext.PreContext) ginext.HTTPRespo
 	type query struct {
 		PageSize      *int    `json:"page_size"       form:"page_size"`
 		NextPageToken *string `json:"next_page_token" form:"next_page_token"`
-		Filter        *string `json:"filter"          form:"filter"`
 		Trimmed       *bool   `json:"trimmed"         form:"trimmed"`
 	}
 	type response struct {

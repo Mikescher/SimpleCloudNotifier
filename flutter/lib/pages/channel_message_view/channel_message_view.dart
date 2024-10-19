@@ -55,7 +55,7 @@ class _ChannelMessageViewPageState extends State<ChannelMessageViewPage> {
     }
 
     try {
-      final (npt, newItems) = await APIClient.getMessageList(acc, thisPageToken, pageSize: cfg.messagePageSize, filter: MessageFilter(channelIDs: [this.widget.channel.channelID]));
+      final (npt, newItems) = await APIClient.getChannelMessageList(acc, this.widget.channel.channelID, thisPageToken, pageSize: cfg.messagePageSize);
 
       SCNDataCache().addToMessageCache(newItems); // no await
 
