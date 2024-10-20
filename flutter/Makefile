@@ -21,7 +21,7 @@ run-android:
 install-release:
 	# Install on Pixel 7a
 	flutter build apk --release
-	flutter install --release -d 35221JEHN07157
+	flutter run --release -d 35221JEHN07157
 
 build-release:
 	flutter build apk       --release

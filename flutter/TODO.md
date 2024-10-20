@@ -25,6 +25,8 @@
 
  - [ ] Still @ERROR on scn-init, but no logs? - better persist error (write in SharedPrefs at error_$date=txt ?), also perhaps print first error line in scn-init notification?
 
+ - [ ] fix time format (in message-list, in card, top right) - midnight is shown as "24:05" instead of "00:05" - thats weird
+
  -----
 
 # TODO iOS specific

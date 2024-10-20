@@ -140,13 +140,15 @@ class _AccountLoginPageState extends State<AccountLoginPage> {
         return;
       }
 
-      final toks = await APIClient.getKeyTokenByToken(uid, stokv);
+      if (stokv != "") {
+        final toks = await APIClient.getKeyTokenByToken(uid, stokv);
 
-      if (!toks.allChannels || toks.permissions != 'CS') {
-        Toaster.error("Error", 'Send token does not have required permissions');
-        return;
+        if (!toks.allChannels || toks.permissions != 'CS') {
+          Toaster.error("Error", 'Send token does not have required permissions');
+          return;
+        }
       }
-
+      
       final user = await APIClient.getUser(DirectTokenSource(uid, atokv), uid);
 
       final client = await APIClient.addClient(DirectTokenSource(uid, atokv), fcmToken, Globals().deviceModel, Globals().version, Globals().hostname, Globals().clientType);

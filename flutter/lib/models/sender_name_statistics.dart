@@ -1,21 +1,21 @@
 class SenderNameStatistics {
   final String name;
-  final String ts_last;
-  final String ts_first;
+  final String lastTimestamp;
+  final String firstTimestamp;
   final int count;
 
   const SenderNameStatistics({
     required this.name,
-    required this.ts_last,
-    required this.ts_first,
+    required this.lastTimestamp,
+    required this.firstTimestamp,
     required this.count,
   });
 
   factory SenderNameStatistics.fromJson(Map<String, dynamic> json) {
     return SenderNameStatistics(
       name: json['name'] as String,
-      ts_last: json['ts_last'] as String,
-      ts_first: json['ts_first'] as String,
+      lastTimestamp: json['last_timestamp'] as String,
+      firstTimestamp: json['first_timestamp'] as String,
       count: json['count'] as int,
     );
   }
