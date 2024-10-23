@@ -547,7 +547,7 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
     final acc = AppAuth();
 
     try {
-      await APIClient.unconfirmSubscription(acc, widget.channelID, subscription!.subscriptionID);
+      await APIClient.unconfirmSubscription(acc, widget.channelID, sub.subscriptionID);
       widget.needsReload?.call();
 
       await _initStateAsync(false);
@@ -563,7 +563,7 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
     final acc = AppAuth();
 
     try {
-      await APIClient.confirmSubscription(acc, widget.channelID, subscription!.subscriptionID);
+      await APIClient.confirmSubscription(acc, widget.channelID, sub.subscriptionID);
       widget.needsReload?.call();
 
       await _initStateAsync(false);
@@ -579,7 +579,7 @@ class _ChannelViewPageState extends State<ChannelViewPage> {
     final acc = AppAuth();
 
     try {
-      await APIClient.deleteSubscription(acc, widget.channelID, subscription!.subscriptionID);
+      await APIClient.deleteSubscription(acc, widget.channelID, sub.subscriptionID);
       widget.needsReload?.call();
 
       await _initStateAsync(false);
